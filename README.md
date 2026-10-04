@@ -12,12 +12,26 @@
 
 먼저 `docs/CHARACTERS_AND_ORGANIZATION.md`와 `docs/ART_DIRECTION.md`를 읽습니다. 새 수치는 모두 DESIGN이며 미술 자산과 게임 엔진은 아직 만들지 않았습니다.
 
+## M1 시제품 실행
+
+M1(거래 한 건)의 엔진과 최소 화면이 있습니다. Node.js 22 이상에서:
+
+```bash
+npm install
+npm run dev        # 화면 (http://localhost:5173)
+npm test           # 엔진 테스트
+npm run typecheck
+python3 tools/validate_data.py   # 자료 검사
+```
+
+현재 구현 범위와 검증 기록은 [docs/STATUS.md](docs/STATUS.md), 엔진 결정은 [docs/DECISIONS.md](docs/DECISIONS.md)의 ‘M1 엔진 구현 결정’을 봅니다.
+
 ## Claude·Codex와 작업하기
 
 - Codex는 [AGENTS.md](AGENTS.md), Claude는 [CLAUDE.md](CLAUDE.md)에서 시작합니다.
 - 두 파일은 [공통 작업 규칙](docs/ai/WORKFLOW.md)을 함께 사용합니다.
 - [현재 상태](docs/STATUS.md), [단계별 구현 계획](docs/IMPLEMENTATION_PLAN.md), [업무별 자료 위치](docs/ai/CONTEXT_MAP.md)를 확인합니다.
-- 게임 엔진과 미술 자산은 아직 없습니다.
+- M1 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다.
 
 ## 먼저 알아둘 결정
 

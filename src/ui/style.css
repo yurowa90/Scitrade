@@ -1,0 +1,200 @@
+/* docs/ART_DIRECTION.md: 크림·연민트·하늘색 바탕, 경영 수치는 네이비 계열로 대비 확보. */
+:root {
+  --cream: #fbf6ec;
+  --paper: #fffdf8;
+  --mint: #dff3ea;
+  --mint-deep: #3d8f74;
+  --sky: #dcecf8;
+  --sky-deep: #3a6ea5;
+  --navy: #1f2a44;
+  --navy-soft: #4a5672;
+  --line: #e4dccb;
+  --warn: #b5532a;
+  --warn-bg: #fdebe1;
+  --ok: #2f7a5f;
+  --gold: #c9a24a;
+  --radius: 14px;
+  --shadow: 0 2px 0 rgba(31, 42, 68, 0.06), 0 8px 24px rgba(31, 42, 68, 0.06);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--navy);
+  font-family: 'IBM Plex Sans KR', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+h2, h3, .logo, .card-name { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
+h2 { font-size: 1.1rem; margin: 0 0 .6rem; display: flex; flex-wrap: wrap; gap: .1rem .5rem; align-items: baseline; }
+h2 small { flex-basis: 100%; }
+h2 small, h3 small { font-weight: 400; color: var(--navy-soft); font-size: .8rem; }
+h3 { font-size: 1rem; margin: 0 0 .5rem; }
+button, select, .file-btn {
+  font: inherit;
+  color: var(--navy);
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: .4rem .75rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled), .file-btn:hover { border-color: var(--sky-deep); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+button.danger { border-color: var(--warn); color: var(--warn); }
+button.link { border: none; background: none; color: var(--sky-deep); text-decoration: underline; padding: 0 .3rem; }
+:focus-visible { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
+.muted { color: var(--navy-soft); }
+.small { font-size: .82rem; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center;
+  padding: .7rem 1.2rem;
+  background: rgba(255, 253, 248, .94);
+  border-bottom: 1.5px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.brand { display: flex; flex-direction: column; line-height: 1.1; }
+.logo { font-size: 1.35rem; font-weight: 700; color: var(--mint-deep); }
+.sub { font-size: .75rem; color: var(--navy-soft); }
+.scenario { display: flex; flex-direction: column; font-size: .75rem; color: var(--navy-soft); gap: .15rem; }
+.day { display: flex; flex-direction: column; font-size: .8rem; color: var(--navy-soft); }
+.day b { font-size: 1.25rem; color: var(--navy); }
+.stat { display: flex; flex-direction: column; font-size: .75rem; color: var(--navy-soft); }
+.stat b { font-size: 1.02rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+.actions { margin-left: auto; display: flex; gap: .4rem; flex-wrap: wrap; }
+
+.layout {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.2rem 2rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
+  grid-template-areas:
+    "world report crew"
+    "trade trade queue"
+    "trade trade log";
+  align-items: start;
+}
+.world { grid-area: world; } .report { grid-area: report; } .crew { grid-area: crew; }
+.trade { grid-area: trade; } .queue { grid-area: queue; } .log { grid-area: log; }
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; grid-template-areas: "crew" "trade" "queue" "world" "report" "log"; }
+  .actions { margin-left: 0; }
+}
+
+.panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); }
+
+/* 지도 */
+.world svg { width: 100%; height: auto; display: block; }
+.sea { fill: var(--sky); }
+.land { fill: var(--mint); stroke: #b9dfcf; stroke-width: .6; }
+.route { fill: none; stroke: var(--sky-deep); stroke-width: .9; stroke-dasharray: 2 1.6; }
+.port circle { fill: var(--navy); }
+.port text { font-size: 4px; fill: var(--navy); font-weight: 700; }
+.ship path { fill: var(--navy); } .ship rect { fill: var(--gold); }
+.port-warn path { fill: var(--warn-bg); stroke: var(--warn); stroke-width: .8; }
+.port-warn text { font-size: 7px; fill: var(--warn); font-weight: 700; }
+.port-warn.active path { fill: var(--warn); } .port-warn.active text { fill: #fff; }
+
+/* 거래 */
+.offer, .contract, .notice { border: 1.5px dashed var(--line); border-radius: 12px; padding: .9rem; margin-bottom: .9rem; }
+.notice { background: var(--warn-bg); border-color: var(--warn); border-style: solid; }
+.report-line { background: var(--mint); border-radius: 10px; padding: .6rem .8rem; margin-top: 0; }
+table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.money th { text-align: left; font-weight: 400; padding: .25rem 0; color: var(--navy-soft); }
+table.money td { text-align: right; padding: .25rem 0; }
+table.money tr.total th, table.money tr.total td { font-weight: 700; color: var(--navy); border-top: 1.5px solid var(--line); }
+table.money caption { text-align: left; font-weight: 700; padding-bottom: .3rem; }
+details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
+.schedule, .entries, .log ul { list-style: none; padding: 0; margin: 0; }
+.schedule li, .entries li, .log li { display: grid; grid-template-columns: 3.2rem 1fr auto; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.entries li b { font-weight: 400; color: var(--navy-soft); font-size: .8rem; text-align: right; }
+.log li { grid-template-columns: 3rem 1fr; }
+.schedule li span, .entries li span, .log li span { color: var(--navy-soft); }
+.reason { color: var(--warn); font-size: .85rem; }
+.pill { display: inline-block; background: var(--sky); color: var(--sky-deep); border-radius: 999px; padding: .1rem .7rem; font-size: .82rem; font-weight: 600; }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pipeline { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; padding: 0; margin: .3rem 0 .8rem; }
+.pipeline li { font-size: .78rem; padding: .2rem .55rem; border-radius: 999px; background: #f1ece0; color: var(--navy-soft); }
+.pipeline li.done { background: var(--mint); color: var(--mint-deep); }
+.pipeline li.now { background: var(--navy); color: #fff; font-weight: 600; }
+.facts { display: grid; grid-template-columns: 4rem 1fr; gap: .25rem .6rem; margin: 0 0 .7rem; font-size: .9rem; }
+.facts dt { color: var(--navy-soft); }
+.facts dd { margin: 0; }
+.actions-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: flex-start; }
+.sailings { display: flex; flex-direction: column; gap: .35rem; }
+.sailings > span { font-size: .85rem; color: var(--navy-soft); }
+.sailings button, .choices button { text-align: left; display: flex; flex-direction: column; }
+.sailings small, .choices small { color: var(--navy-soft); font-size: .78rem; }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .5rem; }
+
+/* 보고 */
+.books { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 640px) { .books { grid-template-columns: 1fr; } }
+.why { margin-top: .8rem; background: var(--sky); border-radius: 10px; padding: .6rem .9rem; }
+.why ul { margin: 0; padding-left: 1.1rem; }
+
+/* 오늘 할 일 */
+.flash { border-radius: 10px; padding: .5rem .7rem; font-size: .88rem; }
+.flash.info { background: var(--mint); }
+.flash.warn { background: var(--warn-bg); color: var(--warn); }
+.pending { padding-left: 1.2rem; margin: 0; }
+.pending li { padding: .2rem 0; }
+.pending li.bad { color: var(--warn); }
+
+/* 동료 카드 (자리표시자) */
+.card {
+  --tilt-x: 0deg; --tilt-y: 0deg;
+  position: relative;
+  border-radius: 18px;
+  padding: .6rem;
+  background: linear-gradient(160deg, #fffaf0, #f3ead6);
+  border: 3px solid #ead9b0;
+  box-shadow: 0 6px 0 #e0cfa3, var(--shadow);
+  cursor: pointer;
+  transition: transform .25s ease;
+  transform: perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  overflow: hidden;
+}
+.card.is-selected { --tilt-x: 4deg; --tilt-y: -6deg; border-color: var(--gold); }
+.card.is-selected::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 45%, rgba(190,230,255,.35) 52%, transparent 65%);
+  background-size: 250% 100%;
+  animation: sheen 2.6s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+@keyframes sheen { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.card-top { display: flex; align-items: center; gap: .4rem; }
+.card-level { background: var(--navy); color: #fff; border-radius: 999px; font-size: .75rem; font-weight: 700; padding: .1rem .5rem; }
+.card-name { font-size: 1.15rem; font-weight: 700; flex: 1; }
+.chip { display: inline-flex; align-items: center; gap: .2rem; font-size: .75rem; font-weight: 600; border-radius: 999px; padding: .1rem .5rem; background: #fff; border: 1.5px solid var(--line); }
+.chip svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; }
+.attr-light { color: #a07812; border-color: #e8cf7a; }
+.attr-water { color: #2d6fa8; border-color: #9cc6ea; }
+.card-art {
+  margin: .5rem 0; border-radius: 12px; min-height: 170px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
+  padding: .7rem; text-align: center;
+  background: radial-gradient(circle at 50% 38%, #fff 0 22%, transparent 60%), linear-gradient(180deg, var(--sky), var(--mint));
+}
+.attr-bg-light .card-art { background: radial-gradient(circle at 50% 38%, #fff 0 22%, transparent 60%), linear-gradient(180deg, #fff1c9, #ffe3ef); }
+.card-face {
+  width: 78px; height: 70px; border-radius: 48% 48% 44% 44%;
+  background: #f6e2c4; border: 3px solid #d9a877;
+  display: grid; place-items: center; font-size: 1.8rem; font-weight: 700; color: #8a5a2f;
+  font-family: 'Gowun Dodum', sans-serif;
+}
+.card-motif { margin: 0; font-size: .78rem; color: var(--navy-soft); }
+.card-placeholder { font-size: .72rem; background: rgba(255,255,255,.8); border-radius: 999px; padding: .05rem .6rem; color: var(--navy-soft); }
+.card-bottom { display: flex; flex-direction: column; font-size: .82rem; }
+.card-schedule { color: var(--mint-deep); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; transform: none; }
+  .card.is-selected::after { animation: none; display: none; }
+}

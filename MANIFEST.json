@@ -7,8 +7,8 @@
   "files": [
     {
       "path": ".gitignore",
-      "size_bytes": 86,
-      "sha256": "6423b6c97b07d11fdfa93691c097708a5bae70da1b3cf6679a58d0b842f53e6e"
+      "size_bytes": 100,
+      "sha256": "692d55883093eaebe0aebbc56f524fb72773ef2f7ced910c3807e76532c19541"
     },
     {
       "path": "AGENTS.md",
@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 10630,
-      "sha256": "0b4be6fc32763fbb6defbf19c387ad1eff26f89ab3427bb26781c371aa2d42be"
+      "size_bytes": 11129,
+      "sha256": "c6d306bbe1e351325690408c4bfb7f4bb43a57c2952b80360b2887bfaebd84bc"
     },
     {
       "path": "START_HERE.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 4407,
-      "sha256": "9d4fdadf5cee4922d775e433c41038f9f45a6d18a3892fe32120c08959020f3e"
+      "size_bytes": 7943,
+      "sha256": "3dc434ed4f3fb296f98dde13f0e631f2484d14ee9719e6c3ff0daddad8d006d2"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 4797,
-      "sha256": "a5c70b7e943e137478fd15c50a78286579bf6883676d5a95047aeffa93884d97"
+      "size_bytes": 7474,
+      "sha256": "720c57d9be23865a0dbf72cb10de2b521dd5038d6274e95ae3564cafef9e85da"
     },
     {
       "path": "docs/UI_SPEC.md",
