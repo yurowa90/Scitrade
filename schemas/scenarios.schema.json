@@ -489,7 +489,8 @@
               "payment_due_rule": {
                 "type": "string",
                 "enum": [
-                  "scenario_due_day_not_earlier_than_delivery_day"
+                  "scenario_due_day_not_earlier_than_delivery_day",
+                  "offer_due_day_not_earlier_than_delivery_day"
                 ]
               },
               "notes_ko": {
@@ -497,6 +498,16 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "forwarding_prep_work_units": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "forwarding_duty_payer": {
+                "type": "string",
+                "enum": [
+                  "consignee"
+                ]
               }
             },
             "additionalProperties": false
@@ -553,6 +564,83 @@
               }
             },
             "additionalProperties": false
+          },
+          "title_ko": {
+            "type": "string"
+          },
+          "route_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "starting_cash": {
+            "type": "object",
+            "properties": {
+              "USD": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "KRW": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "engine_rules": {
+            "type": "object",
+            "required": [
+              "rules_version",
+              "funds_check",
+              "forwarding_enabled"
+            ],
+            "properties": {
+              "rules_version": {
+                "type": "string",
+                "enum": [
+                  "M1-rules-1",
+                  "M2a-rules-1"
+                ]
+              },
+              "funds_check": {
+                "type": "string",
+                "enum": [
+                  "immediate_cash",
+                  "committed_outlays"
+                ]
+              },
+              "forwarding_enabled": {
+                "type": "boolean"
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "expected_paths_usd": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "contribution",
+                "cash_final",
+                "final_day"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "expected_rejections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "additionalProperties": true
+            }
           }
         },
         "additionalProperties": true

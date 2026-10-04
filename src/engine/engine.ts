@@ -1,24 +1,40 @@
-// M1 하루 단위 경제 엔진.
+// 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
 // openDay: 당일 사건을 한 번 적용·공개하고 입력을 기다린다.
 // commitDay: 명령 검증·실행부터 운송·인도·결제·마감까지 고정 순서로 처리한다.
 // 두 함수 모두 입력 상태를 바꾸지 않고 새 상태를 돌려준다. 현재 시각·네트워크·Math.random을 쓰지 않는다.
 
+import {
+  cargoSpace,
+  cityName,
+  dutyEstimate,
+  findSailing,
+  goodOf,
+  listSailings,
+  offerOf,
+  routeBetween,
+  routeOf,
+  unitKo,
+  type Sailing,
+} from './catalog';
 import { balance, emptyLedger, post, type LedgerLine } from './ledger';
-import { applyBasisPoints, formatMoney, type Currency } from './money';
+import { formatMoney, type Currency } from './money';
+import { fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
   ENGINE_VERSION,
-  RULES_VERSION,
   type Booking,
   type Command,
   type CommandResult,
   type Contract,
   type GameState,
   type Notice,
+  type OfferDef,
   type ScenarioConfig,
   type Shipment,
 } from './types';
 import { checkInvariants } from './invariants';
+
+export { cargoSpace, cityName, findSailing, listSailings, type Sailing } from './catalog';
 
 export class EngineError extends Error {}
 
@@ -45,7 +61,7 @@ export function createGame(config: ScenarioConfig): GameState {
   return {
     meta: {
       engineVersion: ENGINE_VERSION,
-      rulesVersion: RULES_VERSION,
+      rulesVersion: config.rules.rulesVersion,
       dataVersion: config.dataVersion,
       scenarioId: config.id,
     },
@@ -53,7 +69,7 @@ export function createGame(config: ScenarioConfig): GameState {
     phase: 'PENDING_OPEN',
     rng: createRng(config.seed),
     ledger,
-    offers: [config.buyOffer, config.sellOffer].map((o) => ({ id: o.id, status: 'OPEN' as const })),
+    offers: config.offers.map((o) => ({ id: o.id, status: 'OPEN' as const })),
     contracts: [],
     cargoLots: [],
     bookings: [],
@@ -75,37 +91,7 @@ export function createGame(config: ScenarioConfig): GameState {
   };
 }
 
-// ── 운항표 ──
-
-export interface Sailing {
-  id: string;
-  routeId: string;
-  departureDay: number;
-  scheduledArrivalDay: number;
-}
-
-export function listSailings(config: ScenarioConfig, fromDay = 1, toDay = config.campaignDays): Sailing[] {
-  const r = config.route;
-  const sailings: Sailing[] = [];
-  for (let d = r.firstDepartureDay; d <= toDay; d += r.departureIntervalDays) {
-    if (d < fromDay) continue;
-    sailings.push({
-      id: `${r.id}-D${pad(d)}`,
-      routeId: r.id,
-      departureDay: d,
-      scheduledArrivalDay: d + r.transitDays,
-    });
-  }
-  return sailings;
-}
-
-export function cargoSpace(config: ScenarioConfig, quantity: number) {
-  return {
-    massGrams: Math.round(quantity * config.good.massKgPerUnit * 1000),
-    volumeLiters: Math.round(quantity * config.good.volumeM3PerUnit * 1000),
-  };
-}
-
+/** 예약한 출항편들이 차지한 무게·부피 합계 (취소된 예약 제외). */
 export function bookedSpace(state: GameState, sailingId: string) {
   let massGrams = 0;
   let volumeLiters = 0;
@@ -181,6 +167,9 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
     case 'ACCEPT_TRADE':
       rejection = acceptTrade(s, config, cmd.buyOfferId, cmd.sellOfferId);
       break;
+    case 'ACCEPT_FORWARDING':
+      rejection = acceptForwarding(s, config, cmd.offerId);
+      break;
     case 'ASSIGN_TASK':
       rejection = assignTask(s, config, cmd.taskId, cmd.employeeId);
       break;
@@ -200,36 +189,75 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   return { commandId: cmd.id, status, reasonKo };
 }
 
+function offerOpen(s: GameState, offer: OfferDef): string | null {
+  const st = s.offers.find((o) => o.id === offer.id);
+  if (!st || st.status !== 'OPEN') return `견적 ${offer.id}은(는) 더 이상 유효하지 않습니다.`;
+  if (offer.validUntilDay < s.day) return `견적 ${offer.id}의 유효기간(${offer.validUntilDay}일)이 지났습니다.`;
+  return null;
+}
+
+/** COMMITTED_OUTLAYS 규칙의 자금 부족 설명. 충분하면 null. */
+function fundsShortfall(
+  s: GameState,
+  config: ScenarioConfig,
+  currency: Currency,
+  needMinor: number,
+  breakdownKo: string,
+  exclude?: (r: CashReservation) => boolean,
+): string | null {
+  const f = fundsPosition(s, config, currency, exclude);
+  if (f.available >= needMinor) return null;
+  const parts = [`현금 ${formatMoney(currency, f.cash)}`];
+  if (f.reserved) parts.push(`다른 계약 예약 ${formatMoney(currency, f.reserved)}`);
+  if (f.unpaidObligations) parts.push(`미지급 ${formatMoney(currency, f.unpaidObligations)}`);
+  return `사용 가능 자금이 부족합니다. 필요 ${formatMoney(currency, needMinor)}(${breakdownKo}), 사용 가능 ${formatMoney(currency, f.available)} = ${parts.join(' − ')}. 체결한 계약의 남은 운임·관세는 미리 묶어 둡니다.`;
+}
+
+function nextContractIds(s: GameState) {
+  const n = s.contracts.length + 1;
+  return { contractId: `CT${pad(n)}`, lotId: `LOT${pad(n)}`, taskId: `TASK${pad(n)}` };
+}
+
 function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string): string | null {
-  const buy = config.buyOffer;
-  const sell = config.sellOffer;
-  if (buyOfferId !== buy.id || sellOfferId !== sell.id) return '이 시나리오에 없는 견적입니다.';
+  const buy = offerOf(config, buyOfferId);
+  const sell = offerOf(config, sellOfferId);
+  if (!buy || !sell || buy.kind !== 'supplier' || sell.kind !== 'customer') return '이 시나리오에 없는 견적입니다.';
   for (const offer of [buy, sell]) {
-    const st = s.offers.find((o) => o.id === offer.id);
-    if (!st || st.status !== 'OPEN') return `견적 ${offer.id}은(는) 더 이상 유효하지 않습니다.`;
-    if (offer.validUntilDay < s.day) return `견적 ${offer.id}의 유효기간(${offer.validUntilDay}일)이 지났습니다.`;
+    const closed = offerOpen(s, offer);
+    if (closed) return closed;
   }
-  if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity) return 'M1은 같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다.';
+  if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity) return '같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다 (분할 거래는 이후 단계).';
   if (buy.currency !== sell.currency) return '매입과 판매의 통화가 다릅니다.';
-  const route = config.route;
-  if (route.fromCityId !== buy.cityId || route.toCityId !== sell.cityId) return '두 항구를 잇는 노선이 없습니다.';
+  const route = routeBetween(config, buy.cityId, sell.cityId);
+  if (!route) return '두 항구를 잇는 노선이 없습니다.';
 
   const purchase = buy.unitPriceMinor * buy.quantity;
-  const cash = balance(s.ledger, buy.currency, 'CASH');
-  if (cash < purchase) {
-    return `매입 자금이 부족합니다. 필요 ${formatMoney(buy.currency, purchase)}, 사용 가능 ${formatMoney(buy.currency, cash)}.`;
+  if (config.rules.fundsCheck === 'IMMEDIATE_CASH') {
+    const cash = balance(s.ledger, buy.currency, 'CASH');
+    if (cash < purchase) {
+      return `매입 자금이 부족합니다. 필요 ${formatMoney(buy.currency, purchase)}, 사용 가능 ${formatMoney(buy.currency, cash)}.`;
+    }
+  } else {
+    const duty = dutyEstimate(config, purchase);
+    const short = fundsShortfall(
+      s,
+      config,
+      buy.currency,
+      purchase + route.bookingFeeMinor + duty,
+      `매입 ${formatMoney(buy.currency, purchase)} + 운임 ${formatMoney(buy.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(buy.currency, duty)}`,
+    );
+    if (short) return short;
   }
 
-  const n = s.contracts.length + 1;
-  const contractId = `CT${pad(n)}`;
-  const lotId = `LOT${pad(n)}`;
-  const taskId = `TASK${pad(n)}`;
+  const good = goodOf(config, buy.goodId);
+  const { contractId, lotId, taskId } = nextContractIds(s);
   const contract: Contract = {
     id: contractId,
     kind: 'DIRECT_TRADE',
     status: 'ACTIVE',
     buyOfferId: buy.id,
     sellOfferId: sell.id,
+    serviceOfferId: null,
     supplierId: buy.counterpartyId,
     customerId: sell.counterpartyId,
     goodId: buy.goodId,
@@ -239,8 +267,8 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     currency: buy.currency,
     originCityId: buy.cityId,
     destinationCityId: sell.cityId,
-    deliveryDeadlineDay: config.terms.deliveryDeadlineDay,
-    paymentDueDay: config.terms.paymentDueDay,
+    deliveryDeadlineDay: config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay ?? config.campaignDays,
+    paymentDueDay: config.terms.paymentDueDay ?? sell.paymentDueDay ?? config.campaignDays,
     acceptedDay: s.day,
     ownerEmployeeId: null,
     cargoLotId: lotId,
@@ -257,9 +285,10 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
   s.cargoLots.push({
     id: lotId,
     owner: 'COMPANY',
+    ownerPartyId: null,
     goodId: buy.goodId,
     quantity: buy.quantity,
-    originCountryCode: config.cities.find((c) => c.id === buy.cityId)?.countryCode ?? 'UNKNOWN',
+    originCountryCode: buy.originCountryCode ?? config.cities.find((c) => c.id === buy.cityId)?.countryCode ?? 'UNKNOWN',
     carryingAmountMinor: purchase,
     currency: buy.currency,
     locationCityId: buy.cityId,
@@ -283,15 +312,97 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     id: `PURCHASE-${contractId}`,
     currency: buy.currency,
     contractId,
-    reason: `${config.good.nameKo} ${buy.quantity}${unitKo(config)} 매입 (현금 → 재고)`,
+    reason: `${good.nameKo} ${buy.quantity}${unitKo(good)} 매입 (현금 → 재고)`,
     lines: [
       { account: 'INVENTORY', amount: purchase },
       { account: 'CASH', amount: -purchase },
     ],
   });
   for (const st of s.offers) if (st.id === buy.id || st.id === sell.id) st.status = 'ACCEPTED';
-  log(s, `계약 ${contractId} 체결: ${config.good.nameKo} ${buy.quantity}${unitKo(config)} 매입 ${formatMoney(buy.currency, purchase)} 현금 지급, 판매 ${formatMoney(sell.currency, contract.saleAmountMinor)} (납기 ${contract.deliveryDeadlineDay}일)`);
+  log(s, `계약 ${contractId} 체결: ${good.nameKo} ${buy.quantity}${unitKo(good)} 매입 ${formatMoney(buy.currency, purchase)} 현금 지급, 판매 ${formatMoney(sell.currency, contract.saleAmountMinor)} (납기 ${contract.deliveryDeadlineDay}일)`);
   return null;
+}
+
+function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string): string | null {
+  if (!config.rules.forwardingEnabled) return '이 시나리오에서는 운송 주선을 받지 않습니다 (M2 기능).';
+  const offer = offerOf(config, offerId);
+  if (!offer || offer.kind !== 'forwarding' || !offer.destinationCityId) return '이 시나리오에 없는 운송 주선 의뢰입니다.';
+  const closed = offerOpen(s, offer);
+  if (closed) return closed;
+  const route = routeBetween(config, offer.cityId, offer.destinationCityId);
+  if (!route) return '두 항구를 잇는 노선이 없습니다.';
+  if (route.currency !== offer.currency) return '서비스 대금과 운임의 통화가 다릅니다.';
+  if (config.rules.fundsCheck === 'COMMITTED_OUTLAYS') {
+    const short = fundsShortfall(s, config, offer.currency, route.bookingFeeMinor, `운임 ${formatMoney(offer.currency, route.bookingFeeMinor)}`);
+    if (short) return short;
+  }
+
+  const good = goodOf(config, offer.goodId);
+  const { contractId, lotId, taskId } = nextContractIds(s);
+  s.contracts.push({
+    id: contractId,
+    kind: 'FORWARDING',
+    status: 'ACTIVE',
+    buyOfferId: null,
+    sellOfferId: null,
+    serviceOfferId: offer.id,
+    supplierId: null,
+    customerId: offer.counterpartyId,
+    goodId: offer.goodId,
+    quantity: offer.quantity,
+    purchaseAmountMinor: 0,
+    saleAmountMinor: offer.serviceFeeMinor,
+    currency: offer.currency,
+    originCityId: offer.cityId,
+    destinationCityId: offer.destinationCityId,
+    deliveryDeadlineDay: offer.deliveryDeadlineDay ?? config.campaignDays,
+    paymentDueDay: offer.paymentDueDay ?? config.campaignDays,
+    acceptedDay: s.day,
+    ownerEmployeeId: null,
+    cargoLotId: lotId,
+    prepTaskId: taskId,
+    bookingId: null,
+    invoiceId: null,
+    deliveredDay: null,
+    lateDays: 0,
+    priceReductionMinor: 0,
+    cancelledDay: null,
+    completedDay: null,
+  });
+  // 고객 소유 화물: 회사 재고 장부에 올리지 않는다 (장부가액 0).
+  s.cargoLots.push({
+    id: lotId,
+    owner: 'CUSTOMER',
+    ownerPartyId: offer.counterpartyId,
+    goodId: offer.goodId,
+    quantity: offer.quantity,
+    originCountryCode: offer.originCountryCode ?? config.cities.find((c) => c.id === offer.cityId)?.countryCode ?? 'UNKNOWN',
+    carryingAmountMinor: 0,
+    currency: offer.currency,
+    locationCityId: offer.cityId,
+    status: 'PREPARING',
+    contractId,
+    shipmentId: null,
+  });
+  s.tasks.push({
+    id: taskId,
+    kind: 'FORWARDING_PREP',
+    contractId,
+    cityId: offer.cityId,
+    requiredWorkUnits: config.terms.forwardingPrepWorkUnits,
+    progressWorkUnits: 0,
+    status: 'QUEUED',
+    assignedEmployeeId: null,
+    startedDay: null,
+    completedDay: null,
+  });
+  for (const st of s.offers) if (st.id === offer.id) st.status = 'ACCEPTED';
+  log(s, `계약 ${contractId} 체결 (운송 주선): ${offer.counterpartyId}의 ${good.nameKo} ${offer.quantity}${unitKo(good)}을(를) ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)} 운송. 서비스 대금 ${formatMoney(offer.currency, offer.serviceFeeMinor)} (납기 ${offer.deliveryDeadlineDay}일). 고객 화물이므로 매입·재고가 없습니다`);
+  return null;
+}
+
+function taskLabel(kind: 'EXPORT_PREP' | 'FORWARDING_PREP'): string {
+  return kind === 'EXPORT_PREP' ? '수출 준비' : '운송 주선 준비(화물 인수·선적 서류)';
 }
 
 function assignTask(s: GameState, config: ScenarioConfig, taskId: string, employeeId: string): string | null {
@@ -304,16 +415,15 @@ function assignTask(s: GameState, config: ScenarioConfig, taskId: string, employ
   if (emp.locationCityId !== task.cityId) {
     return `${def.nameKo}은(는) ${cityName(config, emp.locationCityId)}에 있습니다. 이 업무는 ${cityName(config, task.cityId)} 현지 인력이 필요합니다.`;
   }
-  if (s.tasks.some((t) => t.status === 'RUNNING' && t.assignedEmployeeId === employeeId)) {
-    return `${def.nameKo}은(는) 다른 업무를 진행 중입니다.`;
-  }
+  const busy = runningTaskOf(s, employeeId);
+  if (busy) return `${def.nameKo}은(는) 다른 업무(${busy.contractId} ${taskLabel(busy.kind)})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
   task.status = 'RUNNING';
   task.assignedEmployeeId = employeeId;
   task.startedDay = s.day;
   const contract = contractOf(s, task.contractId);
   contract.ownerEmployeeId = employeeId;
   if (contract.status === 'ACTIVE') contract.status = 'IN_PROGRESS';
-  log(s, `${def.nameKo}에게 ${contract.id} 수출 준비 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  log(s, `${def.nameKo}에게 ${contract.id} ${taskLabel(task.kind)} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
   return null;
 }
 
@@ -323,30 +433,34 @@ function bookSailing(s: GameState, config: ScenarioConfig, contractId: string, s
   if (contract.status !== 'ACTIVE' && contract.status !== 'IN_PROGRESS') return '진행 중인 계약이 아닙니다.';
   const existing = contract.bookingId ? s.bookings.find((b) => b.id === contract.bookingId) : undefined;
   if (existing && existing.status !== 'CANCELLED') return '이미 운송편을 예약했습니다.';
-  const sailing = listSailings(config).find((x) => x.id === sailingId);
+  const sailing = findSailing(config, sailingId);
   if (!sailing) return '운항표에 없는 출항편입니다.';
-  if (config.route.fromCityId !== contract.originCityId || config.route.toCityId !== contract.destinationCityId) {
+  const route = routeOf(config, sailing.routeId);
+  if (route.fromCityId !== contract.originCityId || route.toCityId !== contract.destinationCityId) {
     return '계약 구간과 노선이 다릅니다.';
   }
   if (sailing.departureDay <= s.day) return `예약 마감이 지났습니다. 출항(${sailing.departureDay}일) 전날까지 예약해야 합니다.`;
   const lot = s.cargoLots.find((l) => l.id === contract.cargoLotId);
-  if (!lot || lot.locationCityId !== config.route.fromCityId) return '출발항에 실을 화물이 없습니다.';
+  if (!lot || lot.locationCityId !== route.fromCityId) return '출발항에 실을 화물이 없습니다.';
 
-  const space = cargoSpace(config, lot.quantity);
-  const used = bookedSpace(s, sailing.id);
-  const capG = Math.round(config.route.capacityKg * 1000);
-  const capL = Math.round(config.route.capacityM3 * 1000);
-  if (used.massGrams + space.massGrams > capG || used.volumeLiters + space.volumeLiters > capL) {
-    return '이 출항편의 남은 화물 공간이 부족합니다.';
+  const short = spaceShortfall(s, config, sailing, lot.goodId, lot.quantity);
+  if (short) return `이 출항편의 남은 화물 공간이 부족합니다 (${short}).`;
+  const fee = route.bookingFeeMinor;
+  if (config.rules.fundsCheck === 'IMMEDIATE_CASH') {
+    const cash = balance(s.ledger, route.currency, 'CASH');
+    if (cash < fee) return `운임 선지급 자금이 부족합니다. 필요 ${formatMoney(route.currency, fee)}, 사용 가능 ${formatMoney(route.currency, cash)}.`;
+  } else {
+    // 이 계약의 운임 예약은 지금 쓰려는 바로 그 돈이므로 빼고 계산한다.
+    const own = (r: CashReservation) => r.contractId === contract.id && r.kind === 'FREIGHT';
+    const shortfall = fundsShortfall(s, config, route.currency, fee, `운임 ${formatMoney(route.currency, fee)}`, own);
+    if (shortfall) return `운임 선지급 자금이 부족합니다. ${shortfall}`;
   }
-  const fee = config.route.bookingFeeMinor;
-  const cash = balance(s.ledger, config.route.currency, 'CASH');
-  if (cash < fee) return `운임 선지급 자금이 부족합니다. 필요 ${formatMoney(config.route.currency, fee)}, 사용 가능 ${formatMoney(config.route.currency, cash)}.`;
 
+  const space = cargoSpace(config, lot.goodId, lot.quantity);
   const booking: Booking = {
     id: `BK${pad(s.bookings.length + 1)}`,
     contractId,
-    routeId: config.route.id,
+    routeId: route.id,
     sailingId: sailing.id,
     departureDay: sailing.departureDay,
     massGrams: space.massGrams,
@@ -358,7 +472,7 @@ function bookSailing(s: GameState, config: ScenarioConfig, contractId: string, s
   contract.bookingId = booking.id;
   postOrThrow(s, {
     id: `FREIGHT-PREPAY-${booking.id}`,
-    currency: config.route.currency,
+    currency: route.currency,
     contractId,
     reason: `${sailing.id} 화물 공간 예약, 운임 선지급 (현금 → 선급운임)`,
     lines: [
@@ -366,7 +480,7 @@ function bookSailing(s: GameState, config: ScenarioConfig, contractId: string, s
       { account: 'CASH', amount: -fee },
     ],
   });
-  log(s, `${contract.id} 운송편 예약: ${sailing.departureDay}일 출항 ${sailing.id}, 운임 ${formatMoney(config.route.currency, fee)} 선지급`);
+  log(s, `${contract.id} 운송편 예약: ${sailing.departureDay}일 출항 ${sailing.id}, 운임 ${formatMoney(route.currency, fee)} 선지급`);
   return null;
 }
 
@@ -377,14 +491,15 @@ function releaseBooking(s: GameState, config: ScenarioConfig, booking: Booking, 
   if (refund + fee !== booking.prepaidFreightMinor) {
     throw new EngineError(`${booking.id}: 환급(${refund})+취소비(${fee})가 선급운임(${booking.prepaidFreightMinor})과 다릅니다.`);
   }
+  const currency = routeOf(config, booking.routeId).currency;
   const lines: LedgerLine[] = [{ account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor }];
   if (refund > 0) lines.push({ account: 'CASH', amount: refund });
   if (fee > 0) lines.push({ account: 'CANCELLATION_EXPENSE', amount: fee });
   postOrThrow(s, {
     id: `FREIGHT-RELEASE-${booking.id}`,
-    currency: config.route.currency,
+    currency,
     contractId: booking.contractId,
-    reason: `${why}: 운임 ${formatMoney(config.route.currency, refund)} 환급, 취소비 ${formatMoney(config.route.currency, fee)}`,
+    reason: `${why}: 운임 ${formatMoney(currency, refund)} 환급, 취소비 ${formatMoney(currency, fee)}`,
     lines,
   });
   booking.status = 'CANCELLED';
@@ -395,7 +510,7 @@ function cancelContract(s: GameState, config: ScenarioConfig, contractId: string
   if (!contract) return '계약을 찾을 수 없습니다.';
   if (contract.status !== 'ACTIVE' && contract.status !== 'IN_PROGRESS') return '취소할 수 있는 상태가 아닙니다.';
   const booking = contract.bookingId ? s.bookings.find((b) => b.id === contract.bookingId) : undefined;
-  if (booking?.status === 'DEPARTED') return '이미 출항한 화물은 M1에서 취소할 수 없습니다. 인도 후 정산만 가능합니다.';
+  if (booking?.status === 'DEPARTED') return '이미 출항한 화물은 취소할 수 없습니다. 인도 후 정산만 가능합니다 (출항 후 취소는 M3).';
 
   if (booking && booking.status === 'BOOKED') releaseBooking(s, config, booking, `${contract.id} 출항 전 취소`);
   const compensation = config.terms.customerCancellationCompensationMinor;
@@ -405,14 +520,20 @@ function cancelContract(s: GameState, config: ScenarioConfig, contractId: string
   const task = s.tasks.find((t) => t.id === contract.prepTaskId);
   if (task && (task.status === 'QUEUED' || task.status === 'RUNNING')) task.status = 'ABORTED';
   const lot = s.cargoLots.find((l) => l.id === contract.cargoLotId);
-  if (lot) {
+  const good = goodOf(config, contract.goodId);
+  if (lot && lot.owner === 'CUSTOMER') {
+    // 고객 화물은 화주에게 돌려준다. 회사 장부에는 원래 없었으므로 재고가 생기지 않는다.
+    lot.status = 'RETURNED_TO_OWNER';
+  } else if (lot) {
     // 공급자 반품 없음: 회사 소유 재고로 출발항에 남는다.
     lot.status = 'HELD_UNALLOCATED';
     lot.contractId = null;
   }
   contract.status = 'CANCELLED';
   contract.cancelledDay = s.day;
-  log(s, `${contract.id} 출항 전 취소. 상품 ${contract.quantity}${unitKo(config)}은(는) 반품 없이 회사 재고로 ${cityName(config, contract.originCityId)}에 남음`);
+  log(s, contract.kind === 'FORWARDING'
+    ? `${contract.id} 출항 전 취소. 고객 화물 ${good.nameKo} ${contract.quantity}${unitKo(good)}은(는) 화주에게 돌려줌`
+    : `${contract.id} 출항 전 취소. 상품 ${contract.quantity}${unitKo(good)}은(는) 반품 없이 회사 재고로 ${cityName(config, contract.originCityId)}에 남음`);
   return null;
 }
 
@@ -452,7 +573,7 @@ export function commitDay(
 
   // 2~3. 명령 검증·실행 (앞 명령의 예약·지출을 반영해 순서대로 검증)
   const results = commands.map((cmd) => applyCommand(s, config, cmd));
-  // 3. 직원 업무 진행 (M1: LEGACY_FIXED 처리량)
+  // 3. 직원 업무 진행 (LEGACY_FIXED 처리량)
   progressTasks(s, config);
   // 4. 출항·이동·도착·통관
   processDepartures(s, config);
@@ -460,13 +581,13 @@ export function commitDay(
   // 5. 인도·납기 판정
   processDeliveries(s, config);
   // 6. 수금 → 밀린 지급 → 급여
-  processCollections(s, config);
+  processCollections(s);
   settleObligations(s);
   processPayroll(s, config);
-  // 7. 다음 날 견적 갱신 (M1: 유효기간 만료만)
+  // 7. 다음 날 견적 갱신 (M2a: 유효기간 만료만)
   for (const st of s.offers) {
-    const def = st.id === config.buyOffer.id ? config.buyOffer : config.sellOffer;
-    if (st.status === 'OPEN' && def.validUntilDay < day + 1) {
+    const def = offerOf(config, st.id);
+    if (def && st.status === 'OPEN' && def.validUntilDay < day + 1) {
       st.status = 'EXPIRED';
       log(s, `견적 ${st.id} 유효기간 만료`);
     }
@@ -490,7 +611,7 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
       task.completedDay = s.day;
       const lot = s.cargoLots.find((l) => l.contractId === task.contractId);
       if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
-      log(s, `${def.nameKo}: ${task.contractId} 수출 준비 완료 → 출발 대기`);
+      log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
     }
   }
 }
@@ -499,11 +620,12 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
   for (const booking of s.bookings) {
     if (booking.status !== 'BOOKED' || booking.departureDay !== s.day) continue;
     const contract = contractOf(s, booking.contractId);
+    const route = routeOf(config, booking.routeId);
     const lot = s.cargoLots.find((l) => l.id === contract.cargoLotId);
-    if (!lot || lot.status !== 'AWAITING_DEPARTURE' || lot.locationCityId !== config.route.fromCityId) {
+    if (!lot || lot.status !== 'AWAITING_DEPARTURE' || lot.locationCityId !== route.fromCityId) {
       releaseBooking(s, config, booking, `${contract.id} 준비 미완료로 출항 불참`);
       contract.bookingId = null;
-      log(s, `${contract.id}: 수출 준비가 끝나지 않아 ${booking.sailingId}에 싣지 못함. 다음 출항편을 다시 예약해야 합니다.`);
+      log(s, `${contract.id}: 준비가 끝나지 않아 ${booking.sailingId}에 싣지 못함. 다음 출항편을 다시 예약해야 합니다.`);
       continue;
     }
     const shipment: Shipment = {
@@ -512,7 +634,7 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
       contractId: contract.id,
       cargoLotId: lot.id,
       departureDay: s.day,
-      scheduledArrivalDay: s.day + config.route.transitDays,
+      scheduledArrivalDay: s.day + route.transitDays,
       arrivalDay: null,
       releaseDay: null,
       observedWaitDays: 0,
@@ -525,18 +647,32 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
     lot.status = 'IN_TRANSIT';
     lot.locationCityId = null;
     lot.shipmentId = shipment.id;
-    lot.carryingAmountMinor += booking.prepaidFreightMinor;
-    postOrThrow(s, {
-      id: `FREIGHT-CAPITALIZE-${booking.id}`,
-      currency: config.route.currency,
-      contractId: contract.id,
-      reason: `${booking.sailingId} 출항: 선급운임을 상품 원가에 포함 (선급운임 → 재고)`,
-      lines: [
-        { account: 'INVENTORY', amount: booking.prepaidFreightMinor },
-        { account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor },
-      ],
-    });
-    log(s, `${shipment.id} 출항: ${cityName(config, config.route.fromCityId)} → ${cityName(config, config.route.toCityId)}, 도착 예정 ${shipment.scheduledArrivalDay}일`);
+    if (contract.kind === 'FORWARDING') {
+      // 고객 화물의 운임은 회사 재고 원가가 아니다. 서비스를 마칠(인도) 때까지 진행원가로 둔다.
+      postOrThrow(s, {
+        id: `FREIGHT-WIP-${booking.id}`,
+        currency: route.currency,
+        contractId: contract.id,
+        reason: `${booking.sailingId} 출항: 고객 화물 운임을 주선 진행원가로 (선급운임 → 주선 진행원가)`,
+        lines: [
+          { account: 'FORWARDING_WIP', amount: booking.prepaidFreightMinor },
+          { account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor },
+        ],
+      });
+    } else {
+      lot.carryingAmountMinor += booking.prepaidFreightMinor;
+      postOrThrow(s, {
+        id: `FREIGHT-CAPITALIZE-${booking.id}`,
+        currency: route.currency,
+        contractId: contract.id,
+        reason: `${booking.sailingId} 출항: 선급운임을 상품 원가에 포함 (선급운임 → 재고)`,
+        lines: [
+          { account: 'INVENTORY', amount: booking.prepaidFreightMinor },
+          { account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor },
+        ],
+      });
+    }
+    log(s, `${shipment.id} 출항: ${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}, 도착 예정 ${shipment.scheduledArrivalDay}일 (${contract.id})`);
   }
 }
 
@@ -559,8 +695,16 @@ function processArrivals(s: GameState, config: ScenarioConfig) {
     const lot = s.cargoLots.find((l) => l.id === sh.cargoLotId)!;
     lot.status = 'ARRIVED_RELEASING';
     lot.locationCityId = contract.destinationCityId;
+    const waited = sh.observedWaitDays > 0 ? ` (대기 ${sh.observedWaitDays}일)` : '';
+    if (contract.kind === 'FORWARDING') {
+      // 고객 화물의 관세는 수입자(고객)가 부담한다는 시나리오 가정. 회사 장부에 관세가 생기지 않는다.
+      sh.dutyMinor = 0;
+      sh.dutyPaid = true;
+      log(s, `${sh.id} 도착: ${cityName(config, contract.destinationCityId)}${waited}. 고객 화물이므로 관세는 수입자 부담`);
+      continue;
+    }
     // 통관: 가상 과세 규칙 — 공급자 상품 송장 금액만 과세가격으로 본다.
-    const duty = applyBasisPoints(contract.purchaseAmountMinor, config.terms.dutyRateBasisPoints);
+    const duty = dutyEstimate(config, contract.purchaseAmountMinor);
     sh.dutyMinor = duty;
     if (duty === 0) {
       sh.dutyPaid = true;
@@ -569,7 +713,7 @@ function processArrivals(s: GameState, config: ScenarioConfig) {
       sh.dutyPaid = paid;
       lot.carryingAmountMinor += duty;
     }
-    log(s, `${sh.id} 도착: ${cityName(config, contract.destinationCityId)}${sh.observedWaitDays > 0 ? ` (대기 ${sh.observedWaitDays}일)` : ''}. 관세 ${formatMoney(contract.currency, duty)}${sh.dutyPaid ? ' 지급' : ' 미지급 — 납부 전 반출 불가'}`);
+    log(s, `${sh.id} 도착: ${cityName(config, contract.destinationCityId)}${waited}. 관세 ${formatMoney(contract.currency, duty)}${sh.dutyPaid ? ' 지급' : ' 미지급 — 납부 전 반출 불가'}`);
   }
 }
 
@@ -585,53 +729,67 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
     contract.deliveredDay = s.day;
     contract.lateDays = lateDays;
     contract.priceReductionMinor = reduction;
+    const forwarding = contract.kind === 'FORWARDING';
+    const what = forwarding ? '서비스' : '판매';
 
     postOrThrow(s, {
       id: `SALE-${contract.id}`,
       currency: contract.currency,
       contractId: contract.id,
-      reason: reduction > 0
-        ? `인도 완료(납기 ${lateDays}일 경과). 계약 조건에 따른 감액 ${formatMoney(contract.currency, reduction)} 후 외상 매출 (매출 → 매출채권)`
-        : '인도 완료. 외상 매출 (매출 → 매출채권)',
+      reason: `${forwarding ? '고객 화물 인도 완료' : '인도 완료'}${reduction > 0 ? `(납기 ${lateDays}일 경과). 계약 조건에 따른 ${what}대금 감액 ${formatMoney(contract.currency, reduction)} 후` : '.'} 외상 ${forwarding ? '주선 매출 (주선 매출 → 매출채권)' : '매출 (매출 → 매출채권)'}`,
       lines: [
         { account: 'ACCOUNTS_RECEIVABLE', amount: netSale },
-        { account: 'REVENUE', amount: -netSale },
+        { account: forwarding ? 'FORWARDING_REVENUE' : 'REVENUE', amount: -netSale },
       ],
     });
-    postOrThrow(s, {
-      id: `COGS-${contract.id}`,
-      currency: contract.currency,
-      contractId: contract.id,
-      reason: '인도한 상품의 장부가액(매입+운임+관세)을 매출원가로 대체 (재고 → 매출원가)',
-      lines: [
-        { account: 'COST_OF_GOODS_SOLD', amount: lot.carryingAmountMinor },
-        { account: 'INVENTORY', amount: -lot.carryingAmountMinor },
-      ],
-    });
+    if (forwarding) {
+      const booking = s.bookings.find((b) => b.id === sh.bookingId)!;
+      postOrThrow(s, {
+        id: `FWD-COST-${contract.id}`,
+        currency: contract.currency,
+        contractId: contract.id,
+        reason: '서비스를 마친 운송 주선의 운임을 주선 원가로 (주선 진행원가 → 주선 원가)',
+        lines: [
+          { account: 'FORWARDING_COST', amount: booking.prepaidFreightMinor },
+          { account: 'FORWARDING_WIP', amount: -booking.prepaidFreightMinor },
+        ],
+      });
+    } else {
+      postOrThrow(s, {
+        id: `COGS-${contract.id}`,
+        currency: contract.currency,
+        contractId: contract.id,
+        reason: '인도한 상품의 장부가액(매입+운임+관세)을 매출원가로 대체 (재고 → 매출원가)',
+        lines: [
+          { account: 'COST_OF_GOODS_SOLD', amount: lot.carryingAmountMinor },
+          { account: 'INVENTORY', amount: -lot.carryingAmountMinor },
+        ],
+      });
+    }
     lot.status = 'DELIVERED';
     const invoiceId = `INV-${contract.id}`;
+    const dueDay = Math.max(contract.paymentDueDay, s.day);
     s.invoices.push({
       id: invoiceId,
       contractId: contract.id,
       currency: contract.currency,
       amountMinor: netSale,
       issuedDay: s.day,
-      dueDay: Math.max(contract.paymentDueDay, s.day),
+      dueDay,
       status: 'OUTSTANDING',
       receiptIds: [],
     });
     contract.invoiceId = invoiceId;
-    log(s, `${contract.id} 인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. 매출 ${formatMoney(contract.currency, netSale)}은 채권으로 남고 현금은 ${Math.max(contract.paymentDueDay, s.day)}일 수금 예정`);
+    log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}은 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
   }
 }
 
-function processCollections(s: GameState, config: ScenarioConfig) {
+function processCollections(s: GameState) {
   for (const inv of s.invoices) {
     if (inv.status === 'PAID' || inv.dueDay > s.day) continue;
-    // M1 고객은 결제일에 전액 지급한다. 연체·대손은 M2 이후.
+    // 고객은 결제일에 전액 지급한다. 연체·대손은 이후 단계.
     applyReceipt(s, `RCPT-${inv.id}`, inv.id);
   }
-  void config;
 }
 
 /**
@@ -753,13 +911,4 @@ function contractOf(s: GameState, id: string): Contract {
 
 function log(s: GameState, textKo: string) {
   s.log.push({ day: s.day, textKo });
-}
-
-export function cityName(config: ScenarioConfig, id: string | null): string {
-  if (!id) return '이동 중';
-  return config.cities.find((c) => c.id === id)?.nameKo ?? id;
-}
-
-function unitKo(config: ScenarioConfig): string {
-  return config.good.quantityUnit === 'piece' ? '개' : config.good.quantityUnit;
 }

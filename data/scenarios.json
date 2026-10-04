@@ -86,7 +86,13 @@
       "culture_enabled": false,
       "source_refs": [
         "DESIGN-V03"
-      ]
+      ],
+      "engine_rules": {
+        "rules_version": "M1-rules-1",
+        "funds_check": "immediate_cash",
+        "forwarding_enabled": false,
+        "note_ko": "M1 검산 규칙. 새 계약은 지금 현금만 확인하며 남은 운임·관세를 미리 묶지 않는다."
+      }
     },
     {
       "id": "SCENARIO_CITY_CULTURE",
@@ -257,6 +263,189 @@
       "initial_level": 1,
       "initial_enhancement_rank": 0,
       "initial_xp": 0
+    },
+    {
+      "id": "SCENARIO_M2_MULTI_TRADE",
+      "stage": "M2",
+      "title_ko": "복수 계약과 운송 주선 — 자금·인력·선복 예약",
+      "city_ids": [
+        "BUSAN",
+        "YOKOHAMA",
+        "SHANGHAI"
+      ],
+      "employee_ids": [
+        "EMP01",
+        "EMP02"
+      ],
+      "offer_ids": [
+        "OFFER_BUY_01",
+        "OFFER_SELL_01",
+        "OFFER_BUY_02",
+        "OFFER_SELL_02",
+        "OFFER_FWD_01",
+        "OFFER_FWD_02"
+      ],
+      "route_ids": [
+        "ROUTE01",
+        "ROUTE02"
+      ],
+      "starting_cash": {
+        "USD": 3000,
+        "KRW": 10000000
+      },
+      "customs_days": 0,
+      "tax_rule": {
+        "basis": "supplier_goods_invoice_only_fictional",
+        "rate": 0.05,
+        "status": "DESIGN_not_actual_Japan_tariff",
+        "duty_currency": "USD"
+      },
+      "engine_rules": {
+        "rules_version": "M2a-rules-1",
+        "funds_check": "committed_outlays",
+        "forwarding_enabled": true,
+        "note_ko": "체결한 계약이 앞으로 낼 운임·관세를 예약하고, 현금에서 예약과 미지급을 뺀 사용 가능 자금으로 새 계약을 판단한다."
+      },
+      "contract_terms": {
+        "data_basis": "DESIGN",
+        "status": "DESIGN_PROPOSED_2026-10-04_M2A",
+        "decision_ref": "docs/DECISIONS.md M2a 복수 계약·운송 주선·자원 예약",
+        "prep_work_units": 2,
+        "booking_cutoff_days_before_departure": 1,
+        "pre_departure_cancellation": {
+          "freight_refund": {
+            "currency": "USD",
+            "amount": 150
+          },
+          "cancellation_fee": {
+            "currency": "USD",
+            "amount": 50
+          },
+          "customer_compensation": {
+            "currency": "USD",
+            "amount": 0
+          },
+          "supplier_return": false,
+          "applies_to_missed_sailing": true
+        },
+        "late_delivery": {
+          "price_reduction": {
+            "currency": "USD",
+            "amount": 50
+          },
+          "basis": "flat_once_regardless_of_late_days"
+        },
+        "payment_due_rule": "offer_due_day_not_earlier_than_delivery_day",
+        "notes_ko": [
+          "수출 준비와 운송 주선 준비(화물 인수·선적 서류)는 각각 2pt다. 직원 1명은 한 번에 업무 1건만 맡는다.",
+          "출항 전 취소와 준비 미완료로 출항편을 놓친 경우 모두 운임 150 환급·취소비 50으로 정산한다. 직접 무역은 공급자 반품 없음, 운송 주선 화물은 화주에게 돌려준다.",
+          "납기를 넘긴 인도는 지연 일수와 무관하게 계약 금액을 50 USD 한 번 감액한다. 상품 판매대금과 운송 주선 서비스 대금에 같은 조건을 쓴다.",
+          "결제일은 고객 견적의 payment_due_day이며 인도일보다 이를 수 없다.",
+          "운송 주선 화물의 수입 관세는 수입자(고객)가 부담하는 것으로 단순화한다. 실제로는 계약 조건(인코텀즈·대행 계약)에 따라 대납 후 청구할 수도 있다.",
+          "모든 값은 현실 계약 관행이나 운임 시세가 아닌 개발용 가정이다."
+        ],
+        "forwarding_prep_work_units": 2,
+        "forwarding_duty_payer": "consignee"
+      },
+      "expected_paths_usd": [
+        {
+          "id": "PATH_COSMETICS_AND_FORWARDING",
+          "title_ko": "화장품 직접 무역 + 운송 주선 2건 (태양광은 9일 편)",
+          "trades": [
+            [
+              "OFFER_BUY_02",
+              "OFFER_SELL_02"
+            ]
+          ],
+          "forwarding_offer_ids": [
+            "OFFER_FWD_01",
+            "OFFER_FWD_02"
+          ],
+          "sailing_by_offer": {
+            "OFFER_BUY_02": "ROUTE02-D002",
+            "OFFER_FWD_01": "ROUTE01-D002",
+            "OFFER_FWD_02": "ROUTE01-D009"
+          },
+          "cash_after_day1": 420,
+          "reserved_after_day1": 100,
+          "available_after_day1": 320,
+          "cash_after_day7": 320,
+          "accounts_receivable_after_day7": 2880,
+          "goods_revenue": 2500,
+          "cost_of_goods_sold": 2280,
+          "forwarding_revenue": 680,
+          "forwarding_cost": 400,
+          "contribution": 500,
+          "final_day": 17,
+          "cash_final": 3500
+        },
+        {
+          "id": "PATH_APPAREL_AND_FORWARDING",
+          "title_ko": "의류 직접 무역 + 운송 주선 2건 (태양광은 9일 편)",
+          "trades": [
+            [
+              "OFFER_BUY_01",
+              "OFFER_SELL_01"
+            ]
+          ],
+          "forwarding_offer_ids": [
+            "OFFER_FWD_01",
+            "OFFER_FWD_02"
+          ],
+          "sailing_by_offer": {
+            "OFFER_BUY_01": "ROUTE01-D002",
+            "OFFER_FWD_01": "ROUTE01-D002",
+            "OFFER_FWD_02": "ROUTE01-D009"
+          },
+          "cash_after_day1": 1400,
+          "reserved_after_day1": 50,
+          "available_after_day1": 1350,
+          "goods_revenue": 1400,
+          "cost_of_goods_sold": 1250,
+          "forwarding_revenue": 680,
+          "forwarding_cost": 400,
+          "contribution": 430,
+          "final_day": 17,
+          "cash_final": 3430
+        }
+      ],
+      "expected_rejections": [
+        {
+          "id": "REJECT_SECOND_DIRECT_TRADE",
+          "first_trade": [
+            "OFFER_BUY_01",
+            "OFFER_SELL_01"
+          ],
+          "second_trade": [
+            "OFFER_BUY_02",
+            "OFFER_SELL_02"
+          ],
+          "cash_after_first": 2000,
+          "reserved_after_first": 250,
+          "available_after_first": 1750,
+          "needed_for_second": 2280,
+          "note_ko": "두 번째 거래의 매입대금 2,000은 현금으로 낼 수 있지만, 첫 거래의 운임·관세 250을 위해 묶인 돈은 쓰지 않으므로 거절한다."
+        },
+        {
+          "id": "REJECT_FORWARDING_SAME_SAILING",
+          "sailing_id": "ROUTE01-D002",
+          "volume_m3_first": 24,
+          "volume_m3_second": 8,
+          "capacity_m3": 30,
+          "note_ko": "가구 24m³와 태양광 모듈 8m³를 같은 편에 실으면 30m³를 넘는다. 무게(4,400kg)는 한도 안이다."
+        }
+      ],
+      "start_with_existing_employment": true,
+      "character_system_enabled": false,
+      "productivity_mode": "LEGACY_FIXED",
+      "culture_enabled": false,
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V03",
+        "DESIGN-V04"
+      ],
+      "scope_note": "M2a 첫 단계: 복수 계약·운송 주선·자원 예약. 기대값은 USD 거래 장부만 검증하며 KRW 급여는 별도. 창고·고용·성장·문화 활동은 이후 단계."
     }
   ],
   "$schema": "../schemas/scenarios.schema.json",

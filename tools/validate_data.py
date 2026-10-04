@@ -80,6 +80,145 @@ def index(items, label):
     return {item['id']: item for item in items}
 
 
+def sailing_day(route, sailing_id):
+    prefix = route['id'] + '-D'
+    check(sailing_id.startswith(prefix), sailing_id + ': sailing belongs to route ' + route['id'])
+    day = int(sailing_id[len(prefix):])
+    check(day >= route['first_departure_day']
+          and (day - route['first_departure_day']) % route['departure_interval_days'] == 0,
+          sailing_id + ': sailing exists in the schedule')
+    return day
+
+
+def check_m2a(tables):
+    """Reference arithmetic for SCENARIO_M2_MULTI_TRADE (DESIGN). The engine tests replay the same paths."""
+    scenario = tables['scenarios']['SCENARIO_M2_MULTI_TRADE']
+    offers, goods, routes = tables['market_offers'], tables['goods'], tables['routes']
+    terms = scenario['contract_terms']
+    rate = scenario['tax_rule']['rate']
+    late_cut = terms['late_delivery']['price_reduction']['amount']
+    opening = scenario['starting_cash']['USD']
+    check(scenario['engine_rules']['funds_check'] == 'committed_outlays'
+          and scenario['engine_rules']['forwarding_enabled'] is True, 'M2a rule set explicit')
+    check(set(scenario['offer_ids']) <= set(offers), 'M2a offers exist')
+
+    def route_between(origin, destination):
+        found = [r for r in routes.values() if r['id'] in scenario['route_ids']
+                 and r['from_city_id'] == origin and r['to_city_id'] == destination]
+        check(len(found) == 1, f'M2a: one scenario route {origin}->{destination}')
+        return found[0]
+
+    def space(offer):
+        good = goods[offer['good_id']]
+        return offer['quantity'] * good['mass_kg_per_unit'], round(offer['quantity'] * good['volume_m3_per_unit'], 6)
+
+    def trade_numbers(buy_id, sell_id):
+        buy, sell = offers[buy_id], offers[sell_id]
+        check(buy['kind'] == 'supplier' and sell['kind'] == 'customer' and buy['good_id'] == sell['good_id']
+              and buy['quantity'] == sell['quantity'], f'M2a trade pair {buy_id}+{sell_id}')
+        route = route_between(buy['city_id'], sell['city_id'])
+        purchase = buy['quantity'] * buy['unit_price']['amount']
+        sale = sell['quantity'] * sell['unit_price']['amount']
+        duty = round(purchase * rate)
+        return route, purchase, sale, route['booking_fee']['amount'], duty
+
+    for path in scenario['expected_paths_usd']:
+        pid = path['id']
+        cash, reserved = opening, 0
+        goods_revenue = cogs = fwd_revenue = fwd_cost = 0
+        load = {}
+        for buy_id, sell_id in path['trades']:
+            route, purchase, sale, freight, duty = trade_numbers(buy_id, sell_id)
+            sailing = path['sailing_by_offer'][buy_id]
+            day = sailing_day(route, sailing)
+            arrival = day + route['transit_days'] + scenario['customs_days']
+            net = sale - (late_cut if arrival > offers[sell_id]['delivery_deadline_day'] else 0)
+            cash -= purchase + freight
+            reserved += duty
+            goods_revenue += net
+            cogs += purchase + freight + duty
+            kg, m3 = space(offers[buy_id])
+            load.setdefault(sailing, [route, 0, 0])
+            load[sailing][1] += kg
+            load[sailing][2] += m3
+        for oid in path['forwarding_offer_ids']:
+            offer = offers[oid]
+            route = route_between(offer['city_id'], offer['destination_city_id'])
+            sailing = path['sailing_by_offer'][oid]
+            day = sailing_day(route, sailing)
+            arrival = day + route['transit_days'] + scenario['customs_days']
+            fee = offer['service_fee']['amount']
+            net = fee - (late_cut if arrival > offer['delivery_deadline_day'] else 0)
+            cash -= route['booking_fee']['amount']
+            fwd_revenue += net
+            fwd_cost += route['booking_fee']['amount']
+            kg, m3 = space(offer)
+            load.setdefault(sailing, [route, 0, 0])
+            load[sailing][1] += kg
+            load[sailing][2] += m3
+        check(cash == path['cash_after_day1'], pid + ': cash after day-1 purchases and bookings')
+        check(reserved == path['reserved_after_day1'], pid + ': duty still reserved after day 1')
+        check(cash - reserved == path['available_after_day1'], pid + ': available cash after day 1')
+        check(cash - reserved >= 0, pid + ': path is affordable')
+        for sailing, (route, kg, m3) in load.items():
+            check(kg <= route['capacity_kg'] and m3 <= route['capacity_m3'], pid + ': ' + sailing + ' within capacity')
+        contribution = goods_revenue - cogs + fwd_revenue - fwd_cost
+        check([goods_revenue, cogs, fwd_revenue, fwd_cost] ==
+              [path['goods_revenue'], path['cost_of_goods_sold'], path['forwarding_revenue'], path['forwarding_cost']],
+              pid + ': revenue and cost lines')
+        check(contribution == path['contribution'] and opening + contribution == path['cash_final'],
+              pid + ': contribution and final cash')
+        last_due = max(offers[s]['payment_due_day'] for _, s in path['trades'])
+        last_due = max([last_due] + [offers[o]['payment_due_day'] for o in path['forwarding_offer_ids']])
+        check(path['final_day'] == last_due, pid + ': final day is the last payment day')
+
+    rejections = {r['id']: r for r in scenario['expected_rejections']}
+    r = rejections['REJECT_SECOND_DIRECT_TRADE']
+    _, p1, _, f1, d1 = trade_numbers(*r['first_trade'])
+    _, p2, _, f2, d2 = trade_numbers(*r['second_trade'])
+    check(opening - p1 == r['cash_after_first'] and f1 + d1 == r['reserved_after_first']
+          and opening - p1 - f1 - d1 == r['available_after_first'] and p2 + f2 + d2 == r['needed_for_second'],
+          'M2a funds reservation arithmetic')
+    check(r['cash_after_first'] >= p2 > r['available_after_first'],
+          'M2a: second purchase is payable from cash but not from available funds')
+    r = rejections['REJECT_FORWARDING_SAME_SAILING']
+    route = next(x for x in routes.values() if r['sailing_id'].startswith(x['id'] + '-D'))
+    sailing_day(route, r['sailing_id'])
+    v1, v2 = (space(offers[o])[1] for o in ('OFFER_FWD_01', 'OFFER_FWD_02'))
+    k1, k2 = (space(offers[o])[0] for o in ('OFFER_FWD_01', 'OFFER_FWD_02'))
+    check([v1, v2, route['capacity_m3']] == [r['volume_m3_first'], r['volume_m3_second'], r['capacity_m3']],
+          'M2a space fixture volumes')
+    check(v1 <= route['capacity_m3'] and v2 <= route['capacity_m3'] < v1 + v2 and k1 + k2 <= route['capacity_kg'],
+          'M2a: each cargo fits alone, both together exceed volume only')
+
+    cases = {c['id']: c for c in read('tests/acceptance_cases.json')['cases']}
+    rej = rejections['REJECT_SECOND_DIRECT_TRADE']
+    e1 = cases['P0-M2A-01']['expected_numeric']
+    check([e1['opening_cash'], e1['cash_after_first'], e1['reserved_after_first'], e1['available_after_first'], e1['needed_for_second']]
+          == [opening, rej['cash_after_first'], rej['reserved_after_first'], rej['available_after_first'], rej['needed_for_second']],
+          'P0-M2A-01 matches scenario fixture')
+    path = next(p for p in scenario['expected_paths_usd'] if p['id'] == 'PATH_COSMETICS_AND_FORWARDING')
+    e2 = cases['P0-M2A-02']['expected_numeric']
+    check([e2['cash_after_day1'], e2['reserved_after_day1'], e2['goods_revenue'], e2['cost_of_goods_sold'],
+           e2['forwarding_revenue'], e2['forwarding_cost'], e2['contribution'], e2['cash_final_day17']]
+          == [path['cash_after_day1'], path['reserved_after_day1'], path['goods_revenue'], path['cost_of_goods_sold'],
+              path['forwarding_revenue'], path['forwarding_cost'], path['contribution'], path['cash_final']],
+          'P0-M2A-02 matches scenario fixture')
+    e3 = cases['P0-M2A-03']['expected_numeric']
+    space_rej = rejections['REJECT_FORWARDING_SAME_SAILING']
+    check([e3['capacity_m3'], e3['volume_m3_first'], e3['volume_m3_second']]
+          == [space_rej['capacity_m3'], space_rej['volume_m3_first'], space_rej['volume_m3_second']]
+          and e3['cash_after_day1'] == opening - routes['ROUTE01']['booking_fee']['amount']
+          and e3['reserved_after_day1'] == routes['ROUTE01']['booking_fee']['amount'],
+          'P0-M2A-03 matches scenario fixture')
+    for rid in scenario['route_ids']:
+        points = routes[rid]['map_waypoints']['points']
+        for end, city_id in ((points[0], routes[rid]['from_city_id']), (points[-1], routes[rid]['to_city_id'])):
+            geo = tables['world'][city_id]['geo_position']
+            check(abs(end['lat'] - geo['lat']) <= 0.2 and abs(end['lon'] - geo['lon']) <= 0.2,
+                  rid + ' map waypoints start and end at their ports')
+
+
 def main():
     documents = {}
     for file in sorted((ROOT / 'data').glob('*.json')):
@@ -92,7 +231,7 @@ def main():
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
     expected_counts = {'world': 6, 'goods': 8, 'routes': 6, 'employees': 6,
-                       'market_offers': 2, 'scenarios': 6, 'securities': 4,
+                       'market_offers': 6, 'scenarios': 7, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
@@ -111,6 +250,7 @@ def main():
 
     single_refs = {'city_id':'world', 'home_city_id':'world', 'location_city_id':'world',
                    'from_city_id':'world', 'to_city_id':'world', 'venue_id':'venues',
+                   'destination_city_id':'world',
                    'good_id':'goods', 'route_id':'routes'}
     plural_refs = {'city_ids':'world', 'venue_ids':'venues', 'venue_template_ids':'venues',
                    'contact_ids':'contacts', 'activity_ids':'culture_activities',
@@ -230,9 +370,29 @@ def main():
     check(100*.5 <= tables['routes']['ROUTE01']['capacity_kg'] and
           100*.003 <= tables['routes']['ROUTE01']['capacity_m3'], 'M1 freight capacity')
 
+    # Offers: goods trades carry a unit price; forwarding carries a service fee for customer-owned cargo.
+    for offer in tables['market_offers'].values():
+        oid = offer['id']
+        check(offer['quantity_unit'] == tables['goods'][offer['good_id']]['quantity_unit'], oid + ': quantity unit matches good')
+        if offer['kind'] in {'supplier', 'customer'}:
+            check('unit_price' in offer and 'service_fee' not in offer, oid + ': goods offer has unit price only')
+        else:
+            check(offer['kind'] == 'forwarding' and 'unit_price' not in offer and 'service_fee' in offer
+                  and offer.get('cargo_owner') == 'customer', oid + ': forwarding offer prices a service for customer cargo')
+            check(offer['destination_city_id'] != offer['city_id'], oid + ': forwarding moves cargo between ports')
+        if offer['kind'] in {'customer', 'forwarding'}:
+            check(offer['valid_until_day'] < offer['delivery_deadline_day'] < offer['payment_due_day'],
+                  oid + ': acceptance, delivery and payment are separate days')
+    # M1 scenarios keep the M1 rule set; the M2a scenario opts into committed-outlay funds checks.
+    for sid in ('SCENARIO_M1_ONE_TRADE',):
+        check(tables['scenarios'][sid]['engine_rules'] == {**tables['scenarios'][sid]['engine_rules'],
+              'rules_version': 'M1-rules-1', 'funds_check': 'immediate_cash', 'forwarding_enabled': False},
+              sid + ': M1 rule set unchanged')
+    check_m2a(tables)
+
     cases = read('tests/acceptance_cases.json')['cases']
     index(cases, 'acceptance cases')
-    check(len(cases) == 14, 'expected 14 acceptance specifications')
+    check(len(cases) == 17, 'expected 17 acceptance specifications')
     # Reference arithmetic only. No simulation engine exists in this package.
     check(10000-1000-200+150 == tables['scenarios']['SCENARIO_M1_CANCEL_PREDEPARTURE']['expected_trade_only_usd']['cash_after'], 'cancel reference arithmetic')
     check(10000-1250+1350 == tables['scenarios']['SCENARIO_M1_DELAY_ACCEPTED']['expected_trade_only_usd']['cash_after_collection'], 'late delivery arithmetic')
@@ -341,7 +501,7 @@ def main():
         print(f'{len(ERRORS)} errors; {CHECKS} checks')
         return 1
     print(f'PASS: {len(documents)} data documents; {CHECKS} structural/reference/arithmetic checks')
-    print('22 acceptance specifications included (14 core + 8 character); engine tests were NOT run.')
+    print('25 acceptance specifications included (17 core + 8 character); this validator does not run engine tests (npm test).')
     print('Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.')
     print('Economic calibration and playtesting are pending.')
     return 0

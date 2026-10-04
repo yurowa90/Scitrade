@@ -27,10 +27,13 @@ export function runDays(
 /** M1 기본 진행: 1일차에 견적 수락·준비 업무 배정·2일 출항편 예약. */
 export function standardDayOneCommands(config: ScenarioConfig): Command[] {
   const employee = config.employees[0];
-  if (!employee) throw new Error('직원이 없는 시나리오입니다.');
+  const buy = config.offers.find((o) => o.kind === 'supplier');
+  const sell = config.offers.find((o) => o.kind === 'customer');
+  const route = config.routes[0];
+  if (!employee || !buy || !sell || !route) throw new Error('M1 기본 진행에 필요한 직원·견적·노선이 없습니다.');
   return [
-    { id: 'CMD-ACCEPT', type: 'ACCEPT_TRADE', buyOfferId: config.buyOffer.id, sellOfferId: config.sellOffer.id },
+    { id: 'CMD-ACCEPT', type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id },
     { id: 'CMD-ASSIGN', type: 'ASSIGN_TASK', taskId: 'TASK001', employeeId: employee.id },
-    { id: 'CMD-BOOK', type: 'BOOK_SAILING', contractId: 'CT001', sailingId: `${config.route.id}-D002` },
+    { id: 'CMD-BOOK', type: 'BOOK_SAILING', contractId: 'CT001', sailingId: `${route.id}-D002` },
   ];
 }

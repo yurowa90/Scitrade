@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import acceptance from '../../tests/acceptance_cases.json';
-import { loadM1Scenario } from '../content/m1';
+import { loadScenario } from '../content/scenario';
 import { applyReceipt, createGame } from './engine';
 import { emptyLedger, post, summarize, type Ledger } from './ledger';
 import { deserializeSave, serializeSave } from './save';
@@ -42,7 +42,7 @@ describe('P0-ACC-01 외상 판매의 현금·채권·이익 분리', () => {
 
 describe('P0-ACC-02 외상대금 수금과 중복 수금 방지', () => {
   function fixtureState(): GameState {
-    const s = createGame(loadM1Scenario('SCENARIO_M1_ONE_TRADE'));
+    const s = createGame(loadScenario('SCENARIO_M1_ONE_TRADE'));
     s.ledger = emptyLedger();
     xxx(s.ledger, 'open', [['CASH', 100], ['OPENING_EQUITY', -100]]);
     xxx(s.ledger, 'net-before', [['CASH', -72], ['ACCOUNTS_RECEIVABLE', 90], ['REVENUE', -90], ['COST_OF_GOODS_SOLD', 68], ['WAGE_EXPENSE', 4]]);

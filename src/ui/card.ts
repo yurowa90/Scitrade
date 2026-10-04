@@ -24,13 +24,13 @@ export function attributeChip(attribute: string | null): string {
 export function crewCard(def: EmployeeDef, state: GameState, selected: boolean): string {
   const running = state.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === def.id);
   const schedule = running
-    ? `수출 준비 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}`
+    ? `${running.contractId} ${running.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
     : '대기 — 배정 가능';
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
   return `
-  <article class="card attr-bg-${def.character.attribute ?? 'none'} ${selected ? 'is-selected' : ''}" data-action="select-card" tabindex="0"
+  <article class="card attr-bg-${def.character.attribute ?? 'none'} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${def.id}" tabindex="0"
     aria-label="${def.nameKo} 직원 카드, ${roleKo}, 레벨 1, ${schedule}">
     <header class="card-top">
       <span class="card-name">${def.nameKo}</span>

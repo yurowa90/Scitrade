@@ -12,9 +12,9 @@
 
 먼저 `docs/CHARACTERS_AND_ORGANIZATION.md`와 `docs/ART_DIRECTION.md`를 읽습니다. 새 수치는 모두 DESIGN이며 미술 자산과 게임 엔진은 아직 만들지 않았습니다.
 
-## M1 시제품 실행
+## 시제품 실행
 
-M1(거래 한 건)의 엔진과 최소 화면이 있습니다. Node.js 22 이상에서:
+M1(거래 한 건)과 M2a 첫 단계(복수 계약·운송 주선·자원 예약)의 엔진과 최소 화면이 있습니다. 화면 위쪽에서 시나리오를 고릅니다. Node.js 22 이상에서:
 
 ```bash
 npm install
@@ -24,14 +24,14 @@ npm run typecheck
 python3 tools/validate_data.py   # 자료 검사
 ```
 
-현재 구현 범위와 검증 기록은 [docs/STATUS.md](docs/STATUS.md), 엔진 결정은 [docs/DECISIONS.md](docs/DECISIONS.md)의 ‘M1 엔진 구현 결정’을 봅니다.
+현재 구현 범위와 검증 기록은 [docs/STATUS.md](docs/STATUS.md)를 봅니다. 엔진 결정은 [docs/DECISIONS.md](docs/DECISIONS.md)의 ‘M1 엔진 구현 결정’과 ‘M2a 첫 단계’에 있습니다.
 
 ## Claude·Codex와 작업하기
 
 - Codex는 [AGENTS.md](AGENTS.md), Claude는 [CLAUDE.md](CLAUDE.md)에서 시작합니다.
 - 두 파일은 [공통 작업 규칙](docs/ai/WORKFLOW.md)을 함께 사용합니다.
 - [현재 상태](docs/STATUS.md), [단계별 구현 계획](docs/IMPLEMENTATION_PLAN.md), [업무별 자료 위치](docs/ai/CONTEXT_MAP.md)를 확인합니다.
-- M1 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다.
+- M1과 M2a 첫 단계의 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다.
 
 ## 먼저 알아둘 결정
 
@@ -104,7 +104,7 @@ Python 3 표준 라이브러리만 사용합니다. 폴더를 이동해도 동�
 python3 tools/validate_data.py
 ```
 
-검증 범위: JSON 구조, ID 중복·교차 참조, 출처·교과 연결, P0/P1 기능 구분, 양수·범위 조건, M1 정상·취소·지연 거래 산수·IPO 예제, ECB 교차환율 재계산, manifest 해시. 기존 인수 사례14개와 캐릭터·조직 인수 사례8개를 별도 제공합니다. 총22개는 미구현 엔진에 연결할 명세입니다. 통과는 **데이터 묶음의 정합성 확인**이며 게임 플레이·실제 경제·교육 효과 검증을 뜻하지 않습니다.
+검증 범위: JSON 구조, ID 중복·교차 참조, 출처·교과 연결, P0/P1 기능 구분, 양수·범위 조건, M1 정상·취소·지연 거래 산수·IPO 예제, ECB 교차환율 재계산, manifest 해시. 거래·운영 인수 사례 17개(M2a 3개 포함)와 캐릭터·조직 인수 사례 8개를 별도로 제공합니다. 25개 가운데 일부만 엔진 테스트에 연결했으며, 연결 현황은 STATUS.md에 있습니다. 이 검사는 M2 시나리오의 경로 산술도 확인합니다. 통과는 **데이터 묶음의 정합성 확인**이며 게임 플레이·실제 경제·교육 효과 검증을 뜻하지 않습니다.
 
 ## 첫 코드 세션에 넣을 요청
 

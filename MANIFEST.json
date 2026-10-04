@@ -23,17 +23,17 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "bc658f4817c6a2d7fd2f300fde51bf7e93eb8a994908ae53f2689a2fe10657ce"
+      "sha256": "e9c8ed248d1c3d63a43a3fd13134d9fcd6ce57dbbf67093ffd44b7cc66fb80e7"
     },
     {
       "path": "README.md",
-      "size_bytes": 11251,
-      "sha256": "c6ded3c3654127511ab7bc3ccfefc877764ae167f700c70a26a12c60c588ce72"
+      "size_bytes": 11567,
+      "sha256": "47719571855b8045d8eb00138cba6c283df0a4c84083e2c8a682444c33983c7c"
     },
     {
       "path": "START_HERE.md",
-      "size_bytes": 2850,
-      "sha256": "3a2fa2602aa20f13a519c1129cbeb2a03155999a50929a66ea3283c048460d7a"
+      "size_bytes": 2878,
+      "sha256": "d55fdc220b5bbb064eafd2eee35145b3c6ed33d0a27fc5527a8a12feeea9a892"
     },
     {
       "path": "data/character_rules.json",
@@ -92,8 +92,8 @@
     },
     {
       "path": "data/market_offers.json",
-      "size_bytes": 1141,
-      "sha256": "e32b208c8cc9f8b73edca48c89695ce2243bc2b039f7f3dc739b9289e4b2615a"
+      "size_bytes": 3608,
+      "sha256": "c704bf994785087eb5a07f9d4dd29917f684658d7a693a07f562661f6b4710e5"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -112,13 +112,13 @@
     },
     {
       "path": "data/routes.json",
-      "size_bytes": 5148,
-      "sha256": "845ec1ceb2a4a445e804dbfb433aaba7037bc11f5af4099c1fc83d201d3595d1"
+      "size_bytes": 6197,
+      "sha256": "f07f7835c47ba739d648c730848703d3852e2a30d4191f19dd6872b6f43de8ca"
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 8801,
-      "sha256": "90baaec622b51947da80bb3a57cf1bd2e3bff45f9e4325ececfa423ece099eff"
+      "size_bytes": 15816,
+      "sha256": "9548db6768357b3cac7d9c31515daf4890c9841b28e41bcbffde17bb0f2c1ffb"
     },
     {
       "path": "data/securities.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 14545,
-      "sha256": "65ba866e5866cb03bc7143b2fd30c3316ab4f30baec486509259a1250c329ba0"
+      "size_bytes": 20676,
+      "sha256": "ad338e7e5180f50ec0ffc7bc6435660a8c12631350711fcc73992d246ecabb83"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,13 +177,13 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 7401,
-      "sha256": "f91df69d2c90fc7d683f057f66eea774a532f794e6b5166f2c19cc2b87f011c7"
+      "size_bytes": 8088,
+      "sha256": "9f4be0c2895ecf5fef7372a9a1a16f6f8f5c4543500e63614000b9c419f6122f"
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 8695,
-      "sha256": "3fb3e21e58972a2475e6a0a1de2beb48357200070b0433c5c354844803e0edf6"
+      "size_bytes": 12433,
+      "sha256": "24b667ce91e30a9dd8322bde1968e7d8cfccfa4c5e877a7b1abb7745a300ad33"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 2177,
-      "sha256": "469ad0885b2856f4f4245a327b4a2bb4ca227a2ceaa0e5b70162691b8fd6f247"
+      "size_bytes": 2677,
+      "sha256": "8ea72adf66be353756a4e3b7d286fb93957f5a99105f9da1ceae9fad890e1d76"
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 4893,
-      "sha256": "c40ace32905d6e37ccc3ad3b4ad6d893eca9209926bf3d3cf8f94182f41e8458"
+      "size_bytes": 5820,
+      "sha256": "fef2520df4e56086cf401bd8054619524ba8351a21f2b456fa468761e51a912e"
     },
     {
       "path": "docs/art/PROMPTS.md",
@@ -302,8 +302,8 @@
     },
     {
       "path": "schemas/market_offers.schema.json",
-      "size_bytes": 2497,
-      "sha256": "d45e877ced88dd1add91668cefdea4f0323c9795c07258abe07d043ddc1055d1"
+      "size_bytes": 3667,
+      "sha256": "a67501ccd4050e8cd8c90a91682024b53d68e1210249542cad038e28735a1d67"
     },
     {
       "path": "schemas/observed_fx_sample.schema.json",
@@ -327,8 +327,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 15653,
-      "sha256": "b1e96bc15dd87ca8884c9397e1a46b8670ac3f675e5ab56d9c0bbb407cd467d0"
+      "size_bytes": 18025,
+      "sha256": "ec79e36272a852b887b1dabad1c5b3640138f936c5f7d0f83b324b4066a42f03"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -362,8 +362,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 29709,
-      "sha256": "89826037333f7a2e0cffd3a9b6146892c2796b67d819e91855511a3be17012f8"
+      "size_bytes": 34197,
+      "sha256": "754ee0fab04477a0c91c215c1a2af1cf9591a4d7af8117100cedea10176eaedb"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -377,8 +377,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 20904,
-      "sha256": "753106a3a0139e0c302a85a508ba5e1b1500e2e8702e1151c1e016b7f17a00cc"
+      "size_bytes": 31047,
+      "sha256": "fc66b5c0e2648eddc7362e03445ed9e07c321c3b57cf7d9b7308fe9845cbc639"
     }
   ]
 }

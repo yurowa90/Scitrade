@@ -703,6 +703,119 @@
         "수금전8750, 수금후10100이며 채권은0."
       ],
       "human_review_check": "10000−1000−200−50=8750; 매출1400−50=1350; 8750+1350=10100"
+    },
+    {
+      "id": "P0-M2A-01",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "복수 계약의 자금 예약 — 남은 운임·관세를 묶은 뒤 새 계약 판단",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "actions": [
+        {
+          "step": 1,
+          "action": "1일: 의류 직접 무역(OFFER_BUY_01+OFFER_SELL_01) 수락"
+        },
+        {
+          "step": 2,
+          "action": "같은 날 화장품 직접 무역(OFFER_BUY_02+OFFER_SELL_02) 수락 시도"
+        }
+      ],
+      "expected_numeric": {
+        "opening_cash": 3000,
+        "cash_after_first": 2000,
+        "reserved_after_first": 250,
+        "available_after_first": 1750,
+        "needed_for_second": 2280,
+        "contracts_after": 1
+      },
+      "expected_assertions": [
+        "두 번째 거래는 매입대금 2000을 현금으로 낼 수 있어도 사용 가능 자금 1750이 필요 자금 2280보다 적어 거절된다.",
+        "거절된 명령은 장부·견적·화물 상태를 바꾸지 않는다.",
+        "운임을 예약해 지급하면 그 계약의 운임 예약은 풀리고, 관세 예약은 도착해 관세를 낼 때까지 남는다."
+      ],
+      "human_review_check": "3000−1000=2000; 예약 200+50=250; 2000−250=1750 < 2000+180+100=2280"
+    },
+    {
+      "id": "P0-M2A-02",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "운송 주선: 고객 화물·서비스 매출과 회사 재고·상품 매출 분리",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "actions": [
+        {
+          "step": 1,
+          "action": "1일: 화장품 직접 무역, 가구·태양광 운송 주선 수락. 화장품은 ROUTE02-D002, 가구는 ROUTE01-D002, 태양광은 ROUTE01-D009 예약"
+        },
+        {
+          "step": 2,
+          "action": "직원 2명이 1일에 화장품·가구 준비, 2일에 태양광 준비"
+        },
+        {
+          "step": 3,
+          "action": "17일까지 진행"
+        }
+      ],
+      "expected_numeric": {
+        "cash_after_day1": 420,
+        "reserved_after_day1": 100,
+        "cash_after_day7": 320,
+        "accounts_receivable_after_day7": 2880,
+        "goods_revenue": 2500,
+        "cost_of_goods_sold": 2280,
+        "forwarding_revenue": 680,
+        "forwarding_cost": 400,
+        "contribution": 500,
+        "cash_final_day17": 3500
+      },
+      "expected_assertions": [
+        "고객 화물(가구 신고가액 9600, 태양광 12000)은 회사 재고·자산·매출에 들어가지 않는다.",
+        "운송 주선 매출과 상품 매출, 주선 원가와 매출원가를 따로 보고한다.",
+        "운송 주선 화물의 관세는 회사가 내지 않는다(수입자 부담 가정).",
+        "주선 운임은 출항 때 진행원가로, 인도 때 주선 원가로 옮겨 서비스 매출과 같은 날 비용이 된다."
+      ],
+      "human_review_check": "화장품 2500−2000−180−100=220; 가구 380−200=180; 태양광 300−200=100; 합계 500; 3000+500=3500"
+    },
+    {
+      "id": "P0-M2A-03",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "선복·직원 중복 예약 방지",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "actions": [
+        {
+          "step": 1,
+          "action": "1일: 가구·태양광 운송 주선을 모두 수락"
+        },
+        {
+          "step": 2,
+          "action": "두 화물을 모두 ROUTE01-D002에 예약 시도"
+        },
+        {
+          "step": 3,
+          "action": "두 준비 업무를 모두 EMP01에게 배정 시도"
+        }
+      ],
+      "expected_numeric": {
+        "capacity_m3": 30,
+        "volume_m3_first": 24,
+        "volume_m3_second": 8,
+        "rejected_bookings": 1,
+        "rejected_assignments": 1,
+        "cash_after_day1": 2800,
+        "reserved_after_day1": 200
+      },
+      "expected_assertions": [
+        "같은 출항편의 무게·부피 합계가 한도를 넘는 예약은 거절하며 운임을 받지 않는다.",
+        "업무 중인 직원에게 두 번째 업무를 배정하지 않는다.",
+        "같은 날 대기 명령은 앞 명령의 예약을 반영해 누적 검증한다."
+      ],
+      "human_review_check": "24+8=32 > 30m³; 3000−200=2800; 남은 예약은 태양광 운임 200"
     }
   ],
   "review_summary": {

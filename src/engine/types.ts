@@ -4,9 +4,13 @@ import type { Ledger } from './ledger';
 import type { Currency } from './money';
 import type { RngState } from './rng';
 
-export const ENGINE_VERSION = '0.1.0';
-/** 경제 규칙 판본. 규칙이 바뀌면 올리고, 다른 판본의 저장은 조용히 이어 쓰지 않는다. */
-export const RULES_VERSION = 'M1-rules-1';
+export const ENGINE_VERSION = '0.2.0';
+/**
+ * 엔진이 아는 경제 규칙 판본. 판본은 시나리오가 정하고(data/scenarios.json의 engine_rules) 저장 파일에 남는다.
+ * 규칙이 바뀌면 새 판본을 더하고, 다른 판본의 저장은 조용히 이어 쓰지 않는다.
+ */
+export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1'] as const;
+export type RulesVersion = (typeof SUPPORTED_RULES_VERSIONS)[number];
 
 // ── 정적 시나리오 설정 (data/*.json에서 만들어지며 상태에 저장하지 않는다) ──
 
@@ -43,14 +47,27 @@ export interface RouteDef {
 
 export interface OfferDef {
   id: string;
-  kind: 'supplier' | 'customer';
+  /** supplier: 공급자 매입 견적, customer: 고객 판매 견적, forwarding: 고객 화물의 운송 주선 의뢰. */
+  kind: 'supplier' | 'customer' | 'forwarding';
   counterpartyId: string;
+  /** 공급자·고객이 있는 항구. 운송 주선은 화물을 넘겨받는 항구. */
   cityId: string;
   goodId: string;
   quantity: number;
+  /** 상품 견적의 단가 (최소 단위). 운송 주선 견적은 0. */
   unitPriceMinor: number;
+  /** 운송 주선 서비스 대금 (최소 단위, 건당). 상품 견적은 0. */
+  serviceFeeMinor: number;
+  /** 고객 화물의 신고가액. 회사 자산·매출이 아니며 화면 설명에만 쓴다. */
+  declaredCargoValueMinor: number | null;
   currency: Currency;
   validUntilDay: number;
+  /** 운송 주선의 도착항. 상품 견적은 null. */
+  destinationCityId: string | null;
+  /** 고객 견적·운송 주선의 납기와 결제일. 공급자 견적은 null. */
+  deliveryDeadlineDay: number | null;
+  paymentDueDay: number | null;
+  originCountryCode: string | null;
 }
 
 export interface EmployeeDef {
@@ -85,11 +102,14 @@ export interface PortRestrictionDef {
 export interface ScenarioTerms {
   /** 수출 준비 업무량. 데이터에 없는 M1 엔진 보완값이며 DESIGN이다. */
   prepWorkUnits: number;
+  /** 운송 주선 준비(화물 인수·선적 서류) 업무량. M2a DESIGN. */
+  forwardingPrepWorkUnits: number;
   dutyRateBasisPoints: number;
   dutyBasis: 'supplier_goods_invoice_only_fictional';
   customsDays: number;
-  deliveryDeadlineDay: number;
-  paymentDueDay: number;
+  /** 시나리오가 직접 정한 납기·결제일 (M1). null이면 고객 견적의 값을 쓴다. */
+  deliveryDeadlineDay: number | null;
+  paymentDueDay: number | null;
   /** 출항 전 예약 취소 시 운임 환급액과 취소비 (최소 단위). */
   preDepartureFreightRefundMinor: number;
   preDepartureCancellationFeeMinor: number;
@@ -99,11 +119,23 @@ export interface ScenarioTerms {
   lateDeliveryPriceReductionMinor: number;
 }
 
+/** 시나리오별 경제 규칙. M1 검산 규칙을 바꾸지 않고 M2 규칙을 별도로 켠다. */
+export interface ScenarioRules {
+  rulesVersion: RulesVersion;
+  /**
+   * IMMEDIATE_CASH (M1): 지금 현금만 확인한다.
+   * COMMITTED_OUTLAYS (M2a): 체결한 계약이 앞으로 낼 운임·관세를 예약하고, 현금에서 예약과 미지급을 뺀 돈으로 새 지출을 판단한다.
+   */
+  fundsCheck: 'IMMEDIATE_CASH' | 'COMMITTED_OUTLAYS';
+  forwardingEnabled: boolean;
+}
+
 export interface ScenarioConfig {
   id: string;
   titleKo: string;
   stage: string;
   baseScenarioId: string | null;
+  rules: ScenarioRules;
   seed: number;
   campaignDays: number;
   homeCityId: string;
@@ -111,10 +143,9 @@ export interface ScenarioConfig {
   payrollCurrency: Currency;
   startingCash: Partial<Record<Currency, number>>;
   cities: CityDef[];
-  good: GoodDef;
-  route: RouteDef;
-  buyOffer: OfferDef;
-  sellOffer: OfferDef;
+  goods: GoodDef[];
+  routes: RouteDef[];
+  offers: OfferDef[];
   employees: EmployeeDef[];
   terms: ScenarioTerms;
   portRestrictions: PortRestrictionDef[];
@@ -139,7 +170,9 @@ export type CargoStatus =
   | 'IN_TRANSIT'
   | 'ARRIVED_RELEASING'
   | 'DELIVERED'
-  | 'HELD_UNALLOCATED';
+  | 'HELD_UNALLOCATED'
+  | 'RETURNED_TO_OWNER';
+export type ContractKind = 'DIRECT_TRADE' | 'FORWARDING';
 export type InvoiceStatus = 'OUTSTANDING' | 'OVERDUE' | 'PAID';
 export type TaskStatus = 'QUEUED' | 'RUNNING' | 'DONE' | 'ABORTED';
 export type BookingStatus = 'BOOKED' | 'DEPARTED' | 'CANCELLED';
@@ -151,15 +184,21 @@ export interface OfferState {
 
 export interface Contract {
   id: string;
-  kind: 'DIRECT_TRADE';
+  kind: ContractKind;
   status: ContractStatus;
-  buyOfferId: string;
-  sellOfferId: string;
-  supplierId: string;
+  /** 직접 무역의 매입·판매 견적. 운송 주선은 null. */
+  buyOfferId: string | null;
+  sellOfferId: string | null;
+  /** 운송 주선 의뢰 견적. 직접 무역은 null. */
+  serviceOfferId: string | null;
+  supplierId: string | null;
+  /** 판매 고객 또는 운송 주선 화주. */
   customerId: string;
   goodId: string;
   quantity: number;
+  /** 회사가 산 상품의 매입대금. 운송 주선은 0. */
   purchaseAmountMinor: number;
+  /** 고객에게 청구할 계약 금액: 직접 무역은 상품 판매대금, 운송 주선은 서비스 대금. */
   saleAmountMinor: number;
   currency: Currency;
   originCityId: string;
@@ -181,13 +220,15 @@ export interface Contract {
 
 export interface CargoLot {
   id: string;
-  /** 회사 소유 재고. 고객 위탁 화물은 M2 운송 주선에서 별도 소유자로 추가한다. */
-  owner: 'COMPANY';
+  /** COMPANY: 회사 소유 재고. CUSTOMER: 운송 주선으로 맡은 고객 화물(회사 자산 아님). */
+  owner: 'COMPANY' | 'CUSTOMER';
+  /** CUSTOMER 화물의 소유자(화주). 회사 재고는 null. */
+  ownerPartyId: string | null;
   goodId: string;
   quantity: number;
   /** 원산지 국가 코드 (출발항과 구분). */
   originCountryCode: string;
-  /** 매입가 + 출발 시 운임 + 수입 관세로 누적되는 장부가액. */
+  /** 회사 재고: 매입가 + 출발 시 운임 + 수입 관세로 누적되는 장부가액. 고객 화물은 항상 0. */
   carryingAmountMinor: number;
   currency: Currency;
   locationCityId: string | null;
@@ -227,7 +268,8 @@ export interface Shipment {
 
 export interface Task {
   id: string;
-  kind: 'EXPORT_PREP';
+  /** EXPORT_PREP: 회사 상품 수출 준비. FORWARDING_PREP: 고객 화물 인수·선적 서류. */
+  kind: 'EXPORT_PREP' | 'FORWARDING_PREP';
   contractId: string;
   cityId: string;
   requiredWorkUnits: number;
@@ -327,6 +369,7 @@ export interface GameState {
 
 export type Command =
   | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string }
+  | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string }
   | { id: string; type: 'ASSIGN_TASK'; taskId: string; employeeId: string }
   | { id: string; type: 'BOOK_SAILING'; contractId: string; sailingId: string }
   | { id: string; type: 'CANCEL_CONTRACT'; contractId: string }

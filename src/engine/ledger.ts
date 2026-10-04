@@ -1,5 +1,6 @@
 // 통화별 복식 장부. 한 분개는 한 통화만 사용하며 차변 합계와 대변 합계가 같아야 한다.
 // USD 거래 장부와 KRW 급여 장부는 같은 구조를 쓰되 서로 합산하지 않는다.
+// 직접 무역(상품 매출·매출원가)과 운송 주선(서비스 매출·주선 원가)은 계정을 나눠 섞지 않는다.
 
 import { assertMinor, type Currency } from './money';
 
@@ -7,11 +8,14 @@ export type Account =
   | 'CASH'
   | 'INVENTORY'
   | 'PREPAID_FREIGHT'
+  | 'FORWARDING_WIP'
   | 'ACCOUNTS_RECEIVABLE'
   | 'ACCOUNTS_PAYABLE'
   | 'OPENING_EQUITY'
   | 'REVENUE'
   | 'COST_OF_GOODS_SOLD'
+  | 'FORWARDING_REVENUE'
+  | 'FORWARDING_COST'
   | 'CANCELLATION_EXPENSE'
   | 'WAGE_EXPENSE';
 
@@ -21,11 +25,15 @@ export const ACCOUNT_KIND: Record<Account, AccountKind> = {
   CASH: 'asset',
   INVENTORY: 'asset',
   PREPAID_FREIGHT: 'asset',
+  /** 출항한 운송 주선 화물의 운임. 인도해 서비스 매출을 인식할 때 주선 원가로 옮긴다. */
+  FORWARDING_WIP: 'asset',
   ACCOUNTS_RECEIVABLE: 'asset',
   ACCOUNTS_PAYABLE: 'liability',
   OPENING_EQUITY: 'equity',
   REVENUE: 'income',
   COST_OF_GOODS_SOLD: 'expense',
+  FORWARDING_REVENUE: 'income',
+  FORWARDING_COST: 'expense',
   CANCELLATION_EXPENSE: 'expense',
   WAGE_EXPENSE: 'expense',
 };
@@ -113,11 +121,16 @@ export interface BookSummary {
   cash: number;
   inventory: number;
   prepaidFreight: number;
+  forwardingWip: number;
   accountsReceivable: number;
   accountsPayable: number;
   totalAssets: number;
+  /** 상품 매출 (직접 무역). */
   revenue: number;
   costOfGoodsSold: number;
+  /** 운송 주선 서비스 매출과 그 직접 원가. 상품 매출에 더하지 않는다. */
+  forwardingRevenue: number;
+  forwardingCost: number;
   cancellationExpense: number;
   wageExpense: number;
   profit: number;
@@ -129,9 +142,12 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
   const cash = b('CASH');
   const inventory = b('INVENTORY');
   const prepaidFreight = b('PREPAID_FREIGHT');
+  const forwardingWip = b('FORWARDING_WIP');
   const accountsReceivable = b('ACCOUNTS_RECEIVABLE');
   const revenue = b('REVENUE');
   const costOfGoodsSold = b('COST_OF_GOODS_SOLD');
+  const forwardingRevenue = b('FORWARDING_REVENUE');
+  const forwardingCost = b('FORWARDING_COST');
   const cancellationExpense = b('CANCELLATION_EXPENSE');
   const wageExpense = b('WAGE_EXPENSE');
   return {
@@ -139,14 +155,17 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
     cash,
     inventory,
     prepaidFreight,
+    forwardingWip,
     accountsReceivable,
     accountsPayable: b('ACCOUNTS_PAYABLE'),
-    totalAssets: cash + inventory + prepaidFreight + accountsReceivable,
+    totalAssets: cash + inventory + prepaidFreight + forwardingWip + accountsReceivable,
     revenue,
     costOfGoodsSold,
+    forwardingRevenue,
+    forwardingCost,
     cancellationExpense,
     wageExpense,
-    profit: revenue - costOfGoodsSold - cancellationExpense - wageExpense,
+    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense,
     openingEquity: b('OPENING_EQUITY'),
   };
 }

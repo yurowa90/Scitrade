@@ -26,6 +26,8 @@ body {
   font-family: 'IBM Plex Sans KR', system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.5;
+  word-break: keep-all; /* 한국어는 어절 단위로 줄을 바꾼다 */
+  overflow-wrap: anywhere;
 }
 h2, h3, .logo, .card-name { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
 h2 { font-size: 1.1rem; margin: 0 0 .6rem; display: flex; flex-wrap: wrap; gap: .1rem .5rem; align-items: baseline; }
@@ -75,14 +77,15 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
   grid-template-areas:
     "world report crew"
+    "trade trade resources"
     "trade trade queue"
     "trade trade log";
   align-items: start;
 }
 .world { grid-area: world; } .report { grid-area: report; } .crew { grid-area: crew; }
-.trade { grid-area: trade; } .queue { grid-area: queue; } .log { grid-area: log; }
+.trade { grid-area: trade; } .queue { grid-area: queue; } .log { grid-area: log; } .resources { grid-area: resources; }
 @media (max-width: 1100px) {
-  .layout { grid-template-columns: 1fr; grid-template-areas: "crew" "trade" "queue" "world" "report" "log"; }
+  .layout { grid-template-columns: 1fr; grid-template-areas: "crew" "resources" "trade" "queue" "world" "report" "log"; }
   .actions { margin-left: 0; }
 }
 
@@ -112,7 +115,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .pipeline li { font-size: .78rem; padding: .2rem .55rem; border-radius: 999px; background: #f1ece0; color: var(--navy-soft); }
 .pipeline li.done { background: var(--mint); color: var(--mint-deep); }
 .pipeline li.now { background: var(--navy); color: #fff; font-weight: 600; }
-.facts { display: grid; grid-template-columns: 4rem 1fr; gap: .25rem .6rem; margin: 0 0 .7rem; font-size: .9rem; }
+.facts { display: grid; grid-template-columns: 5.6rem 1fr; gap: .25rem .6rem; margin: 0 0 .7rem; font-size: .9rem; }
 .facts dt { color: var(--navy-soft); }
 .facts dd { margin: 0; }
 .actions-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: flex-start; }
@@ -242,3 +245,30 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 @media (prefers-reduced-motion: reduce) {
   .route-line, .storm.active .storm-zone { animation: none; }
 }
+
+/* M2a: 견적판·계약 종류·자원 예약 */
+.board-title { margin-top: .2rem; }
+.kind { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 6px; padding: .05rem .45rem; margin-right: .25rem; vertical-align: .1em; }
+.kind.kind-trade { background: var(--sky); color: var(--sky-deep); }
+.kind.kind-fwd { background: #f3e6c8; color: #7a5a14; }
+.offer.forwarding, .contract.forwarding { border-color: #e2cf9f; }
+.quote-facts { margin: .5rem 0 0; padding-left: 1.1rem; font-size: .86rem; }
+.quote-facts li { margin: .1rem 0; }
+.row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.row button { display: flex; flex-direction: column; text-align: left; }
+.row small { color: var(--navy-soft); font-size: .76rem; }
+.neg { color: var(--warn) !important; }
+.ok { color: var(--ok); }
+.closed { margin-top: .4rem; }
+.resources h3 { margin-top: .9rem; font-size: .95rem; }
+.reserve-list, .crew-time, .space-list { list-style: none; padding: 0; margin: .3rem 0; font-size: .86rem; }
+.reserve-list li { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--line); padding: .15rem 0; }
+.reserve-list b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.crew-time li, .space-list li { padding: .3rem 0; border-bottom: 1px solid var(--line); }
+.crew-time small, .space-list small { display: block; color: var(--navy-soft); font-size: .78rem; }
+.meter { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--navy-soft); font-variant-numeric: tabular-nums; }
+.bar { position: relative; display: inline-block; flex: 0 0 90px; height: 8px; border-radius: 999px; background: #efe8d8; overflow: hidden; }
+.bar > span { position: absolute; inset: 0 auto 0 0; background: var(--mint-deep); border-radius: 999px; }
+.bar.high > span { background: var(--gold); }
+.bar.full > span { background: var(--warn); }
+.crew-cards { display: grid; gap: .8rem; }

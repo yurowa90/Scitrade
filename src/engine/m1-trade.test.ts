@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expectedTradeResult, loadM1Scenario, m1AssumptionNotes } from '../content/m1';
+import { expectedTradeResult, loadScenario, assumptionNotes } from '../content/scenario';
 import { commitDay, createGame, openDay, planCommands } from './engine';
 import { InvariantError, checkInvariants } from './invariants';
 import { summarize } from './ledger';
@@ -17,26 +17,26 @@ function usdBook(state: ReturnType<typeof createGame>) {
 
 describe('data/scenarios.json 계약 조건 연결', () => {
   it('계약 조건과 지연 사건을 상수가 아닌 데이터에서 읽는다', () => {
-    const base = loadM1Scenario('SCENARIO_M1_ONE_TRADE');
+    const base = loadScenario('SCENARIO_M1_ONE_TRADE');
     expect(base.terms.prepWorkUnits).toBe(2);
-    expect(base.terms.preDepartureFreightRefundMinor + base.terms.preDepartureCancellationFeeMinor).toBe(base.route.bookingFeeMinor);
+    expect(base.terms.preDepartureFreightRefundMinor + base.terms.preDepartureCancellationFeeMinor).toBe(base.routes[0]!.bookingFeeMinor);
     expect(base.terms.lateDeliveryPriceReductionMinor).toBe(usd(50));
     expect(base.portRestrictions).toHaveLength(0);
     // 변형 시나리오는 기본 시나리오의 계약 조건을 상속하고 자기 사건만 더한다.
-    const delay = loadM1Scenario('SCENARIO_M1_DELAY_ACCEPTED');
+    const delay = loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
     expect(delay.terms.preDepartureCancellationFeeMinor).toBe(base.terms.preDepartureCancellationFeeMinor);
     expect(delay.terms.paymentDueDay).toBe(11);
     expect(delay.portRestrictions).toEqual([
       expect.objectContaining({ eventInstanceId: 'EVI_M1_EV02_YOKOHAMA', cityId: 'YOKOHAMA', announceDay: 5, startDay: 7, endDay: 8 }),
     ]);
-    expect(loadM1Scenario('SCENARIO_M1_CANCEL_PREDEPARTURE').portRestrictions).toHaveLength(0);
-    expect(m1AssumptionNotes('SCENARIO_M1_ONE_TRADE').length).toBeGreaterThan(0);
-    expect(m1AssumptionNotes('SCENARIO_M1_DELAY_ACCEPTED').at(-1)).toContain('하역 중단 7~8일');
+    expect(loadScenario('SCENARIO_M1_CANCEL_PREDEPARTURE').portRestrictions).toHaveLength(0);
+    expect(assumptionNotes('SCENARIO_M1_ONE_TRADE').length).toBeGreaterThan(0);
+    expect(assumptionNotes('SCENARIO_M1_DELAY_ACCEPTED').at(-1)).toContain('하역 중단 7~8일');
   });
 });
 
 describe('M1 정상 거래 — SCENARIO_M1_ONE_TRADE', () => {
-  const config = loadM1Scenario('SCENARIO_M1_ONE_TRADE');
+  const config = loadScenario('SCENARIO_M1_ONE_TRADE');
   const expected = expectedTradeResult('SCENARIO_M1_ONE_TRADE');
   const script = { 1: standardDayOneCommands(config) };
 
@@ -86,7 +86,7 @@ describe('M1 정상 거래 — SCENARIO_M1_ONE_TRADE', () => {
 });
 
 describe('M1 출항 전 취소 — SCENARIO_M1_CANCEL_PREDEPARTURE (P0-ACC-13)', () => {
-  const config = loadM1Scenario('SCENARIO_M1_CANCEL_PREDEPARTURE');
+  const config = loadScenario('SCENARIO_M1_CANCEL_PREDEPARTURE');
   const e = expectedTradeResult('SCENARIO_M1_CANCEL_PREDEPARTURE');
   const script = {
     1: standardDayOneCommands(config),
@@ -124,7 +124,7 @@ describe('M1 출항 전 취소 — SCENARIO_M1_CANCEL_PREDEPARTURE (P0-ACC-13)',
 });
 
 describe('M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)', () => {
-  const config = loadM1Scenario('SCENARIO_M1_DELAY_ACCEPTED');
+  const config = loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
   const e = expectedTradeResult('SCENARIO_M1_DELAY_ACCEPTED');
   const script = {
     1: standardDayOneCommands(config),
@@ -173,7 +173,7 @@ describe('M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)', () => {
 });
 
 describe('명령·자원 검증', () => {
-  const config = loadM1Scenario('SCENARIO_M1_ONE_TRADE');
+  const config = loadScenario('SCENARIO_M1_ONE_TRADE');
 
   it('같은 명령 ID는 같은 날·다음 날 재전송해도 한 번만 처리한다', () => {
     const accept = standardDayOneCommands(config)[0]!;
@@ -232,7 +232,7 @@ describe('명령·자원 검증', () => {
 });
 
 describe('일자 마감·저장·재현', () => {
-  const config = loadM1Scenario('SCENARIO_M1_DELAY_ACCEPTED');
+  const config = loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
   const script = {
     1: standardDayOneCommands(config),
     5: [{ id: 'CMD-KEEP', type: 'RESPOND_TO_DELAY' as const, noticeId: 'NOTICE-EVI_M1_EV02_YOKOHAMA', shipmentId: 'SH001', choice: 'KEEP_SHIPMENT_BOOKING' as const }],

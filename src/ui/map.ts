@@ -2,6 +2,7 @@
 // 지도 위치는 표시용이며 운송시간·거리 계산에 쓰지 않는다.
 
 import { loadMapCities, loadRouteWaypoints, type GeoPoint } from '../content/map';
+import { routeOf } from '../engine/catalog';
 import type { GameState, ScenarioConfig } from '../engine/types';
 import { mapAsset } from './assets';
 
@@ -76,15 +77,16 @@ function compass(x: number, y: number, r: number): string {
 export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode): string {
   if (!map) return '<p class="muted">지도 자산이 없습니다.</p>';
   const cities = loadMapCities();
-  const routeCities = new Set([config.route.fromCityId, config.route.toCityId]);
-  const routePts = loadRouteWaypoints(config.route.id).map(project);
+  const routeCities = new Set(config.routes.flatMap((r) => [r.fromCityId, r.toCityId]));
+  const routeLines = config.routes.map((r) => ({ route: r, pts: loadRouteWaypoints(r.id).map(project) }));
+  const allPts = routeLines.flatMap((l) => l.pts);
 
-  // 보기 영역: 이번 항로 주변 또는 전체 해역.
+  // 보기 영역: 시나리오 항로 주변 또는 전체 해역.
   let vb = { x: 0, y: 0, w: map.width, h: map.height };
-  if (mode === 'route' && routePts.length) {
+  if (mode === 'route' && allPts.length) {
     const pad = 70;
-    const xs = routePts.map((p) => p.x);
-    const ys = routePts.map((p) => p.y);
+    const xs = allPts.map((p) => p.x);
+    const ys = allPts.map((p) => p.y);
     let x0 = Math.min(...xs) - pad;
     let x1 = Math.max(...xs) + pad;
     let y0 = Math.min(...ys) - pad;
@@ -139,15 +141,25 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     </g>`;
   });
 
-  // 선박: 출항 후 인도 전까지 항로 위에 표시.
-  let ship = '';
-  const sh = state.shipments.find((x) => x.arrivalDay === null || (x.releaseDay !== null && state.day <= x.releaseDay));
-  if (sh && routePts.length > 1) {
-    const waiting = sh.arrivalDay === null && state.day >= sh.scheduledArrivalDay;
-    const t = sh.arrivalDay !== null ? 1 : waiting ? 0.93 : (state.day - sh.departureDay) / config.route.transitDays;
-    const pos = pointAlong(routePts, t);
-    ship = `<g class="ship ${waiting ? 'waiting' : ''}" transform="translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)}) rotate(${pos.angle.toFixed(1)}) scale(${k * 0.9})"><title>${sh.id}${waiting ? ' — 하역 중단으로 대기 중' : ''}</title>${SHIP}</g>`;
+  // 선박: 출항 후 인도 전까지 항로 위에 표시. 같은 출항편에 실린 화물은 배 한 척으로 그린다.
+  const voyages = new Map<string, { routeId: string; shipmentIds: string[]; departureDay: number; waiting: boolean; arrived: boolean }>();
+  for (const sh of state.shipments) {
+    if (!(sh.arrivalDay === null || (sh.releaseDay !== null && state.day <= sh.releaseDay))) continue;
+    const booking = state.bookings.find((b) => b.id === sh.bookingId);
+    if (!booking) continue;
+    const v = voyages.get(booking.sailingId) ?? { routeId: booking.routeId, shipmentIds: [], departureDay: sh.departureDay, waiting: false, arrived: true };
+    v.shipmentIds.push(sh.id);
+    v.waiting ||= sh.arrivalDay === null && state.day >= sh.scheduledArrivalDay;
+    v.arrived &&= sh.arrivalDay !== null;
+    voyages.set(booking.sailingId, v);
   }
+  const ships = [...voyages.entries()].map(([sailingId, v]) => {
+    const pts = routeLines.find((l) => l.route.id === v.routeId)?.pts ?? [];
+    if (pts.length < 2) return '';
+    const t = v.arrived ? 1 : v.waiting ? 0.93 : (state.day - v.departureDay) / routeOf(config, v.routeId).transitDays;
+    const pos = pointAlong(pts, t);
+    return `<g class="ship ${v.waiting ? 'waiting' : ''}" transform="translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)}) rotate(${pos.angle.toFixed(1)}) scale(${k * 0.9})"><title>${sailingId}: ${v.shipmentIds.join(', ')}${v.waiting ? ' — 하역 중단으로 대기 중' : ''}</title>${SHIP}</g>`;
+  });
 
   // 항만 사건: 공지된 하역 중단.
   const storms = config.portRestrictions
@@ -168,21 +180,26 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     })
     .join('');
 
-  const routeD = smoothPath(routePts);
+  const routePaths = routeLines
+    .map((l) => smoothPath(l.pts))
+    .filter(Boolean)
+    .map((d) => `<path class="route-under" d="${d}" stroke-width="${7 * k}"/><path class="route-line" d="${d}" stroke-width="${2.6 * k}" stroke-dasharray="${10 * k} ${8 * k}"/>`)
+    .join('');
+  const routeNames = config.routes.map((r) => `${cities.find((c) => c.id === r.fromCityId)?.nameKo}–${cities.find((c) => c.id === r.toCityId)?.nameKo}`);
   const cx = vb.x + vb.w - 52 * k;
   const cy = vb.y + vb.h - 60 * k;
   return `
   <svg class="sea-map" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
-    aria-label="동아시아 해역 지도. ${config.route.id} ${cities.find((c) => c.id === config.route.fromCityId)?.nameKo}–${cities.find((c) => c.id === config.route.toCityId)?.nameKo} 항로${sh ? `, 화물선 ${sh.id} 운항 중` : ''}">
+    aria-label="동아시아 해역 지도. 항로 ${routeNames.join(', ')}${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
     <defs>
       <radialGradient id="port-glow" r="0.5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".85"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
     </defs>
     <image href="${map.path}" x="0" y="0" width="${map.width}" height="${map.height}" preserveAspectRatio="none"/>
     <g class="graticule" stroke-width="${0.8 * k}">${grid.join('')}</g>
-    ${routeD ? `<path class="route-under" d="${routeD}" stroke-width="${7 * k}"/><path class="route-line" d="${routeD}" stroke-width="${2.6 * k}" stroke-dasharray="${10 * k} ${8 * k}"/>` : ''}
+    ${routePaths}
     ${ports.join('')}
     ${storms}
-    ${ship}
+    ${ships.join('')}
     ${compass(cx, cy, 34 * k)}
   </svg>`;
 }

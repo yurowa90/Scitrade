@@ -115,7 +115,54 @@
       "carrier_id": "CARRIER_DEMO",
       "source_refs": [
         "DESIGN-V03"
-      ]
+      ],
+      "map_waypoints": {
+        "basis": "DESIGN",
+        "use": "map_display_only",
+        "note_ko": "지도에 그릴 바닷길 표시용 꺾은선. 실제 항로·항해 거리·운항 자료가 아니며 운송시간은 transit_days만 따른다.",
+        "points": [
+          {
+            "lat": 35.1,
+            "lon": 129.0
+          },
+          {
+            "lat": 34.6,
+            "lon": 128.75
+          },
+          {
+            "lat": 34.0,
+            "lon": 128.0
+          },
+          {
+            "lat": 33.1,
+            "lon": 127.2
+          },
+          {
+            "lat": 32.8,
+            "lon": 126.2
+          },
+          {
+            "lat": 32.3,
+            "lon": 124.6
+          },
+          {
+            "lat": 31.7,
+            "lon": 123.1
+          },
+          {
+            "lat": 31.35,
+            "lon": 122.2
+          },
+          {
+            "lat": 31.25,
+            "lon": 121.75
+          },
+          {
+            "lat": 31.2,
+            "lon": 121.5
+          }
+        ]
+      }
     },
     {
       "id": "ROUTE03",

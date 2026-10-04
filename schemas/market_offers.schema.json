@@ -31,7 +31,6 @@
           "quantity",
           "quantity_unit",
           "source_refs",
-          "unit_price",
           "valid_until_day"
         ],
         "properties": {
@@ -51,7 +50,12 @@
             "type": "string"
           },
           "kind": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "supplier",
+              "customer",
+              "forwarding"
+            ]
           },
           "origin_country_code": {
             "type": "string"
@@ -89,6 +93,50 @@
           },
           "valid_until_day": {
             "type": "integer"
+          },
+          "destination_city_id": {
+            "type": "string"
+          },
+          "cargo_owner": {
+            "type": "string",
+            "enum": [
+              "customer"
+            ]
+          },
+          "service_fee": {
+            "type": "object",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "declared_cargo_value": {
+            "type": "object",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "note_ko": {
+            "type": "string"
           }
         },
         "additionalProperties": true
