@@ -9,6 +9,7 @@ import { companyReport, quotePreview } from '../engine/reports';
 import { SaveError, deserializeSave, serializeSave } from '../engine/save';
 import type { Command, CommandResult, Contract, GameState, ScenarioConfig } from '../engine/types';
 import { crewCard } from './card';
+import { MAP_ATTRIBUTION, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-m1-save';
 
@@ -19,6 +20,7 @@ let view: GameState;
 let pending: Command[] = [];
 let flash: { kind: 'info' | 'warn'; text: string } | null = null;
 let cardSelected = false;
+let mapMode: MapMode = 'route';
 let commandSeq = 0;
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -127,36 +129,23 @@ function topbar(): string {
 }
 
 function worldMap(): string {
-  const [a, b] = [config.cities.find((c) => c.id === config.route.fromCityId)!, config.cities.find((c) => c.id === config.route.toCityId)!];
-  const P = (c: { mapX: number; mapY: number }) => ({ x: (c.mapX - 0.58) * 300, y: (c.mapY - 0.2) * 300 });
-  const pa = P(a);
-  const pb = P(b);
-  const sh = state.shipments.find((x) => x.releaseDay === null || x.arrivalDay === null);
-  let ship = '';
-  if (sh) {
-    const t = Math.min(1, (state.day - sh.departureDay) / config.route.transitDays);
-    const x = pa.x + (pb.x - pa.x) * t;
-    const y = pa.y + (pb.y - pa.y) * t - Math.sin(Math.PI * t) * 14;
-    ship = `<g class="ship" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M-7 0h14l-3 5h-8z"/><rect x="-3" y="-6" width="6" height="6" rx="1"/></g>`;
-  }
-  const restriction = config.portRestrictions.find((r) => state.appliedEventIds[r.eventInstanceId]);
-  const active = restriction && restriction.startDay <= state.day && state.day <= restriction.endDay;
-  const warn = restriction
-    ? `<g class="port-warn ${active ? 'active' : ''}" transform="translate(${pb.x + 10} ${pb.y - 16})"><path d="M0 -8 L8 6 H-8 Z"/><text y="4" text-anchor="middle">!</text></g>`
-    : '';
+  const sh = state.shipments.find((x) => x.arrivalDay === null);
+  const status = sh
+    ? state.day >= sh.scheduledArrivalDay
+      ? `${sh.id} 대기 중 — 하역 재개를 기다림`
+      : `${sh.id} 항해 중 · ${sh.scheduledArrivalDay}일 도착 예정`
+    : '운항 중인 화물 없음';
   return `
   <section class="panel world" aria-labelledby="world-h">
-    <h2 id="world-h">세계지도 <small>개념 지도 · 실제 지리 아님</small></h2>
-    <svg viewBox="0 0 110 70" role="img" aria-label="${a.nameKo}에서 ${b.nameKo}로 가는 ${config.route.id} 노선">
-      <rect class="sea" x="0" y="0" width="110" height="70" rx="6"/>
-      <path class="land" d="M0 70 L0 40 Q12 34 20 42 Q24 52 34 50 L40 70 Z"/>
-      <path class="land" d="M70 8 Q86 2 104 10 L110 6 L110 40 Q100 36 92 30 Q80 26 74 18 Z"/>
-      <path class="route" d="M${pa.x} ${pa.y} Q${(pa.x + pb.x) / 2} ${Math.min(pa.y, pb.y) - 16} ${pb.x} ${pb.y}"/>
-      <g class="port"><circle cx="${pa.x}" cy="${pa.y}" r="3.2"/><text x="${pa.x}" y="${pa.y + 9}" text-anchor="middle">${a.nameKo}</text></g>
-      <g class="port"><circle cx="${pb.x}" cy="${pb.y}" r="3.2"/><text x="${pb.x}" y="${pb.y + 9}" text-anchor="middle">${b.nameKo}</text></g>
-      ${warn}${ship}
-    </svg>
-    <p class="muted">${config.route.id} · 운항 ${config.route.transitDays}일 · ${config.route.departureIntervalDays}일마다 출항 · 예약당 운임 ${usd(config.route.bookingFeeMinor)}</p>
+    <div class="world-head">
+      <h2 id="world-h">세계지도 <small>${status}</small></h2>
+      <div class="seg" role="group" aria-label="지도 범위">
+        <button data-action="map-mode" data-mode="route" aria-pressed="${mapMode === 'route'}">이번 항로</button>
+        <button data-action="map-mode" data-mode="region" aria-pressed="${mapMode === 'region'}">전체 해역</button>
+      </div>
+    </div>
+    <div class="map-frame">${renderWorldMap(state, config, mapMode)}</div>
+    <p class="muted small">${config.route.id} · 운항 ${config.route.transitDays}일 · ${config.route.departureIntervalDays}일마다 출항 · 예약당 운임 ${usd(config.route.bookingFeeMinor)}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
 }
 
@@ -398,6 +387,9 @@ app.addEventListener('click', (ev) => {
     case 'unqueue':
       pending.splice(Number(d.index), 1);
       flash = null;
+      return render();
+    case 'map-mode':
+      mapMode = d.mode === 'region' ? 'region' : 'route';
       return render();
     case 'select-card':
       cardSelected = !cardSelected;

@@ -99,6 +99,56 @@
           },
           "transit_days": {
             "type": "integer"
+          },
+          "map_waypoints": {
+            "type": "object",
+            "description": "지도에 그릴 표시용 꺾은선. 실제 항로 자료가 아니다.",
+            "required": [
+              "basis",
+              "use",
+              "points"
+            ],
+            "properties": {
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "DESIGN"
+                ]
+              },
+              "use": {
+                "type": "string",
+                "enum": [
+                  "map_display_only"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              },
+              "points": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "lat",
+                    "lon"
+                  ],
+                  "properties": {
+                    "lat": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "lon": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

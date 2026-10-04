@@ -112,8 +112,8 @@
     },
     {
       "path": "data/routes.json",
-      "size_bytes": 3798,
-      "sha256": "431adee3bad278ff4564ef6900fff1a5af2238da61d90e146f9ba2c69e0960c4"
+      "size_bytes": 5148,
+      "sha256": "845ec1ceb2a4a445e804dbfb433aaba7037bc11f5af4099c1fc83d201d3595d1"
     },
     {
       "path": "data/scenarios.json",
@@ -147,13 +147,13 @@
     },
     {
       "path": "data/world.json",
-      "size_bytes": 4178,
-      "sha256": "d00d2ad6c96f3c3f15dc9050f734ae99b94ca3ae11ad301e6334b9471cac2e3a"
+      "size_bytes": 6469,
+      "sha256": "714da96302eaeb009d8ba77bc195c7ab0e697042b19daa5092483c7664ac2907"
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 4869,
-      "sha256": "9d1d560704f6bc9e965509d50d878b5b3da7c928c499e8b36e7979a849ed7bf5"
+      "size_bytes": 6252,
+      "sha256": "a2dda838617b0488c0c5b25985732652cf5526d841909e74dccacf530d5c86fb"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 8527,
-      "sha256": "5e8b63d2c96c94d6102197da21ed08a6a2a89fda45495c723748431e70481da5"
+      "size_bytes": 9591,
+      "sha256": "f35ceba404b5d01702e78e9dec9202de5e641d0ab595e751736c91f9fe780c6c"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 7777,
-      "sha256": "fff7a0b8d60a5996de80fb7bbcae105be5b5bd03b8c1756c4e0728dcfa317863"
+      "size_bytes": 8392,
+      "sha256": "b5861fe983fa6e64ddc5b66c8f2d151eb4bf1bb805125fb0f3b87cd92f981afa"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -204,6 +204,11 @@
       "path": "docs/ai/WORKFLOW.md",
       "size_bytes": 4924,
       "sha256": "c880524c83e667dab3e5a961b9dccfc2294d7e459458b11340127029b44ce2e4"
+    },
+    {
+      "path": "docs/art/PROMPTS.md",
+      "size_bytes": 10117,
+      "sha256": "a992d6ebec2db243e42a785348cafb359c3a87a4c2cfaedc7a27abcc4cd0b8de"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",
@@ -312,8 +317,8 @@
     },
     {
       "path": "schemas/routes.schema.json",
-      "size_bytes": 2788,
-      "sha256": "470bf64f542b93cfd62c09d85100120a7b63926a6d02d654cf500593240ae149"
+      "size_bytes": 4233,
+      "sha256": "6273860b09f9fa9a5aa3050acbf742522e0dd57a9afdde0fec1a676603cf8610"
     },
     {
       "path": "schemas/scenarios.schema.json",
@@ -347,8 +352,8 @@
     },
     {
       "path": "schemas/world.schema.json",
-      "size_bytes": 2507,
-      "sha256": "3d5ede1337ed1bdd3f3621d067ad56de371c400d546cd933686ac5e84e4d9299"
+      "size_bytes": 3706,
+      "sha256": "8271492e0d67abb03fbd3f88da9db293a7b62e8bd5afc3c5a23eb287865610de"
     },
     {
       "path": "tests/acceptance_cases.json",
@@ -367,8 +372,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 17940,
-      "sha256": "69c7efda4b5e4f432151b685341131b8dcd46ed98e794075f32027e2be8f4ad4"
+      "size_bytes": 18597,
+      "sha256": "c5001e3dc7e0b4707029e104e19e0cc853d77297a9856c28cc82e1b064ae9e81"
     }
   ]
 }

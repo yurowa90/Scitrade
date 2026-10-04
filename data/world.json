@@ -16,6 +16,14 @@
         "y": 0.37,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
       },
+      "geo_position": {
+        "lat": 35.1,
+        "lon": 129.0,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
+      },
       "source_refs": [
         "DESIGN-V03"
       ],
@@ -38,6 +46,14 @@
         "x": 0.49,
         "y": 0.46,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "geo_position": {
+        "lat": 31.2,
+        "lon": 121.5,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
       },
       "source_refs": [
         "DESIGN-V03"
@@ -63,6 +79,14 @@
         "y": 0.35,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
       },
+      "geo_position": {
+        "lat": 35.4,
+        "lon": 139.6,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
+      },
       "source_refs": [
         "DESIGN-V03"
       ],
@@ -86,6 +110,14 @@
         "x": 0.34,
         "y": 0.65,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "geo_position": {
+        "lat": 20.9,
+        "lon": 106.7,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
       },
       "source_refs": [
         "DESIGN-V03"
@@ -111,6 +143,14 @@
         "y": 0.86,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
       },
+      "geo_position": {
+        "lat": 1.3,
+        "lon": 103.8,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
+      },
       "source_refs": [
         "DESIGN-V03"
       ],
@@ -134,6 +174,14 @@
         "x": 0.39,
         "y": 0.95,
         "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "geo_position": {
+        "lat": -6.1,
+        "lon": 106.9,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
       },
       "source_refs": [
         "DESIGN-V03"

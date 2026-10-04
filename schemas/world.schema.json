@@ -89,6 +89,49 @@
             "items": {
               "type": "string"
             }
+          },
+          "geo_position": {
+            "type": "object",
+            "description": "지도 표시용 대략 좌표. 거리 계산에 쓰지 않는다.",
+            "required": [
+              "lat",
+              "lon",
+              "precision_deg",
+              "basis",
+              "use"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "precision_deg": {
+                "type": "number",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "APPROXIMATE_PUBLIC_COORDINATES"
+                ]
+              },
+              "use": {
+                "type": "string",
+                "enum": [
+                  "map_display_only"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

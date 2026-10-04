@@ -150,6 +150,16 @@ def main():
               route['id'] + ': time')
         check(route['capacity_kg'] > 0 and route['capacity_m3'] > 0,
               route['id'] + ': capacity')
+    # Map display geometry (not used for distance or transit time).
+    for city in tables['world'].values():
+        geo = city.get('geo_position')
+        check(geo is not None and geo['use'] == 'map_display_only', city['id'] + ': map geo position')
+    route01 = tables['routes']['ROUTE01']
+    points = route01['map_waypoints']['points']
+    for end, city_id in ((points[0], route01['from_city_id']), (points[-1], route01['to_city_id'])):
+        geo = tables['world'][city_id]['geo_position']
+        check(abs(end['lat'] - geo['lat']) <= 0.2 and abs(end['lon'] - geo['lon']) <= 0.2,
+              'ROUTE01 map waypoints start and end at their ports')
     config = documents['game_config']['config']
     check(config['securities_enabled'] is False and config['ipo_enabled'] is False,
           'P0 must not enable future finance automatically')

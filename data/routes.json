@@ -12,6 +12,69 @@
       "to_city_id": "YOKOHAMA",
       "direction": "one_way",
       "transit_days": 5,
+      "map_waypoints": {
+        "basis": "DESIGN",
+        "use": "map_display_only",
+        "note_ko": "지도에 그릴 바닷길 표시용 꺾은선. 실제 항로·항해 거리·운항 자료가 아니며 운송시간은 transit_days만 따른다.",
+        "points": [
+          {
+            "lat": 35.1,
+            "lon": 129.0
+          },
+          {
+            "lat": 34.3,
+            "lon": 129.15
+          },
+          {
+            "lat": 33.0,
+            "lon": 129.0
+          },
+          {
+            "lat": 31.6,
+            "lon": 129.6
+          },
+          {
+            "lat": 30.8,
+            "lon": 130.8
+          },
+          {
+            "lat": 31.3,
+            "lon": 132.0
+          },
+          {
+            "lat": 32.5,
+            "lon": 132.7
+          },
+          {
+            "lat": 33.0,
+            "lon": 134.4
+          },
+          {
+            "lat": 33.25,
+            "lon": 135.9
+          },
+          {
+            "lat": 34.2,
+            "lon": 137.5
+          },
+          {
+            "lat": 34.45,
+            "lon": 138.8
+          },
+          {
+            "lat": 34.9,
+            "lon": 139.55
+          },
+          {
+            "lat": 35.2,
+            "lon": 139.72
+          },
+          {
+            "lat": 35.4,
+            "lon": 139.6
+          }
+        ]
+      },
       "departure_interval_days": 7,
       "first_departure_day": 2,
       "capacity_kg": 5000,

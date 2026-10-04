@@ -2,6 +2,7 @@
 // 구도(상단 이름·속성, 중앙 그림, 하단 레벨·일정)는 docs/ART_DIRECTION.md를 따르며 레퍼런스의 프레임·배지·이름은 쓰지 않는다.
 
 import type { EmployeeDef, GameState } from '../engine/types';
+import { characterImage } from './assets';
 
 const ATTRIBUTE: Record<string, { ko: string; icon: string }> = {
   water: { ko: '물', icon: '<path d="M12 3c3 5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6 6-11z"/>' },
@@ -27,6 +28,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
     : '대기 — 배정 가능';
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
+  const art = characterImage(def.id, 'card');
   return `
   <article class="card attr-bg-${def.character.attribute ?? 'none'} ${selected ? 'is-selected' : ''}" data-action="select-card" tabindex="0"
     aria-label="${def.nameKo} 직원 카드, ${roleKo}, 레벨 1, ${schedule}">
@@ -36,9 +38,11 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
     </header>
     <div class="card-art">
       <span class="card-tag ${running ? 'busy' : ''}">${running ? '업무 중' : '대기'}</span>
-      <div class="card-face" aria-hidden="true">${initial}</div>
+      ${art
+        ? `<img class="card-img" src="${art}" alt="${def.nameKo} 일러스트" loading="lazy" decoding="async" />`
+        : `<div class="card-face" aria-hidden="true">${initial}</div>
       <p class="card-motif">${def.character.visualMotif ?? ''}</p>
-      <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>
+      <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
       <div class="card-meta"><span class="chip">${roleKo}</span><span class="muted">${def.id}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
