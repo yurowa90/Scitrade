@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 11129,
-      "sha256": "c6d306bbe1e351325690408c4bfb7f4bb43a57c2952b80360b2887bfaebd84bc"
+      "size_bytes": 11251,
+      "sha256": "b0f2e1ff67cf3c049f90796b92c09c31dbcc0c065549485a4f2e258a66b8a9f0"
     },
     {
       "path": "START_HERE.md",
@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 58314,
-      "sha256": "ac06bdf3b5d51833514f3a80eec9d55352655c9768c08b34cf6f61ce7f9bcd6b"
+      "size_bytes": 248973,
+      "sha256": "8a44c04e93a195e523e8b1963c7a4d6805bd1a6bd64e1def0046a7ff900fe799"
     },
     {
       "path": "data/contacts.json",
@@ -157,13 +157,13 @@
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 12738,
-      "sha256": "0edbf2dd44e766bc2b449413fb2b56458873335e430239574c4c2adcbbcfb7ff"
+      "size_bytes": 16623,
+      "sha256": "639723a7fd941fa099929a8396de41348f46af119947e23880514e393d12b3b6"
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 11716,
-      "sha256": "81df4dba883a648291f119c58c94666b7bd0151f9f531e7fb7e2f3595b7f9c48"
+      "size_bytes": 13682,
+      "sha256": "9bd654a48dfeae34e924568396f2af986a5cca07754fbdae06000fd6cec024be"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 8534,
-      "sha256": "f95cdd2d1b9c690a292cec578486d64693e9cd17c18dd2deae7da0b75ca0dd0a"
+      "size_bytes": 8673,
+      "sha256": "84c8a39c69a9c3986675eb86c51f9b2a78628b0f3c25ab51f510d4cd4364ff4d"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 4787,
-      "sha256": "680f7898c107c2f21f32c817f82ada57ee2ea78b7ef0b902dc1d3419681493fd"
+      "size_bytes": 4826,
+      "sha256": "50d5d3c4858a6ed8fb3773a9e1262f2a11851dd7ec260ab2f3182c880673a15d"
     },
     {
       "path": "docs/art/PROMPTS.md",
-      "size_bytes": 12225,
-      "sha256": "0b2a67681bd7d4d554be4ba15496d08a77fc4a99545cff8b628c8815da2d925b"
+      "size_bytes": 12612,
+      "sha256": "179cf9bb442f26b171218742023dc71426cb005262223c6e1b726224a05fe881"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",
@@ -252,8 +252,8 @@
     },
     {
       "path": "schemas/characters.schema.json",
-      "size_bytes": 14421,
-      "sha256": "8f17af934544f0f8efd1a8b6871c97b025d33c9472984670a740e060a64733e5"
+      "size_bytes": 17763,
+      "sha256": "06e64273c62cf1511a4ac13dc16f1e228b370a958cc8d7f4f0e81fa13a611b5e"
     },
     {
       "path": "schemas/contacts.schema.json",
@@ -377,8 +377,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 19267,
-      "sha256": "65da9dd898c4d71c8794793d5c0677317ea80d5f02d9af7b56c99ad22a2d47cf"
+      "size_bytes": 20904,
+      "sha256": "f1b9520a964c0a46c5988ade5d0e559cdca099892fbb13be377b443b26fab44d"
     }
   ]
 }

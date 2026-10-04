@@ -60,6 +60,10 @@ plain very light background, high detail, no text
 - 바름(해치)은 서울특별시 공식 캐릭터 ‘해치’와 닮지 않게 만든다. 쇠꼬미(불가사리)는 영화 「불가사리」(1985)의 괴수 디자인과 닮지 않게 만든다.
 - 신앙 대상으로 지금도 숭배되는 신격(예: 종교의 신, 신의 탈것)은 직원 캐릭터로 쓰지 않는다.
 
+### 확장 동료 — 기준 프롬프트
+
+국가별 확장 동료 36종(EMP13~EMP48)의 기준 프롬프트는 `data/characters.json`의 `visual_motif`를 영어로 옮겨 3절 공통 문구와 합쳐 만든다. 실재 동물은 종의 특징(무늬·부리·뿔 모양)을 정확히 묘사하고, `conservation.design_cautions_ko`와 `myth_reference.design_cautions_ko`를 지킨다.
+
 ### P1 신수 6종 — 기준 프롬프트
 
 | ID·이름 | 모티프 | 기준 프롬프트 (앞부분) |

@@ -94,7 +94,7 @@ def main():
     expected_counts = {'world': 6, 'goods': 8, 'routes': 6, 'employees': 6,
                        'market_offers': 2, 'scenarios': 6, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
-                       'observed_fx_sample': 10, 'characters': 12, 'organization': 7,
+                       'observed_fx_sample': 10, 'characters': 48, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
     for name, count in expected_counts.items():
         check(len(tables[name]) == count, f'{name}: expected {count}')
@@ -156,6 +156,28 @@ def main():
               character['id'] + ': no invented composite creatures')
         if character['creature_kind'] == 'myth_inspired':
             check(bool(character.get('myth_interpretation_note')), character['id'] + ': myth interpretation note')
+    # Country collection: encounter region is where you first meet a companion, not a nationality.
+    countries = {city['country_code'] for city in tables['world'].values()}
+    names_seen, tags_seen = set(), set()
+    for character in tables['characters'].values():
+        cid = character['id']
+        enc = character['encounter']
+        if enc['country_code'] is not None:
+            check(enc['country_code'] in countries, cid + ': encounter country is a port country')
+            check(tables['world'][enc['city_id']]['country_code'] == enc['country_code'], cid + ': encounter city in country')
+        else:
+            check(enc['category'] == 'global_myth', cid + ': only global myth motifs have no encounter country')
+        check(character['regional_background']['nationality'] is None, cid + ': no nationality')
+        if enc['category'] in {'representative_animal', 'rare_animal'} or (character['creature_kind'] == 'animal' and enc['category'] != 'starter'):
+            check('conservation' in character, cid + ': real animal conservation record')
+        if enc['category'] == 'rare_animal':
+            check(character['recruitment']['mode'] == 'QUEST_GUARANTEED' and not character['recruitment']['random_draw_required'],
+                  cid + ': rare animals join through partnership stories, not draws')
+        check(character['name_ko'] not in names_seen, cid + ': unique display name')
+        names_seen.add(character['name_ko'])
+        tag = character['signature_trait']['candidate_effect']['trigger_tag']
+        check(tag not in tags_seen, cid + ': unique trait trigger tag')
+        tags_seen.add(tag)
     for employee in tables['employees'].values():
         check(employee['name_ko'] == tables['characters'][employee['id']]['name_ko'],
               employee['id'] + ': employee and character names match')

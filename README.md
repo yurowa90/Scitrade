@@ -72,7 +72,7 @@ python3 tools/validate_data.py   # 자료 검사
 
 | 파일 | 용도 |
 |---|---|
-| `characters.json` | 동물·신수 원안12종, P0 6종·P1 6종, 능력·속성·영입·성장 방향 |
+| `characters.json` | 동료 48종: P0 6종, 6개 거점 국가별 대표 동물·멸종위기 동물·신화 존재와 공통 신화 모티프. 만남 지역·보전 상태·출전 기록, 능력·속성·영입·성장 방향 |
 | `character_rules.json` | 레벨·교육·강화·업무 기여·중첩 상한·후천적 지역 경험 |
 | `organization.json` | 3부서·7상설팀·팀 내 역할·별도 프로젝트 편성 |
 | `job_templates.json`, `team_synergies.json` | 직무6종·속성 친화·팀 조합 조건3종. 최초 업무2종·시너지2규칙 |
