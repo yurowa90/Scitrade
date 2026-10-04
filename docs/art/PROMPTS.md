@@ -27,16 +27,31 @@
 
 ## 3. 공통 화풍 프롬프트 (동료)
 
+카드 일러스트와 사무실 동작 그림은 화풍 기준을 따로 둔다([ART_DIRECTION.md](../ART_DIRECTION.md) ‘카드 일러스트 방향’).
+
+**카드 일러스트** (② 단계 기준 이미지):
+
 ```
-cute chibi animal character, about 2.5 heads tall, round soft silhouette, big readable face,
-small work prop, soft cel-shaded 2D game illustration, clean medium-weight outlines,
-gentle rim light, pastel cream, light mint and sky blue accents, full body, centered,
-plain very light background, high detail, no text
---ar 3:4 --v 7 --stylize 150
+fantasy creature collectible card illustration, full-bleed scene, graceful elegant creature
+with a soft cute face, decorative patterned background inspired by its habitat and legend
+(stylized sky, plants, waves, snowflakes, starlight), ornamental stained-glass and art-nouveau
+motifs, pastel iridescent palette with soft highlights, clean outlines, cel-shaded 2D,
+character centered with empty space at the top and bottom 15 percent
+--ar 3:4 --v 7 --stylize 250
 --no text, letters, words, logo, watermark, signature, card frame, border, badge, number, ui, weapon, armor, blood
 ```
 
-화풍 기준을 정한 뒤에는 모든 동료 프롬프트 끝에 `--sref [화풍 코드]`를 붙인다.
+**사무실 동작·초상** (⑤ 단계 장면 확장):
+
+```
+cute chibi animal character, about 2.5 heads tall, round soft silhouette, big readable face,
+small work prop, soft cel-shaded 2D game sprite, clean medium-weight outlines, full body,
+centered, plain white background, no text
+--ar 1:1 --v 7 --stylize 150
+--no text, letters, logo, watermark, frame, border, badge, number, ui, weapon
+```
+
+화풍 기준을 정한 뒤에는 카드와 동작 그림 각각의 `--sref [화풍 코드]`를 붙인다. 동작 그림은 카드 기준 이미지를 `--oref`로 넣어 같은 인물로 만든다.
 
 ## 4. 동료 P0 6종 — 기준 프롬프트
 
@@ -62,7 +77,7 @@ plain very light background, high detail, no text
 
 ### 확장 동료 — 기준 프롬프트
 
-국가별 확장 동료 36종(EMP13~EMP48)의 기준 프롬프트는 `data/characters.json`의 `visual_motif`를 영어로 옮겨 3절 공통 문구와 합쳐 만든다. 실재 동물은 종의 특징(무늬·부리·뿔 모양)을 정확히 묘사하고, `conservation.design_cautions_ko`와 `myth_reference.design_cautions_ko`를 지킨다.
+국가별 확장 동료 48종(EMP13~EMP60)의 기준 프롬프트는 `data/characters.json`의 `visual_motif`를 영어로 옮겨 3절 공통 문구와 합쳐 만든다. 실재 동물은 종의 특징(무늬·부리·뿔 모양)을 정확히 묘사하고, `conservation.design_cautions_ko`와 `myth_reference.design_cautions_ko`를 지킨다.
 
 ### P1 신수 6종 — 기준 프롬프트
 
@@ -132,7 +147,7 @@ Claude가 변환해 저장하는 위치와 규격:
 
 | 용도 | 경로 | 규격 |
 |---|---|---|
-| 카드 | `public/assets/characters/EMP01/card.webp` | 3:4, 가로 768px 이상, 단색 또는 투명 배경 |
+| 카드 | `public/assets/characters/EMP01/card.webp` | 3:4, 가로 768px 이상, 장면 배경을 꽉 채운 일러스트, 위아래 15%는 화면 표시가 덮음 |
 | 초상 | `public/assets/characters/EMP01/portrait.webp` | 1:1, 256px 이상, 투명 배경 |
 | 업무 동작 | `public/assets/characters/EMP01/work-idle.webp` 등 | 1:1, 256px 이상, 투명 배경 |
 | 배경 | `public/assets/backgrounds/company.webp` 등 | 16:9, 가로 1600px 이상 |

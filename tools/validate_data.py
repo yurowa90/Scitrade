@@ -94,7 +94,7 @@ def main():
     expected_counts = {'world': 6, 'goods': 8, 'routes': 6, 'employees': 6,
                        'market_offers': 2, 'scenarios': 6, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
-                       'observed_fx_sample': 10, 'characters': 48, 'organization': 7,
+                       'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
     for name, count in expected_counts.items():
         check(len(tables[name]) == count, f'{name}: expected {count}')

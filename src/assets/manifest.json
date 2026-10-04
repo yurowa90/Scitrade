@@ -2,9 +2,31 @@
   "schema": "scitrade-art-assets/1",
   "note_ko": "화면에 쓰는 그림 자산의 출처 기록. status가 approved인 항목만 화면에 쓴다. 그림이 없는 동료는 자리표시자를 유지한다. 규칙과 프롬프트는 docs/art/PROMPTS.md.",
   "character_slots": {
-    "card": { "path": "assets/characters/{employee_id}/card.webp", "aspect": "3:4", "min_width": 768, "background": "plain or transparent; no frame, text, badge" },
-    "portrait": { "path": "assets/characters/{employee_id}/portrait.webp", "aspect": "1:1", "min_width": 256, "background": "transparent" },
-    "work": { "path": "assets/characters/{employee_id}/work-{pose}.webp", "aspect": "1:1", "min_width": 256, "poses": ["idle", "walk", "work", "happy"], "background": "transparent" }
+    "card": {
+      "path": "assets/characters/{employee_id}/card.webp",
+      "aspect": "3:4",
+      "min_width": 768,
+      "background": "full-bleed decorative scene (habitat/legend motifs); no frame, text, badge; keep top and bottom 15% clear for UI",
+      "style": "graceful fantasy creature proportions; office sprites stay chibi"
+    },
+    "portrait": {
+      "path": "assets/characters/{employee_id}/portrait.webp",
+      "aspect": "1:1",
+      "min_width": 256,
+      "background": "transparent"
+    },
+    "work": {
+      "path": "assets/characters/{employee_id}/work-{pose}.webp",
+      "aspect": "1:1",
+      "min_width": 256,
+      "poses": [
+        "idle",
+        "walk",
+        "work",
+        "happy"
+      ],
+      "background": "transparent"
+    }
   },
   "assets": [
     {
@@ -15,7 +37,12 @@
       "height": 1230,
       "status": "approved",
       "projection": "equirectangular",
-      "bounds": { "lon_min": 98.0, "lon_max": 146.0, "lat_min": -10.0, "lat_max": 44.0 },
+      "bounds": {
+        "lon_min": 98.0,
+        "lon_max": 146.0,
+        "lat_min": -10.0,
+        "lat_max": 44.0
+      },
       "created_on": "2026-10-04",
       "provenance": {
         "method": "processed_public_domain_imagery",

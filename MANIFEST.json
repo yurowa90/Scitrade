@@ -28,7 +28,7 @@
     {
       "path": "README.md",
       "size_bytes": 11251,
-      "sha256": "b0f2e1ff67cf3c049f90796b92c09c31dbcc0c065549485a4f2e258a66b8a9f0"
+      "sha256": "c6ded3c3654127511ab7bc3ccfefc877764ae167f700c70a26a12c60c588ce72"
     },
     {
       "path": "START_HERE.md",
@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 248973,
-      "sha256": "8a44c04e93a195e523e8b1963c7a4d6805bd1a6bd64e1def0046a7ff900fe799"
+      "size_bytes": 313836,
+      "sha256": "7f5667ef03c999bebc9cd2a7e61773b4466ca398ea0f429d4cd2ca6c0e401661"
     },
     {
       "path": "data/contacts.json",
@@ -152,18 +152,18 @@
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 6581,
-      "sha256": "302e48bba4e9a997379370970e9ffc0fe2d3bee3a951d59600448e21ba703ffc"
+      "size_bytes": 8184,
+      "sha256": "fb7fcfd8f8217dab65c4d473201c7dd4d02b0909a1ab5b2b7dff0c214517f21a"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 16623,
-      "sha256": "639723a7fd941fa099929a8396de41348f46af119947e23880514e393d12b3b6"
+      "size_bytes": 17230,
+      "sha256": "ec46a4e34e05de8287d72c803b086b6a65817772b3631d84f134f399673815d5"
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 13682,
-      "sha256": "9bd654a48dfeae34e924568396f2af986a5cca07754fbdae06000fd6cec024be"
+      "size_bytes": 14545,
+      "sha256": "65ba866e5866cb03bc7143b2fd30c3316ab4f30baec486509259a1250c329ba0"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 8673,
-      "sha256": "84c8a39c69a9c3986675eb86c51f9b2a78628b0f3c25ab51f510d4cd4364ff4d"
+      "size_bytes": 8695,
+      "sha256": "3fb3e21e58972a2475e6a0a1de2beb48357200070b0433c5c354844803e0edf6"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 4826,
-      "sha256": "50d5d3c4858a6ed8fb3773a9e1262f2a11851dd7ec260ab2f3182c880673a15d"
+      "size_bytes": 4893,
+      "sha256": "c40ace32905d6e37ccc3ad3b4ad6d893eca9209926bf3d3cf8f94182f41e8458"
     },
     {
       "path": "docs/art/PROMPTS.md",
-      "size_bytes": 12612,
-      "sha256": "179cf9bb442f26b171218742023dc71426cb005262223c6e1b726224a05fe881"
+      "size_bytes": 13489,
+      "sha256": "a299bf94549f2755debe3fe69a33de122fb301cf9982a6545fc53f10ccf29f58"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",
@@ -242,8 +242,8 @@
     },
     {
       "path": "references/user_character_screens.json",
-      "size_bytes": 2401,
-      "sha256": "b8d6f2a2244776fb46000fb83248d38b518b6c2105418624b430ba3a05d3a98b"
+      "size_bytes": 2599,
+      "sha256": "45ee34c52594060ce4e913f154675d1614386700673933d39c71bde6320b38bb"
     },
     {
       "path": "schemas/character_rules.schema.json",
@@ -252,8 +252,8 @@
     },
     {
       "path": "schemas/characters.schema.json",
-      "size_bytes": 17763,
-      "sha256": "06e64273c62cf1511a4ac13dc16f1e228b370a958cc8d7f4f0e81fa13a611b5e"
+      "size_bytes": 17947,
+      "sha256": "4a9688ff24a1331c9e9f15b0c7942252158fb7bdc58c57e69539db3a852b457c"
     },
     {
       "path": "schemas/contacts.schema.json",
@@ -378,7 +378,7 @@
     {
       "path": "tools/validate_data.py",
       "size_bytes": 20904,
-      "sha256": "f1b9520a964c0a46c5988ade5d0e559cdca099892fbb13be377b443b26fab44d"
+      "sha256": "753106a3a0139e0c302a85a508ba5e1b1500e2e8702e1151c1e016b7f17a00cc"
     }
   ]
 }

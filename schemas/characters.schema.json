@@ -51,7 +51,8 @@
           "stat_total",
           "stats",
           "visual_motif",
-          "xp_total"
+          "xp_total",
+          "species_ko"
         ],
         "properties": {
           "art_direction": {
@@ -587,6 +588,10 @@
               }
             },
             "additionalProperties": false
+          },
+          "species_ko": {
+            "type": "string",
+            "description": "도감에 표시할 실제 종 또는 전승 존재의 이름"
           }
         },
         "additionalProperties": true

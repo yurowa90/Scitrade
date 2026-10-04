@@ -30,6 +30,7 @@
     {
       "id": "EMP01",
       "name_ko": "귀솔",
+      "species_ko": "사막여우",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -144,6 +145,7 @@
     {
       "id": "EMP02",
       "name_ko": "물보리",
+      "species_ko": "수달",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -258,6 +260,7 @@
     {
       "id": "EMP03",
       "name_ko": "솔솔밤",
+      "species_ko": "하늘다람쥐",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -372,6 +375,7 @@
     {
       "id": "EMP04",
       "name_ko": "현돌",
+      "species_ko": "현무",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -489,6 +493,7 @@
     {
       "id": "EMP05",
       "name_ko": "화랑콩",
+      "species_ko": "레서판다",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -603,6 +608,7 @@
     {
       "id": "EMP06",
       "name_ko": "바름",
+      "species_ko": "해치",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
@@ -721,6 +727,7 @@
     {
       "id": "EMP07",
       "name_ko": "푸르릉",
+      "species_ko": "용",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -820,6 +827,7 @@
     {
       "id": "EMP08",
       "name_ko": "불씨롱",
+      "species_ko": "불사조형 새",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -919,6 +927,7 @@
     {
       "id": "EMP09",
       "name_ko": "깃모아",
+      "species_ko": "그리핀형 생물",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1018,6 +1027,7 @@
     {
       "id": "EMP10",
       "name_ko": "쇠꼬미",
+      "species_ko": "불가사리",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1132,6 +1142,7 @@
     {
       "id": "EMP11",
       "name_ko": "유리뿔",
+      "species_ko": "사슴형 신수",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1231,6 +1242,7 @@
     {
       "id": "EMP12",
       "name_ko": "두루",
+      "species_ko": "백택",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1345,6 +1357,7 @@
     {
       "id": "EMP13",
       "name_ko": "범솔",
+      "species_ko": "호랑이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1458,6 +1471,7 @@
     {
       "id": "EMP14",
       "name_ko": "저어리",
+      "species_ko": "저어새",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1571,6 +1585,7 @@
     {
       "id": "EMP15",
       "name_ko": "판둥",
+      "species_ko": "대왕판다",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1684,6 +1699,7 @@
     {
       "id": "EMP16",
       "name_ko": "금털랑",
+      "species_ko": "황금들창코원숭이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1797,6 +1813,7 @@
     {
       "id": "EMP17",
       "name_ko": "어진",
+      "species_ko": "기린(麒麟)",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -1910,6 +1927,7 @@
     {
       "id": "EMP18",
       "name_ko": "지킴",
+      "species_ko": "비휴",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2022,6 +2040,7 @@
     {
       "id": "EMP19",
       "name_ko": "따숨",
+      "species_ko": "일본원숭이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2133,6 +2152,7 @@
     {
       "id": "EMP20",
       "name_ko": "이리야",
+      "species_ko": "이리오모테살쾡이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2246,6 +2266,7 @@
     {
       "id": "EMP21",
       "name_ko": "접시랑",
+      "species_ko": "갓파",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2358,6 +2379,7 @@
     {
       "id": "EMP22",
       "name_ko": "꿈바",
+      "species_ko": "바쿠",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2468,6 +2490,7 @@
     {
       "id": "EMP23",
       "name_ko": "둔갑이",
+      "species_ko": "둔갑 너구리",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2580,6 +2603,7 @@
     {
       "id": "EMP24",
       "name_ko": "든든",
+      "species_ko": "물소",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2691,6 +2715,7 @@
     {
       "id": "EMP25",
       "name_ko": "사올이",
+      "species_ko": "사올라",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2805,6 +2830,7 @@
     {
       "id": "EMP26",
       "name_ko": "비늘콩",
+      "species_ko": "천산갑",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -2920,6 +2946,7 @@
     {
       "id": "EMP27",
       "name_ko": "흰바지",
+      "species_ko": "델라쿠르랑구르",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3034,6 +3061,7 @@
     {
       "id": "EMP28",
       "name_ko": "란이",
+      "species_ko": "란(Lân)",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3147,6 +3175,7 @@
     {
       "id": "EMP29",
       "name_ko": "싱가",
+      "species_ko": "싱가푸라의 짐승",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3260,6 +3289,7 @@
     {
       "id": "EMP30",
       "name_ko": "칸칠",
+      "species_ko": "쥐사슴",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3373,6 +3403,7 @@
     {
       "id": "EMP31",
       "name_ko": "뿔부리",
+      "species_ko": "코뿔새",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3484,6 +3515,7 @@
     {
       "id": "EMP32",
       "name_ko": "코모",
+      "species_ko": "코모도왕도마뱀",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3598,6 +3630,7 @@
     {
       "id": "EMP33",
       "name_ko": "숲지기",
+      "species_ko": "오랑우탄",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3711,6 +3744,7 @@
     {
       "id": "EMP34",
       "name_ko": "뿔코",
+      "species_ko": "자바코뿔소",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3825,6 +3859,7 @@
     {
       "id": "EMP35",
       "name_ko": "춤깃",
+      "species_ko": "극락조",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -3938,6 +3973,7 @@
     {
       "id": "EMP36",
       "name_ko": "렘부",
+      "species_ko": "렘부스와나",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4052,6 +4088,7 @@
     {
       "id": "EMP37",
       "name_ko": "달곰",
+      "species_ko": "반달가슴곰",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4166,6 +4203,7 @@
     {
       "id": "EMP38",
       "name_ko": "방긋",
+      "species_ko": "상괭이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4279,6 +4317,7 @@
     {
       "id": "EMP39",
       "name_ko": "한새",
+      "species_ko": "황새",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4392,6 +4431,7 @@
     {
       "id": "EMP40",
       "name_ko": "양쯔",
+      "species_ko": "양쯔강악어",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4507,6 +4547,7 @@
     {
       "id": "EMP41",
       "name_ko": "와와",
+      "species_ko": "중국장수도롱뇽",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4621,6 +4662,7 @@
     {
       "id": "EMP42",
       "name_ko": "까망토",
+      "species_ko": "아마미검은멧토끼",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4735,6 +4777,7 @@
     {
       "id": "EMP43",
       "name_ko": "분홍깃",
+      "species_ko": "따오기",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4849,6 +4892,7 @@
     {
       "id": "EMP44",
       "name_ko": "알록이",
+      "species_ko": "붉은다리두크원숭이",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -4963,6 +5007,7 @@
     {
       "id": "EMP45",
       "name_ko": "자라미",
+      "species_ko": "양쯔강대왕자라",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -5077,6 +5122,7 @@
     {
       "id": "EMP46",
       "name_ko": "흰띠",
+      "species_ko": "래플스반다랑구르",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -5191,6 +5237,7 @@
     {
       "id": "EMP47",
       "name_ko": "푸른눈",
+      "species_ko": "발리찌르레기",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -5304,6 +5351,7 @@
     {
       "id": "EMP48",
       "name_ko": "반반",
+      "species_ko": "말레이맥",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
@@ -5412,6 +5460,1376 @@
         "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP49",
+      "name_ko": "단정이",
+      "species_ko": "두루미",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "정수리의 붉은 점, 검은 목과 흰 몸의 두루미(단정학). 긴 다리로 우아하게 서서 회의 순서표를 든다",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 65,
+        "operations": 40,
+        "analysis": 45,
+        "technology": 35,
+        "exploration": 50,
+        "coordination": 65
+      },
+      "stat_total": 300,
+      "attribute": "light",
+      "signature_trait": {
+        "name_ko": "우아한 의전 준비",
+        "description_ko": "방문 고객 응대의 순서·좌석·안내를 미리 정한 의전 준비 평가에 5점을 더하는 후보 효과. 계약 성립을 보장하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "PROTOCOL_PREP",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "protocol_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "부산 문화 탐방에서 두루미 월동지 보전 모임의 겨울 먹이 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "KR",
+        "city_id": "BUSAN",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M2a",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "coordination"
+      },
+      "conservation": {
+        "iucn_status": "VU",
+        "note_ko": "취약(VU). 한국 철원 등 비무장지대 주변이 주요 월동지다. 일본 홋카이도와 중국에도 무리가 있다.",
+        "cites_appendix": null,
+        "national_protection_ko": "한국 천연기념물 (확인 필요)",
+        "sources": [
+          "작성자 지식 기반"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "작성자 지식 기반, 출처 대조 필요",
+        "design_cautions_ko": [
+          "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP50",
+      "name_ko": "발그레",
+      "species_ko": "혹등돌고래",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "등에 작은 혹 같은 지느러미, 다 자라면 분홍빛이 도는 흰 몸의 인도태평양혹등고래류 돌고래. 입항 순서표",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 65,
+        "operations": 40,
+        "analysis": 50,
+        "technology": 35,
+        "exploration": 50,
+        "coordination": 60
+      },
+      "stat_total": 300,
+      "attribute": "water",
+      "signature_trait": {
+        "name_ko": "물길 양보 협상",
+        "description_ko": "항만 혼잡 때 입항·하역 순서를 관계자와 조율한 제안 평가에 5점을 더하는 후보 효과. 대기 시간을 직접 줄이지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "BERTH_NEGOTIATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "berth_coordination_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "상하이 항만 물류단지에서 하구 돌고래 보호를 위한 선박 감속 캠페인 홍보물 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "CN",
+        "city_id": "SHANGHAI",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "exploration"
+      },
+      "conservation": {
+        "iucn_status": "VU",
+        "note_ko": "인도태평양혹등돌고래(중국흰돌고래)는 취약(VU). 주강 하구 일대에 세계에서 가장 큰 무리(2,000마리 이상)가 살며, 선박 교통·해안 개발의 영향을 받는다.",
+        "cites_appendix": null,
+        "national_protection_ko": null,
+        "sources": [
+          "Frontiers in Marine Science (2022) https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2022.1048959/full"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP51",
+      "name_ko": "구만",
+      "species_ko": "곤붕",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "물고기 꼬리와 커다란 새 날개가 함께 있는 아기 곤붕. 몸의 앞쪽은 깃털, 뒤쪽은 비늘이며 장거리 운항 지도를 품었다",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "곤붕(鯤鵬) 전승을 업무 동료로 새로 해석한 창작 캐릭터. 전승의 능력·신앙적 의미를 게임 효과나 사실로 설명하지 않는다.",
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 60,
+        "analysis": 50,
+        "technology": 40,
+        "exploration": 65,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "wind",
+      "signature_trait": {
+        "name_ko": "구만 리 장거리 계획",
+        "description_ko": "여러 구간을 거치는 환적 일정과 대기 시간을 한 장에 정리한 평가에 5점을 더하는 후보 효과. 운송 시간을 줄이지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "LONG_HAUL_PLAN",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "long_haul_plan_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "상하이 무역회관의 고전 강연과 해운 역사 전시를 돕는 의뢰에서 만난다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "CN",
+        "city_id": "SHANGHAI",
+        "category": "myth_legend",
+        "category_ko": "신화·전설",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "exploration",
+        "secondary_stat": "operations"
+      },
+      "myth_reference": {
+        "creature": "곤붕(鯤鵬)",
+        "tradition": "중국 고전 『장자(莊子)』 「소요유(逍遙遊)」",
+        "summary_ko": "북쪽 바다의 큰 물고기 곤(鯤)이 새 붕(鵬)으로 변해 구만 리를 날아 남쪽 바다로 간다는 이야기. 큰 뜻과 먼 길의 비유로 널리 쓰인다.",
+        "sources": [
+          "『장자』 「소요유」 (원문 미대조)",
+          "경향신문 장자 관련 기사 https://www.khan.co.kr/article/201903062043005/amp"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "2차 자료로 개요 확인. 원문 대조 필요",
+        "design_cautions_ko": []
+      }
+    },
+    {
+      "id": "EMP52",
+      "name_ko": "숟부리",
+      "species_ko": "넓적부리도요",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "부리 끝이 숟가락처럼 넓적한 작은 도요새. 갯벌 무늬 조끼와 소량 화물 목록",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 60,
+        "analysis": 60,
+        "technology": 45,
+        "exploration": 55,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "fire",
+      "signature_trait": {
+        "name_ko": "작은 것까지 걸러내기",
+        "description_ko": "여러 품목이 조금씩 섞인 화물의 목록과 수량을 빠짐없이 정리한 평가에 5점을 더하는 후보 효과. 수량을 바꾸지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "SMALL_LOT_LIST",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "small_lot_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "상하이 근교 갯벌 조사팀의 철새 관찰 장비 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "CN",
+        "city_id": "SHANGHAI",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "analysis",
+        "secondary_stat": "operations"
+      },
+      "conservation": {
+        "iucn_status": "CR",
+        "note_ko": "넓적부리도요는 위급(CR)으로 세계에 수백 마리만 남았다. 약 8,000km 이동 경로에서 중국 장쑤성 루둥 갯벌이 가장 중요한 중간 기착지로 확인되었고, 한국 서해안 갯벌도 들른다.",
+        "cites_appendix": null,
+        "national_protection_ko": null,
+        "sources": [
+          "BTO: New hope for two of the most threatened birds https://bto.org/about-bto/press-releases/new-hope-two-most-threatened-birds-world",
+          "Birds Korea https://www.birdskoreablog.org/?p=10602"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP53",
+      "name_ko": "천옹이",
+      "species_ko": "알바트로스",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "분홍 부리, 노란빛 머리, 흰 몸과 길쭉한 날개의 짧은꼬리알바트로스. 대양 바람 지도",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 60,
+        "analysis": 55,
+        "technology": 40,
+        "exploration": 60,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "wind",
+      "signature_trait": {
+        "name_ko": "바람 읽는 대양 항로",
+        "description_ko": "대양 구간이 있는 운송편들의 일정·운임을 비교한 평가에 5점을 더하는 후보 효과. 운항 속도를 바꾸지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "OCEAN_LEG_COMPARE",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "ocean_leg_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "요코하마에서 도리시마 번식지 복원 기록 전시의 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "JP",
+        "city_id": "YOKOHAMA",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "exploration",
+        "secondary_stat": "operations"
+      },
+      "conservation": {
+        "iucn_status": "VU",
+        "note_ko": "취약(VU). 19~20세기 초 깃털 이불 재료로 수백만 마리가 잡혀 깃털이 주로 일본에서 수출되었고, 1949년 멸종으로 여겨졌다가 1951년 다시 발견되었다. 현재 약 4,200마리이며 대부분 도리시마에서 번식한다. ‘신천옹(信天翁)’이라고도 부른다.",
+        "cites_appendix": null,
+        "national_protection_ko": null,
+        "sources": [
+          "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "깃털 거래 역사를 다룰 때 상품으로 다시 등장시키지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP54",
+      "name_ko": "비에",
+      "species_ko": "아마비에",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "긴 머리칼, 새 부리 같은 입, 비늘 몸과 세 갈래 꼬리를 가진 아기 아마비에. 위생 안내문 두루마리",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "아마비에(アマビエ) 전승을 업무 동료로 새로 해석한 창작 캐릭터. 전승의 능력·신앙적 의미를 게임 효과나 사실로 설명하지 않는다.",
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 60,
+        "operations": 40,
+        "analysis": 50,
+        "technology": 45,
+        "exploration": 45,
+        "coordination": 60
+      },
+      "stat_total": 300,
+      "attribute": "light",
+      "signature_trait": {
+        "name_ko": "안내문 전하기",
+        "description_ko": "위생·검역 안내문을 고객과 현장 직원에게 빠짐없이 전달한 평가에 5점을 더하는 후보 효과. 질병을 막거나 검역을 면제하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "HYGIENE_NOTICE",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "notice_delivery_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "요코하마 문화 탐방의 박물관 특별전 준비를 돕는 의뢰에서 만난다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "JP",
+        "city_id": "YOKOHAMA",
+        "category": "myth_legend",
+        "category_ko": "신화·전설",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "coordination",
+        "secondary_stat": "negotiation"
+      },
+      "myth_reference": {
+        "creature": "아마비에(アマビエ)",
+        "tradition": "일본 요괴 전승",
+        "summary_ko": "1846년 히고국(지금의 구마모토현) 바다에 나타나 6년간의 풍년과 역병을 예언하고 자기 모습을 그려 사람들에게 보이라고 했다는 이야기가 가와라반(목판 소식지)으로 전한다(교토대학 도서관 소장). 2020년 코로나19 때 일본 후생노동성 감염 예방 홍보물에도 쓰였다.",
+        "sources": [
+          "UBC Museum of Anthropology (2020) https://moa.ubc.ca/2020/04/amabie-a-japanese-spirit-figure-for-the-pandemic/",
+          "Gulf News (2020) https://gulfnews.com/world/covid-19-a-19th-century-japanese-spirit-amabie-is-going-viral-on-twitter-in-hopes-for-end-to-coronavirus-pandemic-1.1587289506627"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "2차 자료로 확인. 원본 가와라반 대조는 미실시",
+        "design_cautions_ko": [
+          "질병 예방 효과를 게임 효과나 사실로 표현하지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP55",
+      "name_ko": "청투구",
+      "species_ko": "투구게",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "말발굽 모양 등딱지와 꼬리 가시의 세가시투구게. 등딱지에 오래된 기록 보관함 무늬",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 60,
+        "analysis": 60,
+        "technology": 50,
+        "exploration": 45,
+        "coordination": 50
+      },
+      "stat_total": 300,
+      "attribute": "earth",
+      "signature_trait": {
+        "name_ko": "오래 남는 기록",
+        "description_ko": "서류를 종류·기간별로 보관하고 찾는 순서를 정한 보관 체계 평가에 5점을 더하는 후보 효과. 서류를 새로 만들지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "ARCHIVE_SYSTEM",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "archive_system_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "하이퐁 문화 탐방에서 갯벌 보전 단체의 투구게 식용 판매 줄이기 캠페인 홍보물 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "VN",
+        "city_id": "HAIPHONG",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "analysis",
+        "secondary_stat": "operations"
+      },
+      "conservation": {
+        "iucn_status": "EN",
+        "note_ko": "2019년 정보 부족에서 위기(EN)로 지정되었다. 일본 남부에서 인도네시아까지 살며, 서식지 감소·식용 남획·세균 독소 검사 시약(TAL) 생산이 위협이다. 피가 구리를 포함한 헤모시아닌 때문에 푸른색을 띠는 ‘살아 있는 화석’이다.",
+        "cites_appendix": null,
+        "national_protection_ko": null,
+        "sources": [
+          "Wikipedia: Tachypleus tridentatus https://en.wikipedia.org/wiki/Tachypleus_tridentatus",
+          "PDA Letter: Tri-Spine Crab Now on Endangered List https://pda.org/pda-letter-portal/home/full-article/tri-spine-crab-now-on-endangered-list"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "식용·시약 원료로 등장시키지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP56",
+      "name_ko": "부리미",
+      "species_ko": "매부리바다거북",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "매의 부리처럼 굽은 입과 호박색 무늬 등딱지의 매부리바다거북. 산호초 수로 지도",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 60,
+        "analysis": 50,
+        "technology": 45,
+        "exploration": 55,
+        "coordination": 50
+      },
+      "stat_total": 300,
+      "attribute": "water",
+      "signature_trait": {
+        "name_ko": "산호초 사이 길 찾기",
+        "description_ko": "좁은 수로·작은 항구의 접안 조건을 확인한 평가에 5점을 더하는 후보 효과. 접안 가능 여부를 바꾸지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "SMALL_PORT_ACCESS",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "port_access_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "싱가포르 남부 섬의 바다거북 둥지 보호·부화 방류 활동 물품 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "SG",
+        "city_id": "SINGAPORE",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "exploration"
+      },
+      "conservation": {
+        "iucn_status": "CR",
+        "note_ko": "위급(CR)이며 CITES 부속서 I. 등딱지(대모갑)를 얻기 위한 남획으로 크게 줄었다. 싱가포르 해협의 산호초에서 관찰되고 남쪽 해변에서 둥지가 발견되기도 한다.",
+        "cites_appendix": "I",
+        "national_protection_ko": null,
+        "sources": [
+          "NParks Flora & Fauna Web https://nparks.gov.sg/florafaunaweb/fauna/2/6/262"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "대모갑 공예품 등 부산물을 거래 상품으로 등장시키지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP57",
+      "name_ko": "토닥",
+      "species_ko": "칼물고기(토닥)",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "길고 뾰족한 주둥이의 날랜 아기 칼물고기(토닥). 바나나 줄기 무늬 스카프와 빠른 답장용 쪽지",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "토닥(todak) 떼 전승을 업무 동료로 새로 해석한 창작 캐릭터. 전승의 능력·신앙적 의미를 게임 효과나 사실로 설명하지 않는다.",
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 60,
+        "operations": 45,
+        "analysis": 45,
+        "technology": 40,
+        "exploration": 55,
+        "coordination": 55
+      },
+      "stat_total": 300,
+      "attribute": "fire",
+      "signature_trait": {
+        "name_ko": "빠른 응답",
+        "description_ko": "고객 문의에 약속한 시간 안에 답하고 기록을 남긴 평가에 5점을 더하는 후보 효과. 답변 내용의 정확성을 대신하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "QUICK_RESPONSE",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "response_time_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "싱가포르 문화 탐방의 옛이야기 공연을 돕는 의뢰에서 만난다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "SG",
+        "city_id": "SINGAPORE",
+        "category": "myth_legend",
+        "category_ko": "신화·전설",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "exploration"
+      },
+      "myth_reference": {
+        "creature": "토닥(todak) 떼",
+        "tradition": "말레이 전승 『말레이 연대기』 「싱가푸라를 습격한 칼물고기」",
+        "summary_ko": "칼물고기 떼가 바닷가 마을을 습격하자 한 소년이 바나나 줄기로 방벽을 세워 주둥이가 박히게 해 막았다는 이야기. 원전에서 소년은 이름이 없고, ‘항 나딤’이라는 이름은 후대 각색에서 붙었다. 1961년 영화로도 만들어졌다.",
+        "sources": [
+          "Wikipedia: Hang Nadim https://en.wikipedia.org/wiki/Hang_Nadim",
+          "Malay Heritage Centre guide https://www.malayheritage.gov.sg/en/-/media/mhc2017/document/online-resourcei-am-hang-nadimguide.pdf?la=en"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "2차 자료로 확인. 원문 대조는 미실시",
+        "design_cautions_ko": [
+          "습격·폭력 장면을 귀여운 동료의 과거로 그리지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP58",
+      "name_ko": "모래알",
+      "species_ko": "말레오",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "머리 위 검은 혹, 분홍빛 배와 검은 등의 말레오. 따뜻한 모래 온도계",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 65,
+        "analysis": 55,
+        "technology": 45,
+        "exploration": 45,
+        "coordination": 50
+      },
+      "stat_total": 300,
+      "attribute": "earth",
+      "signature_trait": {
+        "name_ko": "따뜻한 모래 고르기",
+        "description_ko": "온도 조건이 있는 화물의 보관 장소를 근거와 함께 고른 평가에 5점을 더하는 후보 효과. 보관 온도를 바꾸지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "STORAGE_SITE_CHOICE",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "storage_site_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "자카르타 비즈니스 라운지에서 술라웨시 산란지 보호 활동 홍보물 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "ID",
+        "city_id": "JAKARTA",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "analysis"
+      },
+      "conservation": {
+        "iucn_status": "CR",
+        "note_ko": "위급(CR). 술라웨시와 부톤섬에만 산다. 알을 품지 않고 지열이나 햇볕으로 데워진 모래에 깊이 묻어 부화시킨다.",
+        "cites_appendix": null,
+        "national_protection_ko": null,
+        "sources": [
+          "Wikipedia: Maleo https://en.wikipedia.org/wiki/Maleo",
+          "Mongabay (2015) https://news.mongabay.com/2015/10/the-maleo-a-success-story-for-indonesias-strange-pit-digging-bird/"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "알을 채집·판매하는 장면을 쓰지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP59",
+      "name_ko": "라티",
+      "species_ko": "실러캔스",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "흰 반점의 짙은 갈색 몸, 다리처럼 생긴 살 지느러미의 인도네시아실러캔스. 오래된 기록 탐색용 등불",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 55,
+        "analysis": 70,
+        "technology": 45,
+        "exploration": 45,
+        "coordination": 50
+      },
+      "stat_total": 300,
+      "attribute": "shadow",
+      "signature_trait": {
+        "name_ko": "깊은 기록 찾기",
+        "description_ko": "오래된 계약·통관 기록에서 필요한 근거를 찾아 출처와 함께 제시한 평가에 5점을 더하는 후보 효과. 기록을 새로 만들지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "DEEP_RECORD_SEARCH",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "record_search_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "자카르타 무역회관의 해양 과학 전시 운송을 돕는 의뢰에서 만난다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "ID",
+        "city_id": "JAKARTA",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "analysis",
+        "secondary_stat": "operations"
+      },
+      "conservation": {
+        "iucn_status": "VU",
+        "note_ko": "취약(VU)이며 실러캔스 전 종이 CITES 부속서 I. 1997년 9월 술라웨시 마나도 어시장에서 처음 확인되었고 1998년 표본이 잡혔다. 살 지느러미를 가진 육기어류로 척추동물이 물에서 뭍으로 올라온 진화를 이해하는 데 중요한 무리다.",
+        "cites_appendix": "I",
+        "national_protection_ko": null,
+        "sources": [
+          "Wikipedia: Indonesian coelacanth https://en.wikipedia.org/wiki/Indonesian_coelacanth"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인",
+        "design_cautions_ko": [
+          "어획·판매 장면을 쓰지 않는다"
+        ]
+      }
+    },
+    {
+      "id": "EMP60",
+      "name_ko": "별바다",
+      "species_ko": "고래상어",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "별처럼 흰 점무늬가 가득한 둥근 고래상어. 큰 입을 벌린 채 웃는 얼굴, 분할 선적표",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 60,
+        "analysis": 60,
+        "technology": 40,
+        "exploration": 50,
+        "coordination": 50
+      },
+      "stat_total": 300,
+      "attribute": "shadow",
+      "signature_trait": {
+        "name_ko": "큰 물량 나눠 싣기",
+        "description_ko": "대량 화물을 여러 출항편에 나눠 싣는 계획을 비용·납기와 함께 비교한 평가에 5점을 더하는 후보 효과. 선박 용량을 늘리지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "SPLIT_SHIPMENT_PLAN",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "split_shipment_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "자카르타에서 첸데라와시만 생태관광 가이드 협회의 교육 물품 운송을 도우면 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "만남 지역의 이야기·의뢰·활동 조건을 충족하면 만난다. 합류 후에는 근무 지역 제한이 없고 무작위 추첨·중복 소모가 없다."
+      },
+      "encounter": {
+        "country_code": "ID",
+        "city_id": "JAKARTA",
+        "category": "rare_animal",
+        "category_ko": "희귀·보전 동물",
+        "unlock_stage": "M3",
+        "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "만남 지역은 처음 만나는 곳일 뿐 국적·능력이 아니다. 지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록하며, 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 주지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "신규 후보의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "analysis"
+      },
+      "conservation": {
+        "iucn_status": "EN",
+        "note_ko": "2016년 취약(VU)에서 위기(EN)로 상향되었다. 지난 75년 동안 약 절반이 줄었다고 추정된다. 서파푸아 첸데라와시만에서는 어선의 그물(바간)에서 작은 물고기를 빨아 먹는 행동이 관찰된다.",
+        "cites_appendix": "II",
+        "national_protection_ko": null,
+        "sources": [
+          "Antara News https://en.antaranews.com/news/295338/a-massive-undertaking-to-protect-whale-sharks-in-indonesia",
+          "Galapagos Whale Shark Project https://galapagoswhaleshark.org/whale-sharks/conservation-status"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
+        "design_cautions_ko": [
+          "상어 지느러미 등 부산물을 거래 상품으로 등장시키지 않는다"
         ]
       }
     }
