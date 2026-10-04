@@ -107,8 +107,8 @@
     },
     {
       "path": "data/parameters.json",
-      "size_bytes": 1232,
-      "sha256": "a46baf4c1b28dae00734c8154ce4d4c5ba0d125435070032a6f1a3b69ed705bc"
+      "size_bytes": 2180,
+      "sha256": "7653f378c97717ce9483c21eddf5106aba242597f7bc6a167f95c7ad9e8c4815"
     },
     {
       "path": "data/routes.json",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 6534,
-      "sha256": "d60f1ccb870a9c8d840398f2877e237d62e47381a89580aba61db43bacbaf659"
+      "size_bytes": 8801,
+      "sha256": "90baaec622b51947da80bb3a57cf1bd2e3bff45f9e4325ececfa423ece099eff"
     },
     {
       "path": "data/securities.json",
@@ -152,18 +152,18 @@
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 3403,
-      "sha256": "2ab773bb9cbdf3541302d96fab9293478c852736fbce68c405277c59aceecd4e"
+      "size_bytes": 4869,
+      "sha256": "9d1d560704f6bc9e965509d50d878b5b3da7c928c499e8b36e7979a849ed7bf5"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 12343,
-      "sha256": "8b7b0ca3af8ff6ac060ef85bdc85b04c2c4b1597d60f63877c4832af926a2d88"
+      "size_bytes": 12738,
+      "sha256": "0edbf2dd44e766bc2b449413fb2b56458873335e430239574c4c2adcbbcfb7ff"
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 7943,
-      "sha256": "3dc434ed4f3fb296f98dde13f0e631f2484d14ee9719e6c3ff0daddad8d006d2"
+      "size_bytes": 8527,
+      "sha256": "5e8b63d2c96c94d6102197da21ed08a6a2a89fda45495c723748431e70481da5"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 7474,
-      "sha256": "720c57d9be23865a0dbf72cb10de2b521dd5038d6274e95ae3564cafef9e85da"
+      "size_bytes": 7777,
+      "sha256": "fff7a0b8d60a5996de80fb7bbcae105be5b5bd03b8c1756c4e0728dcfa317863"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -229,6 +229,11 @@
       "path": "references/user_character_clip.json",
       "size_bytes": 1237,
       "sha256": "9e70707e7e96dc2025414a19ef7ef9e9f750d636c616999432f087c07323667d"
+    },
+    {
+      "path": "references/user_character_screens.json",
+      "size_bytes": 2401,
+      "sha256": "b8d6f2a2244776fb46000fb83248d38b518b6c2105418624b430ba3a05d3a98b"
     },
     {
       "path": "schemas/character_rules.schema.json",
@@ -312,8 +317,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 8666,
-      "sha256": "3aa5c2f49015070ef2e1324eeabfe6a025d9622462bc1517c3e95c98ff872025"
+      "size_bytes": 15653,
+      "sha256": "b1e96bc15dd87ca8884c9397e1a46b8670ac3f675e5ab56d9c0bbb407cd467d0"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -362,8 +367,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 16265,
-      "sha256": "cb01634db3c2cbfa2b03a4aadfb3a96133f302b099e88e56a4299e88ad9de1df"
+      "size_bytes": 17940,
+      "sha256": "69c7efda4b5e4f432151b685341131b8dcd46ed98e794075f32027e2be8f4ad4"
     }
   ]
 }

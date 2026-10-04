@@ -1,0 +1,48 @@
+{
+ "reference_id": "USER-SCREENS-01",
+ "provided_on": "2026-10-04",
+ "provided_as": "사용자가 대화에 첨부한 휴대전화 화면 캡처 4장",
+ "apparent_source": "모바일 수집형 게임 광고 화면. 화면에 광고·테스트 버전 녹화 안내가 있으며 USER-CLIP-01과 같은 계열로 보이나 동일 영상인지 확인하지 않음",
+ "checked_on": "2026-10-04",
+ "review_method": "정지 화면 4장 육안 관찰",
+ "interactive_gameplay_verified": false,
+ "images_stored_in_repository": false,
+ "assets_reused": false,
+ "visual_findings": [
+  {
+   "screen": 1,
+   "finding_ko": "단일 카드 확대: 좌상단 숫자 배지, 상단 이름, 홀로그램 테두리와 배경 무늬, 큰 생물 일러스트"
+  },
+  {
+   "screen": 2,
+   "finding_ko": "보관함 3열 카드 격자: 숫자 배지, 팀 표시 꼬리표, 잠금 아이콘, 좌하단 속성 아이콘 2개, 우하단 레벨, 한정 일련번호(No.x/999), 등급 정렬·필터, 편성·방생·판매 버튼"
+  },
+  {
+   "screen": 3,
+   "finding_ko": "카드 상세: 큰 카드, 일련번호·속성 아이콘·레벨, 공격·방어·생명력 막대, 최대 레벨 버튼"
+  },
+  {
+   "screen": 4,
+   "finding_ko": "도감: 번호가 붙은 작은 카드 격자, 우상단 속성 아이콘, 수집 수 진행도와 단계별 보상 표시"
+  }
+ ],
+ "adopted_ko": [
+  "둥근 생물 일러스트와 파스텔 배경, 카드 격자 도감과 번호",
+  "카드 모서리의 속성 아이콘, 하단의 레벨 표시, 카드 위 소속·업무 꼬리표",
+  "선택한 카드에만 적용하는 광택·기울기 효과",
+  "상세 화면의 능력 막대(전투 능력 대신 교섭·운영·분석·기술·탐사·협업)"
+ ],
+ "excluded_ko": [
+  "한정 일련번호(No.x/999)와 희소성 판매: 동료를 수량 한정 상품으로 만들고 이 게임의 희귀도 원칙(성능 배율 없음)과 충돌",
+  "판매·방생 버튼: 직원·동료를 처분 가능한 물건으로 다룸. 퇴사는 고용 계약 종료로만 표현",
+  "공격·방어·생명력 등 전투 능력치",
+  "카드 좌상단 숫자 배지를 종합 전투력처럼 쓰는 방식",
+  "원작의 이름·실루엣·프레임 장식·배지 모양·문구·로고"
+ ],
+ "not_verified": [
+  "actual capture probability",
+  "monetization",
+  "released-game behavior",
+  "whether the four screens come from USER-CLIP-01"
+ ]
+}

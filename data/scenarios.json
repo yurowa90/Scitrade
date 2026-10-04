@@ -36,6 +36,44 @@
         "status": "DESIGN_not_actual_Japan_tariff",
         "duty_currency": "USD"
       },
+      "contract_terms": {
+        "data_basis": "DESIGN",
+        "status": "USER_REVIEWED_2026-10-04",
+        "decision_ref": "docs/DECISIONS.md M1 엔진 구현 결정",
+        "prep_work_units": 2,
+        "booking_cutoff_days_before_departure": 1,
+        "pre_departure_cancellation": {
+          "freight_refund": {
+            "currency": "USD",
+            "amount": 150
+          },
+          "cancellation_fee": {
+            "currency": "USD",
+            "amount": 50
+          },
+          "customer_compensation": {
+            "currency": "USD",
+            "amount": 0
+          },
+          "supplier_return": false,
+          "applies_to_missed_sailing": true
+        },
+        "late_delivery": {
+          "price_reduction": {
+            "currency": "USD",
+            "amount": 50
+          },
+          "basis": "flat_once_regardless_of_late_days"
+        },
+        "payment_due_rule": "scenario_due_day_not_earlier_than_delivery_day",
+        "notes_ko": [
+          "수출 준비 2pt는 EMP01의 하루 처리량과 같아 1일 배정 시 2일 출항 전에 끝난다.",
+          "출항 전 취소와 준비 미완료로 출항편을 놓친 경우 모두 운임 150 환급·취소비 50으로 정산한다. 고객 보상 0, 공급자 반품 없음.",
+          "납기를 넘긴 인도는 지연 일수와 무관하게 판매대금을 50 USD 한 번 감액한다. 감액 후 금액을 매출로 인식한다.",
+          "결제일은 시나리오의 cash_payment_due_day이며 인도일보다 이를 수 없다.",
+          "모든 값은 현실 계약 관행이나 지체상금률이 아닌 개발용 가정이다."
+        ]
+      },
       "expected_direct_trade_result": {
         "purchase_usd": 1000,
         "freight_usd": 200,
@@ -160,6 +198,18 @@
       "delivery_deadline_day": 8,
       "cash_payment_due_day": 11,
       "delay_source": "one shared port delay instance; add exactly 2 days",
+      "port_restriction": {
+        "data_basis": "DESIGN",
+        "status": "USER_REVIEWED_2026-10-04",
+        "event_template_id": "EV02",
+        "event_instance_id": "EVI_M1_EV02_YOKOHAMA",
+        "city_id": "YOKOHAMA",
+        "announce_day": 5,
+        "restriction_start_day": 7,
+        "restriction_end_day": 8,
+        "forecast_equals_actual": true,
+        "notes_ko": "공통 항만 사건 1개. 하역 중단 기간에 실제로 기다린 날만 지연으로 누적하며 총 지연일을 미리 더하지 않는다. 가상 공지이며 실제 기상 자료가 아니다."
+      },
       "actions_ko": [
         "매입 1000·운임 200·가상 관세 50 USD 지급",
         "9일 인도: 고객이 화물을 수락하고 사전 계약 조건에 따라 판매대금 50 USD 감액",

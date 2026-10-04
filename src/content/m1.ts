@@ -1,5 +1,5 @@
 // data/*.json의 DESIGN fixture를 M1 엔진 설정으로 변환한다.
-// USD 표시 금액은 여기서 한 번만 cents로 바꾼다. 데이터에 없는 엔진 보완값은 출처와 함께 이 파일에 모은다.
+// USD 표시 금액은 여기서 한 번만 cents로 바꾼다. 계약 조건·지연 사건도 data/scenarios.json에서 읽는다.
 
 import gameConfig from '../../data/game_config.json';
 import scenarios from '../../data/scenarios.json';
@@ -33,44 +33,35 @@ const TITLES: Record<M1ScenarioId, string> = {
   SCENARIO_M1_DELAY_ACCEPTED: '거래 한 건 — 항만 지연 사례',
 };
 
-/**
- * 데이터 파일에 구조화 필드가 없어 엔진에서 보완한 값.
- * 금액은 scenarios.json의 actions_ko 문장에서 옮겼으며 모두 DESIGN이다.
- */
-export const M1_ENGINE_SUPPLEMENTS = {
-  prepWorkUnits: {
-    value: 2,
-    basis: 'DESIGN',
-    noteKo: 'M1 데이터에 수출 준비 업무량이 없어 EMP01의 하루 처리량(2)과 같게 정함. 1일차 배정 시 2일 출항 전에 끝난다.',
-  },
-  preDepartureFreightRefundUsd: {
-    value: 150,
-    basis: 'DESIGN',
-    noteKo: 'SCENARIO_M1_CANCEL_PREDEPARTURE actions_ko[2] “운임 150 USD 환급, 취소비 50 USD”.',
-  },
-  preDepartureCancellationFeeUsd: {
-    value: 50,
-    basis: 'DESIGN',
-    noteKo: '같은 문장. 출항 전 예약 취소와 준비 미완료로 출항을 놓친 경우에 같은 조건을 적용한다(엔진 결정).',
-  },
-  customerCancellationCompensationUsd: {
-    value: 0,
-    basis: 'DESIGN',
-    noteKo: 'SCENARIO_M1_CANCEL_PREDEPARTURE actions_ko[3] “고객 취소 보상 0은 이 fixture의 계약 조건”.',
-  },
-  lateDeliveryPriceReductionUsd: {
-    value: 50,
-    basis: 'DESIGN',
-    noteKo: 'SCENARIO_M1_DELAY_ACCEPTED actions_ko[1] “사전 계약 조건에 따라 판매대금 50 USD 감액”. 지연 일수와 무관한 1회 감액으로 해석.',
-  },
-  delayAnnounceDay: {
-    value: 5,
-    basis: 'DESIGN',
-    noteKo: '“one shared port delay instance; add exactly 2 days”를 요코하마 7~8일 하역 중단으로 구현. 공지일 5일은 엔진 결정.',
-  },
-} as const;
-
 type AnyRecord = Record<string, unknown>;
+type MoneyRaw = { currency: Currency; amount: number };
+
+/** data/scenarios.json의 contract_terms (DESIGN, 2026-10-04 사용자 검토). */
+interface ContractTermsRaw {
+  prep_work_units: number;
+  booking_cutoff_days_before_departure: number;
+  pre_departure_cancellation: {
+    freight_refund: MoneyRaw;
+    cancellation_fee: MoneyRaw;
+    customer_compensation: MoneyRaw;
+    supplier_return: boolean;
+    applies_to_missed_sailing: boolean;
+  };
+  late_delivery: { price_reduction: MoneyRaw; basis: string };
+  payment_due_rule: string;
+  notes_ko?: string[];
+}
+
+/** data/scenarios.json의 port_restriction (지연 사례 전용). */
+interface PortRestrictionRaw {
+  event_template_id: string;
+  event_instance_id: string;
+  city_id: string;
+  announce_day: number;
+  restriction_start_day: number;
+  restriction_end_day: number;
+  notes_ko?: string;
+}
 
 function asItems(doc: unknown): AnyRecord[] {
   return ((doc as { items: AnyRecord[] }).items ?? []) as AnyRecord[];
@@ -185,21 +176,33 @@ export function loadM1Scenario(id: M1ScenarioId): ScenarioConfig {
     startingCash[currency as Currency] = toMinor(currency as Currency, amount);
   }
 
-  const S = M1_ENGINE_SUPPLEMENTS;
+  const terms = s.contract_terms as ContractTermsRaw | undefined;
+  if (!terms) throw new Error(`${id}: data/scenarios.json에 contract_terms가 없습니다.`);
+  const cancel = terms.pre_departure_cancellation;
+  if (terms.booking_cutoff_days_before_departure !== 1) throw new Error('M1 엔진은 출항 전날 예약 마감만 지원합니다.');
+  if (cancel.supplier_return || !cancel.applies_to_missed_sailing) {
+    throw new Error('M1 엔진은 공급자 반품 없음·출항 불참 동일 정산 조건만 지원합니다.');
+  }
+  if (terms.late_delivery.basis !== 'flat_once_regardless_of_late_days') {
+    throw new Error(`지원하지 않는 지연 감액 규칙: ${terms.late_delivery.basis}`);
+  }
+  const termMinor = (m: MoneyRaw) => {
+    if (m.currency !== tradeCurrency) throw new Error('계약 조건 통화가 거래 통화와 다릅니다.');
+    return toMinor(m.currency, m.amount);
+  };
+
+  // 지연 사례의 공통 항만 사건 1개. 하역 중단 기간에 실제로 기다린 날만 지연으로 누적한다.
   const portRestrictions: PortRestrictionDef[] = [];
-  if (id === 'SCENARIO_M1_DELAY_ACCEPTED') {
-    // 기본 시나리오의 도착 예정일부터 정확히 2일간 목적항 하역 중단 → 첫 하역 가능일에 도착.
-    const base = resolveScenarioRecord(str(s, 'base_scenario_id'));
-    const baseArrival = num(base, 'arrival_day');
-    const delayDays = num(s, 'arrival_day') - baseArrival;
+  const pr = s.port_restriction as PortRestrictionRaw | undefined;
+  if (pr) {
     portRestrictions.push({
-      eventInstanceId: 'EVI_M1_EV02_YOKOHAMA',
-      templateId: 'EV02',
-      cityId: str(routeRaw, 'to_city_id'),
-      announceDay: S.delayAnnounceDay.value,
-      startDay: baseArrival,
-      endDay: baseArrival + delayDays - 1,
-      forecastKo: `요코하마항 ${baseArrival}~${baseArrival + delayDays - 1}일 기상 악화로 하역 중단 예보`,
+      eventInstanceId: pr.event_instance_id,
+      templateId: pr.event_template_id,
+      cityId: pr.city_id,
+      announceDay: pr.announce_day,
+      startDay: pr.restriction_start_day,
+      endDay: pr.restriction_end_day,
+      forecastKo: `${toCity(pr.city_id).nameKo}항 ${pr.restriction_start_day}~${pr.restriction_end_day}일 기상 악화로 하역 중단 예보`,
     });
   }
 
@@ -239,16 +242,16 @@ export function loadM1Scenario(id: M1ScenarioId): ScenarioConfig {
     sellOffer,
     employees: (s.employee_ids as string[]).map(toEmployee),
     terms: {
-      prepWorkUnits: S.prepWorkUnits.value,
+      prepWorkUnits: terms.prep_work_units,
       dutyRateBasisPoints: rateToBasisPoints(taxRule.rate),
       dutyBasis: 'supplier_goods_invoice_only_fictional',
       customsDays: num(s, 'customs_days'),
       deliveryDeadlineDay: num(s, 'delivery_deadline_day'),
       paymentDueDay: num(s, 'cash_payment_due_day'),
-      preDepartureFreightRefundMinor: toMinor(tradeCurrency, S.preDepartureFreightRefundUsd.value),
-      preDepartureCancellationFeeMinor: toMinor(tradeCurrency, S.preDepartureCancellationFeeUsd.value),
-      customerCancellationCompensationMinor: toMinor(tradeCurrency, S.customerCancellationCompensationUsd.value),
-      lateDeliveryPriceReductionMinor: toMinor(tradeCurrency, S.lateDeliveryPriceReductionUsd.value),
+      preDepartureFreightRefundMinor: termMinor(cancel.freight_refund),
+      preDepartureCancellationFeeMinor: termMinor(cancel.cancellation_fee),
+      customerCancellationCompensationMinor: termMinor(cancel.customer_compensation),
+      lateDeliveryPriceReductionMinor: termMinor(terms.late_delivery.price_reduction),
     },
     portRestrictions,
     expectedTimeline: {
@@ -259,6 +262,15 @@ export function loadM1Scenario(id: M1ScenarioId): ScenarioConfig {
     dataVersion: (packageStatus as { package_version: string }).package_version,
     dataBasis: 'DESIGN',
   };
+}
+
+/** 화면의 ‘이 시제품이 가정한 값’에 보여 줄 데이터 메모 (data/scenarios.json). */
+export function m1AssumptionNotes(id: M1ScenarioId): string[] {
+  const s = resolveScenarioRecord(id);
+  const notes = [...((s.contract_terms as ContractTermsRaw | undefined)?.notes_ko ?? [])];
+  const pr = s.port_restriction as PortRestrictionRaw | undefined;
+  if (pr?.notes_ko) notes.push(`${pr.notes_ko} (공지 ${pr.announce_day}일, 하역 중단 ${pr.restriction_start_day}~${pr.restriction_end_day}일)`);
+  return notes;
 }
 
 /** 시나리오 문서의 거래 장부 기대값 (검산용). 엔진 입력으로 쓰지 않는다. */

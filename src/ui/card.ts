@@ -26,21 +26,22 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
     ? `수출 준비 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}`
     : '대기 — 배정 가능';
   const initial = def.nameKo.slice(0, 1);
+  const roleKo = ROLE_KO[def.role] ?? def.role;
   return `
   <article class="card attr-bg-${def.character.attribute ?? 'none'} ${selected ? 'is-selected' : ''}" data-action="select-card" tabindex="0"
-    aria-label="${def.nameKo} 직원 카드, ${ROLE_KO[def.role] ?? def.role}, 레벨 1, ${schedule}">
+    aria-label="${def.nameKo} 직원 카드, ${roleKo}, 레벨 1, ${schedule}">
     <header class="card-top">
-      <span class="card-level" title="레벨">Lv 1</span>
       <span class="card-name">${def.nameKo}</span>
       ${attributeChip(def.character.attribute)}
     </header>
     <div class="card-art">
+      <span class="card-tag ${running ? 'busy' : ''}">${running ? '업무 중' : '대기'}</span>
       <div class="card-face" aria-hidden="true">${initial}</div>
       <p class="card-motif">${def.character.visualMotif ?? ''}</p>
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>
     </div>
     <footer class="card-bottom">
-      <span><b>${ROLE_KO[def.role] ?? def.role}</b> · ${def.id} · 강화 +0</span>
+      <div class="card-meta"><span class="chip">${roleKo}</span><span class="muted">${def.id}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
       <span class="card-schedule">${schedule}</span>
     </footer>
   </article>`;

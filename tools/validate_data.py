@@ -195,6 +195,26 @@ def main():
     # Reference arithmetic only. No simulation engine exists in this package.
     check(10000-1000-200+150 == tables['scenarios']['SCENARIO_M1_CANCEL_PREDEPARTURE']['expected_trade_only_usd']['cash_after'], 'cancel reference arithmetic')
     check(10000-1250+1350 == tables['scenarios']['SCENARIO_M1_DELAY_ACCEPTED']['expected_trade_only_usd']['cash_after_collection'], 'late delivery arithmetic')
+    # M1 contract terms used by the engine (DESIGN, reviewed 2026-10-04).
+    terms = scenario['contract_terms']
+    cancel_terms = terms['pre_departure_cancellation']
+    check(cancel_terms['freight_refund']['amount'] + cancel_terms['cancellation_fee']['amount']
+          == tables['routes']['ROUTE01']['booking_fee']['amount'], 'M1 cancellation splits prepaid freight exactly')
+    check(cancel_terms['cancellation_fee']['amount']
+          == tables['scenarios']['SCENARIO_M1_CANCEL_PREDEPARTURE']['expected_trade_only_usd']['cancellation_expense'],
+          'M1 cancellation fee matches cancel fixture')
+    delay = tables['scenarios']['SCENARIO_M1_DELAY_ACCEPTED']
+    check(100*14 - terms['late_delivery']['price_reduction']['amount'] == delay['expected_trade_only_usd']['net_revenue'],
+          'M1 late reduction matches delay fixture')
+    check(terms['prep_work_units'] <= tables['employees']['EMP01']['work_units_per_day']
+          * (scenario['departure_day'] - scenario['booking_day']), 'M1 prep finishes before departure')
+    restriction = delay['port_restriction']
+    check(restriction['event_template_id'] in tables['events'], 'M1 delay restriction template')
+    check(restriction['city_id'] == tables['routes']['ROUTE01']['to_city_id'], 'M1 delay restriction at destination')
+    check(restriction['announce_day'] < restriction['restriction_start_day'] == scenario['arrival_day'],
+          'M1 delay restriction announced before scheduled arrival')
+    check(restriction['restriction_end_day'] - restriction['restriction_start_day'] + 1
+          == delay['arrival_day'] - scenario['arrival_day'], 'M1 delay restriction adds the fixture delay once')
     check(100-60-5-3-4 == 28 and 90-60-5-3-4 == 18 and 28+90 == 118, 'trade reference arithmetic')
     check(100-10*3-1 == 69 and 10*4-10*3 == 10, 'stock reference arithmetic')
     check(250000*2000 == 500000000 and 1000000/1250000 == .8, 'IPO reference arithmetic')

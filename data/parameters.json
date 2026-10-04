@@ -35,6 +35,29 @@
       "unit": "daily_return_std",
       "basis": "ESTIMATED_PENDING",
       "notes_ko": "변동성 추정 전. 실제 시장 재현 주장 금지."
+    },
+    {
+      "id": "PAR_M1_LATE_REDUCTION",
+      "json_pointer": "scenarios.json#/items/0/contract_terms/late_delivery/price_reduction/amount",
+      "unit": "USD per late contract",
+      "value": 50,
+      "basis": "DESIGN",
+      "notes_ko": "납기 경과 인도 시 1회 감액. 지연 일수 비례가 아님. 현실 지체상금률 아님."
+    },
+    {
+      "id": "PAR_M1_PREP_WORK_UNITS",
+      "json_pointer": "scenarios.json#/items/0/contract_terms/prep_work_units",
+      "unit": "work_points",
+      "value": 2,
+      "basis": "DESIGN",
+      "notes_ko": "M1 수출 준비 업무량. 직원 생산성 추정치가 아님."
+    },
+    {
+      "id": "PAR_PAYMENT_GRACE_DAYS",
+      "unit": "simulation_day",
+      "value": null,
+      "basis": "DESIGN",
+      "notes_ko": "필수 지급 불이행 유예기간 미확정. 엔진은 미지급 의무만 기록하고 경영 실패 판정을 하지 않는다. 임의 구현 금지."
     }
   ],
   "$schema": "../schemas/parameters.schema.json"

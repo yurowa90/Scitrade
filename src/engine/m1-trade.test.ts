@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expectedTradeResult, loadM1Scenario } from '../content/m1';
+import { expectedTradeResult, loadM1Scenario, m1AssumptionNotes } from '../content/m1';
 import { commitDay, createGame, openDay, planCommands } from './engine';
 import { InvariantError, checkInvariants } from './invariants';
 import { summarize } from './ledger';
@@ -14,6 +14,26 @@ const usd = (amount: number) => toMinor('USD', amount);
 function usdBook(state: ReturnType<typeof createGame>) {
   return summarize(state.ledger, 'USD');
 }
+
+describe('data/scenarios.json 계약 조건 연결', () => {
+  it('계약 조건과 지연 사건을 상수가 아닌 데이터에서 읽는다', () => {
+    const base = loadM1Scenario('SCENARIO_M1_ONE_TRADE');
+    expect(base.terms.prepWorkUnits).toBe(2);
+    expect(base.terms.preDepartureFreightRefundMinor + base.terms.preDepartureCancellationFeeMinor).toBe(base.route.bookingFeeMinor);
+    expect(base.terms.lateDeliveryPriceReductionMinor).toBe(usd(50));
+    expect(base.portRestrictions).toHaveLength(0);
+    // 변형 시나리오는 기본 시나리오의 계약 조건을 상속하고 자기 사건만 더한다.
+    const delay = loadM1Scenario('SCENARIO_M1_DELAY_ACCEPTED');
+    expect(delay.terms.preDepartureCancellationFeeMinor).toBe(base.terms.preDepartureCancellationFeeMinor);
+    expect(delay.terms.paymentDueDay).toBe(11);
+    expect(delay.portRestrictions).toEqual([
+      expect.objectContaining({ eventInstanceId: 'EVI_M1_EV02_YOKOHAMA', cityId: 'YOKOHAMA', announceDay: 5, startDay: 7, endDay: 8 }),
+    ]);
+    expect(loadM1Scenario('SCENARIO_M1_CANCEL_PREDEPARTURE').portRestrictions).toHaveLength(0);
+    expect(m1AssumptionNotes('SCENARIO_M1_ONE_TRADE').length).toBeGreaterThan(0);
+    expect(m1AssumptionNotes('SCENARIO_M1_DELAY_ACCEPTED').at(-1)).toContain('하역 중단 7~8일');
+  });
+});
 
 describe('M1 정상 거래 — SCENARIO_M1_ONE_TRADE', () => {
   const config = loadM1Scenario('SCENARIO_M1_ONE_TRADE');

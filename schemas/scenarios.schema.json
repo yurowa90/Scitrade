@@ -334,6 +334,225 @@
           },
           "training_enabled": {
             "type": "boolean"
+          },
+          "contract_terms": {
+            "type": "object",
+            "description": "M1 엔진이 쓰는 거래 계약 조건. DESIGN 값이며 현실 계약 관행이 아니다.",
+            "required": [
+              "data_basis",
+              "prep_work_units",
+              "booking_cutoff_days_before_departure",
+              "pre_departure_cancellation",
+              "late_delivery",
+              "payment_due_rule"
+            ],
+            "properties": {
+              "data_basis": {
+                "type": "string",
+                "enum": [
+                  "DESIGN"
+                ]
+              },
+              "status": {
+                "type": "string"
+              },
+              "decision_ref": {
+                "type": "string"
+              },
+              "prep_work_units": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "booking_cutoff_days_before_departure": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pre_departure_cancellation": {
+                "type": "object",
+                "required": [
+                  "freight_refund",
+                  "cancellation_fee",
+                  "customer_compensation",
+                  "supplier_return",
+                  "applies_to_missed_sailing"
+                ],
+                "properties": {
+                  "freight_refund": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD",
+                          "KRW"
+                        ]
+                      },
+                      "amount": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "cancellation_fee": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD",
+                          "KRW"
+                        ]
+                      },
+                      "amount": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "customer_compensation": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD",
+                          "KRW"
+                        ]
+                      },
+                      "amount": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "supplier_return": {
+                    "type": "boolean"
+                  },
+                  "applies_to_missed_sailing": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "late_delivery": {
+                "type": "object",
+                "required": [
+                  "price_reduction",
+                  "basis"
+                ],
+                "properties": {
+                  "price_reduction": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD",
+                          "KRW"
+                        ]
+                      },
+                      "amount": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "flat_once_regardless_of_late_days"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "payment_due_rule": {
+                "type": "string",
+                "enum": [
+                  "scenario_due_day_not_earlier_than_delivery_day"
+                ]
+              },
+              "notes_ko": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "port_restriction": {
+            "type": "object",
+            "description": "시나리오에 고정된 항만 작업 제한 사건 1개. 하역 불가 기간은 양 끝 포함.",
+            "required": [
+              "data_basis",
+              "event_template_id",
+              "event_instance_id",
+              "city_id",
+              "announce_day",
+              "restriction_start_day",
+              "restriction_end_day",
+              "forecast_equals_actual"
+            ],
+            "properties": {
+              "data_basis": {
+                "type": "string",
+                "enum": [
+                  "DESIGN"
+                ]
+              },
+              "status": {
+                "type": "string"
+              },
+              "event_template_id": {
+                "type": "string"
+              },
+              "event_instance_id": {
+                "type": "string"
+              },
+              "city_id": {
+                "type": "string"
+              },
+              "announce_day": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "restriction_start_day": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "restriction_end_day": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "forecast_equals_actual": {
+                "type": "boolean"
+              },
+              "notes_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

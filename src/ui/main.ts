@@ -2,7 +2,7 @@
 // 화면은 엔진 상태를 읽고 명령을 대기열에 넣을 뿐, 현금·재고를 따로 들고 있지 않다.
 
 import './style.css';
-import { M1_ENGINE_SUPPLEMENTS, M1_SCENARIO_IDS, loadM1Scenario, type M1ScenarioId } from '../content/m1';
+import { M1_SCENARIO_IDS, loadM1Scenario, m1AssumptionNotes, type M1ScenarioId } from '../content/m1';
 import { bookedSpace, cargoSpace, cityName, commitDay, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { companyReport, quotePreview } from '../engine/reports';
@@ -356,7 +356,7 @@ function logPanel(): string {
   <section class="panel log" aria-labelledby="log-h">
     <h2 id="log-h">기록</h2>
     <ul>${items.map((l) => `<li><span>${l.day}일</span>${esc(l.textKo)}</li>`).join('') || '<li class="muted">아직 기록이 없습니다.</li>'}</ul>
-    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${Object.values(M1_ENGINE_SUPPLEMENTS).map((s) => `<li>${esc(s.noteKo)}</li>`).join('')}</ul></details>
+    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${m1AssumptionNotes(config.id as M1ScenarioId).map((n) => `<li>${esc(n)}</li>`).join('')}</ul></details>
   </section>`;
 }
 

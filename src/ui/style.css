@@ -170,7 +170,10 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 }
 @keyframes sheen { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 .card-top { display: flex; align-items: center; gap: .4rem; }
-.card-level { background: var(--navy); color: #fff; border-radius: 999px; font-size: .75rem; font-weight: 700; padding: .1rem .5rem; }
+.card-level { margin-left: auto; font-weight: 700; font-size: .85rem; }
+.card-meta { display: flex; align-items: center; gap: .4rem; }
+.card-tag { align-self: flex-end; margin-bottom: -.4rem; font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .05rem .55rem; background: #fff; color: var(--navy-soft); border: 1.5px solid var(--line); }
+.card-tag.busy { background: var(--warn); color: #fff; border-color: var(--warn); }
 .card-name { font-size: 1.15rem; font-weight: 700; flex: 1; }
 .chip { display: inline-flex; align-items: center; gap: .2rem; font-size: .75rem; font-weight: 600; border-radius: 999px; padding: .1rem .5rem; background: #fff; border: 1.5px solid var(--line); }
 .chip svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; }
