@@ -150,6 +150,15 @@ def main():
               route['id'] + ': time')
         check(route['capacity_kg'] > 0 and route['capacity_m3'] > 0,
               route['id'] + ': capacity')
+    # Characters: real animals or mythic beasts only; mythic ones carry an interpretation note.
+    for character in tables['characters'].values():
+        check(character['creature_kind'] in {'animal', 'myth_inspired'},
+              character['id'] + ': no invented composite creatures')
+        if character['creature_kind'] == 'myth_inspired':
+            check(bool(character.get('myth_interpretation_note')), character['id'] + ': myth interpretation note')
+    for employee in tables['employees'].values():
+        check(employee['name_ko'] == tables['characters'][employee['id']]['name_ko'],
+              employee['id'] + ': employee and character names match')
     # Map display geometry (not used for distance or transit time).
     for city in tables['world'].values():
         geo = city.get('geo_position')

@@ -23,7 +23,7 @@
 | ④ 수정 | 소품 색·손발 수 등은 부분 재생성이나 이미지 편집으로 고친다 | 고친 내용 |
 | ⑤ 인계 | 고른 원본 PNG를 대화에 올린다. 배경 제거·자르기·규격 변환·게임 연결은 Claude가 한다 | 파일명 규칙(6절) |
 
-창작 결합 생물인 돌몽(EMP04)과 밤꾸미(EMP06)는 일관성이 가장 흔들리기 쉽다. ② 단계에서 후보를 더 많이 뽑는다.
+거북과 뱀이 한 몸인 현돌(EMP04), 여러 동물의 부위를 합친 불가사리 쇠꼬미(EMP10)처럼 형태가 복합적인 신수는 일관성이 가장 흔들리기 쉽다. ② 단계에서 후보를 더 많이 뽑는다.
 
 ## 3. 공통 화풍 프롬프트 (동료)
 
@@ -47,11 +47,29 @@ plain very light background, high detail, no text
 | EMP01 귀솔 | 빛·영업 | `a small fennec fox office worker, oversized ears, round muzzle, cream and pale copper fur, folded mint scarf tied at the neck, holding a one-page quotation sheet, calm friendly smile` |
 | EMP02 물보리 | 물·운영 | `a chubby river otter logistics worker, round waterproof work vest, shell-shaped buckle, short tail curled at the tip, holding a waterproof clipboard, cheerful focused look` |
 | EMP03 솔솔밤 | 바람·영업 | `a flying squirrel salesperson with round cheeks, tan body, light green gliding membranes, small postal-style document satchel, mid-hop pose, bright curious eyes` |
-| EMP04 돌몽 | 물·운영 | `an original harbor creature combining a round turtle shell and a small friendly boar face, blue-gray body, shell-shaped sorting tags hanging from the shell, sturdy stance, gentle eyes` |
+| EMP04 현돌 (현무) | 물·운영 | `a cute baby black tortoise guardian beast with a small friendly snake companion coiled around its shell as one creature, dark navy shell divided into neat cargo-hold patterns, teal wave accents, the snake wears a tiny sorting tag, calm sturdy stance` |
 | EMP05 화랑콩 | 불·영업 | `a round red panda with short bangs, orange-tipped tail, carrying a foldable product sample board and a small tool pouch, confident grin` |
-| EMP06 밤꾸미 | 그림자·운영 | `an original round moth-like creature with short antennae, dark gray wings with pale star-like spots, wearing a night-shift work apron, holding a big pencil, sleepy but attentive eyes` |
+| EMP06 바름 (해치) | 그림자·운영 | `a cute round mythical justice beast with a single small horn on its forehead, curly mane, a few scale patterns on its chest, pale gray body with navy trim, wearing a night-shift work apron, holding a magnifying glass over a ledger, serious but kind eyes` |
 
-확정 후 점검: 귀솔의 큰 귀·민트색 목도리, 물보리의 조개 버클, 솔솔밤의 서류 가방, 돌몽의 등껍질+멧돼지 얼굴, 화랑콩의 견본판, 밤꾸미의 별무늬 날개가 모든 장면에서 유지되어야 한다.
+확정 후 점검: 귀솔의 큰 귀·민트색 목도리, 물보리의 조개 버클, 솔솔밤의 서류 가방, 현돌의 화물칸 무늬 등껍질과 뱀 짝꿍, 화랑콩의 견본판, 바름의 외뿔과 돋보기가 모든 장면에서 유지되어야 한다.
+
+### 신화 모티프 사용 원칙
+
+- 동료는 실재 동물이나 신화 속 신수·환수·괴물만 쓴다. 창작 결합 생물은 쓰지 않는다(2026-10-04 사용자 결정).
+- 전승의 출전 조사는 `data/characters.json`의 `myth_reference`에 기록한다. 게임 설정은 창작 해석이며 전승의 확정 설명이 아니다.
+- 바름(해치)은 서울특별시 공식 캐릭터 ‘해치’와 닮지 않게 만든다. 쇠꼬미(불가사리)는 영화 「불가사리」(1985)의 괴수 디자인과 닮지 않게 만든다.
+- 신앙 대상으로 지금도 숭배되는 신격(예: 종교의 신, 신의 탈것)은 직원 캐릭터로 쓰지 않는다.
+
+### P1 신수 6종 — 기준 프롬프트
+
+| ID·이름 | 모티프 | 기준 프롬프트 (앞부분) |
+|---|---|---|
+| EMP07 푸르릉 | 용 | `a cute round baby dragon with two short horns, cloud-like curled whiskers, teal scales, wearing a small raincoat` |
+| EMP08 불씨롱 | 불사조 | `a round fledgling phoenix-like bird with three short tail plumes, apricot body, golden crest, wearing insulated work gloves` |
+| EMP09 깃모아 | 그리핀 | `a chubby griffin-like creature with a bird beak, small lion paws, folding little wings, navy backpack, white eyebrow feathers` |
+| EMP10 쇠꼬미 | 불가사리 | `a cute baby Bulgasari, a Korean folklore iron-eating beast, round bear-like body, short elephant-like trunk, tiger-striped legs, small ox tail, nibbling a rusty bolt, work apron with a wrench` |
+| EMP11 유리뿔 | 사슴형 신수 | `a round young deer-like divine beast with short translucent antlers, cream fur, pale violet ears, a small compass on its collar` |
+| EMP12 두루 | 백택 | `a fluffy round white mythical beast of wisdom, short soft horns, small gentle eye-shaped markings on its sides, carrying a scroll notebook and a magnifying glass` |
 
 ## 5. 장면 확장 (③ 단계)
 

@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 52999,
-      "sha256": "b4a02d3f3b5225d059a3bf7d3dc39be01f5e884c649b9fa5c5c75358689af7b7"
+      "size_bytes": 58314,
+      "sha256": "ac06bdf3b5d51833514f3a80eec9d55352655c9768c08b34cf6f61ce7f9bcd6b"
     },
     {
       "path": "data/contacts.json",
@@ -67,8 +67,8 @@
     },
     {
       "path": "data/employees.json",
-      "size_bytes": 3776,
-      "sha256": "f795ca399cbb861a1236ce4339aae4dcdaed7cd51eee4af98e849929ee1e90a1"
+      "size_bytes": 3773,
+      "sha256": "6e6be4fee0a2fa994a545fee810072ed608ae6952cd4ac651296f0dee639be85"
     },
     {
       "path": "data/events.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 9591,
-      "sha256": "f35ceba404b5d01702e78e9dec9202de5e641d0ab595e751736c91f9fe780c6c"
+      "size_bytes": 11265,
+      "sha256": "3ebb069316db9bdcc5e33988948c516ab75f7d809e4884ff6c003578022e4bf5"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/art/PROMPTS.md",
-      "size_bytes": 10117,
-      "sha256": "a992d6ebec2db243e42a785348cafb359c3a87a4c2cfaedc7a27abcc4cd0b8de"
+      "size_bytes": 12225,
+      "sha256": "0b2a67681bd7d4d554be4ba15496d08a77fc4a99545cff8b628c8815da2d925b"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",
@@ -247,8 +247,8 @@
     },
     {
       "path": "schemas/characters.schema.json",
-      "size_bytes": 12955,
-      "sha256": "5f5330a72b0a7db270278ee08a94b576aae4f72e4db72e9922065450b284888d"
+      "size_bytes": 14421,
+      "sha256": "8f17af934544f0f8efd1a8b6871c97b025d33c9472984670a740e060a64733e5"
     },
     {
       "path": "schemas/contacts.schema.json",
@@ -372,8 +372,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 18597,
-      "sha256": "c5001e3dc7e0b4707029e104e19e0cc853d77297a9856c28cc82e1b064ae9e81"
+      "size_bytes": 19267,
+      "sha256": "65da9dd898c4d71c8794793d5c0677317ea80d5f02d9af7b56c99ad22a2d47cf"
     }
   ]
 }

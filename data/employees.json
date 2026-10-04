@@ -77,7 +77,7 @@
     },
     {
       "id": "EMP04",
-      "name_ko": "돌몽",
+      "name_ko": "현돌",
       "fictional": true,
       "role": "operations",
       "home_city_id": "BUSAN",
@@ -123,7 +123,7 @@
     },
     {
       "id": "EMP06",
-      "name_ko": "밤꾸미",
+      "name_ko": "바름",
       "fictional": true,
       "role": "operations",
       "home_city_id": "BUSAN",

@@ -5,7 +5,7 @@
     "DESIGN-V04"
   ],
   "status": "CONTENT_PROPOSAL_NOT_EXECUTABLE",
-  "purpose": "동물·창작 괴물·신화 모티프 직원 수집 콘텐츠의 v0.4 후보 데이터",
+  "purpose": "동물과 신화 속 신수·환수·괴물을 모티프로 한 직원 수집 콘텐츠의 v0.4 후보 데이터. 창작 결합 생물은 쓰지 않는다(2026-10-04 사용자 결정).",
   "numeric_values_status": "능력치·특성 효과·희소성 수치는 모두 개발용 창작 값. 현실의 개인·동물·국가·집단 역량에 대한 추정이 아니다.",
   "rules": {
     "base_stat_budget": 300,
@@ -307,22 +307,37 @@
     },
     {
       "id": "EMP04",
-      "name_ko": "돌몽",
+      "name_ko": "현돌",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
       "source_refs": [
         "DESIGN-V04"
       ],
-      "creature_kind": "original_creature",
-      "visual_motif": "둥근 거북 등껍질과 작은 멧돼지 얼굴을 결합한 항구 생물, 청회색 몸과 조개 모양 분류표",
+      "creature_kind": "myth_inspired",
+      "visual_motif": "둥근 검푸른 아기 거북과 등껍질을 감싼 작은 뱀 짝꿍이 한 몸인 현무 모티프. 칸이 나뉜 화물칸 무늬 등껍질, 청록색 물결 장식, 뱀은 목에 작은 분류표를 걸었다",
       "art_direction": {
         "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
         "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
         "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
         "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
       },
-      "myth_interpretation_note": null,
+      "myth_interpretation_note": "사신(四神) 중 북방을 맡는 현무(玄武)의 거북·뱀 결합 형상을 귀여운 직원으로 새로 해석했다. 전승의 방위·오행 상징을 게임 능력이나 실제 효과로 설명하지 않는다.",
+      "myth_reference": {
+        "creature": "현무(玄武)",
+        "tradition": "동아시아 사신(四神) 도상. 고구려 고분벽화",
+        "summary_ko": "북방을 상징하는 신수로 검은 거북과 뱀이 얽힌 모습으로 그려진다. 고구려 강서대묘(7세기 무렵) 널방 북벽의 현무도가 대표적이다.",
+        "sources": [
+          "한국민족문화대백과사전 「현무」·「강서대묘」 항목",
+          "동북아역사재단 고구려 고분벽화 자료"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "백과사전·기관 자료의 개요 확인. 원전·도판 대조는 미실시",
+        "design_cautions_ko": [
+          "특정 고분 벽화의 도상을 그대로 옮기지 않는다",
+          "불을 뿜는 등 위협적 표현은 쓰지 않는다"
+        ]
+      },
       "primary_role": "operations",
       "level": 1,
       "stats": {
@@ -495,22 +510,38 @@
     },
     {
       "id": "EMP06",
-      "name_ko": "밤꾸미",
+      "name_ko": "바름",
       "fictional": true,
       "release_phase": "P0",
       "data_basis": "DESIGN",
       "source_refs": [
         "DESIGN-V04"
       ],
-      "creature_kind": "original_creature",
-      "visual_motif": "짧은 더듬이의 둥근 나방형 생물, 진회색 날개에 별 같은 연한 점무늬, 커다란 연필과 야간 작업 앞치마",
+      "creature_kind": "myth_inspired",
+      "visual_motif": "이마에 작은 외뿔이 있는 둥근 해치 모티프. 곱슬 갈기와 가슴의 비늘 무늬, 연회색 몸에 남색 테두리, 장부 대조용 돋보기와 야간 작업 앞치마",
       "art_direction": {
         "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
         "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
         "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
         "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
       },
-      "myth_interpretation_note": null,
+      "myth_interpretation_note": "시비와 선악을 가린다고 전해지는 해치(獬豸·해태)를 서류 대조 담당으로 새로 해석했다. 실제 진위 판별 능력이나 법적 판단을 대신한다는 설정을 두지 않는다.",
+      "myth_reference": {
+        "creature": "해치(獬豸)·해태",
+        "tradition": "중국 한대 문헌과 조선의 궁궐·관복 장식",
+        "summary_ko": "옳고 그름을 가려 바르지 않은 쪽을 들이받는다는 외뿔 짐승으로 전한다. 조선에서는 사헌부 대사헌의 흉배에 쓰였고, 광화문 앞에 해치상이 있다. 물을 좋아해 화재를 막는다는 믿음도 전한다. 서울특별시가 2008년 상징으로 정했다.",
+        "sources": [
+          "왕충 『논형(論衡)』 시응편, 양부 『이물지(異物志)』의 해치 기록 (원문 미대조)",
+          "서울특별시 상징 해치 안내 https://www.seoul.go.kr/seoul/symbol_bi.do",
+          "주간경향 「거적 쓰고 밀려났던…광화문 ‘해치’의 팔자」(2023) https://weekly.khan.co.kr/article/202310271120451"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "기관·언론 자료로 개요 확인. 한문 원전 대조는 미실시",
+        "design_cautions_ko": [
+          "서울특별시 공식 캐릭터 ‘해치’의 외형·색·이름과 닮지 않게 한다",
+          "이름에 ‘해치’를 그대로 쓰지 않는다"
+        ]
+      },
       "primary_role": "operations",
       "level": 1,
       "stats": {
@@ -862,22 +893,37 @@
     },
     {
       "id": "EMP10",
-      "name_ko": "모래봉",
+      "name_ko": "쇠꼬미",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
       "source_refs": [
         "DESIGN-V04"
       ],
-      "creature_kind": "original_creature",
-      "visual_motif": "뿔이 작은 염소와 둥근 모래 언덕을 결합한 생물, 베이지색 단단한 털, 등에 작은 다육식물 모양 장식",
+      "creature_kind": "myth_inspired",
+      "visual_motif": "곰처럼 둥근 몸, 짧은 코끼리 코, 호랑이 줄무늬 다리, 작은 소꼬리를 가진 아기 불가사리. 녹슨 볼트를 오물거리고 렌치가 꽂힌 작업 앞치마를 둘렀다",
       "art_direction": {
         "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
         "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
         "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
         "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
       },
-      "myth_interpretation_note": null,
+      "myth_interpretation_note": "쇠를 먹어 치운다는 불가사리 전설을 고장 난 장비를 고쳐 쓰는 정비 담당으로 새로 해석했다. 금속을 먹어 재고를 없애는 효과나 죽지 않는 능력은 게임에 두지 않는다.",
+      "myth_reference": {
+        "creature": "불가사리(不可殺伊)",
+        "tradition": "한국 설화 「송도말년불가사리전」",
+        "summary_ko": "고려 말 개경에 나타나 무기·농기구 등 쇠를 닥치는 대로 먹고 화살로도 죽지 않았다는 괴물. 불로 죽였다 하여 火可殺伊로 풀이하기도 한다. 곰 몸에 코끼리 코, 무소 눈, 소꼬리, 호랑이 다리로 묘사되며, 경복궁 굴뚝에 나쁜 기운을 막는 뜻으로 새겨져 있다.",
+        "sources": [
+          "경기일보 불가사리 관련 기사 https://kyeonggi.com/article/200811030302476",
+          "위키트리 「한국 전통 요괴 13선」 https://www.wikitree.co.kr/articles/354152"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "언론 자료로 개요 확인. 설화 원문·학술 자료 대조 필요",
+        "design_cautions_ko": [
+          "북한 영화 「불가사리」(1985)의 괴수 디자인과 닮지 않게 한다",
+          "파괴·공포 표현 대신 정비·재활용 이미지로 쓴다"
+        ]
+      },
       "primary_role": "operations",
       "level": 1,
       "stats": {
@@ -1044,22 +1090,37 @@
     },
     {
       "id": "EMP12",
-      "name_ko": "묵구름",
+      "name_ko": "두루",
       "fictional": true,
       "release_phase": "P1",
       "data_basis": "DESIGN",
       "source_refs": [
         "DESIGN-V04"
       ],
-      "creature_kind": "original_creature",
-      "visual_motif": "작은 고양이 얼굴과 둥근 구름 몸, 잉크색 몸에 라일락색 테두리, 구름 꼬리와 돋보기",
+      "creature_kind": "myth_inspired",
+      "visual_motif": "흰 털이 복슬한 둥근 백택 모티프. 짧고 부드러운 뿔, 옆구리의 작은 눈 모양 무늬, 두루마리 수첩과 돋보기",
       "art_direction": {
         "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
         "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
         "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
         "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
       },
-      "myth_interpretation_note": null,
+      "myth_interpretation_note": "세상의 모든 요괴를 알았다는 백택(白澤)을 소문의 출처를 확인하는 시장 분석 담당으로 새로 해석했다. 미래나 비공개 정보를 아는 능력은 두지 않는다.",
+      "myth_reference": {
+        "creature": "백택(白澤)",
+        "tradition": "중국 전승. 일본 에도 시대 액막이 그림",
+        "summary_ko": "황제(黃帝)가 동쪽 바닷가에서 만난 말하는 신수로, 천하의 귀신·요괴 11,520종의 모습과 대처법을 알려 주었고 이를 『백택도(白澤圖)』로 엮었다고 전한다(『운급칠첨』 「헌원본기」).",
+        "sources": [
+          "『운급칠첨(雲笈七籤)』 「헌원본기(軒轅本紀)」 (원문 미대조)",
+          "Wikipedia \"Bai Ze\" https://en.wikipedia.org/wiki/Bai_Ze"
+        ],
+        "checked_on": "2026-10-04",
+        "check_level": "2차 자료로 개요 확인. 원전 대조는 미실시",
+        "design_cautions_ko": [
+          "옆구리 눈은 무섭지 않은 무늬로만 표현한다",
+          "전통 회화의 도상을 그대로 옮기지 않는다"
+        ]
+      },
       "primary_role": "sales",
       "level": 1,
       "stats": {
