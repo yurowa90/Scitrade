@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "scenarios v0.4 data shape",
+  "description": "Starter data shape, plus semantic checks in tools/validate_data.py. Not a complete game engine command contract.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "configuration_merge_rule",
+    "data_basis",
+    "items",
+    "numeric_values_status",
+    "schema_version",
+    "source_refs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "configuration_merge_rule": {
+      "type": "object",
+      "required": [
+        "character_system",
+        "employee_ids",
+        "feature_flags",
+        "initialization",
+        "omitted_feature_flags",
+        "precedence",
+        "stage_mapping",
+        "variant_rule"
+      ],
+      "properties": {
+        "character_system": {
+          "type": "string"
+        },
+        "employee_ids": {
+          "type": "string"
+        },
+        "feature_flags": {
+          "type": "string"
+        },
+        "initialization": {
+          "type": "string"
+        },
+        "omitted_feature_flags": {
+          "type": "string"
+        },
+        "precedence": {
+          "type": "string"
+        },
+        "stage_mapping": {
+          "type": "object",
+          "required": [
+            "M1",
+            "M2",
+            "P1"
+          ],
+          "properties": {
+            "M1": {
+              "type": "string"
+            },
+            "M2": {
+              "type": "string"
+            },
+            "P1": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "variant_rule": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "data_basis": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "securities_enabled",
+          "source_refs",
+          "stage"
+        ],
+        "properties": {
+          "account_owner": {
+            "type": "string"
+          },
+          "actions_ko": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activity_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "arrival_day": {
+            "type": "integer"
+          },
+          "base_scenario_id": {
+            "type": "string"
+          },
+          "booking_day": {
+            "type": "integer"
+          },
+          "candidate_character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cash_payment_due_day": {
+            "type": "integer"
+          },
+          "character_system_enabled": {
+            "type": "boolean"
+          },
+          "city_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "culture_enabled": {
+            "type": "boolean"
+          },
+          "customs_days": {
+            "type": "integer"
+          },
+          "day_start": {
+            "type": "integer"
+          },
+          "delay_source": {
+            "type": "string"
+          },
+          "delivery_deadline_day": {
+            "type": "integer"
+          },
+          "departure_day": {
+            "type": "integer"
+          },
+          "employee_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enhancement_enabled": {
+            "type": "boolean"
+          },
+          "expected_direct_trade_result": {
+            "type": "object",
+            "required": [
+              "contribution_before_payroll_usd",
+              "duty_usd",
+              "freight_usd",
+              "purchase_usd",
+              "revenue_usd"
+            ],
+            "properties": {
+              "contribution_before_payroll_usd": {
+                "type": "integer"
+              },
+              "duty_usd": {
+                "type": "integer"
+              },
+              "freight_usd": {
+                "type": "integer"
+              },
+              "purchase_usd": {
+                "type": "integer"
+              },
+              "revenue_usd": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          },
+          "expected_trade_only_usd": {
+            "type": "object",
+            "required": [
+              "accounts_receivable",
+              "contribution"
+            ],
+            "properties": {
+              "accounts_receivable": {
+                "type": "integer"
+              },
+              "assets_cash_plus_inventory": {
+                "type": "integer"
+              },
+              "cancellation_expense": {
+                "type": "integer"
+              },
+              "cash_after": {
+                "type": "integer"
+              },
+              "cash_after_collection": {
+                "type": "integer"
+              },
+              "cash_before_collection": {
+                "type": "integer"
+              },
+              "contribution": {
+                "type": "integer"
+              },
+              "direct_cost": {
+                "type": "integer"
+              },
+              "inventory_cost": {
+                "type": "integer"
+              },
+              "inventory_units": {
+                "type": "integer"
+              },
+              "net_revenue": {
+                "type": "integer"
+              },
+              "opening_cash": {
+                "type": "integer"
+              },
+              "remaining_inventory_units": {
+                "type": "integer"
+              },
+              "revenue": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          },
+          "good_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "initial_enhancement_rank": {
+            "type": "integer"
+          },
+          "initial_level": {
+            "type": "integer"
+          },
+          "initial_xp": {
+            "type": "integer"
+          },
+          "ipo_enabled": {
+            "type": "boolean"
+          },
+          "margin_allowed": {
+            "type": "boolean"
+          },
+          "matching_frequency": {
+            "type": "string"
+          },
+          "offer_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "organization_enabled": {
+            "type": "boolean"
+          },
+          "productivity_mode": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "relationship_rule": {
+            "type": "string"
+          },
+          "route_id": {
+            "type": "string"
+          },
+          "scope_note": {
+            "type": "string"
+          },
+          "securities_enabled": {
+            "type": "boolean"
+          },
+          "security_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "settlement": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stage": {
+            "type": "string"
+          },
+          "start_with_existing_employment": {
+            "type": "boolean"
+          },
+          "tax_rule": {
+            "type": "object",
+            "required": [
+              "basis",
+              "duty_currency",
+              "rate",
+              "status"
+            ],
+            "properties": {
+              "basis": {
+                "type": "string"
+              },
+              "duty_currency": {
+                "type": "string"
+              },
+              "rate": {
+                "type": "number"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "training_enabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "numeric_values_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

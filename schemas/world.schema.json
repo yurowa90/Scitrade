@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "world v0.4 data shape",
+  "description": "Starter data shape, plus semantic checks in tools/validate_data.py. Not a complete game engine command contract.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "data_basis",
+    "items",
+    "numeric_values_status",
+    "schema_version",
+    "source_refs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "data_basis": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "country_code",
+          "id",
+          "location_type",
+          "map_position",
+          "name_ko",
+          "source_refs",
+          "travel_rules",
+          "unique_content_status",
+          "venue_ids"
+        ],
+        "properties": {
+          "country_code": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "location_type": {
+            "type": "string"
+          },
+          "map_position": {
+            "type": "object",
+            "required": [
+              "coordinate_system",
+              "x",
+              "y"
+            ],
+            "properties": {
+              "coordinate_system": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": true
+          },
+          "name_ko": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "travel_rules": {
+            "type": "string"
+          },
+          "unique_content_status": {
+            "type": "string"
+          },
+          "venue_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "venue_template_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "numeric_values_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

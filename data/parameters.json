@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.3.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V03"
+  ],
+  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "items": [
+    {
+      "id": "PAR_FX",
+      "json_pointer": "game_config.json#/config/fx_krw_per_usd",
+      "unit": "KRW/USD",
+      "value": 1300,
+      "basis": "DESIGN",
+      "notes_ko": "환율 연결 검증용 고정값. 관측 환율 아님."
+    },
+    {
+      "id": "PAR_TAX",
+      "json_pointer": "scenarios.json#/items/0/tax_rule/rate",
+      "unit": "ratio",
+      "value": 0.05,
+      "basis": "DESIGN",
+      "notes_ko": "계산 검증용 가상 과세규칙. 실제 세율 아님."
+    },
+    {
+      "id": "PAR_RELATION_GAIN",
+      "value": null,
+      "unit": "design_point",
+      "basis": "DESIGN",
+      "notes_ko": "관계 성장은 활동·약속 기록 우선. 점수 증분 미확정, 임의 구현 금지."
+    },
+    {
+      "id": "PAR_STOCK_VOLATILITY",
+      "value": null,
+      "unit": "daily_return_std",
+      "basis": "ESTIMATED_PENDING",
+      "notes_ko": "변동성 추정 전. 실제 시장 재현 주장 금지."
+    }
+  ],
+  "$schema": "../schemas/parameters.schema.json"
+}

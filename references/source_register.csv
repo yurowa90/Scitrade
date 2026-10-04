@@ -1,0 +1,45 @@
+﻿id,title,url,kind,verification_status,checked_on,scope_ko
+DESIGN-V03,프로젝트 설계 v0.3,,project_design,LOCAL_DESIGN,2026-10-04,수치·콘텐츠·가상 인물·시나리오
+C1-SOC,2022-33 별책7 사회과,https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N,official_curriculum,CONTENT_READ,2026-10-04,공통·일반·진로 관련 내용체계
+C1-SCI,2022-33 별책9 과학과,https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N,official_curriculum,CONTENT_READ,2026-10-04,과학 23개 연계항목
+C1-ETH,2022-33 별책6 도덕과,https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N,official_curriculum,CONTENT_READ,2026-10-04,윤리 6개 연계항목
+F1,Investor.gov Stocks,https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks,primary_education,CONTENT_READ,2026-10-04,주식·소유·배당·가격변동
+F2,Investor.gov Primary Market,https://www.investor.gov/introduction-investing/investing-basics/glossary/primary-market,primary_education,CONTENT_READ,2026-10-04,발행자 조달 자금
+F3,Investor.gov Secondary Market,https://www.investor.gov/introduction-investing/investing-basics/glossary/secondary-market,primary_education,CONTENT_READ,2026-10-04,기존 증권 거래
+F4,SEC Ready to Go Public,https://www.sec.gov/resources-small-businesses/capital-raising-building-blocks/ready-go-public,primary_education,CONTENT_READ,2026-10-04,상장 준비·비용·보고·지배구조
+S1,UN Comtrade,https://uncomtrade.org/docs/subscriptions/,official_statistics,METADATA_READ_DATA_NOT_DOWNLOADED,2026-10-03,국가·품목 교역 규모
+S2,WITS / TRAINS,https://wits.worldbank.org/witsapiintro.aspx?lang=en,official_statistics,METADATA_READ_DATA_NOT_DOWNLOADED,2026-10-03,HS6 관세·원산지별 조건
+S3,World Bank Pink Sheet,https://www.worldbank.org/en/research/commodity-markets,official_statistics,METADATA_READ_DATA_NOT_DOWNLOADED,2026-10-03,원료 기준가격
+S4,ECB reference exchange rates,https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html,official_statistics,CSV_SAMPLE_DOWNLOADED_AND_CHECKED,2026-10-04,"2024-01-02~2024-01-15 영업일 10개; USD/EUR·KRW/EUR 관측값, KRW/USD 교차환율 산출"
+S5,LPI methodology,https://lpi.worldbank.org/en/about/methodology,official_statistics,METADATA_READ_DATA_NOT_DOWNLOADED,2026-10-03,운송 단계별 측정 범위
+S6,CPPI 2024,https://www.worldbank.org/en/topic/transport/publication/cppi-2024,official_statistics,METADATA_READ_DATA_NOT_DOWNLOADED,2026-10-03,항만 성과 지표
+C4,IPCC AR6 WGI Chapter11,https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-11/,scientific_assessment,SELECTED_SECTIONS_READ,2026-10-03,기상이변과 귀속 해석
+C5,IMO LCA framework,https://www.imo.org/en/ourwork/environment/pages/lifecycle-ghg---carbon-intensity-guidelines.aspx,official_methodology,CONTENT_READ,2026-10-03,운송 배출의 범위
+R1,Amiti et al. Who’s Paying for the US Tariffs,https://deweinst.github.io/weinstein_website/Whos_Paying_Paper.pdf,research_working_paper,SELECTED_SECTIONS_READ,2026-10-03,"2019 공개토론본, 출판본 추가대조"
+R2,Hummels and Schaur Time as a Trade Barrier,https://www.aeaweb.org/articles?id=10.1257/aer.103.7.2935,research_paper,ABSTRACT_AND_SELECTED_TEXT_READ,2026-10-03,"시간가치, 현금벌금과 구분"
+R3,OECD supply chain resilience,https://www.oecd.org/content/dam/oecd/en/publications/reports/2023/02/policies-to-strengthen-the-resilience-of-global-value-chains_e6dcc19a/fd82abd4-en.pdf,research_report,SELECTED_SECTIONS_READ,2026-10-03,거시 공급망 상관·충격
+R4,Bloom et al management intervention research summary,https://www.povertyactionlab.org/evaluation/increasing-firm-productivity-through-management-consulting-services-india,research_institution_summary,SUMMARY_READ,2026-10-03,"제조업 복합 개입, 직원능력계수 아님"
+DK4-S00,공식 Web 매뉴얼 목차,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S01,ゲームの流れ,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/1600.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S02,基本操作：Steam®,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/1300.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S03,共通コマンド,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2100.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S04,街画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2200.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S05,交易画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2300.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S06,相場情報画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2400.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S07,航路図画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2600.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S08,航海士情報画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2800.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S09,船情報画面,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2900.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S10,出港準備／甲板で担当決定,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3100.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S11,交易で稼ぐ,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3300.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S12,地方艦隊作成,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3700.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+DK4-S13,街コマンド一覧,https://www.gamecity.ne.jp/manual/dk4HeN38/jp/4300.html,official_game_manual,CONTENT_READ,2026-10-04,원작 기능 관찰; 게임계수의 현실 근거 아님
+G3-S01,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-02.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S02,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-10.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S03,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-13.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S04,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-14.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S05,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-16.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S06,Guild 3 official observation source,https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-17.jpg,official_game_screenshot,SCREENSHOT_VIEWED,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S07,Guild 3 official observation source,https://steamcommunity.com/app/311260/discussions/0/3109144584152358218/,official_developer_document,CONTENT_READ,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+G3-S08,Guild 3 official observation source,https://store.steampowered.com/news/posts/?appgroupname=The+Guild+3&appids=311260&enddate=1539769775,official_developer_document,CONTENT_READ,2026-10-04,판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json
+DESIGN-V04,동물·신수 직원과 조직·성장 설계 v0.4,,project_design,LOCAL_DESIGN_NOT_EMPIRICAL,2026-10-04,동료·레벨·강화·속성·직무·부서·팀·시너지
+USER-CLIP-01,사용자 제공 캐릭터·카드 표현 영상,,user_attachment,13_SAMPLED_VIDEO_FRAMES_VISUALLY_REVIEWED,2026-10-04,약13초광고의 시각 표현만 확인. 실제게임기능·음성 검증 아님.

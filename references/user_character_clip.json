@@ -1,0 +1,52 @@
+{
+  "reference_id": "USER-CLIP-01",
+  "uploaded_filename": "1000026376.mp4",
+  "sha256": "ab749c6597f7eba0245b19765bff04e1045b79d8c40973b1278edbd56224ec4c",
+  "duration_seconds": 13.017622,
+  "dimensions": [
+    1080,
+    2340
+  ],
+  "checked_on": "2026-10-04",
+  "review_method": "13 sampled still frames at approximately 1-second intervals",
+  "audio_reviewed": false,
+  "interactive_gameplay_verified": false,
+  "scope": "user-provided vertical advertisement; visual direction only",
+  "visual_findings": [
+    {
+      "interval_seconds": [
+        0,
+        5
+      ],
+      "finding_ko": "둥근 SD 괴물과 밝은 배경, 외형 색 변형과 반짝임"
+    },
+    {
+      "interval_seconds": [
+        5,
+        7
+      ],
+      "finding_ko": "생물별 작은 카드 도감"
+    },
+    {
+      "interval_seconds": [
+        7,
+        11
+      ],
+      "finding_ko": "큰 카드·카드 목록·무지개빛 장식"
+    },
+    {
+      "interval_seconds": [
+        11,
+        13
+      ],
+      "finding_ko": "캐릭터 카드와 능력 표시"
+    }
+  ],
+  "not_verified": [
+    "actual capture probability",
+    "monetization",
+    "released-game behavior",
+    "real-time 3D implementation"
+  ],
+  "assets_reused": false
+}

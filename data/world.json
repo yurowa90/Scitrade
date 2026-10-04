@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.3.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V03"
+  ],
+  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "items": [
+    {
+      "id": "BUSAN",
+      "name_ko": "부산",
+      "country_code": "KR",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.65,
+        "y": 0.37,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "venue_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel"
+    },
+    {
+      "id": "SHANGHAI",
+      "name_ko": "상하이",
+      "country_code": "CN",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.49,
+        "y": 0.46,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "venue_ids": []
+    },
+    {
+      "id": "YOKOHAMA",
+      "name_ko": "요코하마",
+      "country_code": "JP",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.84,
+        "y": 0.35,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "venue_ids": []
+    },
+    {
+      "id": "HAIPHONG",
+      "name_ko": "하이퐁",
+      "country_code": "VN",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.34,
+        "y": 0.65,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "venue_ids": []
+    },
+    {
+      "id": "SINGAPORE",
+      "name_ko": "싱가포르",
+      "country_code": "SG",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.25,
+        "y": 0.86,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "venue_ids": []
+    },
+    {
+      "id": "JAKARTA",
+      "name_ko": "자카르타",
+      "country_code": "ID",
+      "location_type": "city_port_hub",
+      "map_position": {
+        "x": 0.39,
+        "y": 0.95,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      },
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "venue_ids": []
+    }
+  ],
+  "$schema": "../schemas/world.schema.json"
+}

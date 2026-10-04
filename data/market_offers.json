@@ -1,0 +1,48 @@
+{
+  "schema_version": "0.3.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V03"
+  ],
+  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "items": [
+    {
+      "id": "OFFER_BUY_01",
+      "kind": "supplier",
+      "counterparty_id": "SUPPLIER_DEMO",
+      "city_id": "BUSAN",
+      "good_id": "APPAREL",
+      "quantity": 100,
+      "quantity_unit": "piece",
+      "unit_price": {
+        "currency": "USD",
+        "amount": 10
+      },
+      "valid_until_day": 3,
+      "origin_country_code": "KR",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "OFFER_SELL_01",
+      "kind": "customer",
+      "counterparty_id": "CUSTOMER_DEMO",
+      "city_id": "YOKOHAMA",
+      "good_id": "APPAREL",
+      "quantity": 100,
+      "quantity_unit": "piece",
+      "unit_price": {
+        "currency": "USD",
+        "amount": 14
+      },
+      "valid_until_day": 3,
+      "delivery_deadline_day": 8,
+      "payment_due_day": 10,
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    }
+  ],
+  "$schema": "../schemas/market_offers.schema.json"
+}

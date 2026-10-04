@@ -1,0 +1,155 @@
+{
+  "schema_version": "0.3.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V03"
+  ],
+  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "items": [
+    {
+      "id": "ROUTE01",
+      "from_city_id": "BUSAN",
+      "to_city_id": "YOKOHAMA",
+      "direction": "one_way",
+      "transit_days": 5,
+      "departure_interval_days": 7,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 200,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "ROUTE02",
+      "from_city_id": "BUSAN",
+      "to_city_id": "SHANGHAI",
+      "direction": "one_way",
+      "transit_days": 4,
+      "departure_interval_days": 7,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 180,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "ROUTE03",
+      "from_city_id": "SHANGHAI",
+      "to_city_id": "SINGAPORE",
+      "direction": "one_way",
+      "transit_days": 10,
+      "departure_interval_days": 10,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 350,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "ROUTE04",
+      "from_city_id": "HAIPHONG",
+      "to_city_id": "SINGAPORE",
+      "direction": "one_way",
+      "transit_days": 8,
+      "departure_interval_days": 7,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 300,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "ROUTE05",
+      "from_city_id": "SINGAPORE",
+      "to_city_id": "JAKARTA",
+      "direction": "one_way",
+      "transit_days": 4,
+      "departure_interval_days": 7,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 160,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "ROUTE06",
+      "from_city_id": "BUSAN",
+      "to_city_id": "SINGAPORE",
+      "direction": "one_way",
+      "transit_days": 12,
+      "departure_interval_days": 10,
+      "first_departure_day": 2,
+      "capacity_kg": 5000,
+      "capacity_m3": 30,
+      "booking_fee": {
+        "currency": "USD",
+        "amount": 450,
+        "basis": "per_shipment_reserved_capacity_fixture"
+      },
+      "allowed_storage_classes": [
+        "dry",
+        "refrigerated"
+      ],
+      "carrier_id": "CARRIER_DEMO",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    }
+  ],
+  "$schema": "../schemas/routes.schema.json"
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "routes v0.4 data shape",
+  "description": "Starter data shape, plus semantic checks in tools/validate_data.py. Not a complete game engine command contract.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "data_basis",
+    "items",
+    "numeric_values_status",
+    "schema_version",
+    "source_refs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "data_basis": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "allowed_storage_classes",
+          "booking_fee",
+          "capacity_kg",
+          "capacity_m3",
+          "carrier_id",
+          "departure_interval_days",
+          "direction",
+          "first_departure_day",
+          "from_city_id",
+          "id",
+          "source_refs",
+          "to_city_id",
+          "transit_days"
+        ],
+        "properties": {
+          "allowed_storage_classes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "booking_fee": {
+            "type": "object",
+            "required": [
+              "amount",
+              "basis",
+              "currency"
+            ],
+            "properties": {
+              "amount": {
+                "type": "integer"
+              },
+              "basis": {
+                "type": "string"
+              },
+              "currency": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "capacity_kg": {
+            "type": "integer"
+          },
+          "capacity_m3": {
+            "type": "integer"
+          },
+          "carrier_id": {
+            "type": "string"
+          },
+          "departure_interval_days": {
+            "type": "integer"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "first_departure_day": {
+            "type": "integer"
+          },
+          "from_city_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "to_city_id": {
+            "type": "string"
+          },
+          "transit_days": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "numeric_values_status": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

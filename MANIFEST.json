@@ -1,0 +1,369 @@
+{
+  "package_version": "0.4.1",
+  "created_on": "2026-10-04",
+  "game_implemented": false,
+  "external_assets_bundled": false,
+  "external_statistics_sample_bundled": "ECB 10-day FX sample with attribution",
+  "files": [
+    {
+      "path": ".gitignore",
+      "size_bytes": 86,
+      "sha256": "6423b6c97b07d11fdfa93691c097708a5bae70da1b3cf6679a58d0b842f53e6e"
+    },
+    {
+      "path": "AGENTS.md",
+      "size_bytes": 1055,
+      "sha256": "d2d8b72a58078b4aada807992754be7ec0d1979265c568a9e104f08ce30a3b5c"
+    },
+    {
+      "path": "CLAUDE.md",
+      "size_bytes": 1079,
+      "sha256": "0862f27459e4b209a8a5eeb8933658354cca02c466dca58634ef6f421d275e95"
+    },
+    {
+      "path": "PACKAGE_STATUS.json",
+      "size_bytes": 717,
+      "sha256": "bc658f4817c6a2d7fd2f300fde51bf7e93eb8a994908ae53f2689a2fe10657ce"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 10630,
+      "sha256": "0b4be6fc32763fbb6defbf19c387ad1eff26f89ab3427bb26781c371aa2d42be"
+    },
+    {
+      "path": "START_HERE.md",
+      "size_bytes": 2850,
+      "sha256": "3a2fa2602aa20f13a519c1129cbeb2a03155999a50929a66ea3283c048460d7a"
+    },
+    {
+      "path": "data/character_rules.json",
+      "size_bytes": 4487,
+      "sha256": "a533fa3daa55bf747c53ab255eb9d96bec1980c5e3f0deacf1a8ce072a9ae45a"
+    },
+    {
+      "path": "data/characters.json",
+      "size_bytes": 52999,
+      "sha256": "b4a02d3f3b5225d059a3bf7d3dc39be01f5e884c649b9fa5c5c75358689af7b7"
+    },
+    {
+      "path": "data/contacts.json",
+      "size_bytes": 3139,
+      "sha256": "123a1a3a3f468e58b44f6bafc6795faf03d2353717f5c881751ef945542460fc"
+    },
+    {
+      "path": "data/content_hooks.json",
+      "size_bytes": 5616,
+      "sha256": "5c798bf29f8dd0a3e5728e1f66f278d5af05ee4923a7b9e55312b05b80a5b424"
+    },
+    {
+      "path": "data/culture_activities.json",
+      "size_bytes": 18216,
+      "sha256": "7cccdd575b0d43e52db72bc5ef74b020fff2417e01aa52d82f7ecf72743406cf"
+    },
+    {
+      "path": "data/curriculum_links.json",
+      "size_bytes": 37002,
+      "sha256": "70b83e36338ee5703011f508105f2fd7a6dd1068f96e176dfe0a09113227c161"
+    },
+    {
+      "path": "data/employees.json",
+      "size_bytes": 3776,
+      "sha256": "f795ca399cbb861a1236ce4339aae4dcdaed7cd51eee4af98e849929ee1e90a1"
+    },
+    {
+      "path": "data/events.json",
+      "size_bytes": 17329,
+      "sha256": "6d49137a58820ee607dc6801d39fb54106b256f916eb60a7ab4b27ec416a653d"
+    },
+    {
+      "path": "data/game_config.json",
+      "size_bytes": 1477,
+      "sha256": "9602c74a8b034fefaad95503c84361148c7862f96b7085a3aed2b74c9a6231ed"
+    },
+    {
+      "path": "data/goods.json",
+      "size_bytes": 3642,
+      "sha256": "a4b130f82626fc9e3b12fd987895f1304582ac29b62a23356cea3ae1472107c8"
+    },
+    {
+      "path": "data/job_templates.json",
+      "size_bytes": 4588,
+      "sha256": "c3d7c224f2c680bee4d4a1c0f23204c36fe8974af86e510402ffacb9b2aeb219"
+    },
+    {
+      "path": "data/market_offers.json",
+      "size_bytes": 1141,
+      "sha256": "e32b208c8cc9f8b73edca48c89695ce2243bc2b039f7f3dc739b9289e4b2615a"
+    },
+    {
+      "path": "data/observed_fx_sample.json",
+      "size_bytes": 4976,
+      "sha256": "66f137cfc5c75a97d27895183ea70366a6f4380191fc52072327aa81a09d7124"
+    },
+    {
+      "path": "data/organization.json",
+      "size_bytes": 3146,
+      "sha256": "850f5c7639576b895f9a461efa9f824a3cebdfe9d259c6d9e3f0f20d9338fdcb"
+    },
+    {
+      "path": "data/parameters.json",
+      "size_bytes": 1232,
+      "sha256": "a46baf4c1b28dae00734c8154ce4d4c5ba0d125435070032a6f1a3b69ed705bc"
+    },
+    {
+      "path": "data/routes.json",
+      "size_bytes": 3798,
+      "sha256": "431adee3bad278ff4564ef6900fff1a5af2238da61d90e146f9ba2c69e0960c4"
+    },
+    {
+      "path": "data/scenarios.json",
+      "size_bytes": 6534,
+      "sha256": "d60f1ccb870a9c8d840398f2877e237d62e47381a89580aba61db43bacbaf659"
+    },
+    {
+      "path": "data/securities.json",
+      "size_bytes": 2635,
+      "sha256": "9c1dfdb21d21b27539d983537d51590c9481f5523fb4613ca8d621fa72f84b82"
+    },
+    {
+      "path": "data/sources.json",
+      "size_bytes": 18993,
+      "sha256": "f18b9d943debedecc658c1fa0c2b74ff6303a3285ec35152210377c20d0adbac"
+    },
+    {
+      "path": "data/team_synergies.json",
+      "size_bytes": 1728,
+      "sha256": "60cb6947e038680b363c4a512ca4a4c60d5ae16d144b1a68549c961dc215896a"
+    },
+    {
+      "path": "data/ui_screens.json",
+      "size_bytes": 7743,
+      "sha256": "7ecfe2914410b14bc19a6323fff550a69ebf0c92c77cd71890113a62e12de14f"
+    },
+    {
+      "path": "data/venues.json",
+      "size_bytes": 4801,
+      "sha256": "caff0c4f246f9a6f35724386b8cbaaef75ed7bac4656d90adaef983275f82120"
+    },
+    {
+      "path": "data/world.json",
+      "size_bytes": 4178,
+      "sha256": "d00d2ad6c96f3c3f15dc9050f734ae99b94ca3ae11ad301e6334b9471cac2e3a"
+    },
+    {
+      "path": "docs/ART_DIRECTION.md",
+      "size_bytes": 3403,
+      "sha256": "2ab773bb9cbdf3541302d96fab9293478c852736fbce68c405277c59aceecd4e"
+    },
+    {
+      "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
+      "size_bytes": 12343,
+      "sha256": "8b7b0ca3af8ff6ac060ef85bdc85b04c2c4b1597d60f63877c4832af926a2d88"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "size_bytes": 4407,
+      "sha256": "9d4fdadf5cee4922d775e433c41038f9f45a6d18a3892fe32120c08959020f3e"
+    },
+    {
+      "path": "docs/DESIGN_v0.4.md",
+      "size_bytes": 118605,
+      "sha256": "796cd2edbaef2a94b59b11a0e46c4ca62d03a6c2cb66f352738eca990a483b6a"
+    },
+    {
+      "path": "docs/FLOWS.md",
+      "size_bytes": 2759,
+      "sha256": "e9ae57425daa3a7e9c7d29440ca07773817e228d198d223fed7bb54f8bdae016"
+    },
+    {
+      "path": "docs/IMPLEMENTATION_PLAN.md",
+      "size_bytes": 7401,
+      "sha256": "f91df69d2c90fc7d683f057f66eea774a532f794e6b5166f2c19cc2b87f011c7"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "size_bytes": 4797,
+      "sha256": "a5c70b7e943e137478fd15c50a78286579bf6883676d5a95047aeffa93884d97"
+    },
+    {
+      "path": "docs/UI_SPEC.md",
+      "size_bytes": 6117,
+      "sha256": "1b326b593ad1c4d02a7cc1e145299b570afb27164fc38d79132d1d01911328cf"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "size_bytes": 2177,
+      "sha256": "469ad0885b2856f4f4245a327b4a2bb4ca227a2ceaa0e5b70162691b8fd6f247"
+    },
+    {
+      "path": "docs/ai/CONTEXT_MAP.md",
+      "size_bytes": 2400,
+      "sha256": "a49aec8abf1b411eae696966484309875598e8cac589e9ff7ad3fd2c63670857"
+    },
+    {
+      "path": "docs/ai/WORKFLOW.md",
+      "size_bytes": 4924,
+      "sha256": "c880524c83e667dab3e5a961b9dccfc2294d7e459458b11340127029b44ce2e4"
+    },
+    {
+      "path": "references/REFERENCE_REVIEW.md",
+      "size_bytes": 10462,
+      "sha256": "081103466ba3b458bc35c5eee446f4899f9d39c30d8f1d8170dc7f05bed753f3"
+    },
+    {
+      "path": "references/dk4_reference.json",
+      "size_bytes": 21569,
+      "sha256": "c6c0a4d183fef8fcc316f9e77429881346f07ecfe62200dff6509007e609065c"
+    },
+    {
+      "path": "references/guild3_reference.json",
+      "size_bytes": 14269,
+      "sha256": "6c6cb4e74b22af093ee03463616bf89d20d2f0e3227c69a747ee7dbb331e0c4d"
+    },
+    {
+      "path": "references/source_register.csv",
+      "size_bytes": 9031,
+      "sha256": "4085aed6a45dd5c07f1426440fedbd2b251e04662d30bf888717ad6fa1af835e"
+    },
+    {
+      "path": "references/user_character_clip.json",
+      "size_bytes": 1237,
+      "sha256": "9e70707e7e96dc2025414a19ef7ef9e9f750d636c616999432f087c07323667d"
+    },
+    {
+      "path": "schemas/character_rules.schema.json",
+      "size_bytes": 7500,
+      "sha256": "edd75cfb640c0463096f73c02c2118afe2c2937a7468b340186e27028b04c5af"
+    },
+    {
+      "path": "schemas/characters.schema.json",
+      "size_bytes": 12955,
+      "sha256": "5f5330a72b0a7db270278ee08a94b576aae4f72e4db72e9922065450b284888d"
+    },
+    {
+      "path": "schemas/contacts.schema.json",
+      "size_bytes": 2717,
+      "sha256": "1996b9b0b4b24d7a05105280cf2b184f5bfbacaf4a79108141a16dd6c1428f99"
+    },
+    {
+      "path": "schemas/content_hooks.schema.json",
+      "size_bytes": 2043,
+      "sha256": "09e0fed93bd7014a6f438a4df2e46c95dab9f6ef687cde14ced7c4224ce19c23"
+    },
+    {
+      "path": "schemas/culture_activities.schema.json",
+      "size_bytes": 5617,
+      "sha256": "296b564e84d35125014c39548e02a004ed7d24cd6f96c3e1b51e1994bf27bdc8"
+    },
+    {
+      "path": "schemas/curriculum_links.schema.json",
+      "size_bytes": 6034,
+      "sha256": "891267ac92f724726cc5440c98507c79473c99f6f349d5f5352244700d17f3bc"
+    },
+    {
+      "path": "schemas/employees.schema.json",
+      "size_bytes": 2806,
+      "sha256": "8593dbd11b0054cedfd2983f3188ece206bad02574e444cc3ec9a9e59daba9e9"
+    },
+    {
+      "path": "schemas/events.schema.json",
+      "size_bytes": 5982,
+      "sha256": "360422b5d73030dd7d1118014770646ee1ac19c7448c1a0424804a619c9d8567"
+    },
+    {
+      "path": "schemas/game_config.schema.json",
+      "size_bytes": 3633,
+      "sha256": "53d602e4b6506e6bef62f6ced66c85cc4379e035af1f166c737a0e56d4a34b8c"
+    },
+    {
+      "path": "schemas/goods.schema.json",
+      "size_bytes": 2187,
+      "sha256": "b159bd0a7cc607998d8a6374112267fa5003a2b56a96e26984b0d60a74fe0bea"
+    },
+    {
+      "path": "schemas/job_templates.schema.json",
+      "size_bytes": 3080,
+      "sha256": "527eab6b0687dd616da4a65dbfa2baeb068c982718a735e090ae00b35da04564"
+    },
+    {
+      "path": "schemas/market_offers.schema.json",
+      "size_bytes": 2497,
+      "sha256": "d45e877ced88dd1add91668cefdea4f0323c9795c07258abe07d043ddc1055d1"
+    },
+    {
+      "path": "schemas/observed_fx_sample.schema.json",
+      "size_bytes": 4833,
+      "sha256": "f046406186b039e4c2bca988d01b3d93c90abcae303ef5483a562e894e066bd4"
+    },
+    {
+      "path": "schemas/organization.schema.json",
+      "size_bytes": 3086,
+      "sha256": "e51928f61112482057d6b05fde414cb647a3c12eea77137969637b43094616bc"
+    },
+    {
+      "path": "schemas/parameters.schema.json",
+      "size_bytes": 1490,
+      "sha256": "2be96cd6bd2e7f9f82bb549104dde261ec38901c36001f3a889c51a1b6578d64"
+    },
+    {
+      "path": "schemas/routes.schema.json",
+      "size_bytes": 2788,
+      "sha256": "470bf64f542b93cfd62c09d85100120a7b63926a6d02d654cf500593240ae149"
+    },
+    {
+      "path": "schemas/scenarios.schema.json",
+      "size_bytes": 8666,
+      "sha256": "3aa5c2f49015070ef2e1324eeabfe6a025d9622462bc1517c3e95c98ff872025"
+    },
+    {
+      "path": "schemas/securities.schema.json",
+      "size_bytes": 2532,
+      "sha256": "d662ce429ef334296c48599e87424007ea5bf2cbda7cc9ae50e88ff19dcc1d41"
+    },
+    {
+      "path": "schemas/sources.schema.json",
+      "size_bytes": 1690,
+      "sha256": "ca45ae89dae6987f570a3a8df99b42696fdc0c2f4878f4f856e1d3568046e640"
+    },
+    {
+      "path": "schemas/team_synergies.schema.json",
+      "size_bytes": 2899,
+      "sha256": "c0677b8e04b85ac62e3aa74813369cacb375be61f4ebaf512524997e6f0e04ae"
+    },
+    {
+      "path": "schemas/ui_screens.schema.json",
+      "size_bytes": 1714,
+      "sha256": "e745e01816ea3ae079cab5adb42d054833fa5067ccb85080b635312475a18b5e"
+    },
+    {
+      "path": "schemas/venues.schema.json",
+      "size_bytes": 3339,
+      "sha256": "5f0641d66f2bf63540895a76fdda77d431a73ca62c1064d9474006a1193e57ab"
+    },
+    {
+      "path": "schemas/world.schema.json",
+      "size_bytes": 2507,
+      "sha256": "3d5ede1337ed1bdd3f3621d067ad56de371c400d546cd933686ac5e84e4d9299"
+    },
+    {
+      "path": "tests/acceptance_cases.json",
+      "size_bytes": 29709,
+      "sha256": "89826037333f7a2e0cffd3a9b6146892c2796b67d819e91855511a3be17012f8"
+    },
+    {
+      "path": "tests/character_acceptance_cases.json",
+      "size_bytes": 15041,
+      "sha256": "0e441434f9efa1859d1b5fb9b13f06f669c2406fbd6ad72b15db446f6401a286"
+    },
+    {
+      "path": "tools/build_package.py",
+      "size_bytes": 2719,
+      "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
+    },
+    {
+      "path": "tools/validate_data.py",
+      "size_bytes": 16265,
+      "sha256": "cb01634db3c2cbfa2b03a4aadfb3a96133f302b099e88e56a4299e88ad9de1df"
+    }
+  ]
+}

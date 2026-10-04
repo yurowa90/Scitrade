@@ -1,0 +1,1138 @@
+{
+  "schema_version": "0.4.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V04"
+  ],
+  "status": "CONTENT_PROPOSAL_NOT_EXECUTABLE",
+  "purpose": "동물·창작 괴물·신화 모티프 직원 수집 콘텐츠의 v0.4 후보 데이터",
+  "numeric_values_status": "능력치·특성 효과·희소성 수치는 모두 개발용 창작 값. 현실의 개인·동물·국가·집단 역량에 대한 추정이 아니다.",
+  "rules": {
+    "base_stat_budget": 300,
+    "stat_range": [
+      0,
+      100
+    ],
+    "starter_level": 1,
+    "stat_scale_meaning": "프로젝트 내부의 상대적 기본 적성. 곧바로 성공 확률·생산량·할인율로 해석하지 않는다.",
+    "attribute_rule": "속성은 판타지 세계의 연출과 팀 편성 태그. 실제 화학 원소·에너지 분류가 아니며 화물의 질량·부피·온도·운송시간·회계를 무효화하지 않는다.",
+    "rarity_rule": "희소성은 만남·의뢰 조건의 차이. 모든 초기 능력치 합은 300, 레벨은 1, 희소성 성능 배율은 1.0. 희귀 캐릭터가 항상 상위 호환이 되지 않게 한다.",
+    "assignment_rule": "소속 조직과 편성안은 예약이 아니다. 업무 확정 시 직원별 시간 구간을 단일 예약하고 시작 구성을 고정한다.",
+    "country_rule": "국가 태그는 출신 고정 능력이나 혈통 보너스로 만들지 않는다. 지역 지식·문화 이해·NPC 친밀·거래 신뢰는 별도 상태다.",
+    "science_boundary": "판타지 특성은 업무 평가에만 제한적으로 영향을 주는 설계 후보다. 폭우·태풍·보관 온도·에너지·관세·기업 가치의 실제 모형과 분리한다.",
+    "implementation_rule": "P0에서 기존 직원 ID와 정상 거래 예제를 보존한다. 후보 효과와 덱 시너지는 공통 계산 순서·상한·중복 예약 규칙을 정한 뒤 구현한다."
+  },
+  "items": [
+    {
+      "id": "EMP01",
+      "name_ko": "귀솔",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "작은 사막여우의 큰 귀, 둥근 주둥이, 접어 묶은 민트색 목도리, 크림색과 연한 구리색 털",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 75,
+        "operations": 35,
+        "analysis": 50,
+        "technology": 35,
+        "exploration": 40,
+        "coordination": 65
+      },
+      "stat_total": 300,
+      "attribute": "light",
+      "signature_trait": {
+        "name_ko": "차분한 견적 설명",
+        "description_ko": "조건을 한 장으로 요약할 때 견적 설명 평가에 5점을 더하는 후보 효과. 가격 자체를 자동 할인하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "QUOTE_PRESENTATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "quote_clarity_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "common",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "STARTER",
+        "story_clue": "첫 사무실에서 만나는 공동 창업 동료. 첫 견적서의 누락 조건을 함께 찾아내면 직원 일지가 열린다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": true,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP01",
+        "legacy_role": "sales",
+        "legacy_human_name_replaced": "서하린",
+        "employment_status": "employed",
+        "work_units_per_day": 2,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 80000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "coordination"
+      }
+    },
+    {
+      "id": "EMP02",
+      "name_ko": "물보리",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "통통한 수달, 둥근 방수 작업 조끼, 조개 모양 버클, 끝이 말린 짧은 꼬리",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 75,
+        "analysis": 45,
+        "technology": 45,
+        "exploration": 40,
+        "coordination": 60
+      },
+      "stat_total": 300,
+      "attribute": "water",
+      "signature_trait": {
+        "name_ko": "젖은 상자도 차근차근",
+        "description_ko": "도착 화물의 외관과 온도 기록을 대조하는 검사 평가에 5점을 더하는 후보 효과. 이미 발생한 손상은 되돌리지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "CARGO_INSPECTION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "cargo_condition_check_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "common",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "STARTER",
+        "story_clue": "부두의 분실 화물 정리를 도운 뒤 함께 회사를 시작한 동료. 첫 인도 확인을 마치면 과거 이야기를 들을 수 있다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": true,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP02",
+        "legacy_role": "operations",
+        "legacy_human_name_replaced": "강도윤",
+        "employment_status": "employed",
+        "work_units_per_day": 2,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 80000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "coordination"
+      }
+    },
+    {
+      "id": "EMP03",
+      "name_ko": "솔솔밤",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "볼이 동그란 날다람쥐, 우편 가방 같은 작은 서류 가방, 황갈색 몸과 연두색 날개막",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 70,
+        "operations": 35,
+        "analysis": 45,
+        "technology": 40,
+        "exploration": 65,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "wind",
+      "signature_trait": {
+        "name_ko": "질문 한 장 더",
+        "description_ko": "시장 인터뷰의 사전 질문지를 준비했을 때 조사 완성도에 5점을 더하는 후보 효과. 공개되지 않은 미래 시세를 알아내지는 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "MARKET_INTERVIEW",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "interview_completeness_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "common",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "상인 휴게실에서 여러 점포의 다른 요구를 메모한다. 서로 다른 고객 세 명의 요구를 구분해 정리하면 채용 대화가 열린다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP03",
+        "legacy_role": "sales",
+        "legacy_human_name_replaced": "임수민",
+        "employment_status": "candidate",
+        "work_units_per_day": 3,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 110000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "exploration"
+      }
+    },
+    {
+      "id": "EMP04",
+      "name_ko": "돌몽",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "original_creature",
+      "visual_motif": "둥근 거북 등껍질과 작은 멧돼지 얼굴을 결합한 항구 생물, 청회색 몸과 조개 모양 분류표",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 70,
+        "analysis": 55,
+        "technology": 50,
+        "exploration": 35,
+        "coordination": 55
+      },
+      "stat_total": 300,
+      "attribute": "water",
+      "signature_trait": {
+        "name_ko": "빈틈을 남기는 적재",
+        "description_ko": "중량과 부피를 모두 입력한 적재 계획의 평가에 5점을 더하는 후보 효과. 차량·선박의 실제 용량 상한은 늘리지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "LOAD_PLANNING",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "load_plan_quality_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "창고의 막힌 통로를 정리하고 싶어 한다. 적재량을 유지하면서 통로를 확보하는 의뢰를 해결하면 채용할 수 있다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP04",
+        "legacy_role": "operations",
+        "legacy_human_name_replaced": "한유진",
+        "employment_status": "candidate",
+        "work_units_per_day": 3,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 110000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "analysis"
+      }
+    },
+    {
+      "id": "EMP05",
+      "name_ko": "화랑콩",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "animal",
+      "visual_motif": "둥근 레서판다, 짧은 앞머리, 주황색 꼬리 끝, 접이식 제품 견본판과 작은 공구 주머니",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 65,
+        "operations": 40,
+        "analysis": 45,
+        "technology": 60,
+        "exploration": 45,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "fire",
+      "signature_trait": {
+        "name_ko": "직접 보여 주는 설명",
+        "description_ko": "제품의 작동 원리를 고객 요구와 연결해 시연할 때 평가에 5점을 더하는 후보 효과. 제품 성능 표시값을 바꾸지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "PRODUCT_DEMONSTRATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "product_demo_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "박람회에서 고장 난 전시품 옆에 서 있다. 불량 원인과 과장 광고를 구분하는 의뢰를 마치면 영업 담당으로 지원한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP05",
+        "legacy_role": "sales",
+        "legacy_human_name_replaced": "정이안",
+        "employment_status": "candidate",
+        "work_units_per_day": 2,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 90000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "negotiation",
+        "secondary_stat": "technology"
+      }
+    },
+    {
+      "id": "EMP06",
+      "name_ko": "밤꾸미",
+      "fictional": true,
+      "release_phase": "P0",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "original_creature",
+      "visual_motif": "짧은 더듬이의 둥근 나방형 생물, 진회색 날개에 별 같은 연한 점무늬, 커다란 연필과 야간 작업 앞치마",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 65,
+        "analysis": 65,
+        "technology": 55,
+        "exploration": 40,
+        "coordination": 35
+      },
+      "stat_total": 300,
+      "attribute": "shadow",
+      "signature_trait": {
+        "name_ko": "한 줄의 차이",
+        "description_ko": "발주서·송장·인도 기록을 함께 제출한 문서 대조 평가에 5점을 더하는 후보 효과. 통관 허가나 규정 준수를 자동 보장하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "DOCUMENT_RECONCILIATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "document_consistency_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "항만 서류 보관실에서 수량이 맞지 않는 전표를 찾고 있다. 모순이 있는 세 문서를 대조하면 채용 이야기로 이어진다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": "EMP06",
+        "legacy_role": "operations",
+        "legacy_human_name_replaced": "윤지후",
+        "employment_status": "candidate",
+        "work_units_per_day": 2,
+        "salary_per_day": {
+          "currency": "KRW",
+          "amount": 90000
+        },
+        "preserve_initial_employee_state": true,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "analysis",
+        "secondary_stat": "operations"
+      }
+    },
+    {
+      "id": "EMP07",
+      "name_ko": "푸르릉",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "둥근 아기 용의 몸, 짧은 뿔 두 개, 구름처럼 말린 수염, 청록색 비늘과 작은 우비",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "용이라는 넓은 신화적 외형 모티프를 새로 해석한 창작 생물. 특정 전승의 성격·능력·기원을 재현한다고 주장하지 않는다.",
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 65,
+        "analysis": 45,
+        "technology": 50,
+        "exploration": 60,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "earth",
+      "signature_trait": {
+        "name_ko": "비 오기 전 점검",
+        "description_ko": "공개된 강수 예보를 확인하고 방수 준비를 선택했을 때 준비 평가에 5점을 더하는 후보 효과. 날씨를 조종하거나 재해를 없애지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "RAIN_PREPARATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "weather_preparation_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "여러 도시를 오가는 빗물 관측 모임에 참여한다. 항만 배수와 화물 방수 점검 의뢰를 마치면 계약을 제안할 수 있다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "exploration"
+      }
+    },
+    {
+      "id": "EMP08",
+      "name_ko": "불씨롱",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "둥근 불사조형 어린 새, 길지 않은 세 갈래 꼬리 깃, 살구색 몸과 금빛 볏, 보온 작업 장갑",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "불사조를 연상시키는 새의 외형을 사용한 창작 해석. 부활 등 전통적 능력이 사실로 존재한다는 설정이나 특정 국가 전유 설정을 두지 않는다.",
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 40,
+        "operations": 50,
+        "analysis": 45,
+        "technology": 75,
+        "exploration": 35,
+        "coordination": 55
+      },
+      "stat_total": 300,
+      "attribute": "fire",
+      "signature_trait": {
+        "name_ko": "온도를 읽는 눈",
+        "description_ko": "측정 기록과 상품별 허용 온도를 대조한 보관 계획 평가에 5점을 더하는 후보 효과. 불 속성으로 냉장 전력을 대체하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "TEMPERATURE_PLAN",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "temperature_plan_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "폐기 위기의 신선식품을 살리기 위한 냉장 설비 점검에 참여한다. 안전하게 인도할 물량과 폐기할 물량을 구분하면 동료 의뢰가 열린다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "technology",
+        "secondary_stat": "coordination"
+      }
+    },
+    {
+      "id": "EMP09",
+      "name_ko": "깃모아",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "새 부리와 작은 사자 발을 가진 통통한 그리핀형 생물, 접히는 작은 날개, 남색 배낭과 흰 눈썹 깃",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "여러 동물의 몸을 결합하는 그리핀형 모티프를 프로젝트에 맞게 재구성했다. 전승의 지리적 기원이나 성격에 대한 설명 자료로 쓰지 않는다.",
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 60,
+        "operations": 35,
+        "analysis": 50,
+        "technology": 35,
+        "exploration": 75,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "wind",
+      "signature_trait": {
+        "name_ko": "다른 길의 이야기",
+        "description_ko": "현장 방문과 공개 자료를 함께 확보한 경로 조사 평가에 5점을 더하는 후보 효과. 직원 이동이나 화물 운송을 순간 이동으로 처리하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "ROUTE_FIELD_RESEARCH",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "route_research_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "현지 운송인의 구술 기록을 모은다. 공식 지도와 현장 동선의 차이를 정리하는 의뢰를 마치면 출장 담당으로 지원한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "exploration",
+        "secondary_stat": "negotiation"
+      }
+    },
+    {
+      "id": "EMP10",
+      "name_ko": "모래봉",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "original_creature",
+      "visual_motif": "뿔이 작은 염소와 둥근 모래 언덕을 결합한 생물, 베이지색 단단한 털, 등에 작은 다육식물 모양 장식",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "operations",
+      "level": 1,
+      "stats": {
+        "negotiation": 35,
+        "operations": 70,
+        "analysis": 55,
+        "technology": 60,
+        "exploration": 35,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "earth",
+      "signature_trait": {
+        "name_ko": "먼저 고치는 습관",
+        "description_ko": "점검 주기와 부품 재고를 모두 확보한 예방 정비 계획 평가에 5점을 더하는 후보 효과. 부품·비용·작업 시간은 그대로 소비한다.",
+        "candidate_effect": {
+          "trigger_tag": "PREVENTIVE_MAINTENANCE",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "maintenance_plan_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "common",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "낡은 운반 장비를 버리지 않고 고쳐 쓰는 작업장에 있다. 교체와 수리의 비용·자원 사용을 비교하는 의뢰를 마치면 채용할 수 있다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "operations",
+        "secondary_stat": "technology"
+      }
+    },
+    {
+      "id": "EMP11",
+      "name_ko": "유리뿔",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "myth_inspired",
+      "visual_motif": "사슴을 닮은 둥근 어린 신수, 반투명한 짧은 뿔, 크림색 털과 옅은 보라색 귀, 옷깃에 작은 나침반",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": "사슴형 신수라는 넓은 상상 모티프를 활용한 창작 종이다. 실재 전승 속 특정 신수를 그대로 재현하거나 그 속성을 고증했다고 표기하지 않는다.",
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 60,
+        "operations": 35,
+        "analysis": 55,
+        "technology": 35,
+        "exploration": 45,
+        "coordination": 70
+      },
+      "stat_total": 300,
+      "attribute": "light",
+      "signature_trait": {
+        "name_ko": "서로 다른 조건 듣기",
+        "description_ko": "양측 요구와 양보 한계를 확인한 협의 준비 평가에 5점을 더하는 후보 효과. 친밀도나 거래 신뢰를 무조건 상승시키지는 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "PARTNER_MEDIATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "mediation_preparation_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "rare",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "서로 다른 포장 기준 때문에 다투는 두 업체의 말을 기록한다. 한쪽을 속이지 않는 절충안을 제시하면 동료로 합류한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "coordination",
+        "secondary_stat": "negotiation"
+      }
+    },
+    {
+      "id": "EMP12",
+      "name_ko": "묵구름",
+      "fictional": true,
+      "release_phase": "P1",
+      "data_basis": "DESIGN",
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "creature_kind": "original_creature",
+      "visual_motif": "작은 고양이 얼굴과 둥근 구름 몸, 잉크색 몸에 라일락색 테두리, 구름 꼬리와 돋보기",
+      "art_direction": {
+        "proportions": "2.5~3등신, 큰 머리와 둥근 손발, 업무용 소품으로 역할 구분",
+        "identity_rule": "소품을 제거해도 얼굴·귀·꼬리·실루엣으로 구분",
+        "animation_budget": "대기·걷기·업무·기쁨 4종부터 제안",
+        "asset_status": "CONCEPT_ONLY_NO_ART_ASSET"
+      },
+      "myth_interpretation_note": null,
+      "primary_role": "sales",
+      "level": 1,
+      "stats": {
+        "negotiation": 50,
+        "operations": 35,
+        "analysis": 75,
+        "technology": 50,
+        "exploration": 45,
+        "coordination": 45
+      },
+      "stat_total": 300,
+      "attribute": "shadow",
+      "signature_trait": {
+        "name_ko": "소문의 출처 찾기",
+        "description_ko": "복수 출처의 날짜·단위·이해관계를 비교한 정보 검증 평가에 5점을 더하는 후보 효과. 미공개 기업정보나 미래 주가를 제공하지 않는다.",
+        "candidate_effect": {
+          "trigger_tag": "SOURCE_VERIFICATION",
+          "effect_kind": "TASK_EVALUATION_SCORE_BONUS",
+          "target_score": "source_verification_score",
+          "operation": "add",
+          "value": 5,
+          "unit": "score_points",
+          "data_basis": "DESIGN",
+          "execution_status": "DECLARATIVE_ONLY",
+          "implemented": false,
+          "stacking": "P0에서는 적용하지 않는다. P1에서 평가 점수 체계·범위·중첩 규칙을 정한 뒤 별도 검증한다.",
+          "prerequisite": "설명에 적힌 준비·서류·현장 활동 완료. 업무 배치와 시간·비용을 별도로 충족해야 한다.",
+          "activation_phase": "P1_DESIGN_REVIEW_REQUIRED",
+          "active_in_P0": false
+        }
+      },
+      "rarity": "uncommon",
+      "rarity_meaning": "만남 조건과 이야기의 희소성",
+      "rarity_power_multiplier": 1.0,
+      "recruitment": {
+        "mode": "QUEST_GUARANTEED",
+        "story_clue": "항구의 소문을 모으지만 처음부터 믿지는 않는다. 과장된 품귀 소문을 데이터로 확인하는 의뢰를 마치면 시장 분석 담당으로 지원한다.",
+        "random_draw_required": false,
+        "repeat_copy_required": false,
+        "start_employed": false,
+        "availability_rule": "도시·의뢰·활동 조건에 따른 만남. 종족·속성·현실 국적에 따라 거주 국가를 고정하지 않는다."
+      },
+      "regional_background": {
+        "nationality": null,
+        "country_locked": false,
+        "knowledge_is_learned": true,
+        "knowledge_topic_ids": [],
+        "note": "지역 지식·언어·문화 경험은 개별 이력과 활동으로 기록한다. 출신·종족·속성만으로 영업 보너스나 지역 친밀도를 부여하지 않는다.",
+        "experience_records": []
+      },
+      "assignment_policy": {
+        "deck_slot_reserves_employee": false,
+        "task_confirmation_reserves_employee": true,
+        "maximum_overlapping_tasks": 1,
+        "freeze_team_at_task_start": true
+      },
+      "compatibility": {
+        "existing_employee_id": null,
+        "legacy_role": null,
+        "legacy_human_name_replaced": null,
+        "employment_status": "candidate",
+        "work_units_per_day": null,
+        "salary_per_day": null,
+        "preserve_initial_employee_state": false,
+        "note": "기존 EMP01~06의 ID·역할·고용 상태·업무량·임금은 유지. 이름과 외형, 추가 능력치는 콘텐츠 오버레이로 적용. 신규 P1 직원의 임금·업무량은 아직 미정이며 자동으로 0을 넣지 않는다."
+      },
+      "xp_total": 0,
+      "enhancement_rank": 0,
+      "growth_focus": {
+        "primary_stat": "analysis",
+        "secondary_stat": "negotiation"
+      }
+    }
+  ],
+  "$schema": "../schemas/characters.schema.json"
+}

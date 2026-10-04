@@ -1,0 +1,470 @@
+{
+  "schema_version": "0.3.0",
+  "items": [
+    {
+      "id": "DESIGN-V03",
+      "title": "프로젝트 설계 v0.3",
+      "url": null,
+      "kind": "project_design",
+      "verification_status": "LOCAL_DESIGN",
+      "scope_ko": "수치·콘텐츠·가상 인물·시나리오",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": "docs/DESIGN_v0.3.md"
+    },
+    {
+      "id": "C1-SOC",
+      "title": "2022-33 별책7 사회과",
+      "url": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N",
+      "kind": "official_curriculum",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "공통·일반·진로 관련 내용체계",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "C1-SCI",
+      "title": "2022-33 별책9 과학과",
+      "url": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N",
+      "kind": "official_curriculum",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "과학 23개 연계항목",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "C1-ETH",
+      "title": "2022-33 별책6 도덕과",
+      "url": "https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=141&boardSeq=93458&lev=0&m=040401&opType=N",
+      "kind": "official_curriculum",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "윤리 6개 연계항목",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "F1",
+      "title": "Investor.gov Stocks",
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks",
+      "kind": "primary_education",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "주식·소유·배당·가격변동",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "F2",
+      "title": "Investor.gov Primary Market",
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/primary-market",
+      "kind": "primary_education",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "발행자 조달 자금",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "F3",
+      "title": "Investor.gov Secondary Market",
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/secondary-market",
+      "kind": "primary_education",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "기존 증권 거래",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "F4",
+      "title": "SEC Ready to Go Public",
+      "url": "https://www.sec.gov/resources-small-businesses/capital-raising-building-blocks/ready-go-public",
+      "kind": "primary_education",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "상장 준비·비용·보고·지배구조",
+      "checked_on": "2026-10-04",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "S1",
+      "title": "UN Comtrade",
+      "url": "https://uncomtrade.org/docs/subscriptions/",
+      "kind": "official_statistics",
+      "verification_status": "METADATA_READ_DATA_NOT_DOWNLOADED",
+      "scope_ko": "국가·품목 교역 규모",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "S2",
+      "title": "WITS / TRAINS",
+      "url": "https://wits.worldbank.org/witsapiintro.aspx?lang=en",
+      "kind": "official_statistics",
+      "verification_status": "METADATA_READ_DATA_NOT_DOWNLOADED",
+      "scope_ko": "HS6 관세·원산지별 조건",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "S3",
+      "title": "World Bank Pink Sheet",
+      "url": "https://www.worldbank.org/en/research/commodity-markets",
+      "kind": "official_statistics",
+      "verification_status": "METADATA_READ_DATA_NOT_DOWNLOADED",
+      "scope_ko": "원료 기준가격",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "S4",
+      "title": "ECB reference exchange rates",
+      "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+      "kind": "official_statistics",
+      "verification_status": "CSV_SAMPLE_DOWNLOADED_AND_CHECKED",
+      "scope_ko": "2024-01-02~2024-01-15 영업일 10개; USD/EUR·KRW/EUR 관측값, KRW/USD 교차환율 산출",
+      "checked_on": "2026-10-04",
+      "redistribution": "10_row_sample_with_ecb_attribution_and_derived_field_notice",
+      "local_path": "data/observed_fx_sample.json",
+      "data_url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.zip",
+      "terms_url": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html"
+    },
+    {
+      "id": "S5",
+      "title": "LPI methodology",
+      "url": "https://lpi.worldbank.org/en/about/methodology",
+      "kind": "official_statistics",
+      "verification_status": "METADATA_READ_DATA_NOT_DOWNLOADED",
+      "scope_ko": "운송 단계별 측정 범위",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "S6",
+      "title": "CPPI 2024",
+      "url": "https://www.worldbank.org/en/topic/transport/publication/cppi-2024",
+      "kind": "official_statistics",
+      "verification_status": "METADATA_READ_DATA_NOT_DOWNLOADED",
+      "scope_ko": "항만 성과 지표",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "C4",
+      "title": "IPCC AR6 WGI Chapter11",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-11/",
+      "kind": "scientific_assessment",
+      "verification_status": "SELECTED_SECTIONS_READ",
+      "scope_ko": "기상이변과 귀속 해석",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "C5",
+      "title": "IMO LCA framework",
+      "url": "https://www.imo.org/en/ourwork/environment/pages/lifecycle-ghg---carbon-intensity-guidelines.aspx",
+      "kind": "official_methodology",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "운송 배출의 범위",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "R1",
+      "title": "Amiti et al. Who’s Paying for the US Tariffs",
+      "url": "https://deweinst.github.io/weinstein_website/Whos_Paying_Paper.pdf",
+      "kind": "research_working_paper",
+      "verification_status": "SELECTED_SECTIONS_READ",
+      "scope_ko": "2019 공개토론본, 출판본 추가대조",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "R2",
+      "title": "Hummels and Schaur Time as a Trade Barrier",
+      "url": "https://www.aeaweb.org/articles?id=10.1257/aer.103.7.2935",
+      "kind": "research_paper",
+      "verification_status": "ABSTRACT_AND_SELECTED_TEXT_READ",
+      "scope_ko": "시간가치, 현금벌금과 구분",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "R3",
+      "title": "OECD supply chain resilience",
+      "url": "https://www.oecd.org/content/dam/oecd/en/publications/reports/2023/02/policies-to-strengthen-the-resilience-of-global-value-chains_e6dcc19a/fd82abd4-en.pdf",
+      "kind": "research_report",
+      "verification_status": "SELECTED_SECTIONS_READ",
+      "scope_ko": "거시 공급망 상관·충격",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "R4",
+      "title": "Bloom et al management intervention research summary",
+      "url": "https://www.povertyactionlab.org/evaluation/increasing-firm-productivity-through-management-consulting-services-india",
+      "kind": "research_institution_summary",
+      "verification_status": "SUMMARY_READ",
+      "scope_ko": "제조업 복합 개입, 직원능력계수 아님",
+      "checked_on": "2026-10-03",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
+    },
+    {
+      "id": "DK4-S00",
+      "title": "공식 Web 매뉴얼 목차",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S01",
+      "title": "ゲームの流れ",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/1600.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S02",
+      "title": "基本操作：Steam®",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/1300.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S03",
+      "title": "共通コマンド",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2100.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S04",
+      "title": "街画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2200.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S05",
+      "title": "交易画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2300.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S06",
+      "title": "相場情報画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2400.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S07",
+      "title": "航路図画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2600.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S08",
+      "title": "航海士情報画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2800.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S09",
+      "title": "船情報画面",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2900.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S10",
+      "title": "出港準備／甲板で担当決定",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3100.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S11",
+      "title": "交易で稼ぐ",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3300.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S12",
+      "title": "地方艦隊作成",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3700.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DK4-S13",
+      "title": "街コマンド一覧",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/4300.html",
+      "kind": "official_game_manual",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "원작 기능 관찰; 게임계수의 현실 근거 아님",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S01",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-02.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S02",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-10.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S03",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-13.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S04",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-14.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S05",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-16.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S06",
+      "title": "Guild 3 official observation source",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-17.jpg",
+      "kind": "official_game_screenshot",
+      "verification_status": "SCREENSHOT_VIEWED",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S07",
+      "title": "Guild 3 official observation source",
+      "url": "https://steamcommunity.com/app/311260/discussions/0/3109144584152358218/",
+      "kind": "official_developer_document",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "G3-S08",
+      "title": "Guild 3 official observation source",
+      "url": "https://store.steampowered.com/news/posts/?appgroupname=The+Guild+3&appids=311260&enddate=1539769775",
+      "kind": "official_developer_document",
+      "verification_status": "CONTENT_READ",
+      "checked_on": "2026-10-04",
+      "scope_ko": "판본별 UI·조작 관찰. 세부 확인은 guild3_reference.json",
+      "redistribution": "link_and_notes_only"
+    },
+    {
+      "id": "DESIGN-V04",
+      "title": "동물·신수 직원과 조직·성장 설계 v0.4",
+      "url": null,
+      "kind": "project_design",
+      "verification_status": "LOCAL_DESIGN_NOT_EMPIRICAL",
+      "scope_ko": "동료·레벨·강화·속성·직무·부서·팀·시너지",
+      "checked_on": "2026-10-04",
+      "redistribution": "project_authored",
+      "local_path": "docs/CHARACTERS_AND_ORGANIZATION.md"
+    },
+    {
+      "id": "USER-CLIP-01",
+      "title": "사용자 제공 캐릭터·카드 표현 영상",
+      "url": null,
+      "kind": "user_attachment",
+      "verification_status": "13_SAMPLED_VIDEO_FRAMES_VISUALLY_REVIEWED",
+      "scope_ko": "약13초광고의 시각 표현만 확인. 실제게임기능·음성 검증 아님.",
+      "checked_on": "2026-10-04",
+      "redistribution": "observation_notes_only_no_media",
+      "local_path": "references/user_character_clip.json"
+    }
+  ],
+  "$schema": "../schemas/sources.schema.json"
+}

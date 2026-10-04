@@ -1,0 +1,734 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "acceptance_case_specification",
+  "project": "국제무역·물류경영 게임",
+  "specification_version": "v0.3",
+  "source_specification": "docs/DESIGN_v0.4.md",
+  "prepared_on": "2026-10-04",
+  "status": "DESIGN_ONLY_NOT_EXECUTED_AGAINST_ENGINE",
+  "evidence_class": "DESIGN",
+  "purpose": "코딩 세션에서 엔진 구현 전후에 사용할 독립적인 인수 기준과 수동 검산 사례. 엔진 테스트 실행 결과가 아님.",
+  "execution_contract": {
+    "isolate_every_case": true,
+    "reset_state_before_each_case": true,
+    "reuse_previous_case_state": false,
+    "assertion_paths": "엔진 구현 전의 개념적 상태 경로. 구현자는 실제 모델에 연결하는 어댑터를 정의할 것.",
+    "numeric_comparison": "정수 금액과 수량은 정확히 비교. 지분은 정수 주식 수의 비율로 검산.",
+    "fixture_currency_rule": "accounting_unit=fixture_no_currency 사례는 통화 없는 산술 예제이다. currency가 명시된 M1 취소·지연 사례는 USD, IPO 사례는 KRW이며 사례별 장부를 합산하지 않는다.",
+    "parameter_rule": "금액·가격·일수·보상·성장량은 모두 검수용 DESIGN 값이며 관측 통계나 실증 계수가 아니다.",
+    "accounting_rule": "수익 인식과 수금을 구분하고, 자산 간 이동과 영업비용을 구분한다. 이 문서는 특정 국가의 회계·상장 규정 전체를 재현하지 않는다.",
+    "time_rule": "시간 변화는 명시적 일자 진행으로만 발생한다. 화면 열기와 도시 선택은 실제 이동 또는 Task 완료를 뜻하지 않는다.",
+    "human_review_rule": "각 사례의 human_review_check를 사람이 확인한 후 엔진 검증 결과와 별도로 기록한다. 이 파일의 작성·JSON 검증만으로 엔진 통과를 표시하지 않는다."
+  },
+  "phase_scope": {
+    "P0": "기존 M0~M5, 90일 경영 캠페인, 본사 도시 문화 활동 3종. 주식·IPO는 필수 완료 조건에서 제외.",
+    "P1": "MVP 검증 후 가상 타사 주식의 회사 명의 현금 매매·보유·평가·공개 정보 처리.",
+    "P2": "다년 성장 또는 별도 상장 준비 시나리오의 신주 발행·자사 IPO·지분 관리."
+  },
+  "cases": [
+    {
+      "id": "P0-ACC-01",
+      "phase": "P0",
+      "milestone": "M1",
+      "title": "외상 판매의 현금·채권·이익 분리",
+      "spec_sections": [
+        "7",
+        "8",
+        "11"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "company_cash": 100,
+        "inventory_units": 0,
+        "inventory_carrying_amount": 0,
+        "accounts_receivable": 0,
+        "revenue": 0,
+        "profit": 0
+      },
+      "fixture_rules": [
+        "상품은 한 묶음이며 전량 인도·검수된 시점에 판매를 인식한다.",
+        "매입 60·운송 5·관세 3은 같은 상품의 매출원가 68을 구성한다. 각각을 매출원가와 별도 비용으로 중복 차감하지 않는다.",
+        "임금 4는 당기 비용으로 한 번만 처리한다. 이자·세금·환율·기타 비용은 없다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "상품 한 묶음을 현금 60으로 매입"
+        },
+        {
+          "step": 2,
+          "action": "해당 상품 운송료 5와 관세 3을 현금 지급"
+        },
+        {
+          "step": 3,
+          "action": "전량 인도·검수 후 외상 매출 90 인식, 아직 수금하지 않음"
+        },
+        {
+          "step": 4,
+          "action": "임금 4를 현금 지급"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash": 28,
+        "accounts_receivable": 90,
+        "inventory_units": 0,
+        "inventory_carrying_amount": 0,
+        "revenue": 90,
+        "cost_of_goods_sold": 68,
+        "wage_expense": 4,
+        "profit": 18,
+        "total_assets": 118
+      },
+      "expected_assertions": [
+        "외상 매출 90을 현금에 미리 더하지 않는다.",
+        "운송료·관세를 매출원가에 포함한 후 별도 비용으로 다시 빼지 않는다.",
+        "상품 소유권·재고는 인도 조건에 따라 한 번만 이전한다."
+      ],
+      "human_review_check": "현금 100−60−5−3−4=28; 채권 90; 이익 90−60−5−3−4=18; 현금+채권=118."
+    },
+    {
+      "id": "P0-ACC-02",
+      "phase": "P0",
+      "milestone": "M1",
+      "title": "외상대금 수금과 중복 수금 방지",
+      "spec_sections": [
+        "8",
+        "9",
+        "14"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "company_cash": 28,
+        "accounts_receivable": 90,
+        "revenue": 90,
+        "profit": 18,
+        "receipt_applied_count": 0
+      },
+      "fixture_rules": [
+        "이 사례의 초기 상태를 새로 생성한다. P0-ACC-01의 실행 상태를 이어받지 않는다.",
+        "고객이 원래 채권 90을 전액 지급하며 새로운 판매나 수금 수수료는 없다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "receipt_id=RECEIPT_A로 90 수금"
+        },
+        {
+          "step": 2,
+          "action": "동일 receipt_id=RECEIPT_A를 재전송하고 저장·불러오기 후 한 번 더 재전송"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash": 118,
+        "accounts_receivable": 0,
+        "revenue": 90,
+        "profit": 18,
+        "receipt_applied_count": 1,
+        "total_assets": 118
+      },
+      "expected_assertions": [
+        "최초 수금은 현금 증가와 채권 감소만 발생시킨다.",
+        "수금으로 매출·이익을 재인식하지 않는다.",
+        "동일 수금 ID는 무시 또는 이미 처리됨으로 응답하며 추가 현금이 생기지 않는다."
+      ],
+      "human_review_check": "28+90=118; 채권 90−90=0; 이익은 18로 유지. 재전송 이후에도 동일."
+    },
+    {
+      "id": "P0-CITY-01",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "장소 열기·도시 선택·보고 열람으로 시간이 진행되지 않음",
+      "spec_sections": [
+        "23.1",
+        "23.2",
+        "25.1"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "simulation_day": 10,
+        "day_phase": "AWAITING_INPUT",
+        "company_cash": 100,
+        "knowledge_record_count": 0,
+        "completed_task_count": 0,
+        "employee_location": "CITY_HOME",
+        "securities_enabled": false,
+        "ipo_enabled": false
+      },
+      "actions": [
+        {
+          "step": 1,
+          "action": "5개 도시 진입점을 각각 열고 닫음"
+        },
+        {
+          "step": 2,
+          "action": "다른 도시 화면 선택 후 이미 공개된 보고를 반복 열람"
+        },
+        {
+          "step": 3,
+          "action": "원래 도시로 돌아옴. 활동 예약·명시적 하루 진행은 하지 않음"
+        }
+      ],
+      "expected_numeric": {
+        "simulation_day": 10,
+        "company_cash": 100,
+        "knowledge_record_count": 0,
+        "completed_task_count": 0
+      },
+      "expected_assertions": [
+        "직원 위치는 CITY_HOME이며 day_phase는 AWAITING_INPUT을 유지한다.",
+        "단순 출입에 경비·관계·지식 보상이나 임금 정산이 발생하지 않는다.",
+        "P0 금융센터가 미구현 주식 주문·IPO 실행을 완료된 서비스처럼 제공하지 않는다."
+      ],
+      "human_review_check": "화면 동작 전후 날짜·현금·위치·Task·지식 기록을 비교한다. 버튼 클릭 수와 시뮬레이션 시간이 분리되어야 한다."
+    },
+    {
+      "id": "P0-CITY-02",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "문화 활동 완료·대화 재방문 보상 중복 방지",
+      "spec_sections": [
+        "24.4",
+        "26.2"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "simulation_day": 10,
+        "company_cash": 100,
+        "employee_location": "CITY_HOME",
+        "knowledge_record_count": 0,
+        "activity_completion_count": 0
+      },
+      "fixture_rules": [
+        "현지 Task ACT_A는 검수용 1일·비용 2이며, 완료 시 새 주제 TOPIC_A 기록 1개를 생성한다.",
+        "동일 활동 단계의 예약·결제·완료에는 동일한 식별자를 유지한다.",
+        "이 검수 동안 급여·기타 일일 비용은 비활성화한다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "ACT_A를 예약·확정하고 비용 2 지급"
+        },
+        {
+          "step": 2,
+          "action": "명시적으로 하루를 진행하여 ACT_A 완료"
+        },
+        {
+          "step": 3,
+          "action": "동일 완료 이벤트를 재전송하고 같은 장소·같은 대화 주제에 반복 진입"
+        }
+      ],
+      "expected_numeric": {
+        "simulation_day": 11,
+        "company_cash": 98,
+        "knowledge_record_count": 1,
+        "activity_completion_count": 1,
+        "activity_expense": 2
+      },
+      "expected_assertions": [
+        "반복 완료 이벤트·대화 열람으로 기록·비용·관계 보상이 다시 발생하지 않는다.",
+        "새 주제 또는 의미 있는 후속 단계는 별도 ID와 완료 조건을 갖춘 경우에만 새 활동이 된다."
+      ],
+      "human_review_check": "100−2=98. 기록 1개·완료 1회·경비 2가 재전송 전후 동일한지 확인한다."
+    },
+    {
+      "id": "P0-CITY-03",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "개인 친밀도·지역 관찰·거래 신뢰의 범위 분리",
+      "spec_sections": [
+        "24.1",
+        "24.3",
+        "24.4"
+      ],
+      "accounting_unit": "not_applicable",
+      "currency": null,
+      "initial_state": {
+        "relationship_employee_A_contact_A": 0,
+        "relationship_employee_A_contact_B": 0,
+        "relationship_employee_B_contact_A": 0,
+        "fulfilled_contract_count": 0,
+        "trade_trust": 0,
+        "knowledge_record_count": 0
+      },
+      "fixture_rules": [
+        "같은 국가 내 CITY_HOME의 CONTACT_A만 만나 한 상인의 소포장 선호를 듣는다.",
+        "해당 인물 관계의 증가량 1은 이 사례의 DESIGN 보상이며 실증 문화 효과가 아니다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "현지 EMPLOYEE_A가 CONTACT_A와 활동을 완료하고 회사에 보고"
+        }
+      ],
+      "expected_numeric": {
+        "relationship_employee_A_contact_A": 1,
+        "relationship_employee_A_contact_B": 0,
+        "relationship_employee_B_contact_A": 0,
+        "fulfilled_contract_count": 0,
+        "trade_trust": 0,
+        "knowledge_record_count": 1
+      },
+      "expected_assertions": [
+        "국가 전체 인물의 친밀도·국가 전체 상품 수요·모든 계약 마진을 일괄 변경하지 않는다.",
+        "관찰은 CITY_HOME·해당 주제·CONTACT_A 1명의 의견·시점·미검증 상태를 기록한다.",
+        "관계가 생겼다는 이유만으로 거래 이행 신뢰를 올리지 않는다.",
+        "직원이 퇴사해도 제출한 회사 보고서는 남지만 개인 친분이 다른 직원에게 자동 이전되지 않는다."
+      ],
+      "human_review_check": "관계 변경 대상이 특정 인물 쌍인지 확인하고, 동일 국가의 미접촉 인물과 다른 직원의 관계가 그대로인지 비교한다."
+    },
+    {
+      "id": "P0-CITY-04",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "도시 화면 선택으로 직원·화물이 순간 이동하지 않음",
+      "spec_sections": [
+        "7.3",
+        "23.1",
+        "26.2"
+      ],
+      "accounting_unit": "not_applicable",
+      "currency": null,
+      "initial_state": {
+        "simulation_day": 10,
+        "employee_location": "CITY_HOME",
+        "local_agents_at_CITY_REMOTE": 0,
+        "shipment_state": "IN_TRANSIT",
+        "shipment_origin": "CITY_HOME",
+        "shipment_destination": "CITY_REMOTE",
+        "shipment_arrival_day": 13,
+        "remote_local_task_count": 0
+      },
+      "actions": [
+        {
+          "step": 1,
+          "action": "CITY_REMOTE 화면 열기"
+        },
+        {
+          "step": 2,
+          "action": "CITY_HOME의 직원을 CITY_REMOTE 현장 활동에 배정 시도"
+        },
+        {
+          "step": 3,
+          "action": "다시 화물·직원 상태 열람. 하루 진행은 하지 않음"
+        }
+      ],
+      "expected_numeric": {
+        "simulation_day": 10,
+        "local_agents_at_CITY_REMOTE": 0,
+        "shipment_arrival_day": 13,
+        "remote_local_task_count": 0
+      },
+      "expected_assertions": [
+        "직원은 CITY_HOME, 화물은 IN_TRANSIT 상태를 유지한다.",
+        "현지 인물이 없으므로 현장 활동을 거절하거나 유효한 현지 인물 배정을 요청한다.",
+        "P0에 미구현된 출장을 자동 완료하거나 이동 경비 없는 출장으로 대체하지 않는다.",
+        "원격 연락이 허용된 업무와 현장 방문이 필요한 업무를 구분한다. 향후 출장 구현 시 출발·도착·비용·업무 공백을 별도 검수한다."
+      ],
+      "human_review_check": "도시 선택만으로 위치·도착일·현장 수행 자격이 바뀌지 않는지 확인한다. 이 사례는 출장 엔진 구현을 요구하지 않는다."
+    },
+    {
+      "id": "P0-TIME-01",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "저장·불러오기 후 하루 마감과 사건 적용 재현",
+      "spec_sections": [
+        "9.1",
+        "9.2",
+        "14"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "simulation_day": 10,
+        "day_phase": "AWAITING_INPUT",
+        "company_cash": 100,
+        "random_seed": 12345,
+        "random_cursor": 7,
+        "daily_closure_count": 0,
+        "event_applied_count": 0
+      },
+      "fixture_rules": [
+        "당일 고정 임금 4와 이미 공개된 EVENT_A의 고정 검사비 3만 반영한다.",
+        "동일 명령·동일 저장 상태로 비교하며 난수 결과값 자체의 특정 숫자를 요구하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "현재 상태 저장 후 임금·검사비를 포함해 하루를 정상 종료하는 분기 A 실행"
+        },
+        {
+          "step": 2,
+          "action": "저장 상태를 새 분기에 복원하고 동일 명령으로 분기 B 실행"
+        },
+        {
+          "step": 3,
+          "action": "분기 B에서 이미 처리한 마감 ID와 EVENT_A를 재전송"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash_each_branch": 93,
+        "daily_closure_count_each_branch": 1,
+        "event_applied_count_each_branch": 1,
+        "wage_expense_each_branch": 4,
+        "inspection_expense_each_branch": 3
+      },
+      "expected_assertions": [
+        "분기 A와 B의 최종 장부·화물·사건·난수 커서가 동일하다.",
+        "완료된 날짜의 마감 재전송은 새 날짜를 추가 진행하거나 임금·검사비를 다시 차감하지 않는다.",
+        "저장 파일은 날짜뿐 아니라 일자 단계·명령 ID·적용 이벤트 ID·난수 상태를 보존한다."
+      ],
+      "human_review_check": "100−4−3=93. 두 분기의 의미상 동일한 상태를 비교하고 중복 마감 이후에도 93인지 확인한다."
+    },
+    {
+      "id": "P1-SEC-01",
+      "phase": "P1",
+      "milestone": "SEC-01",
+      "title": "회사 명의 주식 매수와 수수료 처리",
+      "spec_sections": [
+        "25.2",
+        "25.4",
+        "26.2"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "company_cash": 100,
+        "shares_held": 0,
+        "investment_carrying_amount": 0,
+        "fee_expense": 0,
+        "personal_cash": 0,
+        "logistics_discount": 0
+      },
+      "fixture_rules": [
+        "공개 가격 3에 10주 전량 체결, 매수 수수료 1, 체결 즉시 결제.",
+        "수수료는 투자자산 원가에 포함하지 않고 별도 비용 1로 표시하는 검수용 단순 규칙이다.",
+        "기타 비용·세금·가격 변동은 없다. 타사 소수지분 매수 외에 제휴 계약은 체결하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "회사 계좌로 10주를 주당 3에 매수하고 수수료 1 지급"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash": 69,
+        "shares_held": 10,
+        "investment_cost_basis": 30,
+        "investment_carrying_amount": 30,
+        "fee_expense": 1,
+        "total_assets": 99,
+        "personal_cash": 0,
+        "logistics_discount": 0
+      },
+      "expected_assertions": [
+        "매수액 30 전체를 물류 영업비용으로 기록하지 않는다.",
+        "보유주식은 회사 자산이며 대표 개인 계좌로 복제하지 않는다.",
+        "소수지분 매수만으로 물류 할인·경영권·비공개정보 접근을 부여하지 않는다."
+      ],
+      "human_review_check": "100−10×3−1=69; 투자자산 10×3=30; 총자산 69+30=99."
+    },
+    {
+      "id": "P1-SEC-02",
+      "phase": "P1",
+      "milestone": "SEC-01",
+      "title": "미실현 주식 평가이익은 현금을 만들지 않음",
+      "spec_sections": [
+        "25.4",
+        "26.2"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "company_cash": 69,
+        "shares_held": 10,
+        "investment_cost_basis": 30,
+        "investment_carrying_amount": 30,
+        "recognized_unrealized_gain": 0,
+        "previous_fee_expense": 1,
+        "total_assets": 99
+      },
+      "fixture_rules": [
+        "이 상태를 독립 생성하며 P1-SEC-01 실행 결과를 공유하지 않는다.",
+        "공개된 평가가격은 4이며 매매·배당·새 수수료는 없다.",
+        "평가이익은 별도 금융 평가 항목으로 표시한다. 최종 손익 표시 위치는 선택한 게임 회계 규칙에 명시하되 영업이익·현금과 혼동하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "10주를 공개 평가가격 4로 평가"
+        },
+        {
+          "step": 2,
+          "action": "동일 valuation_id와 동일 가격을 재적용"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash": 69,
+        "shares_held": 10,
+        "investment_cost_basis": 30,
+        "investment_carrying_amount": 40,
+        "recognized_unrealized_gain": 10,
+        "total_assets": 109,
+        "new_cash_inflow": 0,
+        "new_fee_expense": 0,
+        "logistics_operating_profit_change": 0
+      },
+      "expected_assertions": [
+        "40은 해당 보유주식의 장부가액이며 회사 총자산은 69+40=109이다.",
+        "평가이익 10을 현금이나 영업이익에 추가하지 않는다.",
+        "장부가액 40과 평가이익 10을 총자산에 중복 합산하지 않는다.",
+        "같은 평가 재적용으로 이익이 20이 되지 않는다."
+      ],
+      "human_review_check": "주식가액 10×4=40; 미실현 이익 40−30=10; 현금 69 유지; 총자산 109."
+    },
+    {
+      "id": "P1-SEC-03",
+      "phase": "P1",
+      "milestone": "SEC-01",
+      "title": "공개 시점 전 미래 시세·미래 뉴스 노출 금지",
+      "spec_sections": [
+        "25.2",
+        "25.5",
+        "26.2"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "simulation_day": 10,
+        "day_phase": "AWAITING_INPUT",
+        "last_published_quote_day": 9,
+        "last_published_quote": 3,
+        "next_unpublished_quote": 4,
+        "future_news_publish_day": 11,
+        "relationship_with_informant": 100
+      },
+      "fixture_rules": [
+        "next_unpublished_quote=4는 오직 검수 하네스의 숨겨진 기준값이다. 플레이어용 데이터에 포함하지 않는다.",
+        "비교용 숨겨진 경로는 검수를 위해 고정하며 친밀도 100이 예측 정확도 100%를 뜻하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "10일 의사결정 단계에서 본사·도시 증권 화면·인물 대화·플레이어용 조회 API 확인"
+        },
+        {
+          "step": 2,
+          "action": "화면을 반복 열고 같은 저장 상태를 다시 불러옴. 시장 체결·공개 시점은 진행하지 않음"
+        }
+      ],
+      "expected_numeric": {
+        "visible_quote": 3,
+        "visible_quote_day": 9,
+        "future_quote_exposure_count": 0,
+        "future_news_exposure_count": 0,
+        "simulation_day": 10
+      },
+      "expected_assertions": [
+        "미공개 가격 4와 11일 뉴스는 화면·툴팁·NPC 대사·플레이어용 상태 응답에 나오지 않는다.",
+        "친밀도 보상은 다음 날 급등 종목의 확정 정답을 주지 않는다.",
+        "화면 열람 횟수로 시세를 다시 추첨하지 않는다.",
+        "저장 복원만으로 난수 흐름을 다시 뽑지 않는다. 동일 입력이면 이후 결과가 재현돼야 한다.",
+        "로컬 저장파일을 사용자가 직접 변조·역분석하는 것까지 방지했다는 보안 주장으로 확대하지 않는다."
+      ],
+      "human_review_check": "공개가격 3만 보이는지와 미래 필드 부재를 확인한다. 시장 공개 이후 표시 전환은 별도 정상 흐름으로 확인한다."
+    },
+    {
+      "id": "P1-SEC-04",
+      "phase": "P1",
+      "milestone": "SEC-01",
+      "title": "도시·본사 공통 계좌와 상품·주식 현금 중복 예약 방지",
+      "spec_sections": [
+        "23.2",
+        "25.2",
+        "26.2"
+      ],
+      "accounting_unit": "fixture_no_currency",
+      "currency": null,
+      "initial_state": {
+        "company_cash": 100,
+        "reserved_cash": 0,
+        "available_cash": 100,
+        "stock_order_count": 0,
+        "commodity_order_count": 0,
+        "shares_held": 0
+      },
+      "fixture_rules": [
+        "주식 주문 SEC_ORDER_A는 매수대금 70·수수료 1을 포함해 71을 예약한다.",
+        "상품 주문 GOODS_ORDER_A에는 40이 필요하다. 부분 체결·부분 예약을 허용하지 않는 사례다.",
+        "아직 체결·상품 매입 확정·결제하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "도시 금융센터에서 SEC_ORDER_A 제출"
+        },
+        {
+          "step": 2,
+          "action": "본사 투자 패널에서 같은 SEC_ORDER_A 재전송"
+        },
+        {
+          "step": 3,
+          "action": "본사에서 현금 40이 필요한 GOODS_ORDER_A 예약 시도"
+        }
+      ],
+      "expected_numeric": {
+        "company_cash": 100,
+        "reserved_cash": 71,
+        "available_cash": 29,
+        "stock_order_count": 1,
+        "commodity_order_count": 0,
+        "shares_held": 0
+      },
+      "expected_assertions": [
+        "본사와 도시 금융센터는 같은 회사 계좌·주문 상태를 읽는다.",
+        "주문 제출과 실제 결제는 구분하며 예약만으로 회사 현금과 주식을 동시에 확정하지 않는다.",
+        "가용현금 29로 40의 상품 주문을 승인하지 않는다.",
+        "중복 주문 ID를 새로운 주문으로 처리하지 않는다."
+      ],
+      "human_review_check": "주식 예약 70+1=71; 가용현금 100−71=29; 40>29이므로 상품 예약 실패. 총현금 100은 체결 전 유지."
+    },
+    {
+      "id": "P2-IPO-01",
+      "phase": "P2",
+      "milestone": "IPO-01",
+      "title": "신주 IPO의 회사 자금 유입·주식 수·희석 동시 처리",
+      "spec_sections": [
+        "25.3",
+        "25.4",
+        "26.2"
+      ],
+      "accounting_unit": "KRW",
+      "currency": "KRW",
+      "initial_state": {
+        "existing_shares": 1000000,
+        "founder_shares": 1000000,
+        "outside_investor_shares": 0,
+        "company_cash": 0,
+        "founder_personal_cash": 0,
+        "company_revenue": 0,
+        "operating_profit": 0,
+        "capital_action_applied_count": 0
+      },
+      "fixture_rules": [
+        "신주 250000주, 공모가격 주당 2000 KRW, 전량 청약·납입 완료.",
+        "세금·발행비용은 0인 산술 예제다. 실제 상장 요건·발행비용을 나타내지 않는다.",
+        "구주 매출은 없으며 이전 자본 총액을 기존 주식 수로 추정하지 않는다."
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "action": "CAPITAL_ACTION_A로 신주 발행·납입 처리"
+        },
+        {
+          "step": 2,
+          "action": "동일 CAPITAL_ACTION_A를 재전송"
+        }
+      ],
+      "expected_numeric": {
+        "total_shares": 1250000,
+        "founder_shares": 1000000,
+        "outside_investor_shares": 250000,
+        "founder_ownership_numerator": 1000000,
+        "founder_ownership_denominator": 1250000,
+        "founder_ownership_percent": 80,
+        "outside_ownership_percent": 20,
+        "company_cash": 500000000,
+        "company_equity_increase": 500000000,
+        "founder_personal_cash": 0,
+        "company_revenue": 0,
+        "operating_profit": 0,
+        "capital_action_applied_count": 1
+      },
+      "expected_assertions": [
+        "신주 납입금은 회사 현금·자본 증가이며 매출·영업이익이 아니다.",
+        "대표 보유주식 수는 1000000주를 유지하며 개인 현금은 늘지 않는다.",
+        "총주식 증가로 지분율이 80%가 되며 같은 비율의 경제적 가치 손실을 자동 부여하지 않는다.",
+        "공모가격×총주식으로 표시한 가치를 회사 현금·자산 합계에 다시 더하지 않는다.",
+        "재전송으로 신주·현금·자본이 두 번 증가하지 않는다.",
+        "향후 구주 매출을 추가할 때에는 매각대금 수령자를 매도 주주로 구분한다. 구주 매각만으로 회사 현금·총발행주식 수가 증가해서는 안 된다.",
+        "이 기능은 P2이며 P0 90일 창업 캠페인의 필수 종료 조건이 아니다."
+      ],
+      "human_review_check": "1000000+250000=1250000주; 250000×2000=500000000 KRW; 1000000÷1250000×100=80%; 신규 투자자 20%."
+    },
+    {
+      "id": "P0-ACC-13",
+      "phase": "P0",
+      "milestone": "M1",
+      "title": "출항 전 취소와 보유 재고",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M1_CANCEL_PREDEPARTURE",
+      "expected_numeric": {
+        "opening_cash": 10000,
+        "cash_after": 8950,
+        "remaining_inventory_units": 100,
+        "inventory_cost": 1000,
+        "accounts_receivable": 0,
+        "revenue": 0,
+        "cancellation_expense": 50,
+        "contribution": -50,
+        "assets_cash_plus_inventory": 9950
+      },
+      "expected_assertions": [
+        "운임은 순취소비50만 손익에 남는다.",
+        "팔지 않은 재고100개 원가1000은 자산에 남는다.",
+        "매출·채권·관세를 만들지 않는다."
+      ],
+      "human_review_check": "10000−1000−200+150=8950; 재고1000; 자산9950; 거래손익−50"
+    },
+    {
+      "id": "P0-ACC-14",
+      "phase": "P0",
+      "milestone": "M1",
+      "title": "지연 인도 수락과 가격 감액",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M1_DELAY_ACCEPTED",
+      "expected_numeric": {
+        "cash_before_collection": 8750,
+        "inventory_units": 0,
+        "accounts_receivable": 1350,
+        "net_revenue": 1350,
+        "direct_cost": 1250,
+        "contribution": 100,
+        "cash_after_collection": 10100
+      },
+      "expected_assertions": [
+        "원래도착7일에 공통지연2일을 한번만 더해9일 인도.",
+        "매출1350과 비용1250의 차이는100.",
+        "수금전8750, 수금후10100이며 채권은0."
+      ],
+      "human_review_check": "10000−1000−200−50=8750; 매출1400−50=1350; 8750+1350=10100"
+    }
+  ],
+  "review_summary": {
+    "case_count": 14,
+    "phase_case_counts": {
+      "P0": 9,
+      "P1": 4,
+      "P2": 1
+    },
+    "arithmetic_review": "각 사례의 초기 상태·단위·직접 계산식·예상 수치를 수동 대조했다. 서로 다른 사례의 현금·자산·일자를 합산하지 않는다.",
+    "unimplemented_items": [
+      "실제 엔진 연결 어댑터",
+      "자동 테스트 실행",
+      "실제 UI 검수",
+      "경제 밸런스와 실증 계수 검증",
+      "실제 국가의 회계·상장 규정 대조"
+    ],
+    "required_human_checks": [
+      "v0.3 범위와 각 사례의 DESIGN 가정 구분",
+      "외상 판매와 수금의 구분",
+      "주식가액과 회사 총자산의 구분",
+      "신주 발행과 구주 매각의 자금 수령자 구분",
+      "도시 화면과 실제 현지 활동 자격 구분",
+      "P0 완료에 P1·P2 기능을 강요하지 않음"
+    ],
+    "engine_test_pass_claim": false,
+    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14."
+  }
+}

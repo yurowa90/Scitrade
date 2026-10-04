@@ -1,0 +1,227 @@
+{
+  "schema_version": "0.3.0",
+  "data_basis": "DESIGN",
+  "source_refs": [
+    "DESIGN-V03"
+  ],
+  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "items": [
+    {
+      "id": "SCENARIO_M1_ONE_TRADE",
+      "stage": "M1",
+      "city_ids": [
+        "BUSAN",
+        "YOKOHAMA"
+      ],
+      "good_id": "APPAREL",
+      "employee_ids": [
+        "EMP01"
+      ],
+      "offer_ids": [
+        "OFFER_BUY_01",
+        "OFFER_SELL_01"
+      ],
+      "route_id": "ROUTE01",
+      "quantity": 100,
+      "day_start": 1,
+      "booking_day": 1,
+      "departure_day": 2,
+      "arrival_day": 7,
+      "delivery_deadline_day": 8,
+      "cash_payment_due_day": 10,
+      "customs_days": 0,
+      "tax_rule": {
+        "basis": "supplier_goods_invoice_only_fictional",
+        "rate": 0.05,
+        "status": "DESIGN_not_actual_Japan_tariff",
+        "duty_currency": "USD"
+      },
+      "expected_direct_trade_result": {
+        "purchase_usd": 1000,
+        "freight_usd": 200,
+        "duty_usd": 50,
+        "revenue_usd": 1400,
+        "contribution_before_payroll_usd": 150
+      },
+      "start_with_existing_employment": true,
+      "securities_enabled": false,
+      "culture_enabled": false,
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "SCENARIO_CITY_CULTURE",
+      "stage": "M2",
+      "city_ids": [
+        "BUSAN"
+      ],
+      "employee_ids": [
+        "EMP01",
+        "EMP02"
+      ],
+      "good_id": "APPAREL",
+      "activity_ids": [
+        "CA01",
+        "CA02",
+        "CA03"
+      ],
+      "relationship_rule": "contact_specific",
+      "securities_enabled": false,
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "culture_enabled": true
+    },
+    {
+      "id": "SCENARIO_STOCK_P1",
+      "stage": "P1",
+      "account_owner": "PLAYER_COMPANY",
+      "security_ids": [
+        "SEC01",
+        "SEC02",
+        "SEC03",
+        "SEC04"
+      ],
+      "securities_enabled": true,
+      "ipo_enabled": false,
+      "matching_frequency": "once_per_simulation_day",
+      "settlement": "on_execution_game_simplification",
+      "margin_allowed": false,
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    },
+    {
+      "id": "SCENARIO_M1_CANCEL_PREDEPARTURE",
+      "stage": "M1",
+      "base_scenario_id": "SCENARIO_M1_ONE_TRADE",
+      "city_ids": [
+        "BUSAN",
+        "YOKOHAMA"
+      ],
+      "good_id": "APPAREL",
+      "employee_ids": [
+        "EMP01"
+      ],
+      "offer_ids": [
+        "OFFER_BUY_01",
+        "OFFER_SELL_01"
+      ],
+      "route_id": "ROUTE01",
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "actions_ko": [
+        "의류 100개를 1000 USD에 현금 매입",
+        "운임 200 USD 선지급",
+        "출항 전 계약 취소: 운임 150 USD 환급, 취소비 50 USD",
+        "공급자 반품 없음. 수입 전이므로 관세 없음. 고객 취소 보상 0은 이 fixture의 계약 조건"
+      ],
+      "expected_trade_only_usd": {
+        "opening_cash": 10000,
+        "cash_after": 8950,
+        "remaining_inventory_units": 100,
+        "inventory_cost": 1000,
+        "accounts_receivable": 0,
+        "revenue": 0,
+        "cancellation_expense": 50,
+        "contribution": -50,
+        "assets_cash_plus_inventory": 9950
+      },
+      "scope_note": "KRW 급여 등 회사 공통비는 별도 장부. 이 기대값은 USD 거래 장부만 검증."
+    },
+    {
+      "id": "SCENARIO_M1_DELAY_ACCEPTED",
+      "stage": "M1",
+      "base_scenario_id": "SCENARIO_M1_ONE_TRADE",
+      "city_ids": [
+        "BUSAN",
+        "YOKOHAMA"
+      ],
+      "good_id": "APPAREL",
+      "employee_ids": [
+        "EMP01"
+      ],
+      "offer_ids": [
+        "OFFER_BUY_01",
+        "OFFER_SELL_01"
+      ],
+      "route_id": "ROUTE01",
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V03"
+      ],
+      "departure_day": 2,
+      "arrival_day": 9,
+      "delivery_deadline_day": 8,
+      "cash_payment_due_day": 11,
+      "delay_source": "one shared port delay instance; add exactly 2 days",
+      "actions_ko": [
+        "매입 1000·운임 200·가상 관세 50 USD 지급",
+        "9일 인도: 고객이 화물을 수락하고 사전 계약 조건에 따라 판매대금 50 USD 감액",
+        "1400 USD에서 감액된 1350 USD 매출·채권 인식",
+        "11일 수금. 감액을 별도 비용으로 다시 차감하지 않음"
+      ],
+      "expected_trade_only_usd": {
+        "cash_before_collection": 8750,
+        "inventory_units": 0,
+        "accounts_receivable": 1350,
+        "net_revenue": 1350,
+        "direct_cost": 1250,
+        "contribution": 100,
+        "cash_after_collection": 10100
+      },
+      "scope_note": "가상 계약의 가격 감액 사례. 현실 지체상금률 아님. KRW 급여 등 공통비는 별도."
+    },
+    {
+      "id": "SCENARIO_CREW_M2",
+      "stage": "M2",
+      "city_ids": [
+        "BUSAN"
+      ],
+      "employee_ids": [
+        "EMP01",
+        "EMP02"
+      ],
+      "candidate_character_ids": [
+        "EMP03",
+        "EMP04",
+        "EMP05",
+        "EMP06"
+      ],
+      "character_system_enabled": true,
+      "training_enabled": true,
+      "enhancement_enabled": true,
+      "organization_enabled": true,
+      "productivity_mode": "CHARACTER_WEIGHTED",
+      "culture_enabled": true,
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "initial_level": 1,
+      "initial_enhancement_rank": 0,
+      "initial_xp": 0
+    }
+  ],
+  "$schema": "../schemas/scenarios.schema.json",
+  "configuration_merge_rule": {
+    "initialization": "new independent state; never merge prior scenario holdings",
+    "precedence": "scenario explicit fields override config defaults; arrays replace, not append",
+    "stage_mapping": {
+      "M1": "P0",
+      "M2": "P0",
+      "P1": "P1"
+    },
+    "employee_ids": "exact scenario employee set replaces starter_employee_ids",
+    "feature_flags": "scenario.securities_enabled and scenario.ipo_enabled override config",
+    "omitted_feature_flags": "false unless config explicitly allows them",
+    "variant_rule": "variant inherits named base scenario then applies overrides; inherited tables are immutable",
+    "character_system": "M1 legacy fixed. Enable CHARACTER_WEIGHTED only in dedicated M2 character scenario after implementation."
+  }
+}
