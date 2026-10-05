@@ -8,7 +8,9 @@ import goods from '../../data/goods.json';
 import routes from '../../data/routes.json';
 import employees from '../../data/employees.json';
 import characters from '../../data/characters.json';
+import characterRules from '../../data/character_rules.json';
 import world from '../../data/world.json';
+import venues from '../../data/venues.json';
 import packageStatus from '../../PACKAGE_STATUS.json';
 
 import { rateToBasisPoints, toMinor, type Currency } from '../engine/money';
@@ -184,11 +186,12 @@ function toRoute(id: string): RouteDef {
   };
 }
 
-function toEmployee(id: string): EmployeeDef {
+function toEmployee(id: string, growthEnabled: boolean): EmployeeDef {
   const e = findById(employees, id);
   const salary = moneyField(e, 'salary_per_day');
   const c = asItems(characters).find((item) => item.id === id) as AnyRecord | undefined;
   const art = (c?.art_direction ?? {}) as AnyRecord;
+  const focus = c?.growth_focus as { primary_stat: string; secondary_stat: string };
   return {
     id,
     nameKo: str(e, 'name_ko'),
@@ -197,6 +200,12 @@ function toEmployee(id: string): EmployeeDef {
     workUnitsPerDay: num(e, 'work_units_per_day'),
     salaryPerDayMinor: salary.minor,
     salaryCurrency: salary.currency,
+    growth: growthEnabled && c ? {
+      baseStats: { ...(c.stats as Record<string, number>) },
+      primaryStat: focus.primary_stat,
+      secondaryStat: focus.secondary_stat,
+      startXp: num(c, 'xp_total'),
+    } : null,
     character: {
       attribute: (c?.attribute as string | undefined) ?? null,
       creatureKind: (c?.creature_kind as string | undefined) ?? null,
@@ -237,6 +246,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
   const s = resolveScenarioRecord(id);
   const tradeCurrency = str(cfg, 'trade_currency') as Currency;
   const rules = toRules(id, s.engine_rules as EngineRulesRaw | undefined);
+  const growthEnabled = (s.growth as { enabled?: boolean } | undefined)?.enabled === true;
 
   const offers = (s.offer_ids as string[]).map(toOffer);
   const routeIds = (s.route_ids as string[] | undefined) ?? [str(s, 'route_id')];
@@ -306,7 +316,8 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     questWorkUnits: rawRecruitment.quest_work_units,
     signingFeeWageDays: rawRecruitment.signing_fee_wage_days,
     scoutSites: rawRecruitment.scout_sites.map((site) => ({
-      venueId: site.venue_id, cityId: site.city_id, candidateEmployeeIds: site.candidate_employee_ids,
+      venueId: site.venue_id, titleKo: str(findById(venues, site.venue_id), 'title_ko'),
+      cityId: site.city_id, candidateEmployeeIds: site.candidate_employee_ids,
     })),
   } : null;
 
@@ -326,8 +337,17 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     goods: goodIds.map(toGood),
     routes: routeDefs,
     offers,
-    employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map(toEmployee),
+    employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map((employeeId) => toEmployee(employeeId, growthEnabled)),
     recruitment,
+    growth: growthEnabled ? {
+      taskCompletionXp: characterRules.task_completion_xp,
+      ordinaryTraining: {
+        durationDays: characterRules.ordinary_training.duration_days,
+        feeMinor: toMinor(characterRules.ordinary_training.fee.currency as Currency, characterRules.ordinary_training.fee.amount),
+        currency: characterRules.ordinary_training.fee.currency as Currency,
+        xpOnCompletion: characterRules.ordinary_training.xp_on_completion,
+      },
+    } : null,
     terms: {
       prepWorkUnits: terms.prep_work_units,
       forwardingPrepWorkUnits: terms.forwarding_prep_work_units ?? 0,

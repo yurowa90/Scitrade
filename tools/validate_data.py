@@ -23,6 +23,47 @@ def check(condition, message):
         ERRORS.append(message)
 
 
+def validate_growth(rules, characters):
+    """성장 자료와 엔진이 고정한 의미를 대조한다. 누락도 검사 실패로 보고한다."""
+    level_min, level_max = rules.get('level_min'), rules.get('level_max')
+    bounds_ok = (type(level_min) is int and type(level_max) is int
+                 and 1 <= level_min <= level_max)
+    check(bounds_ok, 'positive ordered level_min and level_max')
+    thresholds = rules.get('xp_thresholds')
+    thresholds_ok = isinstance(thresholds, list) and all(
+        isinstance(t, dict) and type(t.get('level')) is int
+        and type(t.get('cumulative_xp')) is int for t in thresholds)
+    check(thresholds_ok, 'XP thresholds contain integer level and cumulative_xp')
+    if thresholds_ok and bounds_ok:
+        check(level_max == len(thresholds), 'level_max equals XP threshold count')
+        check([t['level'] for t in thresholds] == list(range(level_min, level_max + 1)),
+              'complete level_min-level_max thresholds')
+        for t in thresholds:
+            check(t['cumulative_xp'] == 50*(t['level']-1)*t['level'], 'XP threshold arithmetic')
+        for cid, character in characters.items():
+            xp = character.get('xp_total')
+            check(type(xp) is int and xp >= 0, cid + ': nonnegative integer XP')
+            if type(xp) is int:
+                level = max([level_min] + [min(level_max, t['level']) for t in thresholds
+                                           if xp >= t['cumulative_xp']])
+                check(character.get('level') == level, cid + ': level matches XP')
+    training = rules.get('ordinary_training')
+    check(isinstance(training, dict), 'ordinary training definition exists')
+    training = training if isinstance(training, dict) else {}
+    fee = training.get('fee')
+    fee = fee if isinstance(fee, dict) else {}
+    for name, value in [('task_completion_xp', rules.get('task_completion_xp')),
+                        ('duration_days', training.get('duration_days')),
+                        ('fee.amount', fee.get('amount')),
+                        ('xp_on_completion', training.get('xp_on_completion'))]:
+        check(type(value) is int and value > 0, name + ': positive integer')
+    check(fee.get('currency') == 'KRW', 'ordinary training fee uses KRW')
+    check(training.get('occupies_employee_reservation') is True,
+          'ordinary training occupies employee reservation')
+    check(training.get('salary_included_in_fee') is False,
+          'ordinary training fee excludes salary')
+
+
 def read(relative):
     return json.loads((ROOT / relative).read_text(encoding='utf-8'))
 
@@ -527,6 +568,8 @@ def main():
     for character in characters.values():
         cid = character['id']
         check(set(character['stats']) == set(rules['stats']), cid + ': six named stats')
+        check(all(character['growth_focus'][key] in character['stats']
+                  for key in ('primary_stat', 'secondary_stat')), cid + ': growth focus names existing stats')
         check(sum(character['stats'].values()) == 300, cid + ': base stat budget')
         check(all(0 <= value <= 100 for value in character['stats'].values()), cid + ': stat range')
         check(character['attribute'] in attributes, cid + ': known attribute')
@@ -548,9 +591,11 @@ def main():
         check(job['affinity_attribute'] in attributes, job['id'] + ': affinity')
         check(sum(Decimal(str(v)) for v in job['stat_weights'].values()) == 1,
               job['id'] + ': stat weights sum to one')
-    for threshold in rules['xp_thresholds']:
-        level = threshold['level']
-        check(threshold['cumulative_xp'] == 50*(level-1)*level, 'XP threshold arithmetic')
+    validate_growth(rules, characters)
+    check(tables['scenarios']['SCENARIO_M2_MULTI_TRADE'].get('growth') == {'enabled': True},
+          'M2 multi trade enables growth without copying numeric rules')
+    check(all('growth' not in s for sid, s in tables['scenarios'].items() if sid.startswith('SCENARIO_M1_')),
+          'M1 growth remains disabled')
     steps = rules['enhancement_steps']
     check(sum(s['fee_krw'] for s in steps) == 700000, 'enhancement total fee')
     check(sum(s['duration_days'] for s in steps) == 10, 'enhancement total duration')
@@ -568,8 +613,16 @@ def main():
     character_cases = read('tests/character_acceptance_cases.json')['items']
     index(character_cases, 'character acceptance cases')
     check(len(character_cases) == 8, '8 additional character acceptance specifications')
-    check(all(c['status'] == 'SPECIFICATION_NOT_EXECUTED' for c in character_cases),
-          'character cases are not claimed to be engine test results')
+    linked_character_ids = {'CHAR-ACC-01', 'CHAR-ACC-02', 'CHAR-ACC-08'}
+    for case in character_cases:
+        if case['id'] in linked_character_ids:
+            check(case['status'] == 'EXECUTABLE_ENGINE_TEST_LINKED' and
+                  case.get('engine_test_ref') == 'src/engine/m2a-growth.test.ts',
+                  case['id'] + ': linked growth engine test')
+        else:
+            check(case['status'] == 'SPECIFICATION_NOT_EXECUTED', case['id'] + ': unimplemented specification')
+    check(sum(c['status'] == 'EXECUTABLE_ENGINE_TEST_LINKED' for c in character_cases) == 3,
+          '3 character specifications linked; 5 remain unexecuted')
 
     for file in sorted((ROOT/'references').glob('*.json')):
         obj=json.loads(file.read_text(encoding='utf-8'))
@@ -589,6 +642,7 @@ def main():
         return 1
     print(f'PASS: {len(documents)} data documents; {CHECKS} structural/reference/arithmetic checks')
     print('26 acceptance specifications included (18 core + 8 character); this validator does not run engine tests (npm test).')
+    print('Character specifications: 3 linked to engine tests; 5 remain unexecuted specifications.')
     print('Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.')
     print('Economic calibration and playtesting are pending.')
     return 0

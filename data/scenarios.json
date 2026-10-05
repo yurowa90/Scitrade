@@ -266,6 +266,7 @@
     },
     {
       "id": "SCENARIO_M2_MULTI_TRADE",
+      "growth": { "enabled": true },
       "stage": "M2",
       "title_ko": "복수 계약과 운송 주선 — 자금·인력·선복 예약",
       "city_ids": [

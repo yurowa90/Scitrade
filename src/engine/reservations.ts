@@ -67,6 +67,12 @@ export function fundsPosition(
   return { currency, cash, reserved, unpaidObligations, available: cash - reserved - unpaidObligations };
 }
 
+/** 일반 훈련은 기존 규칙대로 현금에서 미지급 의무만 뺀다. 계약 자금 예약은 차감하지 않는다. */
+export function trainingAvailableMinor(s: GameState, config: ScenarioConfig, currency: Currency): number {
+  const funds = fundsPosition(s, config, currency);
+  return funds.cash - funds.unpaidObligations;
+}
+
 // ── 선복 ──
 
 export interface SailingLoad {

@@ -37,8 +37,8 @@
     },
     {
       "path": "data/character_rules.json",
-      "size_bytes": 4487,
-      "sha256": "a533fa3daa55bf747c53ab255eb9d96bec1980c5e3f0deacf1a8ce072a9ae45a"
+      "size_bytes": 4590,
+      "sha256": "aa2f27776da8a32e3a351164eb330f05f5ae4c32a445f98f4f70e52c890ec5cc"
     },
     {
       "path": "data/characters.json",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 16837,
-      "sha256": "9af6a97f9d09ceeb7d3d111b459ca538d8921f550a99faa9c502c25ac926747d"
+      "size_bytes": 16874,
+      "sha256": "c0ff025ddf08f625f4c45590ce3a36129cf4e5cdcd219d1c22bbbb5426e7f611"
     },
     {
       "path": "data/securities.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 50997,
-      "sha256": "d140c115d8f961fc793071341766aa4a47545cc0f71b15a7903915d503b002ec"
+      "size_bytes": 54937,
+      "sha256": "d7f63ee855ed4e976be868230debc610f8cf9b7be3f3611599298aaa3fe9c5c7"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 9925,
-      "sha256": "358808cc0231808e4f4ff69e1a15387b4dc5b37639a869de5602e157441c6200"
+      "size_bytes": 10139,
+      "sha256": "d29295a4f7a88c08c4a6eeae8b851deec7c6f0ce0c32034bbf8052babc8e62d0"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 25174,
-      "sha256": "63d76814f6775069950aae535c76a20d94ebe386e24bee6aab3c0b5c3463baa1"
+      "size_bytes": 26181,
+      "sha256": "3311d8770732c1b208cd2bdf22bd915122b97a5caa9b87290349b1625e865465"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 2367,
-      "sha256": "a203f2ff2b470fce16cad225a5f6f78c2593d905cae78133005ec198ecd3cfa5"
+      "size_bytes": 2784,
+      "sha256": "12e41b99aec5251baa8fec01e389514192122a3a3da1b80b034774d903aaf88e"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -251,6 +251,21 @@
       "sha256": "dc0e2672ed486c1250333d08b0f68455df9c92fc88b5b3bfcabbddc2b384999d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0004-R1-growth-engine-fixes.md",
+      "size_bytes": 11450,
+      "sha256": "0e00130525470602499916066c20af720aee03efa91cfffc2a6020df578b59c2"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0004-R2-growth-engine-hardening.md",
+      "size_bytes": 7741,
+      "sha256": "8a1c843e4f3ac1e7f1690a9a7c429834e82139b7a52aa80e152680e04acb3301"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0004-xp-level-training-engine.md",
+      "size_bytes": 9161,
+      "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
       "size_bytes": 17204,
       "sha256": "9c77e260a8a12b125e10f3cee908049262d2a8857f384522f225ecae2bd9c44e"
@@ -274,6 +289,11 @@
       "path": "docs/ai/tasks/results/TASK-0003.md",
       "size_bytes": 33997,
       "sha256": "637b966711331e9274f3f0a48e64735aa0e917f731e42d334dba159c08e4efb3"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0004.md",
+      "size_bytes": 31204,
+      "sha256": "455d3d8ea42e5a28cf1a093db882b9593103316ec4ac18ef9dd4f0a6e58f23de"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -482,8 +502,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 20318,
-      "sha256": "c46ee8bf09bc0811e50886d90e103426b80fc757fff7f3365dd69dd7c8b98e6a"
+      "size_bytes": 20552,
+      "sha256": "e44f91d76bd8ec7c58179042bfe2662300e6b123e8979a2bbe1505d8650f6208"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -522,8 +542,8 @@
     },
     {
       "path": "tests/character_acceptance_cases.json",
-      "size_bytes": 15041,
-      "sha256": "0e441434f9efa1859d1b5fb9b13f06f669c2406fbd6ad72b15db446f6401a286"
+      "size_bytes": 15316,
+      "sha256": "cfc6abadeecca7c692bbbf7ac426e246682006f19fbbe7755b7ec935cd76f2e6"
     },
     {
       "path": "tools/ai/codex_task.sh",
@@ -542,8 +562,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 36730,
-      "sha256": "edc742164e1a98aad2b480c1f02f05e185bb75b7194db2991bf8143fe952f648"
+      "size_bytes": 40207,
+      "sha256": "28fa416c284f672dd0fa6efb4553a16a84bff79f511164e71f91c74d1314ee39"
     }
   ]
 }

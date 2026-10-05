@@ -2,15 +2,20 @@
 // 다른 규칙·데이터 판본의 저장은 조용히 이어 쓰지 않고 거절한다.
 // 저장 형식이 바뀌면 판본을 올리고, 이전 판본은 명시한 이관 함수로만 읽는다.
 
-import { ENGINE_VERSION, SUPPORTED_RULES_VERSIONS, type GameState } from './types';
+import { loadScenario, SCENARIO_IDS, type ScenarioId } from '../content/scenario';
+import { ENGINE_VERSION, SUPPORTED_RULES_VERSIONS, type GameState, type ScenarioConfig } from './types';
+
+import { checkSaveShape } from './save-shape';
+import { checkInvariants } from './invariants';
 
 export const SAVE_FORMAT = 'scitrade-save';
 /**
  * 1: M1 (계약은 직접 무역뿐, 화물은 회사 소유뿐).
  * 2: M2a (운송 주선 계약 `serviceOfferId`, 화물 소유자 `ownerPartyId` 추가).
  * 3: 영입 후보 상태·근무 시작일·업무 대상 추가.
+ * 4: 직원 누적 경험치·보상 중복 방지 키·지급액 추가.
  */
-export const SAVE_FORMAT_VERSION = 3;
+export const SAVE_FORMAT_VERSION = 4;
 
 export interface SaveFile {
   format: typeof SAVE_FORMAT;
@@ -60,7 +65,20 @@ export function migrateV2toV3(state: GameState): GameState {
   return s;
 }
 
-export function deserializeSave(text: string, expected: { dataVersion: string; rulesVersion?: string }): GameState {
+/** 판본 3 → 4: 과거 업무에 소급 보상하지 않고 직원 정의의 시작 경험치를 사용한다. */
+export function migrateV3toV4(state: GameState, config: ScenarioConfig): GameState {
+  const s = structuredClone(state);
+  for (const emp of s.employees) {
+    const def = config.employees.find((e) => e.id === emp.id);
+    if (!def) throw new SaveError(`${emp.id}: 경험치 이관에 필요한 직원 정의가 없습니다.`);
+    emp.xp = def.growth?.startXp ?? 0;
+  }
+  s.xpAwards = {};
+  s.xpAwardAmounts = {};
+  return s;
+}
+
+export function deserializeSave(text: string, expected: { dataVersion: string; rulesVersion?: string; config?: ScenarioConfig }): GameState {
   let file: SaveFile;
   try {
     file = JSON.parse(text) as SaveFile;
@@ -68,7 +86,7 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError('저장 파일을 읽을 수 없습니다 (JSON 형식 오류).');
   }
   if (file?.format !== SAVE_FORMAT) throw new SaveError('Scitrade 저장 파일이 아닙니다.');
-  if (file.formatVersion !== 1 && file.formatVersion !== 2 && file.formatVersion !== SAVE_FORMAT_VERSION) {
+  if (![1, 2, 3, SAVE_FORMAT_VERSION].includes(file.formatVersion)) {
     throw new SaveError(`지원하지 않는 저장 형식 판본입니다 (${file.formatVersion}).`);
   }
   const known = (SUPPORTED_RULES_VERSIONS as readonly string[]).includes(file.rulesVersion);
@@ -81,6 +99,23 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError(`다른 데이터 판본(${file.dataVersion})의 저장입니다. 현재 데이터는 ${expected.dataVersion}입니다.`);
   }
   if (!file.state || typeof file.state.day !== 'number') throw new SaveError('저장 파일에 게임 상태가 없습니다.');
-  const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
-  return file.formatVersion <= 2 ? migrateV2toV3(v2) : file.state;
+  try {
+    if (!expected.config && !(SCENARIO_IDS as readonly string[]).includes(file.scenarioId)) {
+      throw new SaveError(`알 수 없는 저장 시나리오입니다 (${file.scenarioId}).`);
+    }
+    const config = expected.config ?? loadScenario(file.scenarioId as ScenarioId);
+    if (config.id !== file.scenarioId) throw new SaveError('이관 설정과 저장 시나리오가 다릅니다.');
+    const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
+    const v3 = file.formatVersion <= 2 ? migrateV2toV3(v2) : v2;
+    const state = file.formatVersion < SAVE_FORMAT_VERSION ? migrateV3toV4(v3, config) : file.state;
+    checkSaveShape(state);
+    if (state.meta.scenarioId !== file.scenarioId || state.meta.rulesVersion !== file.rulesVersion
+      || state.meta.dataVersion !== file.dataVersion || config.rules.rulesVersion !== file.rulesVersion
+      || config.dataVersion !== file.dataVersion) throw new SaveError('저장 메타 정보와 설정이 다릅니다.');
+    checkInvariants(state, config);
+    return state;
+  } catch (error) {
+    if (error instanceof SaveError) throw error;
+    throw new SaveError(`저장 상태 검증 실패: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

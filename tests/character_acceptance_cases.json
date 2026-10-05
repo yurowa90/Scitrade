@@ -1,13 +1,13 @@
 {
   "schema_version": "0.4.0",
-  "status": "SPECIFICATION_NOT_EXECUTED",
+  "status": "PARTIALLY_LINKED_TO_ENGINE_TESTS",
   "data_basis": "DESIGN",
-  "purpose": "캐릭터·조직·성장 기능의 추가 인수 기준 제안. 게임 구현이나 실행 결과가 아니다.",
+  "purpose": "캐릭터·조직·성장 기능의 추가 인수 기준. CHAR-ACC-01·02·08은 엔진 테스트에 연결하며 나머지는 미실행 명세다. 실행 결과는 작업 보고서에 기록한다.",
   "fixture_policy": "이 파일의 인물 ID·능력·금액·처리량은 독립 인수 검사를 위한 설계값이다. 실제 게임 초기 데이터 또는 관측 자료를 뜻하지 않는다.",
   "items": [
     {
       "id": "CHAR-ACC-01",
-      "status": "SPECIFICATION_NOT_EXECUTED",
+      "status": "EXECUTABLE_ENGINE_TEST_LINKED",
       "title": "완료 경험치는 직원별로 한 번만 지급",
       "setup": {
         "employees": [
@@ -49,11 +49,12 @@
           "재전송과 저장·불러오기는 경험치를 추가하지 않는다.",
           "업무 취소·미완료 사건에는 이 완료 보상을 지급하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": "src/engine/m2a-growth.test.ts"
     },
     {
       "id": "CHAR-ACC-02",
-      "status": "SPECIFICATION_NOT_EXECUTED",
+      "status": "EXECUTABLE_ENGINE_TEST_LINKED",
       "title": "한 번의 경험치 지급으로 여러 레벨 문턱 통과",
       "setup": {
         "employee_id": "CHAR-FIXTURE-01",
@@ -97,7 +98,8 @@
           "중간 레벨 2에서 멈추지 않는다.",
           "갱신 처리의 재호출과 저장·불러오기로 능력 보너스를 다시 더하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": "src/engine/m2a-growth.test.ts"
     },
     {
       "id": "CHAR-ACC-03",
@@ -340,7 +342,7 @@
     },
     {
       "id": "CHAR-ACC-08",
-      "status": "SPECIFICATION_NOT_EXECUTED",
+      "status": "EXECUTABLE_ENGINE_TEST_LINKED",
       "title": "일반 훈련비와 정기 급여를 분리하고 같은 급여를 이중 청구하지 않음",
       "setup": {
         "employee_id": "CHAR-FIXTURE-01",
@@ -373,7 +375,8 @@
           "훈련은 해당 직원의 실제 업무 예약 한 칸을 점유한다.",
           "재전송으로 훈련비·급여·경험치를 중복 적용하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": "src/engine/m2a-growth.test.ts"
     }
   ]
 }

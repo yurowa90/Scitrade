@@ -12,6 +12,23 @@ export class InvariantError extends Error {}
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   const problems: string[] = [];
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
+  if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
+  if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');
+  if (new Set(s.ledger.entries.map((e) => e.id)).size !== s.ledger.entries.length) problems.push('장부 항목 ID는 유일해야 합니다');
+  const employeeIds = new Set(s.employees.map((emp) => emp.id));
+  for (const task of s.tasks) {
+    if (task.assignedEmployeeId !== null && !employeeIds.has(task.assignedEmployeeId)) {
+      problems.push(`${task.id}: 업무 담당자 ${task.assignedEmployeeId} 직원이 없습니다`);
+    }
+  }
+  for (const contract of s.contracts) {
+    if (contract.ownerEmployeeId !== null && !employeeIds.has(contract.ownerEmployeeId)) {
+      problems.push(`${contract.id}: 계약 담당자 ${contract.ownerEmployeeId} 직원이 없습니다`);
+    }
+  }
+  for (const candidate of s.recruitment.candidates) {
+    if (!employeeIds.has(candidate.employeeId)) problems.push(`영입 후보 ${candidate.employeeId} 직원이 없습니다`);
+  }
   const currencies = new Set<Currency>(s.ledger.entries.map((e) => e.currency));
   const kindOf = (contractId: string) => s.contracts.find((c) => c.id === contractId)?.kind;
 
@@ -82,6 +99,13 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
     }
   }
   for (const emp of s.employees) {
+    const def = config.employees.find((e) => e.id === emp.id);
+    const awarded = Object.entries(s.xpAwardAmounts)
+      .filter(([key]) => key.split('|')[0] === emp.id)
+      .reduce((sum, [, amount]) => sum + amount, 0);
+    if (!Number.isSafeInteger(emp.xp) || emp.xp !== (def?.growth?.startXp ?? 0) + awarded) {
+      problems.push(`${emp.id}: 경험치와 시작 경험치·지급 합계가 다릅니다`);
+    }
     const running = s.tasks.filter((t) => t.status === 'RUNNING' && t.assignedEmployeeId === emp.id);
     if (running.length && (!isEmployed(s, emp.id) || emp.availableFromDay > s.day)) {
       problems.push(`${emp.id}: 근무 가능한 고용 직원이 아닌데 진행 중 업무가 있습니다`);
@@ -91,6 +115,35 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
     if (wages.some((e) => e.day < emp.availableFromDay)) problems.push(`${emp.id}: 근무 시작일 이전 급여 기록`);
     if (running.length > 1) {
       problems.push(`${emp.id}에게 진행 중 업무가 ${running.length}건입니다`);
+    }
+  }
+
+  for (const key of new Set([...Object.keys(s.xpAwards), ...Object.keys(s.xpAwardAmounts)])) {
+    const [employeeId, eventId, rewardKind, extra] = key.split('|');
+    const amount = s.xpAwardAmounts[key];
+    const emp = s.employees.find((e) => e.id === employeeId);
+    const def = config.employees.find((e) => e.id === employeeId);
+    if (s.xpAwards[key] !== true || !Number.isSafeInteger(amount) || amount! <= 0
+      || !eventId || extra !== undefined || !['TASK_COMPLETION_XP', 'TRAINING_XP'].includes(rewardKind ?? '')
+      || !config.growth || !def?.growth || emp?.employmentStatus !== 'employed') {
+      problems.push(`${key}: 경험치 지급 기록 오류`);
+    }
+    if (eventId?.startsWith('TASK-DONE-')) {
+      const task = s.tasks.find((t) => `TASK-DONE-${t.id}` === eventId);
+      if (!task || task.status !== 'DONE' || task.assignedEmployeeId !== employeeId) {
+        problems.push(`${key}: 미완료·ABORTED 업무에는 경험치 기록이 없어야 합니다`);
+      } else if (rewardKind !== (task.kind === 'TRAINING' ? 'TRAINING_XP' : 'TASK_COMPLETION_XP')) {
+        problems.push(`${key}: 업무 종류와 경험치 보상 종류가 다릅니다`);
+      }
+    }
+  }
+  for (const task of s.tasks.filter((t) => t.kind === 'TRAINING')) {
+    const fees = s.ledger.entries.filter((e) => e.id === `TRAINING-FEE-${task.id}`);
+    if (fees.length > 1) problems.push(`${task.id}: 훈련비 중복 기록`);
+  }
+  for (const fee of s.ledger.entries.filter((e) => e.lines.some((l) => l.account === 'TRAINING_EXPENSE'))) {
+    if (!s.tasks.some((t) => t.kind === 'TRAINING' && fee.id === `TRAINING-FEE-${t.id}`)) {
+      problems.push(`${fee.id}: 훈련 업무 없는 훈련비 기록`);
     }
   }
 

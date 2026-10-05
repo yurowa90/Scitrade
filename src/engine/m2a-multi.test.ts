@@ -271,7 +271,7 @@ describe('저장 판본 2와 이관', () => {
     for (const l of v1.state.cargoLots) delete l.ownerPartyId;
     const migrated = deserializeSave(JSON.stringify(v1), { dataVersion: m1.dataVersion, rulesVersion: 'M1-rules-1' });
     expect(migrated).toEqual(atDay3);
-    expect(JSON.parse(serializeSave(migrated)).formatVersion).toBe(3);
+    expect(JSON.parse(serializeSave(migrated)).formatVersion).toBe(4);
     for (const currency of ['USD', 'KRW'] as const) {
       expect(summarize(migrated.ledger, currency)).toEqual(summarize(atDay3.ledger, currency));
     }

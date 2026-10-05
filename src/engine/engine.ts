@@ -18,7 +18,7 @@ import {
 } from './catalog';
 import { balance, emptyLedger, post, type LedgerLine } from './ledger';
 import { formatMoney, type Currency } from './money';
-import { fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
+import { trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
   ENGINE_VERSION,
@@ -36,6 +36,8 @@ import {
 } from './types';
 import { isEmployed, isAvailableFromToday } from './employees';
 import { checkInvariants } from './invariants';
+import { awardTaskCompletion } from './growth';
+import { taskSubjectKo } from './tasks';
 
 export { cargoSpace, cityName, findSailing, listSailings, type Sailing } from './catalog';
 
@@ -80,6 +82,7 @@ export function createGame(config: ScenarioConfig): GameState {
     tasks: [],
     employees: config.employees.map((e) => ({
       id: e.id,
+      xp: e.growth?.startXp ?? 0,
       locationCityId: e.homeCityId,
       employmentStatus: config.recruitment?.candidateEmployeeIds.includes(e.id) ? 'candidate' as const : 'employed' as const,
       availableFromDay: 1,
@@ -96,6 +99,8 @@ export function createGame(config: ScenarioConfig): GameState {
     notices: [],
     delayDecisions: [],
     appliedEventIds: {},
+    xpAwards: {},
+    xpAwardAmounts: {},
     processedCommands: {},
     closedDays: [],
     log: [],
@@ -175,6 +180,9 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   }
   let rejection: string | null;
   switch (cmd.type) {
+    case 'START_TRAINING':
+      rejection = startTraining(s, config, cmd.employeeId);
+      break;
     case 'ACCEPT_TRADE':
       rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId));
       break;
@@ -452,7 +460,7 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
 
 function taskLabel(kind: Task['kind']): string {
   return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '운송 주선 준비(화물 인수·선적 서류)',
-    SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰' }[kind];
+    SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', TRAINING: '일반 훈련' }[kind];
 }
 
 function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: string, cityId: string): string | null {
@@ -464,7 +472,7 @@ function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: s
     return `${def.nameKo}은(는) ${cityName(config, emp.locationCityId)}에 있습니다. 이 업무는 ${cityName(config, cityId)} 현지 인력이 필요합니다.`;
   }
   const busy = runningTaskOf(s, employeeId);
-  if (busy) return `${def.nameKo}은(는) 다른 업무(${busy.contractId ?? busy.subjectId} ${taskLabel(busy.kind)})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+  if (busy) return `${def.nameKo}은(는) 다른 업무(${[taskSubjectKo(config, busy), taskLabel(busy.kind)].filter(Boolean).join(' ')})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
   return null;
 }
 
@@ -488,7 +496,42 @@ function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, empl
     if (contract.status === 'ACTIVE') contract.status = 'IN_PROGRESS';
   }
   const def = config.employees.find((e) => e.id === employeeId)!;
-  log(s, `${def.nameKo}에게 ${task.contractId ?? task.subjectId} ${taskLabel(task.kind)} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  const label = [taskSubjectKo(config, task), taskLabel(task.kind)].filter(Boolean).join(' ');
+  if (task.kind === 'TRAINING') {
+    const fee = config.growth!.ordinaryTraining;
+    log(s, `${def.nameKo} ${label} 시작 (${task.requiredWorkUnits}일, 훈련비 ${formatMoney(fee.currency, fee.feeMinor)})`);
+  } else {
+    log(s, `${def.nameKo}에게 ${label} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  }
+  return null;
+}
+
+function startTraining(s: GameState, config: ScenarioConfig, employeeId: string): string | null {
+  if (!config.growth) return '이 시나리오에서는 일반 훈련을 할 수 없습니다.';
+  const emp = s.employees.find((e) => e.id === employeeId);
+  const cityId = emp?.locationCityId ?? config.homeCityId;
+  const unavailable = employeeUnavailable(s, config, employeeId, cityId);
+  if (unavailable) return unavailable;
+  if (cityId !== config.homeCityId) return `일반 훈련은 ${cityName(config, config.homeCityId)}에서만 할 수 있습니다.`;
+  const def = config.employees.find((e) => e.id === employeeId)!;
+  if (!def.growth) return '성장 정보가 없는 직원입니다.';
+  const training = config.growth.ordinaryTraining;
+  const taskId = `TRAINING-${employeeId}-D${s.day}`;
+  if (s.tasks.some((t) => t.id === taskId)) return '이미 생성된 업무 ID입니다.';
+  const available = trainingAvailableMinor(s, config, training.currency);
+  if (available < training.feeMinor) return `훈련비 자금이 부족합니다. 필요 ${formatMoney(training.currency, training.feeMinor)}, 사용 가능 ${formatMoney(training.currency, available)}.`;
+  const task: Task = {
+    id: taskId, kind: 'TRAINING', contractId: null, subjectId: employeeId, cityId,
+    requiredWorkUnits: training.durationDays, progressWorkUnits: 0, status: 'QUEUED',
+    assignedEmployeeId: null, startedDay: null, completedDay: null,
+  };
+  const rejection = assignTaskObject(s, config, task, employeeId);
+  if (rejection) return rejection;
+  s.tasks.push(task);
+  postOrThrow(s, {
+    id: `TRAINING-FEE-${taskId}`, currency: training.currency, reason: `${def.nameKo} 일반 훈련비`,
+    lines: [{ account: 'TRAINING_EXPENSE', amount: training.feeMinor }, { account: 'CASH', amount: -training.feeMinor }],
+  });
   return null;
 }
 
@@ -749,11 +792,13 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
     if (task.status !== 'RUNNING' || !task.assignedEmployeeId || !isAvailableFromToday(s, task.assignedEmployeeId)) continue;
     const def = config.employees.find((e) => e.id === task.assignedEmployeeId);
     if (!def) continue;
-    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + def.workUnitsPerDay);
+    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + (task.kind === 'TRAINING' ? 1 : def.workUnitsPerDay));
     if (task.progressWorkUnits >= task.requiredWorkUnits) {
       task.status = 'DONE';
       task.completedDay = s.day;
-      if (task.kind === 'SCOUT') {
+      if (task.kind === 'TRAINING') {
+        log(s, `${def.nameKo}: 일반 훈련 완료`);
+      } else if (task.kind === 'SCOUT') {
         const site = config.recruitment!.scoutSites.find((x) => x.venueId === task.subjectId)!;
         for (const c of s.recruitment.candidates) {
           if (c.stage !== 'UNDISCOVERED' || !site.candidateEmployeeIds.includes(c.employeeId)) continue;
@@ -762,7 +807,7 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
           log(s, `${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 발견: 영입 의뢰 가능`);
         }
         s.recruitment.scoutedVenueIds.push(site.venueId);
-        log(s, `${def.nameKo}: ${site.venueId} 현장 조사 완료`);
+        log(s, `${def.nameKo}: ${taskSubjectKo(config, task)} 현장 조사 완료`);
       } else if (task.kind === 'RECRUIT_QUEST') {
         const c = s.recruitment.candidates.find((x) => x.employeeId === task.subjectId)!;
         c.stage = 'INTERVIEW_READY';
@@ -773,6 +818,7 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
         if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
         log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
       }
+      awardTaskCompletion(s, config, task);
     }
   }
 }
