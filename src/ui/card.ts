@@ -1,7 +1,9 @@
 // 동료 카드 자리표시자. 실제 일러스트가 생기면 .card-art 안의 내용만 교체한다.
 // 구도(상단 이름·속성, 중앙 그림, 하단 레벨·일정)는 docs/ART_DIRECTION.md를 따르며 레퍼런스의 프레임·배지·이름은 쓰지 않는다.
 
-import type { EmployeeDef, GameState } from '../engine/types';
+import { isAvailableFromToday } from '../engine/employees';
+import { runningTaskOf } from '../engine/reservations';
+import type { EmployeeDef, GameState, Task } from '../engine/types';
 import { characterImage } from './assets';
 
 const ATTRIBUTE: Record<string, { ko: string; icon: string }> = {
@@ -35,9 +37,10 @@ export function attributeChip(attribute: string | null): string {
 }
 
 export function crewCard(def: EmployeeDef, state: GameState, selected: boolean): string {
-  const running = state.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === def.id);
+  if (!isAvailableFromToday(state, def.id)) return '';
+  const running = runningTaskOf(state, def.id);
   const schedule = running
-    ? `${running.contractId} ${running.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
+    ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
     : '대기 — 배정 가능';
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
@@ -62,4 +65,9 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
       <span class="card-schedule">${schedule}</span>
     </footer>
   </article>`;
+}
+
+/** 계약에 속하지 않는 조사·의뢰도 기존 업무 설명에 표시한다. */
+export function taskName(kind: Task['kind']): string {
+  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰' }[kind];
 }

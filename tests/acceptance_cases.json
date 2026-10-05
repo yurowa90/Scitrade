@@ -816,6 +816,49 @@
         "같은 날 대기 명령은 앞 명령의 예약을 반영해 누적 검증한다."
       ],
       "human_review_check": "24+8=32 > 30m³; 3000−200=2800; 남은 예약은 태양광 운임 200"
+    },
+    {
+      "id": "P0-M2A-04",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "동료 영입: 발견·의뢰·고용 분리와 계약금·급여 시작일",
+      "currency": "KRW",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "actions": [
+        {
+          "step": 1,
+          "action": "1일 물보리가 항만을 조사한다."
+        },
+        {
+          "step": 2,
+          "action": "2일 귀솔에게 현돌 영입 의뢰를 배정하고 3일까지 진행한다."
+        },
+        {
+          "step": 3,
+          "action": "4일 현돌을 고용한다. 같은 날 배정을 시도하고 5일 다시 배정한다."
+        },
+        {
+          "step": 4,
+          "action": "중복 고용과 저장·불러오기를 검증한다."
+        }
+      ],
+      "expected_numeric": {
+        "employed_after_discovery": 2,
+        "signing_fee": 550000,
+        "daily_wage": 110000,
+        "hired_day": 4,
+        "available_from_day": 5
+      },
+      "expected_assertions": [
+        "발견과 의뢰 완료만으로 고용·급여·처리량이 생기지 않는다.",
+        "조사·의뢰는 직원의 다른 업무와 겹칠 수 없다.",
+        "계약금은 후보마다 한 번만 지급하며 자금 부족 시 고용을 거절한다.",
+        "배정·급여·운영 목록은 고용 다음 날부터 시작한다.",
+        "영입 없는 M1·M2 검산 값과 저장 전후 재현성을 유지한다."
+      ],
+      "human_review_check": "현돌 일급 110,000원 × 5일 = 계약금 550,000원. 4일 고용 → 5일부터 급여·업무.",
+      "engine_test_ref": "src/engine/m2a-recruit.test.ts"
     }
   ],
   "review_summary": {

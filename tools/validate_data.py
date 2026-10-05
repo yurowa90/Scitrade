@@ -101,6 +101,7 @@ def check_m2a(tables):
     check(scenario['engine_rules']['funds_check'] == 'committed_outlays'
           and scenario['engine_rules']['forwarding_enabled'] is True, 'M2a rule set explicit')
     check(set(scenario['offer_ids']) <= set(offers), 'M2a offers exist')
+    check_recruitment(tables)
 
     def route_between(origin, destination):
         found = [r for r in routes.values() if r['id'] in scenario['route_ids']
@@ -211,12 +212,58 @@ def check_m2a(tables):
           and e3['cash_after_day1'] == opening - routes['ROUTE01']['booking_fee']['amount']
           and e3['reserved_after_day1'] == routes['ROUTE01']['booking_fee']['amount'],
           'P0-M2A-03 matches scenario fixture')
+    e4 = cases['P0-M2A-04']['expected_numeric']
+    wage = tables['employees']['EMP04']['salary_per_day']['amount']
+    check(e4['signing_fee'] == wage * scenario['recruitment']['signing_fee_wage_days']
+          and e4['daily_wage'] == wage
+          and e4['employed_after_discovery'] == len(scenario['employee_ids'])
+          and e4['available_from_day'] == e4['hired_day'] + 1,
+          'P0-M2A-04: 계약금·기존 인원·근무 시작일 검산')
     for rid in scenario['route_ids']:
         points = routes[rid]['map_waypoints']['points']
         for end, city_id in ((points[0], routes[rid]['from_city_id']), (points[-1], routes[rid]['to_city_id'])):
             geo = tables['world'][city_id]['geo_position']
             check(abs(end['lat'] - geo['lat']) <= 0.2 and abs(end['lon'] - geo['lon']) <= 0.2,
                   rid + ' map waypoints start and end at their ports')
+
+
+def check_recruitment(tables):
+    """영입 블록이 있는 시나리오의 후보·조사 장소·작업량을 검증한다."""
+    for scenario in tables['scenarios'].values():
+        recruitment = scenario.get('recruitment')
+        if recruitment is None:
+            continue
+        label = scenario['id'] + ': 영입 '
+        candidates = recruitment['candidate_employee_ids']
+        sites = recruitment['scout_sites']
+        check(bool(candidates) and len(candidates) == len(set(candidates)), label + '후보 목록 중복 없음')
+        check(len({s['venue_id'] for s in sites}) == len(sites), label + '장소 중복 없음')
+        for key in ('scout_work_units', 'quest_work_units', 'signing_fee_wage_days'):
+            value = recruitment[key]
+            check(type(value) is int and value > 0, label + key + ' 양의 정수')
+        for cid in candidates:
+            employee = tables['employees'].get(cid)
+            check(employee is not None, label + cid + ' 직원 정의 존재')
+            if employee is None:
+                continue
+            character = tables['characters'].get(employee['character_id'])
+            check(employee['employment_status'] == 'candidate', label + cid + ' 후보 상태')
+            check(character is not None and character['recruitment']['start_employed'] is False,
+                  label + cid + ' 처음에는 미고용')
+            check(cid not in scenario.get('employee_ids', []), label + cid + ' 시작 직원과 분리')
+            check(sum(s['candidate_employee_ids'].count(cid) for s in sites) == 1,
+                  label + cid + ' 조사 장소 정확히 하나')
+        for site in sites:
+            venue = tables['venues'].get(site['venue_id'])
+            check(venue is not None, label + site['venue_id'] + ' 장소 존재')
+            check(venue is not None and venue['city_id'] == site['city_id'], label + '장소 도시 일치')
+            check(bool(site['candidate_employee_ids']), label + '장소에 후보 존재')
+            for cid in site['candidate_employee_ids']:
+                check(cid in candidates, label + cid + ' 시나리오 후보에 포함')
+                employee = tables['employees'].get(cid)
+                character = tables['characters'].get(employee['character_id']) if employee else None
+                check(character is not None and site['city_id'] == character['encounter']['city_id'],
+                      label + cid + ' 만남 도시 일치')
 
 
 def check_world_hubs(documents, tables, source_ids):
@@ -426,7 +473,7 @@ def main():
 
     cases = read('tests/acceptance_cases.json')['cases']
     index(cases, 'acceptance cases')
-    check(len(cases) == 17, 'expected 17 acceptance specifications')
+    check(len(cases) == 18, 'expected 18 acceptance specifications')
     # Reference arithmetic only. No simulation engine exists in this package.
     check(10000-1000-200+150 == tables['scenarios']['SCENARIO_M1_CANCEL_PREDEPARTURE']['expected_trade_only_usd']['cash_after'], 'cancel reference arithmetic')
     check(10000-1250+1350 == tables['scenarios']['SCENARIO_M1_DELAY_ACCEPTED']['expected_trade_only_usd']['cash_after_collection'], 'late delivery arithmetic')
@@ -535,7 +582,7 @@ def main():
         print(f'{len(ERRORS)} errors; {CHECKS} checks')
         return 1
     print(f'PASS: {len(documents)} data documents; {CHECKS} structural/reference/arithmetic checks')
-    print('25 acceptance specifications included (17 core + 8 character); this validator does not run engine tests (npm test).')
+    print('26 acceptance specifications included (18 core + 8 character); this validator does not run engine tests (npm test).')
     print('Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.')
     print('Economic calibration and playtesting are pending.')
     return 0

@@ -32,7 +32,9 @@ import {
   type OfferDef,
   type ScenarioConfig,
   type Shipment,
+  type Task,
 } from './types';
+import { isEmployed, isAvailableFromToday } from './employees';
 import { checkInvariants } from './invariants';
 
 export { cargoSpace, cityName, findSailing, listSailings, type Sailing } from './catalog';
@@ -79,8 +81,16 @@ export function createGame(config: ScenarioConfig): GameState {
     employees: config.employees.map((e) => ({
       id: e.id,
       locationCityId: e.homeCityId,
-      employmentStatus: 'employed' as const,
+      employmentStatus: config.recruitment?.candidateEmployeeIds.includes(e.id) ? 'candidate' as const : 'employed' as const,
+      availableFromDay: 1,
     })),
+    recruitment: {
+      candidates: (config.recruitment?.candidateEmployeeIds ?? []).map((employeeId) => ({
+        employeeId, stage: 'UNDISCOVERED', discoveredDay: null, questTaskId: null,
+        interviewReadyDay: null, hiredDay: null,
+      })),
+      scoutedVenueIds: [],
+    },
     invoices: [],
     obligations: [],
     notices: [],
@@ -170,6 +180,15 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
       break;
     case 'ACCEPT_FORWARDING':
       rejection = withPlan(s, config, cmd.plan, (t) => acceptForwarding(t, config, cmd.offerId));
+      break;
+    case 'SCOUT_SITE':
+      rejection = scoutSite(s, config, cmd.venueId, cmd.employeeId);
+      break;
+    case 'START_RECRUIT_QUEST':
+      rejection = startRecruitQuest(s, config, cmd.candidateId, cmd.employeeId);
+      break;
+    case 'HIRE_CANDIDATE':
+      rejection = hireCandidate(s, config, cmd.candidateId);
       break;
     case 'ASSIGN_TASK':
       rejection = assignTask(s, config, cmd.taskId, cmd.employeeId);
@@ -328,6 +347,7 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     id: taskId,
     kind: 'EXPORT_PREP',
     contractId,
+    subjectId: null,
     cityId: buy.cityId,
     requiredWorkUnits: config.terms.prepWorkUnits,
     progressWorkUnits: 0,
@@ -416,6 +436,7 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
     id: taskId,
     kind: 'FORWARDING_PREP',
     contractId,
+    subjectId: null,
     cityId: offer.cityId,
     requiredWorkUnits: config.terms.forwardingPrepWorkUnits,
     progressWorkUnits: 0,
@@ -429,29 +450,118 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
   return null;
 }
 
-function taskLabel(kind: 'EXPORT_PREP' | 'FORWARDING_PREP'): string {
-  return kind === 'EXPORT_PREP' ? '수출 준비' : '운송 주선 준비(화물 인수·선적 서류)';
+function taskLabel(kind: Task['kind']): string {
+  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '운송 주선 준비(화물 인수·선적 서류)',
+    SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰' }[kind];
+}
+
+function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: string, cityId: string): string | null {
+  const emp = s.employees.find((e) => e.id === employeeId);
+  const def = config.employees.find((e) => e.id === employeeId);
+  if (!emp || !def || !isEmployed(s, employeeId)) return '고용 중인 직원이 아닙니다.';
+  if (!isAvailableFromToday(s, employeeId)) return `${def.nameKo}은(는) ${emp.availableFromDay}일부터 업무를 맡을 수 있습니다.`;
+  if (emp.locationCityId !== cityId) {
+    return `${def.nameKo}은(는) ${cityName(config, emp.locationCityId)}에 있습니다. 이 업무는 ${cityName(config, cityId)} 현지 인력이 필요합니다.`;
+  }
+  const busy = runningTaskOf(s, employeeId);
+  if (busy) return `${def.nameKo}은(는) 다른 업무(${busy.contractId ?? busy.subjectId} ${taskLabel(busy.kind)})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+  return null;
 }
 
 function assignTask(s: GameState, config: ScenarioConfig, taskId: string, employeeId: string): string | null {
   const task = s.tasks.find((t) => t.id === taskId);
   if (!task) return '업무를 찾을 수 없습니다.';
   if (task.status !== 'QUEUED') return '이미 배정했거나 종료된 업무입니다.';
-  const emp = s.employees.find((e) => e.id === employeeId);
-  const def = config.employees.find((e) => e.id === employeeId);
-  if (!emp || !def || emp.employmentStatus !== 'employed') return '고용 중인 직원이 아닙니다.';
-  if (emp.locationCityId !== task.cityId) {
-    return `${def.nameKo}은(는) ${cityName(config, emp.locationCityId)}에 있습니다. 이 업무는 ${cityName(config, task.cityId)} 현지 인력이 필요합니다.`;
-  }
-  const busy = runningTaskOf(s, employeeId);
-  if (busy) return `${def.nameKo}은(는) 다른 업무(${busy.contractId} ${taskLabel(busy.kind)})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+  const rejection = employeeUnavailable(s, config, employeeId, task.cityId);
+  if (rejection) return rejection;
   task.status = 'RUNNING';
   task.assignedEmployeeId = employeeId;
   task.startedDay = s.day;
-  const contract = contractOf(s, task.contractId);
-  contract.ownerEmployeeId = employeeId;
-  if (contract.status === 'ACTIVE') contract.status = 'IN_PROGRESS';
-  log(s, `${def.nameKo}에게 ${contract.id} ${taskLabel(task.kind)} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  if (task.contractId !== null) {
+    const contract = contractOf(s, task.contractId);
+    contract.ownerEmployeeId = employeeId;
+    if (contract.status === 'ACTIVE') contract.status = 'IN_PROGRESS';
+  }
+  const def = config.employees.find((e) => e.id === employeeId)!;
+  log(s, `${def.nameKo}에게 ${task.contractId ?? task.subjectId} ${taskLabel(task.kind)} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  return null;
+}
+
+function recruitmentUnavailable(s: GameState, config: ScenarioConfig): string | null {
+  if (!config.recruitment) return '이 시나리오에서는 동료 영입을 할 수 없습니다.';
+  if (s.recruitment.candidates.length === 0) return '이 저장에는 영입 후보 정보가 없습니다.';
+  return null;
+}
+
+/** 계약 업무 ID와 별도 접두사를 써 기존 계약의 순번을 유지한다. */
+function startRecruitmentTask(s: GameState, config: ScenarioConfig, task: Task, employeeId: string): string | null {
+  const rejection = employeeUnavailable(s, config, employeeId, task.cityId);
+  if (rejection) return rejection;
+  s.tasks.push(task);
+  return assignTask(s, config, task.id, employeeId);
+}
+
+function scoutSite(s: GameState, config: ScenarioConfig, venueId: string, employeeId: string): string | null {
+  const unavailable = recruitmentUnavailable(s, config);
+  if (unavailable) return unavailable;
+  const def = config.recruitment!;
+  const site = def.scoutSites.find((x) => x.venueId === venueId);
+  if (!site) return '조사할 수 있는 장소가 아닙니다.';
+  if (s.recruitment.scoutedVenueIds.includes(venueId)
+    || s.tasks.some((t) => t.kind === 'SCOUT' && t.subjectId === venueId && t.status === 'RUNNING')) {
+    return '이미 조사했거나 조사 중인 장소입니다.';
+  }
+  if (!s.recruitment.candidates.some((c) => site.candidateEmployeeIds.includes(c.employeeId) && c.stage === 'UNDISCOVERED')) {
+    return '이 장소에는 아직 발견하지 않은 후보가 없습니다.';
+  }
+  return startRecruitmentTask(s, config, {
+    id: `SCOUT-${venueId}`, kind: 'SCOUT', contractId: null, subjectId: venueId, cityId: site.cityId,
+    requiredWorkUnits: def.scoutWorkUnits, progressWorkUnits: 0, status: 'QUEUED',
+    assignedEmployeeId: null, startedDay: null, completedDay: null,
+  }, employeeId);
+}
+
+function startRecruitQuest(s: GameState, config: ScenarioConfig, candidateId: string, employeeId: string): string | null {
+  const unavailable = recruitmentUnavailable(s, config);
+  if (unavailable) return unavailable;
+  const def = config.recruitment!;
+  const candidate = s.recruitment.candidates.find((c) => c.employeeId === candidateId);
+  const site = def.scoutSites.find((x) => x.candidateEmployeeIds.includes(candidateId));
+  if (!candidate || !site) return '영입 후보를 찾을 수 없습니다.';
+  if (candidate.stage !== 'DISCOVERED') return '발견한 후보에게만 영입 의뢰를 시작할 수 있습니다.';
+  const taskId = `RECRUIT-${candidateId}`;
+  const rejection = startRecruitmentTask(s, config, {
+    id: taskId, kind: 'RECRUIT_QUEST', contractId: null, subjectId: candidateId, cityId: site.cityId,
+    requiredWorkUnits: def.questWorkUnits, progressWorkUnits: 0, status: 'QUEUED',
+    assignedEmployeeId: null, startedDay: null, completedDay: null,
+  }, employeeId);
+  if (rejection) return rejection;
+  candidate.stage = 'QUEST_RUNNING';
+  candidate.questTaskId = taskId;
+  return null;
+}
+
+function hireCandidate(s: GameState, config: ScenarioConfig, candidateId: string): string | null {
+  const unavailable = recruitmentUnavailable(s, config);
+  if (unavailable) return unavailable;
+  const candidate = s.recruitment.candidates.find((c) => c.employeeId === candidateId);
+  const emp = s.employees.find((e) => e.id === candidateId);
+  const def = config.employees.find((e) => e.id === candidateId);
+  if (!candidate || !emp || !def) return '영입 후보를 찾을 수 없습니다.';
+  if (candidate.stage !== 'INTERVIEW_READY' || isEmployed(s, candidateId)) return '면담 가능한 후보만 고용할 수 있습니다.';
+  const fee = config.recruitment!.signingFeeWageDays * def.salaryPerDayMinor;
+  const funds = fundsPosition(s, config, def.salaryCurrency);
+  const available = funds.cash - funds.unpaidObligations;
+  if (available < fee) return `영입 계약금 자금이 부족합니다. 필요 ${formatMoney(def.salaryCurrency, fee)}, 사용 가능 ${formatMoney(def.salaryCurrency, available)}.`;
+  postOrThrow(s, {
+    id: `SIGNING-${candidateId}`, currency: def.salaryCurrency, reason: `${def.nameKo} 영입 계약금`,
+    lines: [{ account: 'RECRUITMENT_EXPENSE', amount: fee }, { account: 'CASH', amount: -fee }],
+  });
+  emp.employmentStatus = 'employed';
+  emp.availableFromDay = s.day + 1;
+  candidate.stage = 'HIRED';
+  candidate.hiredDay = s.day;
+  log(s, `${def.nameKo} 고용 확정: 계약금 ${formatMoney(def.salaryCurrency, fee)}, ${emp.availableFromDay}일부터 근무·급여 시작`);
   return null;
 }
 
@@ -630,16 +740,33 @@ export function commitDay(
 
 function progressTasks(s: GameState, config: ScenarioConfig) {
   for (const task of s.tasks) {
-    if (task.status !== 'RUNNING' || !task.assignedEmployeeId) continue;
+    if (task.status !== 'RUNNING' || !task.assignedEmployeeId || !isAvailableFromToday(s, task.assignedEmployeeId)) continue;
     const def = config.employees.find((e) => e.id === task.assignedEmployeeId);
     if (!def) continue;
     task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + def.workUnitsPerDay);
     if (task.progressWorkUnits >= task.requiredWorkUnits) {
       task.status = 'DONE';
       task.completedDay = s.day;
-      const lot = s.cargoLots.find((l) => l.contractId === task.contractId);
-      if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
-      log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
+      if (task.kind === 'SCOUT') {
+        const site = config.recruitment!.scoutSites.find((x) => x.venueId === task.subjectId)!;
+        for (const c of s.recruitment.candidates) {
+          if (c.stage !== 'UNDISCOVERED' || !site.candidateEmployeeIds.includes(c.employeeId)) continue;
+          c.stage = 'DISCOVERED';
+          c.discoveredDay = s.day;
+          log(s, `${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 발견: 영입 의뢰 가능`);
+        }
+        s.recruitment.scoutedVenueIds.push(site.venueId);
+        log(s, `${def.nameKo}: ${site.venueId} 현장 조사 완료`);
+      } else if (task.kind === 'RECRUIT_QUEST') {
+        const c = s.recruitment.candidates.find((x) => x.employeeId === task.subjectId)!;
+        c.stage = 'INTERVIEW_READY';
+        c.interviewReadyDay = s.day;
+        log(s, `${def.nameKo}: ${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 영입 의뢰 완료 → 면담 가능`);
+      } else {
+        const lot = s.cargoLots.find((l) => task.contractId !== null && l.contractId === task.contractId);
+        if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
+        log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
+      }
     }
   }
 }
@@ -913,7 +1040,7 @@ function settleObligations(s: GameState) {
 
 function processPayroll(s: GameState, config: ScenarioConfig) {
   for (const emp of s.employees) {
-    if (emp.employmentStatus !== 'employed') continue;
+    if (!isAvailableFromToday(s, emp.id)) continue;
     const def = config.employees.find((e) => e.id === emp.id);
     if (!def || def.salaryPerDayMinor === 0) continue;
     payOrAccrue(s, def.salaryCurrency, def.salaryPerDayMinor, `WAGE-D${pad(s.day)}-${emp.id}`, `${def.nameKo} ${s.day}일 급여`, undefined, 'WAGE_EXPENSE');

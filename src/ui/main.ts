@@ -2,6 +2,7 @@
 // 화면은 엔진 상태를 읽고 명령을 대기열에 넣을 뿐, 현금·재고·예약을 따로 들고 있지 않다.
 
 import './style.css';
+import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
 import { cityName, commitDay, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
@@ -11,7 +12,7 @@ import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLo
 import { SaveError, deserializeSave, serializeSave } from '../engine/save';
 import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
-import { crewCard, roleBadge } from './card';
+import { crewCard, taskName, roleBadge } from './card';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
@@ -191,7 +192,7 @@ function worldMap(): string {
 }
 
 function reporter(role: string): EmployeeDef | undefined {
-  return config.employees.find((e) => e.role === role) ?? config.employees[0];
+  return employedDefs(view, config).find((e) => e.role === role) ?? employedDefs(view, config)[0];
 }
 
 function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
@@ -226,7 +227,7 @@ const busyTask = (employeeId: string) => runningTaskOf(view, employeeId);
 function planner(cmd: Command, q: QuotePreview, key: string, originCityId: string): string {
   if (cmd.type !== 'ACCEPT_TRADE' && cmd.type !== 'ACCEPT_FORWARDING') return '';
   const sailings = listSailings(config, q.routeId, view.day + 1).slice(0, 3);
-  const local = config.employees.filter((e) => view.employees.find((x) => x.id === e.id)?.locationCityId === originCityId);
+  const local = employedDefs(view, config).filter((e) => view.employees.find((x) => x.id === e.id)?.locationCityId === originCityId);
   const defaults: CommitPlan = {
     employeeId: local.find((e) => !busyTask(e.id))?.id,
     sailingId: (sailings.find((s) => s.scheduledArrivalDay + config.terms.customsDays <= q.deliveryDeadlineDay) ?? sailings[0])?.id,
@@ -238,7 +239,7 @@ function planner(cmd: Command, q: QuotePreview, key: string, originCityId: strin
   const empOptions = local
     .map((e) => {
       const t = busyTask(e.id);
-      return `<option value="${e.id}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${e.nameKo} · 하루 ${e.workUnitsPerDay}pt${t ? ` (업무 중: ${t.contractId})` : ''}</option>`;
+      return `<option value="${e.id}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${e.nameKo} · 하루 ${e.workUnitsPerDay}pt${t ? ` (업무 중: ${t.contractId ?? t.subjectId})` : ''}</option>`;
     })
     .join('');
   const sailOptions = sailings
@@ -329,7 +330,7 @@ function contractPanel(c: Contract): string {
     if (queued) {
       actions.push('<span class="pill">준비 업무 배정 예정</span>');
     } else {
-      const buttons = config.employees.map((emp) => {
+      const buttons = employedDefs(view, config).map((emp) => {
         const check = tryCommand({ id: newId('ASSIGN'), type: 'ASSIGN_TASK', taskId: task.id, employeeId: emp.id });
         return `<button data-action="assign" data-task="${task.id}" data-emp="${emp.id}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">${emp.nameKo}에게<small>${check.status === 'APPLIED' ? `하루 ${emp.workUnitsPerDay}pt` : '다른 업무 중'}</small></button>`;
       });
@@ -463,9 +464,9 @@ function resourcePanel(): string {
     const pct = cap ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     return `<span class="bar ${pct >= 100 ? 'full' : pct >= 80 ? 'high' : ''}" role="img" aria-label="${pct}% 사용"><span style="width:${pct}%"></span></span>`;
   };
-  const crew = config.employees.map((e) => {
+  const crew = employedDefs(view, config).map((e) => {
     const t = runningTaskOf(view, e.id);
-    return `<li><b>${e.nameKo}</b> ${t ? `업무 중 — ${t.contractId} ${t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
+    return `<li><b>${e.nameKo}</b> ${t ? `업무 중 — ${t.contractId ?? t.subjectId} ${taskName(t.kind)} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
   });
   const sailings = config.routes.flatMap((r) => listSailings(config, r.id, view.day).slice(0, 2)).sort((a, b) => a.departureDay - b.departureDay || a.id.localeCompare(b.id));
   const space = sailings.map((s) => {
@@ -533,8 +534,8 @@ function reportPanel(): string {
 }
 
 function crewPanel(): string {
-  const e0 = config.employees[0];
-  const shown = config.employees.filter((e) => crewFilter === 'all' || (crewFilter === 'busy') === Boolean(busyTask(e.id)));
+  const e0 = employedDefs(view, config)[0];
+  const shown = employedDefs(view, config).filter((e) => crewFilter === 'all' || (crewFilter === 'busy') === Boolean(busyTask(e.id)));
   const filterBtn = (f: typeof crewFilter, label: string) =>
     `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${crewFilter === f}">${label}</button>`;
   // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
@@ -544,13 +545,13 @@ function crewPanel(): string {
       const loc = view.employees.find((x) => x.id === e.id)?.locationCityId ?? null;
       return `<tr class="${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-selected="${selectedCard === e.id}">
         <th scope="row"><span class="nm">${e.nameKo}</span>${roleBadge(e.role)}</th>
-        <td>${t ? `● 업무 중<small>${t.contractId} ${t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
+        <td>${t ? `● 업무 중<small>${t.contractId ?? t.subjectId} ${taskName(t.kind)} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
         <td class="num">${e.workUnitsPerDay}pt/일<small>${krw(e.salaryPerDayMinor)}</small></td></tr>`;
     })
     .join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
-    <h2 id="crew-h">동료 <small>${config.employees.length}명 고용 중</small></h2>
+    <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}</div>
     <div class="crew-cards">${shown.map((e) => crewCard(e, view, selectedCard === e.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
@@ -577,9 +578,15 @@ function commandLabel(c: Command): string {
       const o = offerOf(config, c.offerId);
       return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})${planLabel(c.plan)}`;
     }
+    case 'SCOUT_SITE':
+      return `${c.venueId} 현장 조사 → ${employeeName(c.employeeId)}`;
+    case 'START_RECRUIT_QUEST':
+      return `${employeeName(c.candidateId)} 영입 의뢰 → ${employeeName(c.employeeId)}`;
+    case 'HIRE_CANDIDATE':
+      return `${employeeName(c.candidateId)} 고용`;
     case 'ASSIGN_TASK': {
       const t = view.tasks.find((x) => x.id === c.taskId);
-      return `${t ? `${t.contractId} ${t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'}` : c.taskId} → ${employeeName(c.employeeId)}`;
+      return `${t ? `${t.contractId ?? t.subjectId} ${taskName(t.kind)}` : c.taskId} → ${employeeName(c.employeeId)}`;
     }
     case 'BOOK_SAILING':
       return `${c.contractId} 운송편 예약 (${c.sailingId})`;

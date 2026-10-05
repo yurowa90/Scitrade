@@ -23,7 +23,7 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "e9c8ed248d1c3d63a43a3fd13134d9fcd6ce57dbbf67093ffd44b7cc66fb80e7"
+      "sha256": "1eda0a36e1cbae7b9e32dcb7c73294247e00d5c9d82a9a1653db83e99552df2f"
     },
     {
       "path": "README.md",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 15810,
-      "sha256": "a908784120df142939569171c14357077a79555bf73c465b28fef0e76a83d1a9"
+      "size_bytes": 16807,
+      "sha256": "ed1b5d55e99916234fb8ba020c1563be6f4d3aa9dc12ce885e5951367b99ec73"
     },
     {
       "path": "data/securities.json",
@@ -239,6 +239,11 @@
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0001.md",
+      "size_bytes": 7955,
+      "sha256": "7739c8db8f61ef682c322c200b0f6374ed15a059f48e95572359e29b722c9eb9"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -442,8 +447,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 18025,
-      "sha256": "ec79e36272a852b887b1dabad1c5b3640138f936c5f7d0f83b324b4066a42f03"
+      "size_bytes": 20318,
+      "sha256": "c46ee8bf09bc0811e50886d90e103426b80fc757fff7f3365dd69dd7c8b98e6a"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -477,8 +482,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 34197,
-      "sha256": "754ee0fab04477a0c91c215c1a2af1cf9591a4d7af8117100cedea10176eaedb"
+      "size_bytes": 35893,
+      "sha256": "f0341db62d73ee79f1c112f50e2b7a121bd214f2216780dfa5d5f4170af84cdf"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -502,8 +507,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 33257,
-      "sha256": "ab5210fe00efc2a7a49da591643a233a24677adeb88931f9ab9569beb800a495"
+      "size_bytes": 36230,
+      "sha256": "2edbcd5809015da571469ea9320b1d7bf12e903c3a716911c936d91638bc5fc5"
     }
   ]
 }

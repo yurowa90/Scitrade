@@ -31,6 +31,7 @@ export function contractReport(s: GameState, contract: Contract): ContractReport
 
 export interface CompanyReport {
   trade: BookSummary;
+  /** 원화 비용: wageExpense(급여)와 recruitmentExpense(영입 계약금)를 따로 집계한다. */
   payroll: BookSummary;
   contracts: ContractReport[];
   /** 회사 소유 재고 수량 (인도 전). 고객 화물은 포함하지 않는다. */
