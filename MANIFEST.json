@@ -226,6 +226,11 @@
       "sha256": "242da58b647c06a987a31f761f3c9d2faab2e59c5206c70192e8589d859f0877"
     },
     {
+      "path": "docs/ai/tasks/TASK-0002-R1-recruitment-ui-fixes.md",
+      "size_bytes": 5127,
+      "sha256": "84cf088087242c6d8b62bb58c2198cf47d25d402b89d3370a8e3b1f7f78ac2ee"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0002-recruitment-ui.md",
       "size_bytes": 6025,
       "sha256": "cc46aa71a8eeeb359343d7e8becdd9bfae57f5eb94703696fdbb328f7ab97cd7"
@@ -247,8 +252,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0002.md",
-      "size_bytes": 6515,
-      "sha256": "eb528baa26f67c371fc59214b396c6e292e422c5e189c595667af7608a8b310b"
+      "size_bytes": 8200,
+      "sha256": "22c933dd10f028f96642f41be53cde52ab76dc43cf0f3788cd726544a83f9722"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
