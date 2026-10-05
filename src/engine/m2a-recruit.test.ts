@@ -314,17 +314,17 @@ describe('P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여',
 });
 
 describe('저장 이관·기준 경로·불변 조건', () => {
-  it('판본 2를 3으로 이관하되 경제 값을 유지하고 후보 없는 저장의 영입을 거절한다', () => {
+  it('판본 2를 4로 연쇄 이관하되 경제 값을 유지하고 후보 없는 저장의 영입을 거절한다', () => {
     const legacyConfig: ScenarioConfig = { ...config, recruitment: null, employees: config.employees.slice(0, 2) };
-    const original = until(2, legacyConfig, { 1: [trade('EMP01')] });
+    const original = until(2, { ...legacyConfig, growth: null }, { 1: [trade('EMP01')] });
     const file = JSON.parse(serializeSave(original));
     file.formatVersion = 2;
     delete file.state.recruitment;
     for (const e of file.state.employees) delete e.availableFromDay;
     for (const t of file.state.tasks) delete t.subjectId;
     const restored = deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
-    expect(SAVE_FORMAT_VERSION).toBe(3);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(3);
+    expect(SAVE_FORMAT_VERSION).toBe(4);
+    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(4);
     expect(restored).toEqual(original);
     for (const currency of ['KRW', 'USD'] as const) {
       expect(summarize(restored.ledger, currency)).toEqual(summarize(original.ledger, currency));

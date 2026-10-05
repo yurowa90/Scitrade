@@ -2,6 +2,7 @@
 // 구도(상단 이름·속성, 중앙 그림, 하단 레벨·일정)는 docs/ART_DIRECTION.md를 따르며 레퍼런스의 프레임·배지·이름은 쓰지 않는다.
 
 import { isAvailableFromToday } from '../engine/employees';
+import { levelFor } from '../engine/growth';
 import { runningTaskOf } from '../engine/reservations';
 import type { EmployeeDef, GameState, Task } from '../engine/types';
 import { esc } from './html';
@@ -41,14 +42,15 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
   if (!isAvailableFromToday(state, def.id)) return '';
   const running = runningTaskOf(state, def.id);
   const schedule = scheduleKo ?? (running
-    ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
+    ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}${running.kind === 'TRAINING' ? '일' : 'pt'}`
     : '대기 — 배정 가능');
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
+  const level = levelFor(state.employees.find((e) => e.id === def.id)!.xp);
   return `
   <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0"
-    aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 1, ${esc(schedule)}">
+    aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 ${level}, ${esc(schedule)}">
     <header class="card-top">
       <span class="card-name">${esc(def.nameKo)}</span>
       ${attributeChip(def.character.attribute)}
@@ -62,7 +64,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
-      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${esc(def.id)}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
+      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${esc(def.id)}</span><span class="card-level">레벨 ${level} · 강화 +0</span></div>
       <span class="card-schedule">${esc(schedule)}</span>
     </footer>
   </article>`;
@@ -70,5 +72,5 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
 
 /** 계약에 속하지 않는 조사·의뢰도 기존 업무 설명에 표시한다. */
 export function taskName(kind: Task['kind']): string {
-  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰' }[kind];
+  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', TRAINING: '일반 훈련' }[kind];
 }

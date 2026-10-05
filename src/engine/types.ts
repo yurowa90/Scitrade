@@ -78,6 +78,12 @@ export interface EmployeeDef {
   workUnitsPerDay: number;
   salaryPerDayMinor: number;
   salaryCurrency: Currency;
+  growth: {
+    baseStats: Record<string, number>;
+    primaryStat: string;
+    secondaryStat: string;
+    startXp: number;
+  } | null;
   /** 캐릭터 카드 표시용. M1에서는 능력·속성을 계산에 쓰지 않는다. */
   character: {
     attribute: string | null;
@@ -149,6 +155,10 @@ export interface ScenarioConfig {
   /** 시작 직원과 영입 후보의 정의. 고용 여부는 GameState.employees만 판단한다. */
   employees: EmployeeDef[];
   recruitment: RecruitmentDef | null;
+  growth: {
+    taskCompletionXp: number;
+    ordinaryTraining: { durationDays: number; feeMinor: number; currency: Currency; xpOnCompletion: number };
+  } | null;
   terms: ScenarioTerms;
   portRestrictions: PortRestrictionDef[];
   /** 시나리오 문서에 적힌 기대 일정 (검산용). */
@@ -270,12 +280,13 @@ export interface Shipment {
 
 export interface Task {
   id: string;
-  /** 계약 준비와 현장 조사·영입 의뢰가 같은 직원 시간 예약을 쓴다. */
-  kind: 'EXPORT_PREP' | 'FORWARDING_PREP' | 'SCOUT' | 'RECRUIT_QUEST';
+  /** 계약 준비·현장 조사·영입 의뢰·훈련이 같은 직원 시간 예약을 쓴다. */
+  kind: 'EXPORT_PREP' | 'FORWARDING_PREP' | 'SCOUT' | 'RECRUIT_QUEST' | 'TRAINING';
   contractId: string | null;
-  /** 조사 장소 ID 또는 의뢰 후보 ID. 계약 준비는 null. */
+  /** 조사 장소 ID·의뢰 후보 ID·훈련 직원 ID. 계약 준비는 null. */
   subjectId: string | null;
   cityId: string;
+  /** TRAINING은 업무 포인트 대신 일수를 담고 하루에 1씩 진행한다. */
   requiredWorkUnits: number;
   progressWorkUnits: number;
   status: TaskStatus;
@@ -286,6 +297,7 @@ export interface Task {
 
 export interface EmployeeState {
   id: string;
+  xp: number;
   locationCityId: string;
   employmentStatus: 'employed' | 'candidate';
   availableFromDay: number;
@@ -383,6 +395,9 @@ export interface GameState {
   notices: Notice[];
   delayDecisions: DelayDecision[];
   appliedEventIds: Record<string, true>;
+  xpAwards: Record<string, true>;
+  /** 지급 시점의 금액. 경험치 불변 조건은 설정 초깃값과 이 기록을 대조한다. */
+  xpAwardAmounts: Record<string, number>;
   processedCommands: Record<string, CommandRecord>;
   closedDays: number[];
   log: LogEntry[];
@@ -400,6 +415,7 @@ export interface CommitPlan {
 }
 
 export type Command =
+  | { id: string; type: 'START_TRAINING'; employeeId: string }
   | { id: string; type: 'SCOUT_SITE'; venueId: string; employeeId: string }
   | { id: string; type: 'START_RECRUIT_QUEST'; candidateId: string; employeeId: string }
   | { id: string; type: 'HIRE_CANDIDATE'; candidateId: string }

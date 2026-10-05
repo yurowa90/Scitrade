@@ -50,9 +50,9 @@ export function crewEntries(s: GameState, config: ScenarioConfig, filter: CrewFi
 }
 
 export function taskSchedule(t: Task, config: ScenarioConfig): string {
-  const name = t.kind === 'SCOUT' ? '현장 조사' : t.kind === 'RECRUIT_QUEST' ? '영입 의뢰' : t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비';
+  const name = t.kind === 'TRAINING' ? '일반 훈련' : t.kind === 'SCOUT' ? '현장 조사' : t.kind === 'RECRUIT_QUEST' ? '영입 의뢰' : t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비';
   const subject = t.kind === 'SCOUT' ? venueTitle(t.subjectId ?? '') : t.kind === 'RECRUIT_QUEST' ? config.employees.find((e) => e.id === t.subjectId)?.nameKo ?? t.subjectId : t.contractId ?? t.subjectId;
-  return `${name} 중 — ${subject} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt`;
+  return `${name} 중 — ${subject} ${t.progressWorkUnits}/${t.requiredWorkUnits}${t.kind === 'TRAINING' ? '일' : 'pt'}`;
 }
 
 /** 표시용 산술만 수행하며 비용 지출·허용 판정·상태 저장은 하지 않는다. */

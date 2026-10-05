@@ -570,6 +570,8 @@ function planLabel(plan: CommitPlan | undefined): string {
 
 function commandLabel(c: Command): string {
   switch (c.type) {
+    case 'START_TRAINING':
+      return `${employeeName(c.employeeId)} 일반 훈련`;
     case 'ACCEPT_TRADE': {
       const buy = offerOf(config, c.buyOfferId);
       return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, buy.quantity) : c.buyOfferId})${planLabel(c.plan)}`;
