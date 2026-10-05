@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 32708,
-      "sha256": "01614336c57f510923c8099a76297de0aacb98c675a1524927f1c226466d1029"
+      "size_bytes": 41786,
+      "sha256": "a9fdf6513f0a31d0f3036b905da60e84f6bec791538d41a93424340c100b58d7"
     },
     {
       "path": "data/team_synergies.json",
@@ -147,8 +147,8 @@
     },
     {
       "path": "data/world.json",
-      "size_bytes": 39508,
-      "sha256": "d6c0ba40cf7333d3b1956986ef91a0c4b4ba5a7307e64994aa38aaf209c37e44"
+      "size_bytes": 40140,
+      "sha256": "58cccc30e9c5f05811b9cfb2c3428ee576cdb62c98541c5a50078e473fc31be8"
     },
     {
       "path": "docs/ART_DIRECTION.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 41415,
-      "sha256": "8988eadbd5a4dc96f8e29016b2a6e9388a0a4d28215cc3cd2e3e6be7b3e7a732"
+      "size_bytes": 44434,
+      "sha256": "58842da6bf769bd49158ac7b205245bcbd2ee8c76a8b342e053506b4b441d71d"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 20857,
-      "sha256": "513a226209f83aee7f806d8bb9fe389423c5c9db3822bbf11f85c50d12122b86"
+      "size_bytes": 21429,
+      "sha256": "bf4c3eca0165102cd8ff5f9f15367b5d50b735f3255312f775d595f21a980e9a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -217,8 +217,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 1503,
-      "sha256": "46a2ff83c3c53537537d847c153608b5343c1b9961d01c0f1945e115a0eea45c"
+      "size_bytes": 1537,
+      "sha256": "312e782099bf4c31b5638137725ced15e609d2015b18706c115f564c144961f6"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-recruitment-engine.md",
@@ -239,6 +239,11 @@
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0003.md",
+      "size_bytes": 33997,
+      "sha256": "637b966711331e9274f3f0a48e64735aa0e917f731e42d334dba159c08e4efb3"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",

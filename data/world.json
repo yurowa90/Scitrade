@@ -95,7 +95,13 @@
         {
           "source_id": "LL-100P-2026",
           "indicator_ko": "세계 컨테이너항 순위",
-          "value_ko": "1위, 약 5,550만 TEU",
+          "value_ko": "1위",
+          "period": "2025"
+        },
+        {
+          "source_id": "SH-GOV-2025",
+          "indicator_ko": "컨테이너 처리량 (항만 전체)",
+          "value_ko": "약 5,506만 TEU",
           "period": "2025"
         },
         {
@@ -502,7 +508,7 @@
       ],
       "selection_basis": [
         {
-          "source_id": "PORT-HAMBURG-2025",
+          "source_id": "PORT-ROTTERDAM-2025",
           "indicator_ko": "유럽 컨테이너항 순위",
           "value_ko": "1위, 약 1,425만 TEU",
           "period": "2025"
@@ -572,8 +578,8 @@
         },
         {
           "source_id": "HFW-ARB2026",
-          "indicator_ko": "국제 해사 중재 중재지",
-          "value_ko": "약 80% 런던 (업계 추정)",
+          "indicator_ko": "국제 해사 중재 건수 (중재지)",
+          "value_ko": "세계 최다, 약 2,100건 (HFW 추정)",
           "period": "2025"
         }
       ],
@@ -620,13 +626,19 @@
         {
           "source_id": "UNCTAD-RMT2024",
           "indicator_ko": "선박 보유 국가 (그리스)",
-          "value_ko": "세계 1위, 약 3.95억 dwt",
+          "value_ko": "세계 1위(실소유 기준), 약 3.95억 dwt",
           "period": "2024-01"
         },
         {
-          "source_id": "PIRAEUS-2025",
-          "indicator_ko": "유럽 컨테이너항 순위",
-          "value_ko": "상위 5위권",
+          "source_id": "PORTECON-EU-2025",
+          "indicator_ko": "EU 컨테이너항 순위",
+          "value_ko": "7위",
+          "period": "2025"
+        },
+        {
+          "source_id": "PPA-FY2025",
+          "indicator_ko": "컨테이너 처리량 (항만 전체)",
+          "value_ko": "약 464만 TEU (전년 대비 −3.2%)",
           "period": "2025"
         }
       ],
@@ -716,9 +728,9 @@
       ],
       "selection_basis": [
         {
-          "source_id": "DURBAN-PORT",
+          "source_id": "AFRICAPORTS-TNPA-2024",
           "indicator_ko": "사하라 이남 아프리카 최대 컨테이너항",
-          "value_ko": "컨테이너터미널 약 265만 TEU",
+          "value_ko": "항만 전체 약 265만 TEU",
           "period": "2024"
         }
       ],
@@ -1077,7 +1089,7 @@
         "use": "map_display_only"
       },
       "connects_ko": "홍해 ↔ 아덴만",
-      "event_hook_ko": "홍해 사태 때 많은 선사가 이 해협을 피해 희망봉으로 돌았다. 아시아–유럽 한 방향 7~12일 증가.",
+      "event_hook_ko": "홍해 사태 때 많은 선사가 이 해협을 피해 희망봉으로 돌았다. 아시아–유럽(상하이–로테르담) 한 방향 7~10일 증가(16노트 기준).",
       "source_refs": [
         "PEMP-REDSEA"
       ],
@@ -1100,7 +1112,7 @@
         "use": "map_display_only"
       },
       "connects_ko": "홍해 ↔ 지중해",
-      "event_hook_ko": "상하이→로테르담 수에즈 경유 약 27일, 희망봉 경유 약 35일. 2021년 3월 대형 컨테이너선 좌초로 엿새 가까이 막힌 일이 있다(작성자 지식).",
+      "event_hook_ko": "상하이→로테르담 수에즈 경유 약 27일, 희망봉 경유 약 35일(16노트·무기항 가정의 비교값. 기항을 포함한 실제 정기선 일정은 더 길다). 2021년 3월 대형 컨테이너선 좌초로 엿새 가까이 막힌 일이 있다(작성자 지식).",
       "source_refs": [
         "PEMP-ROUTING"
       ],
@@ -1147,7 +1159,7 @@
         "use": "map_display_only"
       },
       "connects_ko": "인도양 ↔ 대서양",
-      "event_hook_ko": "수에즈·홍해를 피할 때 쓰는 우회 항로. 멀지만 운하 통항료와 해협 위험이 없다.",
+      "event_hook_ko": "수에즈·홍해를 피할 때 쓰는 우회 항로. 멀어서 연료·시간이 더 들지만 운하 통항료가 없고 홍해·수에즈 구간의 위험을 피한다.",
       "source_refs": [
         "PEMP-ROUTING",
         "PEMP-REDSEA"

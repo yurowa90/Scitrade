@@ -8,7 +8,7 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 |---|---|---|---|---|
 | [TASK-0001](TASK-0001-recruitment-engine.md) | 동료 발견·의뢰·고용 엔진 (M2a-2) | Astra (`gpt-6-astra`) | — | 실행 준비됨 |
 | [TASK-0002](TASK-0002-recruitment-ui.md) | 영입 화면·운영표 후보 행·한 번에 확정 공개 조건 | Sol (`gpt-6.1-sol`) | TASK-0001 검수 통과 | 대기 |
-| [TASK-0003](TASK-0003-world-source-check.md) | 세계 거점 근거 18건 원문 대조 (조사) | Sol (`gpt-6.1-sol`) | — | 실행 준비됨 |
+| [TASK-0003](TASK-0003-world-source-check.md) | 세계 거점 근거 18건 원문 대조 (조사) | Sol (`gpt-6.1-sol`) | — | 완료 (Claude 교차 검증 후 데이터 반영) |
 
 상태 값: `대기`, `Codex 실행 중`, `검수 중`, `반려(n회)`, `완료(커밋 해시)`.
 
