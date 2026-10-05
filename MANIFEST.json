@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 7718,
-      "sha256": "a3fb2fb43691c78ff34e56430bbf5adc46002a0cdeb6b737231355e8d7f60252"
+      "size_bytes": 8423,
+      "sha256": "f376074f58fa86d254094dd1a151a1af4275a409fcd85a8e73dfd5fcccafef8c"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 2842,
-      "sha256": "9a4f123a9d529a246c42c775089b38967570705b81f888b06f3b5d9b36de12d1"
+      "size_bytes": 2857,
+      "sha256": "8d3b28f8ef326a61248902571ea9c1fe20e3bea4ce522de791accb20d924a2e5"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -264,6 +264,11 @@
       "path": "docs/ai/tasks/TASK-0004-xp-level-training-engine.md",
       "size_bytes": 9161,
       "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
+      "size_bytes": 13078,
+      "sha256": "42fb3d9582b423b606ca255a43c93e30e77571115c617e2ab0144c6871c67e5c"
     },
     {
       "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
