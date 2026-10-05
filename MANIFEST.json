@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 15816,
-      "sha256": "9548db6768357b3cac7d9c31515daf4890c9841b28e41bcbffde17bb0f2c1ffb"
+      "size_bytes": 15810,
+      "sha256": "a908784120df142939569171c14357077a79555bf73c465b28fef0e76a83d1a9"
     },
     {
       "path": "data/securities.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 30745,
-      "sha256": "f72740a5aba869066e74837883608401c2ccda8a6474736c738e4cb6ab385c63"
+      "size_bytes": 36016,
+      "sha256": "999eb53d04d6ef22068eae13ca73f647ea2f4aedd300a55a13eb4789ae61571e"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,18 +177,18 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 8557,
-      "sha256": "052bb03c54d11962a2d955a0bb6d34242ec6f704460264c4f06c699fbde3355d"
+      "size_bytes": 9623,
+      "sha256": "88839b5f1f0d73412176db9e79f9d6ae6063300c71c868e0955e661f8ffb1fb2"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
-      "size_bytes": 8651,
-      "sha256": "3e1d8ab3d019eabe355310940219941d63a8647cdd1bc19bfecd98ca30e04724"
+      "size_bytes": 9226,
+      "sha256": "4e1547afe65d42c835b1818f2a6821a213c6488328539ebdbbec6830c369a905"
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 17331,
-      "sha256": "bb301980df688ab1bac4e46b156254f2134a99ed085128e5948d706993e5cf5a"
+      "size_bytes": 18546,
+      "sha256": "e37169143dc852c53af6ec3863866f0a433cdf63639bb33944066c710cfa408e"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 7024,
-      "sha256": "1746c7ec43ffd9a14bec274d590f39bc4d72286829529077b7d03b77da94e137"
+      "size_bytes": 7522,
+      "sha256": "e2f5169e8a3afc80869b15a6296658e40ced37c31343d38a8982aeb909514d47"
     },
     {
       "path": "docs/art/PROMPTS.md",

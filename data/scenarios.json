@@ -308,7 +308,7 @@
       },
       "contract_terms": {
         "data_basis": "DESIGN",
-        "status": "DESIGN_PROPOSED_2026-10-04_M2A",
+        "status": "USER_REVIEWED_2026-10-05",
         "decision_ref": "docs/DECISIONS.md M2a 복수 계약·운송 주선·자원 예약",
         "prep_work_units": 2,
         "booking_cutoff_days_before_departure": 1,
