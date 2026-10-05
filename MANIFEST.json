@@ -487,8 +487,8 @@
     },
     {
       "path": "tools/ai/codex_task.sh",
-      "size_bytes": 3090,
-      "sha256": "624dd60220ca71bfd3c3966da544d1696b17a16e4a46dca87b8afc84dbc1600d"
+      "size_bytes": 3083,
+      "sha256": "6329a091cffdc57617e61aa617449b5fef081bef6be21db7575a28c4e9aa3eeb"
     },
     {
       "path": "tools/ai/review_checks.sh",
