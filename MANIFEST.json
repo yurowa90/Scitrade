@@ -217,8 +217,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 1503,
-      "sha256": "46a2ff83c3c53537537d847c153608b5343c1b9961d01c0f1945e115a0eea45c"
+      "size_bytes": 1708,
+      "sha256": "6d6179fe7a14feb044013be3ff7565eda7df1a239a0a276f2fff518c4c162597"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -244,6 +244,11 @@
       "path": "docs/ai/tasks/TASK-0003-world-source-check.md",
       "size_bytes": 3325,
       "sha256": "dc0e2672ed486c1250333d08b0f68455df9c92fc88b5b3bfcabbddc2b384999d"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0004-xp-level-training-engine.md",
+      "size_bytes": 9161,
+      "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
