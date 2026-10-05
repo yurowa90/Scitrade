@@ -367,9 +367,18 @@ export interface GameState {
 
 // ── 명령 ──
 
+/**
+ * 견적 수락과 함께 확정할 준비 담당·운송편 (REF-02 일괄 확정).
+ * 하나라도 실행할 수 없으면 수락까지 모두 철회하고 상태를 바꾸지 않는다.
+ */
+export interface CommitPlan {
+  employeeId?: string;
+  sailingId?: string;
+}
+
 export type Command =
-  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string }
-  | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string }
+  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; plan?: CommitPlan }
+  | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string; plan?: CommitPlan }
   | { id: string; type: 'ASSIGN_TASK'; taskId: string; employeeId: string }
   | { id: string; type: 'BOOK_SAILING'; contractId: string; sailingId: string }
   | { id: string; type: 'CANCEL_CONTRACT'; contractId: string }

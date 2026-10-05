@@ -15,6 +15,19 @@ const ATTRIBUTE: Record<string, { ko: string; icon: string }> = {
 
 const ROLE_KO: Record<string, string> = { sales: '영업', operations: '운영' };
 
+// REF-12 시각 의미 분리: 직무는 도구 모양 배지와 글자로, 속성은 문양으로, 근무 상태는 글자 라벨로 나타낸다.
+// 색만으로 직무·상태를 구분하지 않는다.
+const ROLE_ICON: Record<string, string> = {
+  sales: '<path d="M3 5h18v11H9l-5 4v-4H3z" fill="none" stroke-width="2" stroke-linejoin="round"/><path d="M7 9h10M7 12h6" stroke-width="2" stroke-linecap="round"/>',
+  operations: '<path d="M3 8l9-4 9 4v9l-9 4-9-4z" fill="none" stroke-width="2" stroke-linejoin="round"/><path d="M3 8l9 4 9-4M12 12v9" fill="none" stroke-width="2" stroke-linejoin="round"/>',
+};
+
+export function roleBadge(role: string): string {
+  const ko = ROLE_KO[role] ?? role;
+  const icon = ROLE_ICON[role];
+  return `<span class="chip role role-${role}">${icon ? `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>` : ''}${ko}</span>`;
+}
+
 export function attributeChip(attribute: string | null): string {
   const a = attribute ? ATTRIBUTE[attribute] : undefined;
   if (!a) return '<span class="chip">속성 미정</span>';
@@ -37,7 +50,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
       ${attributeChip(def.character.attribute)}
     </header>
     <div class="card-art">
-      <span class="card-tag ${running ? 'busy' : ''}">${running ? '업무 중' : '대기'}</span>
+      <span class="card-tag ${running ? 'busy' : ''}">${running ? '● 업무 중' : '○ 대기'}</span>
       ${art
         ? `<img class="card-img" src="${art}" alt="${def.nameKo} 일러스트" loading="lazy" decoding="async" />`
         : `<div class="card-face" aria-hidden="true">${initial}</div>
@@ -45,7 +58,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean):
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
-      <div class="card-meta"><span class="chip">${roleKo}</span><span class="muted">${def.id}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
+      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${def.id}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
       <span class="card-schedule">${schedule}</span>
     </footer>
   </article>`;

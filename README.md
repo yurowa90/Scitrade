@@ -30,7 +30,7 @@ python3 tools/validate_data.py   # 자료 검사
 
 [Claude·Codex 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 시작합니다. [자료 전체](references/playthrough_research_2026-10-05/README.md)에 게임별 플레이·공략 5편씩과 보충 리뷰를 포함한 영상26편의 자동자막 분석, 관찰134개, 공식 정지 이미지17장, 개발·그래픽 사양, JSON·CSV를 수록했습니다.
 
-현재 브랜치의 구현과 진행 상태를 먼저 확인하고 필요한 제안만 연결합니다. 연구 자료의 M1·M2 단계명은 기존 기능을 다시 만들라는 지시가 아닙니다. 영상 화면·음성 직접 확인과 실증 계수 검증은 수행하지 않았습니다.
+현재 브랜치의 구현과 진행 상태를 먼저 확인하고 필요한 제안만 연결합니다. 연구 자료의 M1·M2 단계명은 기존 기능을 다시 만들라는 지시가 아닙니다. 영상 화면·음성 직접 확인과 실증 계수 검증은 수행하지 않았습니다. 제안 14개의 채택 여부와 남은 일은 [docs/RESEARCH_APPLICATION.md](docs/RESEARCH_APPLICATION.md)에 있습니다.
 
 ## Claude·Codex와 작업하기
 

@@ -1,0 +1,107 @@
+// REF-10 계약 진행과 막힌 이유. 상태에서 계산하는 읽기 전용 보고이며 상태를 바꾸지 않는다.
+// "무엇이 다음 단계를 막고 있는가"를 화면이 직원 처리량·운항표·사건과 같은 근거로 설명하게 한다.
+
+import { cityName, findSailing, listSailings, routeBetween } from './catalog';
+import { formatMoney } from './money';
+import type { Contract, GameState, ScenarioConfig } from './types';
+
+export type BlockerCode =
+  | 'TASK_UNASSIGNED'
+  | 'TASK_WILL_MISS_SAILING'
+  | 'NO_BOOKING'
+  | 'NEXT_SAILING_LATE'
+  | 'BOOKED_SAILING_LATE'
+  | 'NO_SAILING_LEFT'
+  | 'WAITING_PORT_RESTRICTION'
+  | 'DUTY_UNPAID'
+  | 'AWAITING_PAYMENT';
+
+export interface Blocker {
+  code: BlockerCode;
+  /** info: 기다리면 되는 상태, warn: 플레이어 행동이 필요함, risk: 그대로 두면 비용·지연이 생김. */
+  severity: 'info' | 'warn' | 'risk';
+  messageKo: string;
+}
+
+export interface ContractProgress {
+  nextKo: string;
+  blockers: Blocker[];
+}
+
+export function contractProgress(s: GameState, config: ScenarioConfig, c: Contract): ContractProgress {
+  if (c.status === 'CANCELLED') return { nextKo: '취소된 계약', blockers: [] };
+  if (c.status === 'COMPLETED') return { nextKo: `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
+  const blockers: Blocker[] = [];
+  const money = (minor: number) => formatMoney(c.currency, minor);
+  const late = config.terms.lateDeliveryPriceReductionMinor;
+  const lostFee = config.terms.preDepartureCancellationFeeMinor;
+  const task = s.tasks.find((t) => t.id === c.prepTaskId);
+  const booking = c.bookingId ? s.bookings.find((b) => b.id === c.bookingId && b.status !== 'CANCELLED') : undefined;
+  const shipment = s.shipments.find((sh) => sh.contractId === c.id);
+
+  if (c.deliveredDay !== null) {
+    const inv = s.invoices.find((i) => i.id === c.invoiceId);
+    if (inv && inv.status !== 'PAID') {
+      blockers.push({ code: 'AWAITING_PAYMENT', severity: 'info', messageKo: `인도는 끝났고 ${inv.dueDay}일에 ${money(inv.amountMinor)}을 받습니다. 그때까지 현금은 들어오지 않습니다.` });
+    }
+    return { nextKo: inv ? `${inv.dueDay}일 수금 대기` : '정산 대기', blockers };
+  }
+
+  if (shipment) {
+    if (shipment.arrivalDay === null) {
+      if (s.day >= shipment.scheduledArrivalDay) {
+        blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${money(late)} 감액됩니다.` });
+      }
+      return { nextKo: `운송 중 · ${shipment.scheduledArrivalDay}일 도착 예정`, blockers };
+    }
+    if (!shipment.dutyPaid) {
+      blockers.push({ code: 'DUTY_UNPAID', severity: 'risk', messageKo: `관세 ${money(shipment.dutyMinor ?? 0)}가 미지급이라 반출할 수 없습니다. 현금이 들어오면 먼저 갚습니다.` });
+      return { nextKo: '관세 납부 대기', blockers };
+    }
+    return { nextKo: `통관·반출 중 · ${shipment.releaseDay}일 인도 예정`, blockers };
+  }
+
+  // 출항 전: 준비 업무와 운송편 예약.
+  const route = routeBetween(config, c.originCityId, c.destinationCityId);
+  const sailing = booking ? findSailing(config, booking.sailingId) : undefined;
+  let readyDay: number | null = null;
+  if (task?.status === 'QUEUED') {
+    blockers.push({ code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: `준비 업무 ${task.requiredWorkUnits}pt를 맡을 직원이 없습니다. 배정하기 전에는 화물이 출발할 수 없습니다.` });
+  } else if (task?.status === 'RUNNING') {
+    const emp = config.employees.find((e) => e.id === task.assignedEmployeeId);
+    const rate = emp?.workUnitsPerDay ?? 0;
+    const remaining = task.requiredWorkUnits - task.progressWorkUnits;
+    // 업무는 하루 마감 때 진행되고, 출항은 같은 날 업무 진행 뒤에 처리한다. 그래서 출항일에 끝나도 실을 수 있다.
+    readyDay = rate > 0 ? s.day + Math.ceil(remaining / rate) - 1 : null;
+    if (sailing && (readyDay === null || readyDay > sailing.departureDay)) {
+      blockers.push({ code: 'TASK_WILL_MISS_SAILING', severity: 'risk', messageKo: `지금 속도(하루 ${rate}pt)면 준비가 ${readyDay ?? '?'}일에 끝나 ${sailing.departureDay}일 출항을 놓칩니다. 놓치면 운임 중 ${money(lostFee)}을 잃고 다시 예약해야 합니다.` });
+    }
+  } else if (task?.status === 'DONE') {
+    readyDay = task.completedDay;
+  }
+
+  if (sailing) {
+    const release = sailing.scheduledArrivalDay + config.terms.customsDays;
+    if (release > c.deliveryDeadlineDay) {
+      blockers.push({ code: 'BOOKED_SAILING_LATE', severity: 'risk', messageKo: `예약한 ${sailing.departureDay}일 편은 ${release}일 인도 예정이라 납기 ${c.deliveryDeadlineDay}일을 ${release - c.deliveryDeadlineDay}일 넘깁니다 (감액 ${money(late)}).` });
+    }
+  } else if (route) {
+    const next = listSailings(config, route.id, s.day + 1)[0];
+    if (!next) {
+      blockers.push({ code: 'NO_SAILING_LEFT', severity: 'risk', messageKo: '캠페인 안에 남은 출항편이 없습니다.' });
+    } else {
+      blockers.push({ code: 'NO_BOOKING', severity: 'warn', messageKo: `운송편을 예약하지 않았습니다. 다음 출항은 ${next.departureDay}일이고 예약 마감은 ${next.departureDay - 1}일입니다.` });
+      const release = next.scheduledArrivalDay + config.terms.customsDays;
+      if (release > c.deliveryDeadlineDay) {
+        blockers.push({ code: 'NEXT_SAILING_LATE', severity: 'risk', messageKo: `다음 편으로도 ${release}일 인도라 납기 ${c.deliveryDeadlineDay}일을 넘깁니다 (감액 ${money(late)}).` });
+      }
+    }
+  }
+
+  let nextKo: string;
+  if (task?.status === 'QUEUED') nextKo = '준비 업무 배정 필요';
+  else if (!sailing) nextKo = '운송편 예약 필요';
+  else if (task?.status === 'RUNNING') nextKo = `준비 중 · ${readyDay ?? '?'}일 완료 예상 · ${sailing.departureDay}일 출항`;
+  else nextKo = `출발 대기 · ${sailing.departureDay}일 출항`;
+  return { nextKo, blockers };
+}

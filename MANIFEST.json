@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 12592,
-      "sha256": "c94ddac26dc1de0e7298a54e5eeebc020c7ba69f3a69f22233ff904c62230f99"
+      "size_bytes": 12717,
+      "sha256": "11f661200edd588efe6e64cadbb6e1ed5b4527c3765e6202eee2e18c0dbfb442"
     },
     {
       "path": "START_HERE.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 26442,
-      "sha256": "766512e810fa459f41f8280fd1e69b641005cf85b90ff7d454a850bcc67befeb"
+      "size_bytes": 30745,
+      "sha256": "f72740a5aba869066e74837883608401c2ccda8a6474736c738e4cb6ab385c63"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -181,9 +181,14 @@
       "sha256": "052bb03c54d11962a2d955a0bb6d34242ec6f704460264c4f06c699fbde3355d"
     },
     {
+      "path": "docs/RESEARCH_APPLICATION.md",
+      "size_bytes": 8651,
+      "sha256": "3e1d8ab3d019eabe355310940219941d63a8647cdd1bc19bfecd98ca30e04724"
+    },
+    {
       "path": "docs/STATUS.md",
-      "size_bytes": 14723,
-      "sha256": "b863bf76f08445b2d7d4098684f9c86164b769d8679dc7cdf91d8a436b280570"
+      "size_bytes": 17331,
+      "sha256": "bb301980df688ab1bac4e46b156254f2134a99ed085128e5948d706993e5cf5a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,8 +202,8 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 2683,
-      "sha256": "bfdb4d4708dbdfa2d74e6060748c3e84e6f913c2d9a9aae56d5231c0ed0e65b9"
+      "size_bytes": 2810,
+      "sha256": "f108adb6c24f734570abc469e976460436c60a7f1404aa37fc8d66fe3f11d600"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -207,8 +212,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 6463,
-      "sha256": "5484e4acbf2875b6a5dcca558181f2d64f7523fa2bb0e65a809a1fab940a6d42"
+      "size_bytes": 7024,
+      "sha256": "1746c7ec43ffd9a14bec274d590f39bc4d72286829529077b7d03b77da94e137"
     },
     {
       "path": "docs/art/PROMPTS.md",

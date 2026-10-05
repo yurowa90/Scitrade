@@ -12,7 +12,7 @@
 | 도시·문화·지역 경험 | ../DESIGN_v0.4.md의 23~24절 | culture_activities, contacts, content_hooks |
 | 주식·IPO | ../DESIGN_v0.4.md의 25~27절 | securities; 해당 P1/P2 인수 명세 |
 | 사회·과학·연구 근거 | ../DESIGN_v0.4.md의 5~6·16~22절 | curriculum_links, parameters, sources, observed_fx_sample |
-| 2026-10-05 플레이·개발·그래픽 연구 | [연구 인계](../../references/playthrough_research_2026-10-05/HANDOFF.md), [전체 자료](../../references/playthrough_research_2026-10-05/README.md) | 통합 JSON의 영상26개·관찰134개·제안14개, 공식 화면17개 |
+| 2026-10-05 플레이·개발·그래픽 연구 | [연구 인계](../../references/playthrough_research_2026-10-05/HANDOFF.md), [전체 자료](../../references/playthrough_research_2026-10-05/README.md), [제안별 적용표](../RESEARCH_APPLICATION.md) | 통합 JSON의 영상26개·관찰134개·제안14개, 공식 화면17개. 적용 코드: `src/engine/progress.ts`, `src/engine/research-ref.test.ts` |
 | 원작·영상 참고 | ../../references/REFERENCE_REVIEW.md | dk4_reference, guild3_reference, user_character_clip |
 
 표의 데이터 이름은 저장소 루트 `data/<이름>.json`, 레퍼런스 이름은 `references/<이름>.json`이다. tests 경로는 저장소 루트 기준이다.

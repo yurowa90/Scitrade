@@ -9,8 +9,9 @@ import { formatMoney } from '../engine/money';
 import { companyReport, contractReport, forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../engine/reports';
 import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLoad } from '../engine/reservations';
 import { SaveError, deserializeSave, serializeSave } from '../engine/save';
-import type { Command, CommandResult, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
-import { crewCard } from './card';
+import { contractProgress } from '../engine/progress';
+import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
+import { crewCard, roleBadge } from './card';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
@@ -25,6 +26,12 @@ let view: GameState;
 let pending: Command[] = [];
 let flash: { kind: 'info' | 'warn'; text: string } | null = null;
 let selectedCard: string | null = null;
+/** 동료 카드와 운영표가 함께 쓰는 필터 (REF-05). */
+let crewFilter: 'all' | 'free' | 'busy' = 'all';
+/** 견적별 ‘한 번에 확정’ 계획 (REF-02). 키는 견적 쌍 또는 운송 주선 견적 ID. */
+const plans: Record<string, CommitPlan> = {};
+/** 플레이어가 직접 고친 계획. 고치지 않은 계획은 매번 현재 상태(바쁜 직원·남은 편)로 기본값을 다시 고른다. */
+const touchedPlans = new Set<string>();
 let mapMode: MapMode = 'route';
 let commandSeq = 0;
 
@@ -36,6 +43,8 @@ function startScenario(id: ScenarioId) {
   pending = [];
   flash = null;
   selectedCard = null;
+  for (const k of Object.keys(plans)) delete plans[k];
+  touchedPlans.clear();
 }
 
 function newId(type: string): string {
@@ -185,7 +194,7 @@ function reporter(role: string): EmployeeDef | undefined {
   return config.employees.find((e) => e.role === role) ?? config.employees[0];
 }
 
-function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number): string {
+function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
   const check = tryCommand(cmd);
   const sailing = q.departureDay !== null
     ? `다음 출항 ${q.departureDay}일 → ${q.arrivalDay}일 도착 예정 (납기 ${q.deliveryDeadlineDay}일)${q.lateOnNextSailing ? ' ⚠ 납기 초과 — 감액 반영' : ''}`
@@ -204,8 +213,52 @@ function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[]
       <p class="muted">지연·취소가 없다는 가정의 계산이며 결과를 보장하지 않습니다.</p>
     </details>
     <p class="muted small">견적 유효: ${validUntil}일까지 · 모든 수치는 개발용 가상값(DESIGN)</p>
-    <button class="primary" ${actionAttr} ${check.status !== 'APPLIED' ? 'disabled' : ''}>견적 수락</button>${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}`;
+    <div class="accept-row">
+      <button ${actionAttr} ${check.status !== 'APPLIED' ? 'disabled' : ''}>견적만 수락</button>${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}
+    </div>
+    ${check.status === 'APPLIED' ? planner(cmd, q, key, originCityId) : ''}`;
 }
+
+/** 직원이 지금(대기 명령 반영) 다른 업무 중인지. 카드·운영표·계획 선택이 같은 판단을 쓴다 (REF-01). */
+const busyTask = (employeeId: string) => runningTaskOf(view, employeeId);
+
+/** REF-02 한 번에 확정: 준비 담당과 운송편을 함께 골라 하나의 명령으로 넣는다. 하나라도 안 되면 수락까지 철회된다. */
+function planner(cmd: Command, q: QuotePreview, key: string, originCityId: string): string {
+  if (cmd.type !== 'ACCEPT_TRADE' && cmd.type !== 'ACCEPT_FORWARDING') return '';
+  const sailings = listSailings(config, q.routeId, view.day + 1).slice(0, 3);
+  const local = config.employees.filter((e) => view.employees.find((x) => x.id === e.id)?.locationCityId === originCityId);
+  const defaults: CommitPlan = {
+    employeeId: local.find((e) => !busyTask(e.id))?.id,
+    sailingId: (sailings.find((s) => s.scheduledArrivalDay + config.terms.customsDays <= q.deliveryDeadlineDay) ?? sailings[0])?.id,
+  };
+  const plan = touchedPlans.has(key) ? (plans[key] ?? defaults) : defaults;
+  plans[key] = plan;
+  const planned: Command = { ...cmd, id: newId('PLAN'), plan };
+  const check = tryCommand(planned);
+  const empOptions = local
+    .map((e) => {
+      const t = busyTask(e.id);
+      return `<option value="${e.id}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${e.nameKo} · 하루 ${e.workUnitsPerDay}pt${t ? ` (업무 중: ${t.contractId})` : ''}</option>`;
+    })
+    .join('');
+  const sailOptions = sailings
+    .map((s) => {
+      const late = s.scheduledArrivalDay + config.terms.customsDays > q.deliveryDeadlineDay;
+      return `<option value="${s.id}" ${plan.sailingId === s.id ? 'selected' : ''}>${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착${late ? ' (납기 초과)' : ''}</option>`;
+    })
+    .join('');
+  return `
+    <div class="planner" role="group" aria-label="한 번에 확정">
+      <label>준비 담당 <select data-action="plan-emp" data-key="${key}"><option value="">나중에 배정</option>${empOptions}</select></label>
+      <label>운송편 <select data-action="plan-sailing" data-key="${key}"><option value="">나중에 예약</option>${sailOptions}</select></label>
+      <button class="primary" data-action="accept-plan" data-key="${key}" ${check.status !== 'APPLIED' ? 'disabled' : ''}>수락·배정·예약 한 번에</button>
+      <p class="muted small">셋 중 하나라도 실행할 수 없으면 수락까지 모두 취소하고 아무것도 바꾸지 않습니다.</p>
+      ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}
+    </div>`;
+}
+
+/** 화면의 견적 카드가 만든 기본 수락 명령 (키로 다시 찾는다). */
+const offerCommands: Record<string, Command> = {};
 
 function offerBoard(): string {
   const isOpen = (id: string) => view.offers.find((o) => o.id === id)?.status === 'OPEN';
@@ -225,12 +278,13 @@ function offerBoard(): string {
       <tr><th>관세 (가상 세율 ${config.terms.dutyRateBasisPoints / 100}% · 상품 송장 기준)</th><td>−${usd(q.duty)}</td></tr>
       <tr><th>판매 (${sell.quantity}${unitKo(g)} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
     const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id };
+    offerCommands[`${buy.id}+${sell.id}`] = cmd;
     const space = cargoSpace(config, buy.goodId, buy.quantity);
     cards.push(`
     <article class="offer">
       <h3><span class="kind kind-trade">직접 무역</span> ${qtyKo(buy.goodId, buy.quantity)} · ${cityName(config, buy.cityId)} → ${cityName(config, sell.cityId)}</h3>
       <p class="report-line">📋 <b>${by?.nameKo ?? '직원'}의 보고</b> — “${cityName(config, buy.cityId)} 공급자가 ${g.nameKo} ${buy.quantity}${unitKo(g)}을(를) 내놨고, ${cityName(config, sell.cityId)} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 대금은 ${due}일에 받습니다.”</p>
-      ${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`], Math.min(buy.validUntilDay, sell.validUntilDay))}
+      ${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
   for (const offer of config.offers.filter((o) => o.kind === 'forwarding')) {
@@ -244,6 +298,7 @@ function offerBoard(): string {
       <tr><th>운임 (외부 운송사에 선지급)</th><td>−${usd(q.freight)}</td></tr>
       <tr><th>관세</th><td>수입자 부담 (회사 0)</td></tr>`;
     const cmd: Command = { id: newId('FWD'), type: 'ACCEPT_FORWARDING', offerId: offer.id };
+    offerCommands[offer.id] = cmd;
     cards.push(`
     <article class="offer forwarding">
       <h3><span class="kind kind-fwd">운송 주선</span> 고객 화물 ${qtyKo(offer.goodId, offer.quantity)} · ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)}</h3>
@@ -251,7 +306,7 @@ function offerBoard(): string {
       ${quoteBlock(q, rows, cmd, [
         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}은 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
-      ].filter(Boolean), offer.validUntilDay)}
+      ].filter(Boolean), offer.validUntilDay, offer.id, offer.cityId)}
     </article>`);
   }
   if (!cards.length) return '';
@@ -324,12 +379,25 @@ function contractPanel(c: Contract): string {
   <div class="contract ${forwarding ? 'forwarding' : ''}">
     <h3><span class="kind ${forwarding ? 'kind-fwd' : 'kind-trade'}">${forwarding ? '운송 주선' : '직접 무역'}</span> ${c.id} · ${qtyKo(c.goodId, c.quantity)} ${cityName(config, c.originCityId)} → ${cityName(config, c.destinationCityId)}${state.contracts.some((x) => x.id === c.id) ? '' : ' <span class="pill">오늘 실행 예정</span>'}</h3>
     ${pipeline(c)}
+    ${progressBox(c)}
     <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
     <div class="actions-row">${actions.join('')}</div>
     <details><summary>이 계약의 돈 흐름 (${entries.length}건)</summary>
       <ul class="entries">${entries.map((e) => `<li><span>${e.day}일</span>${esc(e.reason)}<b>${e.lines.map((l) => `${accountKo(l.account)} ${l.amount > 0 ? '+' : '−'}${usd(Math.abs(l.amount))}`).join(' · ')}</b></li>`).join('')}</ul>
     </details>
   </div>`;
+}
+
+const SEVERITY_KO = { info: '참고', warn: '조치 필요', risk: '위험' } as const;
+
+/** REF-10: 다음 단계와 막힌 이유. 직원 처리량·운항표·사건과 같은 근거로 계산한다. */
+function progressBox(c: Contract): string {
+  const p = contractProgress(view, config, c);
+  return `
+    <div class="progress-box">
+      <p><b>다음</b> ${esc(p.nextKo)}</p>
+      ${p.blockers.length ? `<ul class="blockers">${p.blockers.map((b) => `<li class="sev-${b.severity}"><span class="sev-label">${SEVERITY_KO[b.severity]}</span>${esc(b.messageKo)}</li>`).join('')}</ul>` : '<p class="muted small">막힌 곳 없음</p>'}
+    </div>`;
 }
 
 function closedContracts(): string {
@@ -466,23 +534,48 @@ function reportPanel(): string {
 
 function crewPanel(): string {
   const e0 = config.employees[0];
+  const shown = config.employees.filter((e) => crewFilter === 'all' || (crewFilter === 'busy') === Boolean(busyTask(e.id)));
+  const filterBtn = (f: typeof crewFilter, label: string) =>
+    `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${crewFilter === f}">${label}</button>`;
+  // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
+  const rows = shown
+    .map((e) => {
+      const t = busyTask(e.id);
+      const loc = view.employees.find((x) => x.id === e.id)?.locationCityId ?? null;
+      return `<tr class="${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-selected="${selectedCard === e.id}">
+        <th scope="row"><span class="nm">${e.nameKo}</span>${roleBadge(e.role)}</th>
+        <td>${t ? `● 업무 중<small>${t.contractId} ${t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
+        <td class="num">${e.workUnitsPerDay}pt/일<small>${krw(e.salaryPerDayMinor)}</small></td></tr>`;
+    })
+    .join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h">동료 <small>${config.employees.length}명 고용 중</small></h2>
-    <div class="crew-cards">${config.employees.map((e) => crewCard(e, view, selectedCard === e.id)).join('')}</div>
+    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}</div>
+    <div class="crew-cards">${shown.map((e) => crewCard(e, view, selectedCard === e.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+    <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
+      <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
     <p class="muted small">처리량은 고정값(LEGACY_FIXED, 하루 ${e0?.workUnitsPerDay ?? 0}pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(영입·성장)와 M2b에서 켭니다. 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
   </aside>`;
+}
+
+function planLabel(plan: CommitPlan | undefined): string {
+  if (!plan || (!plan.employeeId && !plan.sailingId)) return '';
+  const parts = [plan.employeeId ? `준비 ${employeeName(plan.employeeId)}` : '', plan.sailingId ? `${plan.sailingId} 예약` : ''].filter(Boolean);
+  return ` + ${parts.join(' + ')} (한 번에 확정)`;
 }
 
 function commandLabel(c: Command): string {
   switch (c.type) {
     case 'ACCEPT_TRADE': {
       const buy = offerOf(config, c.buyOfferId);
-      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, buy.quantity) : c.buyOfferId})`;
+      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, buy.quantity) : c.buyOfferId})${planLabel(c.plan)}`;
     }
     case 'ACCEPT_FORWARDING': {
       const o = offerOf(config, c.offerId);
-      return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})`;
+      return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})${planLabel(c.plan)}`;
     }
     case 'ASSIGN_TASK': {
       const t = view.tasks.find((x) => x.id === c.taskId);
@@ -566,6 +659,14 @@ app.addEventListener('click', (ev) => {
     case 'select-card':
       selectedCard = selectedCard === d.emp ? null : (d.emp ?? null);
       return render();
+    case 'crew-filter':
+      crewFilter = d.filter === 'free' || d.filter === 'busy' ? d.filter : 'all';
+      return render();
+    case 'accept-plan': {
+      const base = offerCommands[d.key!];
+      if (!base || (base.type !== 'ACCEPT_TRADE' && base.type !== 'ACCEPT_FORWARDING')) return;
+      return queue({ ...base, id: newId('PLAN'), plan: { ...plans[d.key!] } });
+    }
     case 'restart':
       startScenario(config.id as ScenarioId);
       return render();
@@ -611,6 +712,15 @@ app.addEventListener('change', async (ev) => {
   const el = ev.target as HTMLInputElement | HTMLSelectElement;
   if (el.dataset.action === 'scenario') {
     startScenario(el.value as ScenarioId);
+    render();
+  } else if (el.dataset.action === 'plan-emp' || el.dataset.action === 'plan-sailing') {
+    const key = el.dataset.key!;
+    const plan = { ...(plans[key] ?? {}) };
+    const value = el.value || undefined;
+    if (el.dataset.action === 'plan-emp') plan.employeeId = value;
+    else plan.sailingId = value;
+    plans[key] = plan;
+    touchedPlans.add(key);
     render();
   } else if (el.dataset.action === 'import' && el instanceof HTMLInputElement && el.files?.[0]) {
     loadText(await el.files[0].text());

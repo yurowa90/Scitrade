@@ -25,6 +25,7 @@ import {
   type Booking,
   type Command,
   type CommandResult,
+  type CommitPlan,
   type Contract,
   type GameState,
   type Notice,
@@ -165,10 +166,10 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   let rejection: string | null;
   switch (cmd.type) {
     case 'ACCEPT_TRADE':
-      rejection = acceptTrade(s, config, cmd.buyOfferId, cmd.sellOfferId);
+      rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId));
       break;
     case 'ACCEPT_FORWARDING':
-      rejection = acceptForwarding(s, config, cmd.offerId);
+      rejection = withPlan(s, config, cmd.plan, (t) => acceptForwarding(t, config, cmd.offerId));
       break;
     case 'ASSIGN_TASK':
       rejection = assignTask(s, config, cmd.taskId, cmd.employeeId);
@@ -187,6 +188,33 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   const reasonKo = rejection ?? '처리됨';
   s.processedCommands[cmd.id] = { day: s.day, type: cmd.type, status, reasonKo };
   return { commandId: cmd.id, status, reasonKo };
+}
+
+/**
+ * REF-02 일괄 확정: 수락 → 준비 배정 → 운송편 예약을 사본에서 차례로 시험하고, 모두 성공할 때만 반영한다.
+ * 일부만 성공한 상태(수락했지만 배를 못 잡은 계약 등)를 남기지 않는다. 계획이 없으면 수락만 한다.
+ */
+function withPlan(
+  s: GameState,
+  config: ScenarioConfig,
+  plan: CommitPlan | undefined,
+  accept: (target: GameState) => string | null,
+): string | null {
+  if (!plan || (!plan.employeeId && !plan.sailingId)) return accept(s);
+  const trial = clone(s);
+  const rejected = accept(trial);
+  if (rejected) return rejected;
+  const contract = trial.contracts[trial.contracts.length - 1]!;
+  if (plan.employeeId) {
+    const r = assignTask(trial, config, contract.prepTaskId, plan.employeeId);
+    if (r) return `일괄 확정을 철회했습니다 — 준비 배정 불가: ${r}`;
+  }
+  if (plan.sailingId) {
+    const r = bookSailing(trial, config, contract.id, plan.sailingId);
+    if (r) return `일괄 확정을 철회했습니다 — 운송편 예약 불가: ${r}`;
+  }
+  Object.assign(s, trial);
+  return null;
 }
 
 function offerOpen(s: GameState, offer: OfferDef): string | null {
