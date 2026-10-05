@@ -1,0 +1,336 @@
+{
+  "game": "Two Point Hospital",
+  "research_date": "2026-10-05",
+  "method": "유튜브에서 내보낸 영어 자동 생성 자막의 시간 구간을 읽고 제작자의 플레이 해설을 분석했다. 영상 프레임과 실제 조작은 확인하지 않았다.",
+  "videos": [
+    {
+      "id": "nZb5ZgCrYDs",
+      "title": "Two Point Hospital Fundamentals Training",
+      "channel": "Adekyn",
+      "url": "https://www.youtube.com/watch?v=nZb5ZgCrYDs",
+      "duration_seconds": 1069,
+      "transcript_language": "en, auto-generated",
+      "coverage": "기존 조사 자막을 재독해. 기록한 분석 구간 01:31–02:47, 03:00–05:49, 07:44–09:25, 09:25–10:47, 14:14–16:26. 전편 재생이 아니다.",
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 91,
+          "end_seconds": 167,
+          "reported_play": "승진·경험과 교육 가능 슬롯을 구분하며, 해당 교육병원은 신입만 채용하는 특수 조건이라고 설명한다.",
+          "design_implication": "레벨과 직무 자격을 분리하고, 신입만 채용하는 제약은 시나리오 규칙으로 둔다."
+        },
+        {
+          "start_seconds": 180,
+          "end_seconds": 349,
+          "reported_play": "교육 속도 보너스만 큰 중앙 교육실보다 왕복 거리가 짧은 여러 교육실을 선호한다.",
+          "design_implication": "교육비뿐 아니라 이동·부재 기간을 포함한 총비용을 보여 준다."
+        },
+        {
+          "start_seconds": 464,
+          "end_seconds": 565,
+          "reported_play": "부족한 직무를 생각한 뒤 교육 가능한 직원, 과정, 동시 수강자, 강사 순서로 좁힌다.",
+          "design_implication": "부족 역량에서 교육 계획을 시작하고 가능한 후보를 자동으로 추린다."
+        },
+        {
+          "start_seconds": 565,
+          "end_seconds": 647,
+          "reported_play": "자금이 부족하면 내부 강사, 인력이 부족하고 돈이 있으면 외부 강사를 선택한다고 설명한다.",
+          "design_implication": "멘토링의 선임 업무 공백과 외부 교육비를 비교하는 선택을 만든다."
+        },
+        {
+          "start_seconds": 854,
+          "end_seconds": 986,
+          "reported_play": "시설 담당 교육을 강조하며, 교육 효율 기술도 한정된 기술 슬롯을 차지한다고 설명한다.",
+          "design_implication": "지원 부서의 성장도 납기·설비 가동에 기여하게 하고 범용 기술의 기회비용을 제시한다."
+        }
+      ]
+    },
+    {
+      "id": "TRpWkuqk3oc",
+      "title": "Two Point Hospital Strategy & Tactics Quick Tip: Staffing 101",
+      "channel": "Pinstar",
+      "url": "https://www.youtube.com/watch?v=TRpWkuqk3oc",
+      "duration_seconds": 652,
+      "transcript_language": "en, auto-generated",
+      "coverage": "00:03–10:50 자막을 읽고 5개 구간을 기록했다. 전편 영상 시청이 아니다.",
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 59,
+          "end_seconds": 131,
+          "reported_play": "직무 전문화를 권하지만 채용 풀이 제한적이므로 이상적이지 않은 보조 기술도 수용한다.",
+          "design_implication": "완벽한 인재를 기다릴지 지금 가능한 인재를 고용할지 선택하게 한다."
+        },
+        {
+          "start_seconds": 170,
+          "end_seconds": 246,
+          "reported_play": "필요한 작업 자리보다 한 명 많은 인원을 자신의 기본 원칙으로 삼고 신입의 교육 방향을 정한다.",
+          "design_implication": "정원 합계와 실제 가동 가능 인원을 구분하고 예비 인력의 역할을 보여 준다."
+        },
+        {
+          "start_seconds": 250,
+          "end_seconds": 315,
+          "reported_play": "한 업무에서 함께 활용되지 않는 기술 조합을 비효율적이라고 평가한다.",
+          "design_implication": "합산 능력치보다 해당 계약에서 실제 쓰는 기술을 표시한다. 재교육 경로도 둔다."
+        },
+        {
+          "start_seconds": 402,
+          "end_seconds": 479,
+          "reported_play": "예비 인력이 휴식·교육 중 빈자리를 메우며 추가 급여에도 가치가 있다고 판단한다.",
+          "design_implication": "추가 급여와 결원·납기 위험 감소를 함께 비교하게 한다."
+        },
+        {
+          "start_seconds": 529,
+          "end_seconds": 587,
+          "reported_play": "시설 개선 전문가와 일상 유지관리 담당을 서로 다른 인력 유형으로 분리한다.",
+          "design_implication": "기술개발·설비 투자와 일상 운영을 다른 업무로 모델링한다."
+        }
+      ]
+    },
+    {
+      "id": "GIpg676bebA",
+      "title": "Two Point Hospital Strategy & Tactics Quick Tip: Staffing 201: The Nurse Dichotomy",
+      "channel": "Pinstar",
+      "url": "https://www.youtube.com/watch?v=GIpg676bebA",
+      "duration_seconds": 599,
+      "published_date": "2020-03-09",
+      "transcript_language": "en, auto-generated",
+      "coverage": "00:04–09:57 자막을 읽고 5개 구간을 기록했다. 전편 영상 시청이 아니다.",
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 65,
+          "end_seconds": 179,
+          "reported_play": "신입 간호사의 허용 업무를 기술에 맞춰 제한하며 병동·치료 담당으로 나눈다.",
+          "design_implication": "자동 배정에 허용·금지 업무와 전문 분야를 설정한다."
+        },
+        {
+          "start_seconds": 180,
+          "end_seconds": 220,
+          "reported_play": "직무별 복장을 달리해 구분한다. 복장 자체의 능력 보너스는 없다고 설명한다.",
+          "design_implication": "직무 표식과 수집용 외형을 능력 효과와 분리해 표시한다."
+        },
+        {
+          "start_seconds": 226,
+          "end_seconds": 321,
+          "reported_play": "수술 보조의 성과에 직접 쓰이지 않는 기술과 긴 휴식 전환 시간을 구분하며 체력을 선호한다.",
+          "design_implication": "지원 직원은 직접 성과 외에도 준비·전환 시간을 줄이는 방식으로 기여하게 한다."
+        },
+        {
+          "start_seconds": 321,
+          "end_seconds": 410,
+          "reported_play": "수술 수요가 많은 현재 병원에 맞춰 병동 담당을 수술 보조와 공유하고 교육을 바꾼다.",
+          "design_implication": "고정된 최강 덱보다 수주 구성에 맞춰 팀 역할을 바꾸는 재미를 만든다."
+        },
+        {
+          "start_seconds": 472,
+          "end_seconds": 566,
+          "reported_play": "자신은 간호사 진단 시설을 쓰지 않고 의사 진단 시설을 선택하므로 진단 간호사를 두지 않는다고 설명한다.",
+          "design_implication": "시설·기술 선택에 따라 필요한 인력이 달라지게 한다. 제작자의 선택을 보편 규칙으로 고정하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "Uk2EseTn4hA",
+      "title": "Speedy Recovery DLC - Ailing - Two Point Hospital Walkthrough - All Hospitals - All 3 Stars - Star 1",
+      "channel": "Power Plays",
+      "url": "https://www.youtube.com/watch?v=Uk2EseTn4hA",
+      "duration_seconds": 3645,
+      "published_date": "2022-03-14",
+      "transcript_language": "en, auto-generated",
+      "coverage": "00:08–18:58 및 35:02–59:57 자막 구간을 읽고 아래 5개 사례를 기록했다. 18:59–35:01을 포함한 전편 분석이나 연속 시청이 아니다.",
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 289,
+          "end_seconds": 330,
+          "reported_play": "평소 선호하지 않던 진단 기술이 구급차 운전에서는 중요해졌다고 설명한다. 차량 개선에는 시설 담당이 필요하다.",
+          "design_implication": "새 운송 방식이 기존 직원의 가치를 바꾸게 한다. 인력·차량 성능을 연결한다."
+        },
+        {
+          "start_seconds": 593,
+          "end_seconds": 644,
+          "reported_play": "새 치료실에 맞는 의사를 찾고, 교육실을 지을 예정이므로 무기술 신입도 미리 채용한다.",
+          "design_implication": "즉시 투입형과 미래 육성형 채용을 구분하고 교육 전 업무 공백을 알린다."
+        },
+        {
+          "start_seconds": 775,
+          "end_seconds": 854,
+          "reported_play": "환자 유입을 늘리면 감당하기 어렵다고 보고 추가 차량 구매를 미룬다. 원하는 전문의가 없어 다른 진단실을 택한다.",
+          "design_implication": "수송량 확대 전에 처리 역량을 확인하고, 채용 부족을 설비·외주로 해결할 수 있게 한다."
+        },
+        {
+          "start_seconds": 2627,
+          "end_seconds": 2693,
+          "reported_play": "계속 사용 중인 장비의 개선 시점을 고민하며 일시적 운영 손실을 받아들인다. 사용 목적에 맞춰 교육도 고른다.",
+          "design_implication": "설비 강화와 직원 교육의 중단 시간을 일정에 반영한다."
+        },
+        {
+          "start_seconds": 2854,
+          "end_seconds": 2959,
+          "reported_play": "과도한 대기열을 인정하고 별 획득 목표에 해당하는 환자를 우선하며 다른 환자를 돌려보낸다.",
+          "design_implication": "단일 목표가 편법을 유도할 수 있다. 납기·고객 신뢰·장기 수익을 함께 평가한다."
+        }
+      ]
+    },
+    {
+      "id": "aba_ChvHoDY",
+      "title": "Mistakes to Avoid in Two Point Hospital! (Close Encounters DLC)",
+      "channel": "Jackdoor",
+      "url": "https://www.youtube.com/watch?v=aba_ChvHoDY",
+      "duration_seconds": 1630,
+      "published_date": "2024-08-04",
+      "transcript_language": "en, auto-generated",
+      "coverage": "00:00–20:29 및 21:39–26:59 자막 구간을 읽고 아래 5개 사례를 기록했다. 영상 프레임·타임랩스는 미확인이다.",
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 20,
+          "end_seconds": 180,
+          "reported_play": "웨이브 목표에 맞춰 채용·교육을 시작하고, 부족한 자격을 확인해 교육 과정을 바꾼다.",
+          "design_implication": "이벤트 목표가 채용·교육 선택에 연결되게 하되 인원 수만 채우는 과제를 줄인다."
+        },
+        {
+          "start_seconds": 626,
+          "end_seconds": 716,
+          "reported_play": "사기 목표를 달성하려 급여가 불만족스러운 직원을 찾아 임금을 조정한다.",
+          "design_implication": "직원 만족의 원인을 보여 주고 급여·휴식·업무 부담별 대응을 제공한다."
+        },
+        {
+          "start_seconds": 720,
+          "end_seconds": 818,
+          "reported_play": "간호사가 교육 중인지 먼저 확인한 뒤 실제 부족으로 판단해 채용하고 허용 업무를 일일이 설정한다.",
+          "design_implication": "영구 결원과 일시적 부재를 구분한다. 직무별 배정 템플릿으로 반복 설정을 줄인다."
+        },
+        {
+          "start_seconds": 1046,
+          "end_seconds": 1229,
+          "reported_play": "진료 공간을 복제·확장한 뒤 의사 수를 다시 세고, 일부가 교육 중이라는 점을 확인한다.",
+          "design_implication": "시설을 복사할 때 필요한 직원·현재 가용 인원·교육 종료 시점을 함께 예고한다."
+        },
+        {
+          "start_seconds": 1299,
+          "end_seconds": 1349,
+          "reported_play": "분산한 진료 공간 사이로 환자가 이동해 예상과 다른 대기열이 생겼다고 말한다.",
+          "design_implication": "자동 배정의 이동 비용과 대기 시간을 설명하고 지역·거점 우선 배정 규칙을 제공한다."
+        }
+      ]
+    }
+  ],
+  "cross_video_findings": [
+    {
+      "claim": "교육의 비용은 수강료뿐 아니라 교육생·강사 부재와 예비 인력 급여까지 포함한다.",
+      "supporting_video_ids": [
+        "nZb5ZgCrYDs",
+        "TRpWkuqk3oc",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "인력 한 명 추가 같은 규칙은 플레이어의 상황별 전략이며 실제 조직 연구의 계수가 아니다."
+    },
+    {
+      "claim": "전문화는 업무 제한·교육·시설 선택과 묶여야 실제 활용으로 이어진다.",
+      "supporting_video_ids": [
+        "TRpWkuqk3oc",
+        "GIpg676bebA",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "기술 조합의 효율은 해당 시설·버전·수요에 따라 달라진다."
+    },
+    {
+      "claim": "해당 제작자가 이전 운영에서 덜 선호하던 직원 기술도 새 시설·DLC·운영 방식에서는 중요해진다.",
+      "supporting_video_ids": [
+        "GIpg676bebA",
+        "Uk2EseTn4hA"
+      ],
+      "caveat": "서로 다른 시나리오다. 진단 간호사나 진단 기술이 항상 불필요하다는 결론을 내릴 수 없다."
+    },
+    {
+      "claim": "인원과 시설을 늘려도 이동·배정·진단 같은 다음 단계에서 병목이 남는다.",
+      "supporting_video_ids": [
+        "nZb5ZgCrYDs",
+        "Uk2EseTn4hA",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "프레임·게임 내부 기록을 확인하지 않아 실제 지연 원인과 크기는 제작자 해설 범위만 확인했다."
+    },
+    {
+      "claim": "수집형 직원 성장의 성과는 단순 능력 총합보다 새 업무 가능 여부와 처리 흐름으로 보여 주는 편이 Scitrade에 적합하다.",
+      "supporting_video_ids": [
+        "nZb5ZgCrYDs",
+        "TRpWkuqk3oc",
+        "Uk2EseTn4hA"
+      ],
+      "caveat": "분석자의 Scitrade 설계 제안이다. 영상이 덱 시너지나 신수 수집의 재미를 입증하지 않는다."
+    }
+  ],
+  "limitations": [
+    "총 서로 다른 영상 5편, 4개 채널, 시간코드가 있는 발화 사례 25개를 분석했다. 메타데이터만 확인한 영상은 포함하지 않았다.",
+    "총 영상 길이 126분 35초는 출처 길이의 합계다. 그 시간만큼 재생하거나 모든 구간을 분석했다는 의미가 아니다.",
+    "화면 프레임·커서·UI 배치·색상·조작감은 미확인이다. 자막 내 복장·배치 설명은 제작자의 발화로만 취급했다.",
+    "자동 생성 자막의 고유명사·숫자에 오인식 가능성이 있다. 확률·비용·효과 수치를 게임 데이터로 복사하지 않는다.",
+    "원작의 현재 버전 전체 규칙을 검증한 자료가 아니다. 출시 초기와 2020·2022·2024년 플레이, 서로 다른 DLC·병원이 섞여 있다.",
+    "자막 원문 파일은 조사용이며 최종 배포 묶음에 포함하지 않는다. 공개 결과물에는 짧은 한국어 요약과 출처·시간코드만 담는다."
+  ],
+  "player_perspective": [
+    {
+      "finding": "직원 선택은 최고 능력치 비교보다 현재 결원과 장기 교육 계획 사이의 선택으로 작동한다.",
+      "evidence_video_ids": [
+        "TRpWkuqk3oc",
+        "Uk2EseTn4hA"
+      ]
+    },
+    {
+      "finding": "성장과 시설 확장 뒤에 업무 배정·교육 중 공백을 다시 관리해야 한다. 반복 설정은 편의 기능이 필요하다.",
+      "evidence_video_ids": [
+        "GIpg676bebA",
+        "aba_ChvHoDY"
+      ]
+    },
+    {
+      "finding": "예상과 다른 자동 배정은 병목의 이유를 이해하기 어렵게 한다. 설명 가능한 운영 피드백이 중요하다.",
+      "evidence_video_ids": [
+        "aba_ChvHoDY"
+      ]
+    }
+  ],
+  "developer_implications": [
+    {
+      "proposal": "직원 근무 상태와 교육 상태를 분리하고 업무 시간의 중복 점유를 막는다.",
+      "scitrade_design": "employment는 재직 여부, availability는 근무·휴식·출장·교육, training은 자격없음·교육가능·예약·진행·완료로 기록한다. 교육 시작 시 교육생과 내부 강사의 시간 용량을 함께 예약하고 종료 후 배정을 복원한다.",
+      "validation_scenario": "유일한 통관 담당자와 멘토를 동시에 교육하면 계약 지연을 사전 표시해야 하며, 같은 시간에 두 업무의 생산성이 합산되면 안 된다.",
+      "evidence_video_ids": [
+        "nZb5ZgCrYDs",
+        "TRpWkuqk3oc",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "Scitrade 구현 제안이며 Two Point Hospital의 내부 코드·자료구조를 확인한 내용이 아니다."
+    },
+    {
+      "proposal": "교육 슬롯·선행 자격과 작업 적합성 필터를 데이터 규칙으로 분리한다.",
+      "scitrade_design": "과정마다 선행 자격, 경험 조건, 기간, 비용, 강사 조건을 둔다. 자동 배정은 필수 자격과 허용 업무를 먼저 검사하고, 그 뒤 기술·속성 시너지를 계산한다. 부서별 배정 템플릿과 수동 예외를 허용한다.",
+      "validation_scenario": "기술 점수가 높아도 필수 통관 자격이 없으면 계약의 통관 단계에 배정할 수 없어야 한다. 교육 완료 후 새로 가능한 업무가 즉시 표시되어야 한다.",
+      "evidence_video_ids": [
+        "nZb5ZgCrYDs",
+        "GIpg676bebA",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "Scitrade 구현 제안이며 원작의 정확한 슬롯 수·확률 수치를 차용하지 않는다."
+    },
+    {
+      "proposal": "부서별 대기열과 실제 가용 처리량을 표시하고 병목의 이유를 남긴다.",
+      "scitrade_design": "계약을 영업·서류·물류 등 단계별 작업으로 만들고, 직원의 현재 가용 용량만 사용한다. 지연 사유를 인력부족·교육부재·설비중단·이동·선행작업대기로 기록한다. 시설 복제 전에 필요한 추가 인원을 예고한다.",
+      "validation_scenario": "수송량만 늘려도 통관 용량이 그대로라면 대기열이 늘어야 한다. 직원을 교육에 보내는 경우 영구 결원과 구별된 해소 예정 시각이 보여야 한다.",
+      "evidence_video_ids": [
+        "Uk2EseTn4hA",
+        "aba_ChvHoDY"
+      ],
+      "caveat": "Scitrade 구현 제안이며 실제 노동생산성 계수는 별도 실증 자료로 보정해야 한다."
+    }
+  ],
+  "graphics_perspective": {
+    "status": "video_frames_unverified",
+    "supported_inference": "Pinstar가 직무별 복장을 시각 구분에 쓴다고 설명한 점은 확인했으나 실제 화면 가독성은 평가하지 않았다.",
+    "scitrade_design_proposal": "직원 카드에서 종족·속성 외형과 현재 직무 표식을 나누고 근무·교육·출장 상태를 별도 배지로 표시할 수 있다.",
+    "caveat": "색상·레이아웃·카메라·애니메이션에 대한 평가는 실제 프레임이나 공식 스틸 확인 후 별도로 진행해야 한다."
+  }
+}

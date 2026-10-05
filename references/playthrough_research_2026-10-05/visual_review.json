@@ -1,0 +1,464 @@
+{
+  "schema_version": "1.0.0",
+  "checked_on": "2026-10-05",
+  "purpose": "영상 자막 연구를 보완하는 공식 정지 이미지의 그래픽·UI 직접 관찰과 Scitrade 설계 제안",
+  "scope": {
+    "games": 5,
+    "reviewed_images": 17,
+    "actual_video_frames_reviewed": 0,
+    "observation_and_proposal_separated": true,
+    "no_claim_about_original_internal_implementation": true
+  },
+  "sources": [
+    {
+      "id": "DK4-IMG01",
+      "game": "대항해시대 IV HD",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/img/2000/2201.png",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "넓은 항구 배경에 시설을 뜻하는 그림 표지가 놓여 있고, 우측 약 3분의 1에 도시·세력 점유율·특산품 패널이 있다.",
+        "날짜와 자금은 우상단, 공통 명령은 하단에 있다. 회화풍 배경과 금속 장식 틀이 시대 분위기를 함께 만든다."
+      ],
+      "design_proposals": [
+        "Scitrade 도시 화면은 지역 풍경을 보여주되 시설 이름을 함께 적고, 현지 시장·물류 위험·문화 활동을 우측 요약 패널에서 바로 찾게 한다.",
+        "현대 화면에는 원작의 금빛 장식을 옮기기보다 종이·크림색 패널, 네이비 글자, 제한된 강조색을 사용한다."
+      ],
+      "developer_proposals": [
+        "도시 풍경은 시장 연산과 분리된 장소 뷰로 구현하고 시설 버튼과 고정 메뉴가 같은 업무 명령을 호출하도록 한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 매뉴얼의 붉은 번호표는 설명용 주석이며 실제 게임 HUD로 세지 않음."
+    },
+    {
+      "id": "DK4-IMG02",
+      "game": "대항해시대 IV HD",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/img/2000/2301.png",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "거래창은 선박 선택, 보유 화물, 매각 예정 화물, 특산품을 공간적으로 구분한다.",
+        "우하단 결산 영역에 총수입·총지출·잔금과 결정·취소가 모이고 결정 버튼은 주황색으로 강조된다."
+      ],
+      "design_proposals": [
+        "현대 견적창은 매입·운송·관세·보험을 한 비용명세에 모으고, 확정 버튼 옆에 잔여 현금과 납기 위험을 표시한다.",
+        "일러스트 상품 카드는 도입과 발견에 쓰되 대량 비교 시 수량·단위·원가가 정렬된 표를 제공한다."
+      ],
+      "developer_proposals": [
+        "초안 변경과 거래 확정을 다른 상태로 두고 확정 전에 비용·재고·운송능력을 검증한다. UI에 보이는 예상값과 원장에 기록된 확정값을 구별한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 매뉴얼의 붉은 번호표는 설명용 주석."
+    },
+    {
+      "id": "DK4-IMG03",
+      "game": "대항해시대 IV HD",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/img/3000/3104.png",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "선박 단면의 여러 방에 작은 인물 스프라이트를 놓아 직무와 공간을 연결한다.",
+        "하단에 교역·전투·탐험의 목적별 버튼과 등록·결정이 있다. 작은 인물의 얼굴이나 업무 수치를 이 화면만으로 자세히 읽기는 어렵다."
+      ],
+      "design_proposals": [
+        "부서실에 동물 직원을 배치하는 회사 단면도를 제공하되 선택 직원의 큰 초상화·직무 적합성·교육 상태를 별도 카드로 함께 보여준다."
+      ],
+      "developer_proposals": [
+        "직원 ID·직무 슬롯·프로젝트 배정을 분리한다. 방 안의 외형 위치만 바꾸고 실제 배정이 누락되는 오류를 막을 상태 계약이 필요하다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "G3-IMG02",
+      "game": "The Guild 3",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-02.jpg",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "높은 사선 시점의 도시 위에 큰 기술트리 창이 겹쳐 있다. 좌상단 가문 자원과 우상단 날짜·속도, 좌하단 인물 초상은 남아 있다.",
+        "중앙은 계층 목록과 연결된 해금 노드로 구성되며 잠긴 노드가 자물쇠 아이콘으로 반복 표시된다."
+      ],
+      "design_proposals": [
+        "모든 관리창에서 자금·날짜·미처리 사건을 같은 위치에 유지한다. 해금창은 다음 목표와 가까운 후보를 우선 보여준다."
+      ],
+      "developer_proposals": [
+        "화면별로 자금·시간을 따로 계산하지 않고 하나의 회사 상태를 읽도록 한다. 잠긴 기능의 조건과 해금 원인을 데이터로 연결한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "G3-IMG13",
+      "game": "The Guild 3",
+      "url": "https://guild3.thqnordic.com/game-sites/guild3/content/screenshots/screenshot-13.jpg",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "시장 패널에 상품 분류·검색·시장/가격추이/수요 탭이 있다. 상품 툴팁에는 생산 조건·불법 여부·시장 매입/매도 가격·수량·원료가 구분된다.",
+        "검은 패널 위 밝은 글자가 주를 이루며, 길게 열린 툴팁이 상품 목록 일부를 가린다."
+      ],
+      "design_proposals": [
+        "지역 간 시장 비교와 통관 조건은 서로 인접하게 배치한다. 긴 상세 내용은 상품표를 덮는 툴팁보다 고정 우측 패널에 넣는다."
+      ],
+      "developer_proposals": [
+        "상품 정의·지역 규칙·현재 호가·가용 물량을 구분하고 같은 품목의 가격과 조건을 일관된 질의 결과로 합친다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "SOFTWARE-IMG01",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_6949cb0d8e6428424c5466b866b7293002fde71f.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "지붕을 제거한 작은 사무실의 작업 책상·회의 공간·휴게 공간이 한눈에 보인다. 건물은 단순한 면과 색 덩어리로 구성된다.",
+        "HUD가 없는 장면이며 인물보다 사무실 배치와 조명이 주된 시선을 차지한다."
+      ],
+      "design_proposals": [
+        "초기 본사는 작은 한 층으로 시작해 부서 확장을 공간 변화로 보여준다. 동물 직원의 수집 가치는 확대 초상과 방 안 스프라이트를 연동해 전달한다."
+      ],
+      "developer_proposals": [
+        "자유 건축은 별도 시스템 비용이 크므로 첫 MVP에는 정해진 부서 슬롯과 방 변형으로 성장감을 검증한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "SOFTWARE-IMG02",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_5683ee45fd1627b7ed405361be2eee07a0395a88.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "다층 본사 외관과 주차장·도로가 조감 시점으로 보이고 반복 창문과 건물 규모가 성장의 시각적 표식이 된다.",
+        "멀리 있는 인물은 매우 작으며 회사 전체의 규모가 개별 인물보다 먼저 읽힌다."
+      ],
+      "design_proposals": [
+        "회사 단계별 외관 변형은 장기 성장 보상으로 쓰되, 직원 수집 화면에서는 캐릭터가 충분히 크게 보여야 한다."
+      ],
+      "developer_proposals": [
+        "회사 레벨과 실제 수용 인원을 별도 값으로 두어 외관 업그레이드와 인력 한도 변경을 명시적으로 연결한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "SOFTWARE-IMG03",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_ed2ed5c00cf6e6feb75faa3e27107c93eaab7aa6.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "건축 모드에서 우측 스타일 목록·하단 부품 팔레트·격자와 치수·가격이 공간 위에 함께 표시된다.",
+        "건축 도구는 흰 타일형 아이콘이며 선택 대상과 배치 비용이 같은 화면에 있다."
+      ],
+      "design_proposals": [
+        "장소 편집 모드에서는 평상시 계약 메뉴를 접고 배치비·유지비·효과만 남긴다.",
+        "사무실 꾸미기와 성능 투자를 구분해 장식 구매 시 직원 능력이 오르는지 명확히 안내한다."
+      ],
+      "developer_proposals": [
+        "배치 미리보기·확정·취소를 분리하며 꾸미기 저장 구조와 시뮬레이션 시설 데이터의 연결 방식을 먼저 정한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "SOFTWARE-IMG04",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_a3008f0189f7ee81f9c9fbf6cb8edccaf42c3223.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "공식 게시 이미지에 시장 타기팅·인물 특성/관계·제품 외형·회사 지분·제조 공정 패널이 여러 겹으로 배치되어 있다.",
+        "직원 창은 초상, 특성 아이콘, 관계 호환성, 만족 원인 목록을 함께 보여주며 작은 숫자와 상태 막대가 많이 사용된다."
+      ],
+      "design_proposals": [
+        "직원 기본 카드에는 이름·직무·핵심 강점·근무 상태를 우선 두고 관계·만족·교육은 상세 탭으로 나눈다.",
+        "경영 기능의 깊이가 늘어도 모든 창을 동시에 띄우기보다 현재 의사결정에 필요한 비교 정보만 유지한다."
+      ],
+      "developer_proposals": [
+        "직원 능력·관계·근무 상태·보상은 별도 필드로 유지하고 계산된 결과에는 주요 기여 원인을 제공한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 여러 기능을 보여주는 공식 홍보용 구성일 수 있으며 일반 플레이의 평균 화면 혼잡도를 측정한 자료가 아님."
+    },
+    {
+      "id": "SOFTWARE-IMG05",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_af63b804af54dcf0edeb90cc1171cf62b88a920f.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "창업자 전신은 중앙에 크게, 의상 선택은 좌측, 능력·전문성은 하단, 시작 조건은 우측에 배치된다.",
+        "지도 선택 창에 비용·인재 공급·효용비·소음 등 지역 조건이 표로 보인다."
+      ],
+      "design_proposals": [
+        "캐릭터 수집 화면과 회사 운영 화면의 정보 밀도를 다르게 설계한다. 직원 소개는 큰 표정과 실루엣을, 채용 확정은 급여·필요 직무·비교표를 우선한다."
+      ],
+      "developer_proposals": [
+        "외형 선택이 능력 수치에 영향을 주는지 명시한다. 출신 지역과 업무 경험을 구분하여 국적을 선천적 생산성 보너스로 고정하지 않는다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "SOFTWARE-IMG06",
+      "game": "Software Inc.",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/362620/ss_1d47fba62ef9deebdc531ca05560934e5a19f0bd.1920x1080.jpg?t=1763102408",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "서버 구역별 색 선과 Main/Source Control/Backup Server 라벨이 있으며, 아래에는 서로 연결된 제조 설비와 컨베이어가 있다.",
+        "원경의 복잡한 장비 위에 밝은 연결선과 큰 텍스트가 기능 구분을 보조한다."
+      ],
+      "design_proposals": [
+        "공급망 보기에서는 평소 배경을 약하게 하고 조달·통관·운송·창고의 연결선을 강조한다. 색상과 함께 단계 이름·아이콘·선 패턴을 사용한다."
+      ],
+      "developer_proposals": [
+        "공급망 노드·의존 작업·대기열을 데이터로 표현하고 병목 위치의 강조가 실제 작업 지연 원인과 연결되게 한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 선과 라벨이 실제 상시 HUD인지 별도 홍보 주석인지 이 이미지 하나로 확정하지 않음."
+    },
+    {
+      "id": "TPH-IMG01",
+      "game": "Two Point Hospital",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/535930/ss_513fe00a570aae8aa17f0c7c34441d900ecea67d.1920x1080.jpg?t=1763648286",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "지붕과 앞벽을 낮춘 여러 병실이 사선 시점으로 보이고, 넓은 복도와 실내 장비가 구분된다.",
+        "차분한 청록·회색 환경 위의 불꽃·연기·흰 유령이 강한 명도와 색 차이로 시선을 끈다."
+      ],
+      "design_proposals": [
+        "평상시 회사 배경은 낮은 채도, 납기 지연·사고·완료는 제한된 강조색과 아이콘으로 표시한다."
+      ],
+      "developer_proposals": [
+        "사건의 화면 연출은 실제 Event 상태와 연결하고 같은 위험을 숫자·아이콘·설명으로도 접근 가능하게 한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. HUD가 없어 인사관리 패널의 배치나 가독성은 평가하지 않음."
+    },
+    {
+      "id": "TPH-IMG02",
+      "game": "Two Point Hospital",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/535930/ss_239c16a6a0faf1463d043503a828a1e443bd8d70.1920x1080.jpg?t=1763648286",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "머리·손이 강조된 둥근 인물과 간단한 재질 표현이 보인다. 유령과 미라 같은 비현실적 인물을 일상 병원 공간에 넣는다.",
+        "캐릭터는 복장·머리 모양·소품과 실루엣으로 구별된다."
+      ],
+      "design_proposals": [
+        "동물·신수 직원은 몸의 종 차이와 업무 소품을 함께 사용한다. 의상 색만 바꾼 인물보다 축소 화면에서 읽히는 귀·뿔·꼬리의 차이가 필요하다."
+      ],
+      "developer_proposals": [
+        "캐릭터 외형·직무 도구·상태 배지를 각각 조합 가능한 자산으로 관리하고 직원 정의와 연결한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 정지 장면이므로 포즈가 움직임으로 자연스럽게 이어지는지 판단하지 않음."
+    },
+    {
+      "id": "TPH-IMG03",
+      "game": "Two Point Hospital",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/535930/ss_37b485ac8c86b35d0d28afbb9d2f8370db45c87c.1920x1080.jpg?t=1763648286",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "갈색 목재·적색 의자·상담 자세가 방의 성격을 설명하며, 두 인물과 가구를 중심으로 소품이 제한된다.",
+        "다른 진료실과 색·가구 조합이 달라 공간의 기능을 구별할 단서가 있다."
+      ],
+      "design_proposals": [
+        "영업팀은 상담 테이블·견본, 법무팀은 문서·계약판, 물류팀은 적재·운송 도구처럼 부서의 하는 일을 공간 소품으로 보여준다."
+      ],
+      "developer_proposals": [
+        "부서 배경과 직원 행동 표현이 업무 종류를 참조하게 하고 실제 진행량은 연출 프레임 수에 종속시키지 않는다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "TPH-IMG06",
+      "game": "Two Point Hospital",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/535930/ss_0ce23e37ac9871bad50afbd3766e1a4c00361aad.1920x1080.jpg?t=1763648286",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "병상·강의실·상담실·장비실이 벽과 바닥 재질로 구분되며 일부 직원은 책상에 앉아 교육받는 모습으로 표현된다.",
+        "장비 종류와 인물의 위치를 동시에 보여주지만 HUD 숫자는 없다."
+      ],
+      "design_proposals": [
+        "교육·휴식·실무 상태를 본사 공간에서도 구분하되 인력표에서 해당 상태와 남은 시간을 읽을 수 있게 한다."
+      ],
+      "developer_proposals": [
+        "교육은 근무 가능 인원에서 빠지는 시간 자원을 소비하도록 모델링하고, 교육 중복 배정 여부를 명령 단계에서 검증한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 교육 효율이나 원작의 처리 규칙은 이 스크린샷으로 확인하지 않음."
+    },
+    {
+      "id": "GDS-IMG01",
+      "game": "게임개발 스토리",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1847240/ss_0d8784879a94d8e05aac1566be1fca73250c02e1.1920x1080.jpg?t=1743067346",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "픽셀 사무실에 개성이 다른 작은 직원들이 배치되고 머리 위 말풍선·아이콘·+숫자가 보인다.",
+        "상단은 시간·자금, 하단은 진행률과 제품 관련 수치이며 중앙은 직원들의 작업 장면을 넓게 남긴다."
+      ],
+      "design_proposals": [
+        "직원별 작업 결과를 짧은 아이콘과 작은 수치로 보여주고, 선택 시 상세 원인에 연결한다.",
+        "현재 계약 진행률과 현금은 고정 위치에 유지하고 신수의 업무 포즈가 그 사이에서 역할을 드러내게 한다."
+      ],
+      "developer_proposals": [
+        "기여도 표시 이벤트는 원장에 기록된 결과에서 생성하며 화면의 +숫자가 실제 수익을 의미하는지 작업량인지 단위를 명시한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음."
+    },
+    {
+      "id": "GDS-IMG02",
+      "game": "게임개발 스토리",
+      "url": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1847240/ss_814b7a80669870806018b21728fda12d3730964f.1920x1080.jpg?t=1743067346",
+      "actual_image_reviewed": true,
+      "evidence_type": "official_static_image",
+      "source_version": "공식 매뉴얼/갤러리/Steam 게시 이미지; 촬영 빌드와 촬영일은 확인되지 않음",
+      "observations": [
+        "후보 선택 팝업에 이름·직업·레벨·작은 캐릭터 그림·4개 능력 수치·비용·확인 버튼이 모여 있다.",
+        "표시 인물은 Grizzly Bearington이라는 곰 모습이며, 귀여운 비인간 직원도 경영 선택창 안에서 능력과 비용으로 비교된다."
+      ],
+      "design_proposals": [
+        "동물·신수 카드의 아름다움과 채용 판단을 한 화면에서 연결한다. 직무 적합성·급여·훈련 가능성·현재 필요한 자격을 한눈에 보이게 한다."
+      ],
+      "developer_proposals": [
+        "직원 희귀도와 실제 직무 성능을 분리하고 이름·외형·능력·경력·계약조건이 공통 직원 ID를 참조하게 한다."
+      ],
+      "limitations": "공식 정지 이미지 직접 확인. 플레이 영상 프레임이 아니며 클릭 순서·애니메이션·속도·최신판 동작·내부 코드는 검증하지 않음. 이 후보가 항상 무료이거나 일반 채용 화면과 동일하다고 일반화하지 않음. 관찰된 화면은 Game Proposal 후보 선택창."
+    }
+  ],
+  "cross_game_recommendations": [
+    {
+      "id": "ART-01",
+      "priority": "MVP",
+      "proposal": "전략 지도·도시 시설·회사/직원이라는 세 가지 보기로 역할을 나눈다. 날짜·현금·현재 계약·알림의 위치와 용어는 일치시킨다.",
+      "basis": [
+        "DK4-IMG01",
+        "G3-IMG02",
+        "GDS-IMG01"
+      ],
+      "validation": "같은 계약이나 직원을 다른 화면에서 선택해도 같은 상태와 이름이 보여야 한다."
+    },
+    {
+      "id": "ART-02",
+      "priority": "MVP",
+      "proposal": "소장 화면은 큰 캐릭터 카드, 운영 화면은 작은 초상과 비교표를 쓴다. 모든 직원에게 동일 크기·같은 표기 순서를 적용한다.",
+      "basis": [
+        "SOFTWARE-IMG04",
+        "SOFTWARE-IMG05",
+        "GDS-IMG02"
+      ],
+      "validation": "카드와 표에서 능력·급여·상태 값이 일치하며 축소된 초상에서도 실루엣이 구분되어야 한다."
+    },
+    {
+      "id": "ART-03",
+      "priority": "MVP",
+      "proposal": "2~3등신 동물·신수, 부드러운 형태와 제한된 명암을 기본으로 하되 고밀도 숫자 영역은 불투명한 단색 패널로 읽기 쉽게 한다.",
+      "basis": [
+        "TPH-IMG02",
+        "GDS-IMG02",
+        "G3-IMG13"
+      ],
+      "validation": "흑백·작은 화면에서도 본문과 행동 버튼이 배경에서 분리되고 색상 없이 상태를 구별할 수 있어야 한다."
+    },
+    {
+      "id": "ART-04",
+      "priority": "MVP",
+      "proposal": "종족은 실루엣, 속성은 작은 문양, 직무는 소품과 배지, 지역 경험은 텍스트 이력으로 구분한다. 카드 테두리 색 하나에 네 의미를 동시에 담지 않는다.",
+      "basis": [
+        "TPH-IMG02",
+        "SOFTWARE-IMG04",
+        "GDS-IMG02"
+      ],
+      "validation": "직원 한 명의 종·속성·직무·경험 지역을 범례로 각각 설명할 수 있어야 한다."
+    },
+    {
+      "id": "ART-05",
+      "priority": "MVP",
+      "proposal": "한 번에 한 가지 주요 결정을 처리한다. 거래는 비용명세, 인사는 후보 비교, 교육은 비용·기간·업무 공백, 공급망은 병목 설명을 중심으로 배치한다.",
+      "basis": [
+        "DK4-IMG02",
+        "G3-IMG13",
+        "SOFTWARE-IMG04"
+      ],
+      "validation": "확정 버튼을 누르기 전 비용·기한·제약과 변화 대상을 같은 화면에서 찾을 수 있어야 한다."
+    },
+    {
+      "id": "ART-06",
+      "priority": "MVP",
+      "proposal": "원작의 장식이나 정밀 도시 전체를 복제하기보다 먼저 2D 지도와 정해진 회사 방, 직원 카드에 집중한다. 3D 자유 건축·자유 카메라·군중은 후순위다.",
+      "basis": [
+        "DK4-IMG01",
+        "DK4-IMG03",
+        "SOFTWARE-IMG03"
+      ],
+      "validation": "미술 자산 없이도 하나의 계약 완료가 가능하고 아트 교체 후 동일한 결과가 재현되어야 한다."
+    },
+    {
+      "id": "ART-07",
+      "priority": "P1",
+      "proposal": "상태 연출은 업무·휴식·교육·협의·성과·문제의 소수 공통 포즈로 시작한다. 같은 포즈를 종족별 변형으로 확장하되 개성은 얼굴·귀·뿔·꼬리에서 유지한다.",
+      "basis": [
+        "TPH-IMG02",
+        "TPH-IMG06",
+        "GDS-IMG01"
+      ],
+      "validation": "상태 변경이 근무 가능 여부와 일치하며 애니메이션 비활성화 상태에서도 모든 업무를 수행할 수 있어야 한다."
+    },
+    {
+      "id": "ART-08",
+      "priority": "P1",
+      "proposal": "지역 문화는 장소·행사·언어·개인 경험을 통해 나타낸다. 외형이나 국적을 직무 능력의 운명적 기준으로 만들지 않는다.",
+      "basis": [
+        "DK4-IMG01",
+        "SOFTWARE-IMG05"
+      ],
+      "validation": "같은 지역 출신도 서로 다른 역량을 가지며 문화 경험이 어떤 관계·정보 선택지를 바꿨는지 설명할 수 있어야 한다."
+    }
+  ],
+  "rights_note": "원본 이미지는 검토용 중간 자료이며 보고서/ZIP에는 복제하지 않는다. 출처 URL와 자체 관찰·설계 제안을 제공한다.",
+  "primary_pages": [
+    {
+      "game": "대항해시대 IV HD",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/2200.html",
+      "web_ref": "turn143view2"
+    },
+    {
+      "game": "대항해시대 IV HD 인사배치",
+      "url": "https://www.gamecity.ne.jp/manual/dk4HeN38/jp/3100.html",
+      "web_ref": "turn143view3"
+    },
+    {
+      "game": "The Guild 3",
+      "url": "https://guild3.thqnordic.com/",
+      "web_ref": "turn143view1"
+    },
+    {
+      "game": "Software Inc.",
+      "url": "https://store.steampowered.com/app/362620/Software_Inc/",
+      "web_ref": "turn143view0"
+    },
+    {
+      "game": "Two Point Hospital",
+      "url": "https://store.steampowered.com/app/535930/Two_Point_Hospital/",
+      "web_ref": "turn139view2"
+    },
+    {
+      "game": "게임개발 스토리",
+      "url": "https://store.steampowered.com/app/1847240/Game_Dev_Story/",
+      "web_ref": "turn139view3"
+    }
+  ]
+}
