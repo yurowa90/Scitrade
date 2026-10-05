@@ -219,6 +219,38 @@ def check_m2a(tables):
                   rid + ' map waypoints start and end at their ports')
 
 
+def check_world_hubs(documents, tables, source_ids):
+    """World hubs (user decision 2026-10-05): real logistics and trade-finance centres, opened by chapter."""
+    world = tables['world']
+    stage_order = {'M1': 1, 'M2': 2, 'M3': 3, 'P1': 4}
+    selection_roles = {'CONTAINER_GATEWAY', 'TRANSSHIPMENT_HUB', 'FINANCE_CENTER', 'MARITIME_SERVICES',
+                       'SHIPOWNING_CLUSTER', 'REGIONAL_GATEWAY'}
+    for city in world.values():
+        cid = city['id']
+        check(bool(city.get('hub_roles')), cid + ': hub roles')
+        check('availability' in city and 'geo_position' in city, cid + ': availability and map position')
+        for item in city.get('selection_basis', []):
+            check(item['source_id'] in source_ids, cid + ': selection basis source ' + item['source_id'])
+        if set(city.get('hub_roles', [])) & selection_roles and 'PRODUCTION_ORIGIN' not in city.get('hub_roles', []):
+            check(len(city.get('selection_basis', [])) >= 1, cid + ': hub chosen by a cited indicator')
+        if city.get('availability', {}).get('status') == 'MAP_PREVIEW':
+            check(city['venue_ids'] == [] and city['availability']['stage'] == 'P1',
+                  cid + ': preview hubs have no playable content yet')
+    for scenario in tables['scenarios'].values():
+        stage = stage_order.get(scenario['stage'])
+        for city_id in scenario.get('city_ids', []):
+            avail = world[city_id]['availability']
+            check(stage is None or stage_order[avail['stage']] <= stage,
+                  f"{scenario['id']}: {city_id} opens no later than the scenario stage")
+            check(avail['status'] != 'MAP_PREVIEW', f"{scenario['id']}: {city_id} is playable or planned")
+    gates = documents['world'].get('sea_gates', [])
+    index(gates, 'sea gates')
+    check(len(gates) == 6, 'sea gates: expected 6')
+    for gate in gates:
+        check(gate['geo_position']['use'] == 'map_display_only', gate['id'] + ': display-only gate position')
+    check(sum(c['availability']['chapter'] == 1 for c in world.values()) == 6, 'chapter 1 keeps the 6 East Asian hubs')
+
+
 def main():
     documents = {}
     for file in sorted((ROOT / 'data').glob('*.json')):
@@ -230,7 +262,7 @@ def main():
               for name, doc in documents.items() if 'items' in doc}
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
-    expected_counts = {'world': 6, 'goods': 8, 'routes': 6, 'employees': 6,
+    expected_counts = {'world': 20, 'goods': 8, 'routes': 6, 'employees': 6,
                        'market_offers': 6, 'scenarios': 7, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
@@ -278,8 +310,9 @@ def main():
         for venue_id in city['venue_ids']:
             check(tables['venues'][venue_id]['city_id'] == city['id'],
                   city['id'] + ': venue location mismatch')
-        for coordinate in city['map_position']['x'], city['map_position']['y']:
-            check(0 <= coordinate <= 1, city['id'] + ': concept map coordinate')
+        if 'map_position' in city:
+            for coordinate in city['map_position']['x'], city['map_position']['y']:
+                check(0 <= coordinate <= 1, city['id'] + ': concept map coordinate')
     for good in tables['goods'].values():
         check(good['mass_kg_per_unit'] > 0 and good['volume_m3_per_unit'] > 0,
               good['id'] + ': physical fixture dimensions')
@@ -325,6 +358,7 @@ def main():
     for city in tables['world'].values():
         geo = city.get('geo_position')
         check(geo is not None and geo['use'] == 'map_display_only', city['id'] + ': map geo position')
+    check_world_hubs(documents, tables, source_ids)
     route01 = tables['routes']['ROUTE01']
     points = route01['map_waypoints']['points']
     for end, city_id in ((points[0], route01['from_city_id']), (points[-1], route01['to_city_id'])):

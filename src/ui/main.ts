@@ -11,7 +11,7 @@ import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLo
 import { SaveError, deserializeSave, serializeSave } from '../engine/save';
 import type { Command, CommandResult, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { crewCard } from './card';
-import { MAP_ATTRIBUTION, renderWorldMap, type MapMode } from './map';
+import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
@@ -172,11 +172,12 @@ function worldMap(): string {
       <h2 id="world-h">세계지도 <small>${status}</small></h2>
       <div class="seg" role="group" aria-label="지도 범위">
         <button data-action="map-mode" data-mode="route" aria-pressed="${mapMode === 'route'}">이번 항로</button>
-        <button data-action="map-mode" data-mode="region" aria-pressed="${mapMode === 'region'}">전체 해역</button>
+        <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
       </div>
     </div>
-    <div class="map-frame">${renderWorldMap(state, config, mapMode)}</div>
-    <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. ${MAP_ATTRIBUTION}.</p>
+    <div class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(state, config, mapMode)}</div>
+    ${mapLegend()}
+    <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
 }
 
@@ -522,7 +523,7 @@ function render() {
   const focusKey = focused?.dataset?.action ? `[data-action="${focused.dataset.action}"]${focused.dataset.contract ? `[data-contract="${focused.dataset.contract}"]` : ''}` : null;
   app.innerHTML = `
     ${topbar()}
-    <main class="layout">
+    <main class="layout ${mapMode === 'world' ? 'map-wide' : ''}">
       ${worldMap()}
       ${crewPanel()}
       ${tradePanel()}
@@ -560,7 +561,7 @@ app.addEventListener('click', (ev) => {
       flash = null;
       return render();
     case 'map-mode':
-      mapMode = d.mode === 'region' ? 'region' : 'route';
+      mapMode = d.mode === 'world' ? 'world' : 'route';
       return render();
     case 'select-card':
       selectedCard = selectedCard === d.emp ? null : (d.emp ?? null);

@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 12425,
-      "sha256": "a24498c3aa09104c01df024eefde48cb44429bd079b949670da9bab556ff2e75"
+      "size_bytes": 12592,
+      "sha256": "c94ddac26dc1de0e7298a54e5eeebc020c7ba69f3a69f22233ff904c62230f99"
     },
     {
       "path": "START_HERE.md",
@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 18993,
-      "sha256": "f18b9d943debedecc658c1fa0c2b74ff6303a3285ec35152210377c20d0adbac"
+      "size_bytes": 32708,
+      "sha256": "01614336c57f510923c8099a76297de0aacb98c675a1524927f1c226466d1029"
     },
     {
       "path": "data/team_synergies.json",
@@ -147,23 +147,23 @@
     },
     {
       "path": "data/world.json",
-      "size_bytes": 6469,
-      "sha256": "714da96302eaeb009d8ba77bc195c7ab0e697042b19daa5092483c7664ac2907"
+      "size_bytes": 39508,
+      "sha256": "d6c0ba40cf7333d3b1956986ef91a0c4b4ba5a7307e64994aa38aaf209c37e44"
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 8184,
-      "sha256": "fb7fcfd8f8217dab65c4d473201c7dd4d02b0909a1ab5b2b7dff0c214517f21a"
+      "size_bytes": 8759,
+      "sha256": "e85d22978ea213f10753d59a67a438a3b5a757fff03f02956175bdb1dd2abd9a"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 17230,
-      "sha256": "ec46a4e34e05de8287d72c803b086b6a65817772b3631d84f134f399673815d5"
+      "size_bytes": 17434,
+      "sha256": "f1a1e0ffd5370c79c5924f8c75d1658b65f46f434e3ed8531521177472e75841"
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 20676,
-      "sha256": "ad338e7e5180f50ec0ffc7bc6435660a8c12631350711fcc73992d246ecabb83"
+      "size_bytes": 26442,
+      "sha256": "766512e810fa459f41f8280fd1e69b641005cf85b90ff7d454a850bcc67befeb"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,18 +177,18 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 8088,
-      "sha256": "9f4be0c2895ecf5fef7372a9a1a16f6f8f5c4543500e63614000b9c419f6122f"
+      "size_bytes": 8557,
+      "sha256": "052bb03c54d11962a2d955a0bb6d34242ec6f704460264c4f06c699fbde3355d"
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 13864,
-      "sha256": "8a61064b2f2e67d85a0562685d56d6b260422694bf09342533b64756f45331fa"
+      "size_bytes": 14723,
+      "sha256": "b863bf76f08445b2d7d4098684f9c86164b769d8679dc7cdf91d8a436b280570"
     },
     {
       "path": "docs/UI_SPEC.md",
-      "size_bytes": 6117,
-      "sha256": "1b326b593ad1c4d02a7cc1e145299b570afb27164fc38d79132d1d01911328cf"
+      "size_bytes": 6284,
+      "sha256": "6f1aa5842937fd909c3f1dd363e3f680606cd9f34065728e2e1dd7c5af017773"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 5820,
-      "sha256": "fef2520df4e56086cf401bd8054619524ba8351a21f2b456fa468761e51a912e"
+      "size_bytes": 6463,
+      "sha256": "5484e4acbf2875b6a5dcca558181f2d64f7523fa2bb0e65a809a1fab940a6d42"
     },
     {
       "path": "docs/art/PROMPTS.md",
@@ -437,8 +437,8 @@
     },
     {
       "path": "schemas/world.schema.json",
-      "size_bytes": 3706,
-      "sha256": "8271492e0d67abb03fbd3f88da9db293a7b62e8bd5afc3c5a23eb287865610de"
+      "size_bytes": 9242,
+      "sha256": "62ff14b7ce6502849cc2e41c2956cc9832a64ba2579a4e63fa91ad5adbb8decb"
     },
     {
       "path": "tests/acceptance_cases.json",
@@ -457,8 +457,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 31047,
-      "sha256": "fc66b5c0e2648eddc7362e03445ed9e07c321c3b57cf7d9b7308fe9845cbc639"
+      "size_bytes": 33257,
+      "sha256": "ab5210fe00efc2a7a49da591643a233a24677adeb88931f9ab9569beb800a495"
     }
   ]
 }

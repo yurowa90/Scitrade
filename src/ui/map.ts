@@ -1,23 +1,17 @@
-// 세계지도(UI_WORLD): 위성 합성 영상 위에 항구 휘장·이름 리본·항로·선박·항만 사건·나침반을 겹친다.
+// 세계지도(UI_WORLD): 위성 합성 영상 위에 거점 휘장·이름 리본·항로·선박·해협·항만 사건·나침반을 겹친다.
+// ‘이번 항로’는 1장 동아시아 확대 지도, ‘전 세계’는 태평양 중심 세계지도를 쓴다.
 // 지도 위치는 표시용이며 운송시간·거리 계산에 쓰지 않는다.
 
-import { loadMapCities, loadRouteWaypoints, type GeoPoint } from '../content/map';
+import { HUB_ROLE_KO, loadMapCities, loadRouteWaypoints, loadSeaGates, type MapCity } from '../content/map';
 import { routeOf } from '../engine/catalog';
 import type { GameState, ScenarioConfig } from '../engine/types';
-import { mapAsset } from './assets';
+import { mapAsset, type MapAsset } from './assets';
+import { inBounds, placeLabel, project, splitAtSeam, type Box } from './projection';
 
-export type MapMode = 'route' | 'region';
+export type MapMode = 'route' | 'world';
 
-const map = mapAsset('MAP_EAST_ASIA');
-
-function project(p: GeoPoint): { x: number; y: number } {
-  const m = map!;
-  const b = m.bounds;
-  return {
-    x: ((p.lon - b.lon_min) / (b.lon_max - b.lon_min)) * m.width,
-    y: ((b.lat_max - p.lat) / (b.lat_max - b.lat_min)) * m.height,
-  };
-}
+const REGION_MAP = mapAsset('MAP_EAST_ASIA');
+const WORLD_MAP = mapAsset('MAP_WORLD');
 
 /** Catmull-Rom 스플라인을 3차 베지어로 바꿔 부드러운 항로선을 만든다. */
 function smoothPath(points: { x: number; y: number }[]): string {
@@ -74,16 +68,52 @@ function compass(x: number, y: number, r: number): string {
   </g>`;
 }
 
+const BANK = '<path d="M-6 -2 L0 -6.5 L6 -2 Z M-5 -1 V4 M-1.7 -1 V4 M1.7 -1 V4 M5 -1 V4 M-6.5 5 H6.5" fill="none" stroke-width="1.5" stroke-linejoin="round"/>';
+
+type HubStatus = 'active' | 'planned' | 'preview';
+
+function hubStatus(c: MapCity, routeCities: Set<string>): HubStatus {
+  if (routeCities.has(c.id)) return 'active';
+  return c.availability.status === 'MAP_PREVIEW' ? 'preview' : 'planned';
+}
+
+function hubTitle(c: MapCity, status: HubStatus): string {
+  const when =
+    status === 'active'
+      ? '이번 시나리오 거점'
+      : status === 'planned'
+        ? `1장 ${c.availability.stage} 단계에서 열림`
+        : '세계 확장(2장)에서 열림 — 지금은 지도 미리 보기';
+  const roles = c.roles.map((r) => HUB_ROLE_KO[r]).join('·');
+  return [`${c.nameKo} — ${roles}`, ...c.basisKo, c.noteKo, when].filter(Boolean).join('\n');
+}
+
+const fmtLon = (lon: number) => {
+  const l = ((((lon + 180) % 360) + 360) % 360) - 180;
+  return l === 0 || l === -180 ? `${Math.abs(l)}°` : `${Math.abs(l)}°${l > 0 ? 'E' : 'W'}`;
+};
+
+/** 시나리오 항로가 모두 들어가면 동아시아 확대 지도, 아니면 세계지도. */
+function chooseMap(config: ScenarioConfig, mode: MapMode): MapAsset | null {
+  if (mode === 'world' || !REGION_MAP) return WORLD_MAP ?? REGION_MAP;
+  const pts = config.routes.flatMap((r) => loadRouteWaypoints(r.id));
+  return pts.every((p) => inBounds(p, REGION_MAP.bounds)) ? REGION_MAP : (WORLD_MAP ?? REGION_MAP);
+}
+
 export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode): string {
+  const map = chooseMap(config, mode);
   if (!map) return '<p class="muted">지도 자산이 없습니다.</p>';
-  const cities = loadMapCities();
+  const world = map === WORLD_MAP;
+  const proj = (p: { lat: number; lon: number }) => project(p, map.bounds, map.width, map.height);
+  const cities = loadMapCities().filter((c) => inBounds(c, map.bounds));
+  const gates = loadSeaGates().filter((g) => inBounds(g, map.bounds));
   const routeCities = new Set(config.routes.flatMap((r) => [r.fromCityId, r.toCityId]));
-  const routeLines = config.routes.map((r) => ({ route: r, pts: loadRouteWaypoints(r.id).map(project) }));
+  const routeLines = config.routes.map((r) => ({ route: r, pts: loadRouteWaypoints(r.id).map(proj) }));
   const allPts = routeLines.flatMap((l) => l.pts);
 
-  // 보기 영역: 시나리오 항로 주변 또는 전체 해역.
+  // 보기 영역: 시나리오 항로 주변(확대 지도) 또는 세계 전체.
   let vb = { x: 0, y: 0, w: map.width, h: map.height };
-  if (mode === 'route' && allPts.length) {
+  if (!world && allPts.length) {
     const pad = 70;
     const xs = allPts.map((p) => p.x);
     const ys = allPts.map((p) => p.y);
@@ -103,41 +133,77 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     }
     vb = { x: Math.max(0, x0), y: Math.max(0, y0), w: Math.min(map.width, x1) - Math.max(0, x0), h: Math.min(map.height, y1) - Math.max(0, y0) };
   }
-  const k = vb.w / 620; // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다.
+  // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
+  const k = (vb.w / 620) * (world ? 0.45 : 1);
 
-  // 경위선 5° 간격.
+  // 경위선: 확대 지도 5°, 세계지도 30° 간격.
   const b = map.bounds;
+  const step = world ? 30 : 5;
   const grid: string[] = [];
-  for (let lon = Math.ceil(b.lon_min / 5) * 5; lon <= b.lon_max; lon += 5) {
-    const x = project({ lat: 0, lon }).x;
+  for (let lon = Math.ceil(b.lon_min / step) * step; lon <= b.lon_max; lon += step) {
+    const x = ((lon - b.lon_min) / (b.lon_max - b.lon_min)) * map.width;
     if (x < vb.x || x > vb.x + vb.w) continue;
-    grid.push(`<line x1="${x}" y1="${vb.y}" x2="${x}" y2="${vb.y + vb.h}"/><text class="grid-label" x="${x + 4 * k}" y="${vb.y + 16 * k}" font-size="${12 * k}">${lon}°E</text>`);
+    grid.push(`<line x1="${x}" y1="${vb.y}" x2="${x}" y2="${vb.y + vb.h}"/><text class="grid-label" x="${x + 4 * k}" y="${vb.y + 16 * k}" font-size="${12 * k}">${fmtLon(lon)}</text>`);
   }
-  for (let lat = Math.ceil(b.lat_min / 5) * 5; lat <= b.lat_max; lat += 5) {
-    const y = project({ lat, lon: b.lon_min }).y;
+  for (let lat = Math.ceil(b.lat_min / step) * step; lat <= b.lat_max; lat += step) {
+    const y = ((b.lat_max - lat) / (b.lat_max - b.lat_min)) * map.height;
     if (y < vb.y || y > vb.y + vb.h) continue;
-    grid.push(`<line x1="${vb.x}" y1="${y}" x2="${vb.x + vb.w}" y2="${y}"/><text class="grid-label" x="${vb.x + 6 * k}" y="${y - 4 * k}" font-size="${12 * k}">${Math.abs(lat)}°${lat >= 0 ? 'N' : 'S'}</text>`);
+    grid.push(`<line x1="${vb.x}" y1="${y}" x2="${vb.x + vb.w}" y2="${y}"/><text class="grid-label" x="${vb.x + 6 * k}" y="${y - 4 * k}" font-size="${12 * k}">${Math.abs(lat)}°${lat > 0 ? 'N' : lat < 0 ? 'S' : ''}</text>`);
   }
 
-  // 항구 휘장과 이름 리본.
-  const ports = cities.map((c) => {
-    const p = project(c);
-    const active = routeCities.has(c.id);
-    const label = c.nameKo;
-    const w = (label.length * 15 + 22) * k;
-    const h = 24 * k;
-    const left = c.id === 'BUSAN' || c.id === 'SHANGHAI' || c.id === 'HAIPHONG';
-    let lx = left ? p.x - w - 14 * k : p.x + 14 * k;
-    if (lx + w > vb.x + vb.w - 4 * k) lx = p.x - w - 14 * k; // 보기 영역 밖으로 나가면 반대쪽에 붙인다.
-    if (lx < vb.x + 4 * k) lx = p.x + 14 * k;
-    const ly = p.y - h - 6 * k;
+  // 거점 휘장. 이름표는 우선순위(이번 시나리오 → 1장 예정 → 세계 미리 보기 → 해협) 순서로 겹치지 않게 놓는다.
+  const order: Record<HubStatus, number> = { active: 0, planned: 1, preview: 2 };
+  const hubs = cities
+    .map((c) => ({ c, p: proj(c), status: hubStatus(c, routeCities) }))
+    .sort((a, b) => order[a.status] - order[b.status]);
+  const placed: Box[] = hubs.map(({ p }) => ({ x: p.x - 11 * k, y: p.y - 11 * k, w: 22 * k, h: 22 * k }));
+  for (const g of gates) {
+    const p = proj(g);
+    placed.push({ x: p.x - 7 * k, y: p.y - 7 * k, w: 14 * k, h: 14 * k });
+  }
+  const view: Box = { x: vb.x + 4 * k, y: vb.y + 4 * k, w: vb.w - 8 * k, h: vb.h - 8 * k };
+  const labelFor = (text: string, x: number, y: number, size: number, preferLeft: boolean) => {
+    const w = (text.length * size + 22 * (size / 15)) * k;
+    const h = (size + 9) * k;
+    const gap = 13 * k;
+    const right = { x: x + gap, y: y - h - 4 * k, w, h };
+    const left = { x: x - gap - w, y: y - h - 4 * k, w, h };
+    const below = { x: x - w / 2, y: y + gap, w, h };
+    const above = { x: x - w / 2, y: y - gap - h, w, h };
+    const rightLow = { x: x + gap, y: y + 4 * k, w, h };
+    const leftLow = { x: x - gap - w, y: y + 4 * k, w, h };
+    const farBelow = { x: x - w / 2, y: y + gap + h, w, h };
+    const farAbove = { x: x - w / 2, y: y - gap - 2 * h, w, h };
+    const base = preferLeft ? [left, right, leftLow, rightLow] : [right, left, rightLow, leftLow];
+    const box = placeLabel([...base, above, below, farAbove, farBelow], placed, view);
+    if (box) placed.push(box);
+    return box;
+  };
+
+  const ports = hubs.map(({ c, p, status }) => {
+    const size = status === 'preview' ? 12.5 : 15;
+    const preferLeft = c.id === 'BUSAN' || c.id === 'SHANGHAI' || c.id === 'HAIPHONG';
+    const box = labelFor(c.nameKo, p.x, p.y, size, preferLeft);
+    const finance = c.roles.includes('FINANCE_CENTER');
+    const badgeScale = status === 'preview' ? 0.78 : 1;
     return `
-    <g class="port ${active ? 'active' : 'idle'}">
-      <circle cx="${p.x}" cy="${p.y}" r="${15 * k}" class="port-glow"/>
-      <g transform="translate(${p.x} ${p.y}) scale(${k})"><circle r="10" class="port-badge"/><g class="port-anchor">${ANCHOR}</g></g>
-      <g class="ribbon"><rect x="${lx}" y="${ly}" width="${w}" height="${h}" rx="${5 * k}"/>
-      <text x="${lx + w / 2}" y="${ly + h * 0.7}" text-anchor="middle" font-size="${15 * k}">${label}</text></g>
-      ${active ? '' : `<title>${label}: M3에서 열리는 거점</title>`}
+    <g class="port ${status}">
+      <title>${hubTitle(c, status)}</title>
+      ${status === 'preview' ? '' : `<circle cx="${p.x}" cy="${p.y}" r="${15 * k}" class="port-glow"/>`}
+      <g transform="translate(${p.x} ${p.y}) scale(${k * badgeScale})"><circle r="10" class="port-badge"/><g class="port-anchor">${c.cargoPort ? ANCHOR : BANK}</g>${finance ? '<circle cx="8" cy="-8" r="4" class="finance-coin"/>' : ''}</g>
+      ${box ? `<g class="ribbon"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="${5 * k}"/>
+      <text x="${box.x + box.w / 2}" y="${box.y + box.h * 0.7}" text-anchor="middle" font-size="${size * k}">${c.nameKo}</text></g>` : ''}
+    </g>`;
+  });
+
+  const gateMarks = gates.map((g) => {
+    const p = proj(g);
+    const box = world ? labelFor(g.nameKo, p.x, p.y, 11, false) : null;
+    return `
+    <g class="gate gate-${g.gateType}">
+      <title>${g.nameKo} (${g.connectsKo})\n${g.eventHookKo}\n세계 확장(2장)에서 항로 선택·사건과 연결 예정</title>
+      <rect x="${p.x - 5 * k}" y="${p.y - 5 * k}" width="${10 * k}" height="${10 * k}" transform="rotate(45 ${p.x} ${p.y})" class="gate-mark"/>
+      ${box ? `<text class="gate-label" x="${box.x + box.w / 2}" y="${box.y + box.h * 0.72}" text-anchor="middle" font-size="${11 * k}">${g.nameKo}</text>` : ''}
     </g>`;
   });
 
@@ -145,7 +211,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const voyages = new Map<string, { routeId: string; shipmentIds: string[]; departureDay: number; waiting: boolean; arrived: boolean }>();
   for (const sh of state.shipments) {
     if (!(sh.arrivalDay === null || (sh.releaseDay !== null && state.day <= sh.releaseDay))) continue;
-    const booking = state.bookings.find((b) => b.id === sh.bookingId);
+    const booking = state.bookings.find((x) => x.id === sh.bookingId);
     if (!booking) continue;
     const v = voyages.get(booking.sailingId) ?? { routeId: booking.routeId, shipmentIds: [], departureDay: sh.departureDay, waiting: false, arrived: true };
     v.shipmentIds.push(sh.id);
@@ -167,7 +233,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     .map((r) => {
       const c = cities.find((x) => x.id === r.cityId);
       if (!c) return '';
-      const p = project(c);
+      const p = proj(c);
       const active = r.startDay <= state.day && state.day <= r.endDay;
       const done = state.day > r.endDay;
       return `
@@ -181,22 +247,26 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     .join('');
 
   const routePaths = routeLines
-    .map((l) => smoothPath(l.pts))
+    .flatMap((l) => splitAtSeam(l.pts, map.width))
+    .map((pts) => smoothPath(pts))
     .filter(Boolean)
     .map((d) => `<path class="route-under" d="${d}" stroke-width="${7 * k}"/><path class="route-line" d="${d}" stroke-width="${2.6 * k}" stroke-dasharray="${10 * k} ${8 * k}"/>`)
     .join('');
-  const routeNames = config.routes.map((r) => `${cities.find((c) => c.id === r.fromCityId)?.nameKo}–${cities.find((c) => c.id === r.toCityId)?.nameKo}`);
+  const allCities = loadMapCities();
+  const routeNames = config.routes.map((r) => `${allCities.find((c) => c.id === r.fromCityId)?.nameKo}–${allCities.find((c) => c.id === r.toCityId)?.nameKo}`);
+  const counts = { active: hubs.filter((h) => h.status === 'active').length, preview: hubs.filter((h) => h.status === 'preview').length };
   const cx = vb.x + vb.w - 52 * k;
   const cy = vb.y + vb.h - 60 * k;
   return `
-  <svg class="sea-map" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
-    aria-label="동아시아 해역 지도. 항로 ${routeNames.join(', ')}${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
+  <svg class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
+    aria-label="${world ? '태평양 중심 세계지도' : '동아시아 해역 지도'}. 항로 ${routeNames.join(', ')}. 이번 시나리오 거점 ${counts.active}곳, 세계 확장 미리 보기 거점 ${counts.preview}곳, 해협·운하 ${gates.length}곳${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
     <defs>
       <radialGradient id="port-glow" r="0.5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".85"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
     </defs>
     <image href="${map.path}" x="0" y="0" width="${map.width}" height="${map.height}" preserveAspectRatio="none"/>
     <g class="graticule" stroke-width="${0.8 * k}">${grid.join('')}</g>
     ${routePaths}
+    ${gateMarks.join('')}
     ${ports.join('')}
     ${storms}
     ${ships.join('')}
@@ -204,4 +274,16 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   </svg>`;
 }
 
-export const MAP_ATTRIBUTION = map?.attribution ?? '';
+/** 지도 아래 범례. 색·모양만으로 뜻을 전하지 않도록 글자로도 적는다. */
+export function mapLegend(): string {
+  return `
+  <ul class="map-legend" aria-label="지도 범례">
+    <li><span class="lg lg-active"></span>이번 시나리오 거점</li>
+    <li><span class="lg lg-planned"></span>1장에서 열릴 거점</li>
+    <li><span class="lg lg-preview"></span>세계 확장(2장) 미리 보기</li>
+    <li><span class="lg lg-coin"></span>국제 금융 중심</li>
+    <li><span class="lg lg-gate"></span>해협·운하</li>
+  </ul>`;
+}
+
+export const MAP_ATTRIBUTION = (WORLD_MAP ?? REGION_MAP)?.attribution ?? '';

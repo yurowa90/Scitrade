@@ -85,7 +85,7 @@ python3 tools/validate_data.py   # 자료 검사
 | `ui_screens.json` | 화면 ID·정보·행동·도입 단계 |
 | `content_hooks.json` | 아직 구현되지 않은 명령·대화 연결점의 등록부 |
 | `game_config.json` | 90일 캠페인, 통화·초기 현금·기능 단계·고정 시드 |
-| `world.json` | 6개 거점과 개념 지도 위치. 좌표는 실제 위경도가 아님 |
+| `world.json` | 세계 거점 20곳(1장 6곳 + 세계 확장 미리 보기 14곳)과 해협·운하 6곳. 지도 표시용 대략 위경도, 거점 역할·선정 근거·개방 단계. 기존 개념 지도 좌표(`map_position`)는 1장 6곳에만 있음 |
 | `goods.json` | 8개 대표 품목·단위·보관 종류. HS 코드는 확인 전 `null` |
 | `routes.json` | 6개 단방향 합성 노선·용량·출발 간격·요금 |
 | `employees.json` | 직원·후보 6명. 2명 고용 상태, 나머지 후보 |

@@ -82,10 +82,20 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
     "trade trade log";
   align-items: start;
 }
+.layout > * { min-width: 0; }
 .world { grid-area: world; } .report { grid-area: report; } .crew { grid-area: crew; }
 .trade { grid-area: trade; } .queue { grid-area: queue; } .log { grid-area: log; } .resources { grid-area: resources; }
+/* ‘전 세계’ 보기: 지도 칸이 한 줄 전체를 쓴다. */
+.layout.map-wide {
+  grid-template-areas:
+    "world world world"
+    "report report crew"
+    "trade trade resources"
+    "trade trade queue"
+    "trade trade log";
+}
 @media (max-width: 1100px) {
-  .layout { grid-template-columns: 1fr; grid-template-areas: "crew" "resources" "trade" "queue" "world" "report" "log"; }
+  .layout, .layout.map-wide { grid-template-columns: 1fr; grid-template-areas: "crew" "resources" "trade" "queue" "world" "report" "log"; }
   .actions { margin-left: 0; }
 }
 
@@ -213,15 +223,11 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .route-line { fill: none; stroke: #ffe7a3; stroke-linecap: round; stroke-linejoin: round; animation: route-flow 1.6s linear infinite; }
 @keyframes route-flow { to { stroke-dashoffset: -36; } }
 .port-glow { fill: url(#port-glow); }
-.port.idle .port-glow { opacity: .35; }
 .port-badge { fill: #f6efe0; stroke: #8a6a2a; stroke-width: 2; }
 .port.active .port-badge { fill: #f2c14e; stroke: #6b4f1d; }
 .port-anchor { stroke: #1f2a44; }
-.port.idle .port-badge { fill: #c9c4b8; }
 .ribbon rect { fill: rgba(20, 32, 58, .88); stroke: #c9a24a; stroke-width: 1.2; }
 .ribbon text { fill: #fff6df; font-weight: 700; }
-.port.idle .ribbon rect { fill: rgba(20, 32, 58, .6); stroke: rgba(201, 162, 74, .5); }
-.port.idle .ribbon text { fill: rgba(255, 246, 223, .75); }
 .ship-hull { fill: #b8332b; stroke: #3a1210; stroke-width: 1; }
 .ship-bridge { fill: #f4f1ea; stroke: #3a1210; stroke-width: .6; }
 .ct { stroke: rgba(0, 0, 0, .35); stroke-width: .4; }
@@ -272,3 +278,26 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .bar.high > span { background: var(--gold); }
 .bar.full > span { background: var(--warn); }
 .crew-cards { display: grid; gap: .8rem; }
+
+/* 세계 거점: 이번 시나리오(금빛), 1장 예정(회색), 세계 확장 미리 보기(점선·흐림), 금융 중심(금화), 해협·운하(마름모) */
+.port.planned .port-glow { opacity: .35; }
+.port.planned .port-badge { fill: #c9c4b8; }
+.port.planned .ribbon rect { fill: rgba(20, 32, 58, .6); stroke: rgba(201, 162, 74, .5); }
+.port.planned .ribbon text { fill: rgba(255, 246, 223, .78); }
+.port.preview .port-badge { fill: rgba(246, 239, 224, .55); stroke: #f6efe0; stroke-dasharray: 3 2; }
+.port.preview .port-anchor { stroke: rgba(31, 42, 68, .75); }
+.port.preview .ribbon rect { fill: rgba(20, 32, 58, .45); stroke: rgba(246, 239, 224, .45); stroke-dasharray: 4 3; }
+.port.preview .ribbon text { fill: rgba(255, 246, 223, .85); font-weight: 600; }
+.finance-coin { fill: #f2c14e; stroke: #6b4f1d; stroke-width: 1.2; }
+.gate-mark { fill: rgba(127, 214, 220, .9); stroke: #0f3a4a; stroke-width: 1; }
+.gate-label { fill: #d7f4f6; font-weight: 600; paint-order: stroke; stroke: rgba(10, 20, 40, .85); stroke-width: 3px; }
+.map-frame.is-world { overflow-x: auto; }
+.sea-map.is-world { min-width: 720px; }
+.map-legend { display: flex; flex-wrap: wrap; gap: .35rem .9rem; list-style: none; padding: 0; margin: .5rem 0 0; font-size: .78rem; color: var(--navy-soft); }
+.map-legend li { display: inline-flex; align-items: center; gap: .3rem; }
+.lg { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #6b4f1d; }
+.lg-active { background: #f2c14e; }
+.lg-planned { background: #c9c4b8; border-color: #8a6a2a; }
+.lg-preview { background: rgba(246, 239, 224, .4); border: 1.5px dashed #4a5672; }
+.lg-coin { width: 9px; height: 9px; background: #f2c14e; }
+.lg-gate { width: 9px; height: 9px; border-radius: 1px; transform: rotate(45deg); background: rgba(127, 214, 220, .9); border-color: #0f3a4a; }

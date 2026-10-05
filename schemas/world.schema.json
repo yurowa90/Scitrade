@@ -26,7 +26,6 @@
           "country_code",
           "id",
           "location_type",
-          "map_position",
           "name_ko",
           "source_refs",
           "travel_rules",
@@ -41,7 +40,12 @@
             "type": "string"
           },
           "location_type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "city_port_hub",
+              "port_hub",
+              "finance_maritime_services_city"
+            ]
           },
           "map_position": {
             "type": "object",
@@ -132,6 +136,86 @@
               }
             },
             "additionalProperties": false
+          },
+          "hub_roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CONTAINER_GATEWAY",
+                "TRANSSHIPMENT_HUB",
+                "FINANCE_CENTER",
+                "MARITIME_SERVICES",
+                "SHIPOWNING_CLUSTER",
+                "REGIONAL_GATEWAY",
+                "PRODUCTION_ORIGIN"
+              ]
+            }
+          },
+          "selection_basis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "source_id",
+                "indicator_ko",
+                "value_ko",
+                "period"
+              ],
+              "properties": {
+                "source_id": {
+                  "type": "string"
+                },
+                "indicator_ko": {
+                  "type": "string"
+                },
+                "value_ko": {
+                  "type": "string"
+                },
+                "period": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "availability": {
+            "type": "object",
+            "required": [
+              "stage",
+              "chapter",
+              "status"
+            ],
+            "properties": {
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "P1"
+                ]
+              },
+              "chapter": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PLAYABLE",
+                  "PLANNED",
+                  "MAP_PREVIEW"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "hub_note_ko": {
+            "type": "string"
           }
         },
         "additionalProperties": true
@@ -147,6 +231,140 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "hub_selection_rule_ko": {
+      "type": "string"
+    },
+    "sea_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name_ko",
+          "gate_type",
+          "geo_position",
+          "connects_ko",
+          "event_hook_ko",
+          "source_refs",
+          "check_level",
+          "availability"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name_ko": {
+            "type": "string"
+          },
+          "gate_type": {
+            "type": "string",
+            "enum": [
+              "strait",
+              "canal",
+              "cape_route"
+            ]
+          },
+          "geo_position": {
+            "type": "object",
+            "description": "지도 표시용 대략 좌표. 거리 계산에 쓰지 않는다.",
+            "required": [
+              "lat",
+              "lon",
+              "precision_deg",
+              "basis",
+              "use"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "precision_deg": {
+                "type": "number",
+                "minimum": 0
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "APPROXIMATE_PUBLIC_COORDINATES"
+                ]
+              },
+              "use": {
+                "type": "string",
+                "enum": [
+                  "map_display_only"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "connects_ko": {
+            "type": "string"
+          },
+          "event_hook_ko": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "check_level": {
+            "type": "string",
+            "enum": [
+              "author_knowledge",
+              "web_search_summary"
+            ]
+          },
+          "availability": {
+            "type": "object",
+            "required": [
+              "stage",
+              "chapter",
+              "status"
+            ],
+            "properties": {
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "M1",
+                  "M2",
+                  "M3",
+                  "P1"
+                ]
+              },
+              "chapter": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PLAYABLE",
+                  "PLANNED",
+                  "MAP_PREVIEW"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
