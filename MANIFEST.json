@@ -246,6 +246,16 @@
       "sha256": "dc0e2672ed486c1250333d08b0f68455df9c92fc88b5b3bfcabbddc2b384999d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0004-R1-growth-engine-fixes.md",
+      "size_bytes": 11450,
+      "sha256": "0e00130525470602499916066c20af720aee03efa91cfffc2a6020df578b59c2"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0004-R2-growth-engine-hardening.md",
+      "size_bytes": 7741,
+      "sha256": "8a1c843e4f3ac1e7f1690a9a7c429834e82139b7a52aa80e152680e04acb3301"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0004-xp-level-training-engine.md",
       "size_bytes": 9161,
       "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
@@ -267,8 +277,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0004.md",
-      "size_bytes": 8234,
-      "sha256": "5f87af9f3765a752cce0c5e0c3b326b2e5a258118ef4efdf92babefdecfd29c1"
+      "size_bytes": 21317,
+      "sha256": "d047401a5e73f7365c48731d44cb8519a05a7bb57eba9d2b9673f26c5fb62fcd"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -532,8 +542,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 38288,
-      "sha256": "4d69faaf04aab78388ea7c9768648e04a6d112e149222e1ade04a07799ac1feb"
+      "size_bytes": 40207,
+      "sha256": "28fa416c284f672dd0fa6efb4553a16a84bff79f511164e71f91c74d1314ee39"
     }
   ]
 }
