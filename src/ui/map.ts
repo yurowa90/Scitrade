@@ -13,8 +13,33 @@ export type MapMode = 'route' | 'world';
 const REGION_MAP = mapAsset('MAP_EAST_ASIA');
 const WORLD_MAP = mapAsset('MAP_WORLD');
 
-// 브라우저 검수에서 SVG image의 보간이 꺼지지 않으면 true로 바꾼다.
-export const MAP_BASE_OUTSIDE_SVG = false;
+export interface MapViewport { vb: Box; n: number; cssWidth: number; cssHeight: number }
+
+/** 틀을 채우되 바탕의 논리 픽셀은 정수 개의 기기 픽셀로 표시한다. */
+export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: number,
+  routeBox: Box, availableWidth: number, dpr: number, mode: MapMode): MapViewport {
+  if (![map.w, map.h, unitsPerPixel, availableWidth, dpr].every((v) => Number.isFinite(v) && v > 0))
+    throw new RangeError('지도 크기와 기기 배율을 확인해 주세요.');
+  if (mode === 'world') {
+    const n = Math.max(Math.ceil(dpr), Math.ceil(availableWidth * dpr / 720));
+    return { vb: { x: 0, y: 0, w: map.w, h: map.h }, n,
+      cssWidth: n * map.w / unitsPerPixel / dpr, cssHeight: n * map.h / unitsPerPixel / dpr };
+  }
+  const left = Math.floor(routeBox.x / unitsPerPixel), top = Math.floor(routeBox.y / unitsPerPixel);
+  const right = Math.ceil((routeBox.x + routeBox.w) / unitsPerPixel);
+  const bottom = Math.ceil((routeBox.y + routeBox.h) / unitsPerPixel);
+  const requiredW = right - left + 24;
+  const requiredH = bottom - top + 24;
+  let n = Math.max(1, Math.floor(availableWidth * dpr / Math.max(requiredW, requiredH * 16 / 10)));
+  // 세로 반올림 경계에서도 최소 여백이 들어가는지 확인한다.
+  while (n > 1 && Math.round(Math.floor(availableWidth * dpr / n) * 10 / 16) < requiredH) n--;
+  const logicalW = Math.max(1, Math.floor(availableWidth * dpr / n));
+  const logicalH = Math.max(1, Math.round(logicalW * 10 / 16));
+  const w = logicalW * unitsPerPixel, h = logicalH * unitsPerPixel;
+  const x = Math.max(0, Math.min(Math.floor((left + right - logicalW) / 2) * unitsPerPixel, Math.max(0, map.w - w)));
+  const y = Math.max(0, Math.min(Math.floor((top + bottom - logicalH) / 2) * unitsPerPixel, Math.max(0, map.h - h)));
+  return { vb: { x, y, w, h }, n, cssWidth: n * logicalW / dpr, cssHeight: n * logicalH / dpr };
+}
 
 /** 원래 영역을 포함하도록 격자 경계를 바깥으로 맞춘 뒤 지도 범위에서 자른다. */
 export function snapViewBox(vb: Box, unitsPerPixel: number, mapW: number, mapH: number): Box {
@@ -113,7 +138,7 @@ function chooseMap(config: ScenarioConfig, mode: MapMode): MapAsset | null {
   return pts.every((p) => inBounds(p, REGION_MAP.bounds)) ? REGION_MAP : (WORLD_MAP ?? REGION_MAP);
 }
 
-export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode): string {
+export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode, options: { availableWidth?: number; dpr?: number; baseOutsideSvg?: boolean } = {}): string {
   const map = chooseMap(config, mode);
   if (!map) return '<p class="muted">지도 자산이 없습니다.</p>';
   const world = map === WORLD_MAP;
@@ -124,29 +149,13 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const routeLines = config.routes.map((r) => ({ route: r, pts: loadRouteWaypoints(r.id).map(proj) }));
   const allPts = routeLines.flatMap((l) => l.pts);
 
-  // 보기 영역: 시나리오 항로 주변(확대 지도) 또는 세계 전체.
-  let vb = { x: 0, y: 0, w: map.width, h: map.height };
-  if (!world && allPts.length) {
-    const pad = 70;
-    const xs = allPts.map((p) => p.x);
-    const ys = allPts.map((p) => p.y);
-    let x0 = Math.min(...xs) - pad;
-    let x1 = Math.max(...xs) + pad;
-    let y0 = Math.min(...ys) - pad;
-    let y1 = Math.max(...ys) + pad;
-    const aspect = 16 / 10;
-    if ((x1 - x0) / (y1 - y0) < aspect) {
-      const need = (y1 - y0) * aspect - (x1 - x0);
-      x0 -= need / 2;
-      x1 += need / 2;
-    } else {
-      const need = (x1 - x0) / aspect - (y1 - y0);
-      y0 -= need / 2;
-      y1 += need / 2;
-    }
-    vb = { x: Math.max(0, x0), y: Math.max(0, y0), w: Math.min(map.width, x1) - Math.max(0, x0), h: Math.min(map.height, y1) - Math.max(0, y0) };
-  }
-  if (map.pixelGrid) vb = snapViewBox(vb, map.pixelGrid.unitsPerPixel, map.width, map.height);
+  const xs = allPts.map((p) => p.x), ys = allPts.map((p) => p.y);
+  const routeBox = allPts.length ? { x: Math.min(...xs), y: Math.min(...ys),
+    w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }
+    : { x: map.width / 2, y: map.height / 2, w: 0, h: 0 };
+  const plan = planMapViewport({ w: map.width, h: map.height }, map.pixelGrid?.unitsPerPixel ?? 1,
+    routeBox, options.availableWidth ?? 620, options.dpr ?? 1, world ? 'world' : 'route');
+  const vb = plan.vb;
   // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
   const k = (vb.w / 620) * (world ? 0.45 : 1);
 
@@ -272,9 +281,13 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const cx = vb.x + vb.w - 52 * k;
   const cy = vb.y + vb.h - 60 * k;
   const pixelData = map.pixelGrid ? `data-pixel-w="${vb.w / map.pixelGrid.unitsPerPixel}" data-pixel-h="${vb.h / map.pixelGrid.unitsPerPixel}"` : '';
-  const externalBase = MAP_BASE_OUTSIDE_SVG && !!map.pixelGrid;
+  const externalBase = options.baseOutsideSvg === true && !!map.pixelGrid;
+  const sizeStyle = `width: ${plan.cssWidth}px; height: ${plan.cssHeight}px;`;
+  const hubXs = cities.filter((c) => routeCities.has(c.id)).map((c) => proj(c).x);
+  const scenarioCenter = hubXs.length ? (Math.min(...hubXs) + Math.max(...hubXs)) / 2 / map.width : 0.5;
+  const viewportData = `data-map-viewport="${plan.n}:${vb.w}:${vb.h}:${vb.x}:${vb.y}" data-map-center="${scenarioCenter}"`;
   const svg = `
-  <svg ${pixelData} class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
+  <svg ${externalBase ? '' : `${pixelData} ${viewportData} style="${sizeStyle}"`} class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
     aria-label="${world ? '태평양 중심 세계지도' : '동아시아 해역 지도'}. 항로 ${routeNames.join(', ')}. 이번 시나리오 거점 ${counts.active}곳, 세계 확장 미리 보기 거점 ${counts.preview}곳, 해협·운하 ${gates.length}곳${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
     <defs>
       <radialGradient id="port-glow" r="0.5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".85"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
@@ -290,7 +303,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   </svg>`;
   if (!externalBase) return svg;
   // 같은 보기 영역의 비율로 원본 그림을 잘라, 정수 배율 SVG 표시와 겹친다.
-  return `<div class="map-layers" ${pixelData}>
+  return `<div class="map-layers" ${pixelData} ${viewportData} style="${sizeStyle}">
     <img class="map-base pixel-art" src="${map.path}" alt="" aria-hidden="true" style="left: ${-vb.x / vb.w * 100}%; top: ${-vb.y / vb.h * 100}%; width: ${map.width / vb.w * 100}%; height: ${map.height / vb.h * 100}%;" />
     ${svg}
   </div>`;

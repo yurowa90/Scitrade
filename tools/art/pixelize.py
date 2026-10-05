@@ -32,17 +32,15 @@ def despeckle_pixels(grid):
             current = grid[y, x]
             if current < 0:
                 continue
-            cross = [grid[ny, nx] for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1))
-                     if 0 <= ny < h and 0 <= nx < w]
-            if current in cross:
-                continue
             neighbors = [grid[ny, nx] for ny in range(max(0, y - 1), min(h, y + 2))
                          for nx in range(max(0, x - 1), min(w, x + 2))
-                         if (ny, nx) != (y, x) and grid[ny, nx] >= 0 and grid[ny, nx] != current]
+                         if (ny, nx) != (y, x) and grid[ny, nx] >= 0]
+            if current in neighbors:
+                continue
             if neighbors:
                 counts = np.bincount(neighbors)
                 majority = counts.argmax()
-                if counts[majority] >= 3:
+                if counts[majority] >= 5:
                     out[y, x] = majority
     return out
 
@@ -52,6 +50,8 @@ def pixelize(image, size, palette, max_colors=None, despeckle=False, alpha_thres
         raise ValueError('알파 기준은 0~255여야 합니다.')
     if max_colors is not None and not 1 <= max_colors <= 32:
         raise ValueError('색 수 상한은 1~32여야 합니다.')
+    if image.mode.startswith('I;16') or image.mode in ('I', 'F'):
+        raise ValueError('비트 깊이: 16비트 및 고정밀 입력은 8비트로 변환한 뒤 사용해 주세요.')
     source = np.asarray(image.convert('RGBA'))
     colors = palette_rgb(palette)
     opaque = source[..., 3] >= alpha_threshold
@@ -94,6 +94,13 @@ def main():
     parser.add_argument('--alpha-threshold', type=int, default=128)
     args = parser.parse_args()
     try:
+        try:
+            from .png_format import png_errors
+        except ImportError:
+            from png_format import png_errors
+        errors = png_errors(args.input)
+        if errors:
+            raise ValueError('\n'.join(errors))
         with Image.open(args.input) as source:
             result = pixelize(source, args.size, load_palette(), args.max_colors, args.despeckle, args.alpha_threshold)
         args.output.parent.mkdir(parents=True, exist_ok=True)

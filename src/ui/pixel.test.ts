@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { integerScale, fitPixelBox, applyPixelScale } from './pixel';
+import { integerScale, fitPixelBox, applyPixelScale, alignMapPixels } from './pixel';
 import { mapAsset } from './assets';
-import { renderWorldMap, snapViewBox } from './map';
+import { renderWorldMap, snapViewBox, planMapViewport } from './map';
 import { loadScenario } from '../content/scenario';
 import { createGame } from '../engine/engine';
 
@@ -101,7 +101,10 @@ describe('픽셀 크기 감시 연결', () => {
       constructor(callback: () => void) { construct(); callbacks.push(callback); }
     }
     const media: { query: string; change?: () => void; addEventListener: ReturnType<typeof vi.fn>; removeEventListener: ReturnType<typeof vi.fn> }[] = [];
+    const scheduled: (() => void)[] = [];
+    const flush = () => { scheduled.splice(0).forEach((fn) => fn()); };
     const fakeWindow = {
+      requestAnimationFrame: vi.fn((fn: () => void) => { scheduled.push(fn); return scheduled.length; }),
       devicePixelRatio: 1.25,
       getComputedStyle: () => ({ paddingLeft: '10px', paddingRight: '10px', borderLeftWidth: '3px', borderRightWidth: '3px',
         boxSizing: 'border-box', width: computedWidth }),
@@ -117,26 +120,135 @@ describe('픽셀 크기 감시 연결', () => {
     const parent = { clientWidth: 220 };
     const first = { dataset: { pixelW: '96', pixelH: '128' }, style: { width: '', height: '' }, parentElement: parent };
     const second = { ...first, style: { width: '', height: '' } };
-    const root = (element: typeof first) => ({ querySelectorAll: () => [element], style: { setProperty: vi.fn() } } as unknown as HTMLElement);
-    applyPixelScale(root(first));
+    const root = (element: typeof first) => ({ querySelectorAll: (selector: string) => selector === '[data-map-frame]' ? [] : [element], style: { setProperty: vi.fn() } } as unknown as HTMLElement);
+    const firstRoot = root(first);
+    applyPixelScale(firstRoot);
+    flush();
+    expect(firstRoot.style.setProperty).toHaveBeenCalledWith('--pixel-dpr', '1.25');
+    expect(observe).toHaveBeenCalledWith(parent);
     expect(first.style).toEqual({ width: '153.6px', height: '204.8px' });
     applyPixelScale(root(second));
+    flush();
     expect(construct).toHaveBeenCalledTimes(1);
     expect(disconnect).toHaveBeenCalledTimes(2);
     expect(media[0]!.removeEventListener).toHaveBeenCalledTimes(1);
     fakeWindow.devicePixelRatio = 2;
     media[1]!.change!();
+    flush();
     expect(second.style).toEqual({ width: '192px', height: '256px' });
     expect(first.style.width).toBe('153.6px');
     expect(media[2]!.query).toBe('(resolution: 2dppx)');
     parent.clientWidth = 120;
     callbacks[0]!();
+    callbacks[0]!();
+    expect(scheduled).toHaveLength(1);
+    flush();
     expect(second.style.width).toBe('96px');
-    // 2倍の境界直下を clientWidth の丸めで2倍にしない。
+    // 2배 경계 바로 아래의 소수 폭을 clientWidth 반올림으로 2배로 올리지 않는다.
     fakeWindow.devicePixelRatio = 1.25;
     computedWidth = '179.599px'; // 테두리와 여백 26px를 빼면 153.599px
     parent.clientWidth = 174;
     callbacks[0]!();
+    callbacks[0]!();
+    expect(scheduled).toHaveLength(1);
+    flush();
     expect(second.style.width).toBe('76.8px');
+  });
+  it('지도 틀만 감시하고 대안 모드 안쪽 SVG를 다시 배율 계산하지 않는다', async () => {
+    vi.resetModules();
+    const { applyPixelScale: apply } = await import('./pixel');
+    const observe = vi.fn(), disconnect = vi.fn(), scheduled: (() => void)[] = [];
+    let resized: () => void = () => {};
+    class Observer {
+      observe = observe; disconnect = disconnect;
+      constructor(callback: () => void) { resized = callback; }
+    }
+    vi.stubGlobal('ResizeObserver', Observer);
+    vi.stubGlobal('window', {
+      devicePixelRatio: 1.5,
+      requestAnimationFrame: (fn: () => void) => { scheduled.push(fn); return 1; },
+      getComputedStyle: () => ({width:'543px',boxSizing:'content-box'}),
+      matchMedia: () => ({addEventListener:vi.fn(),removeEventListener:vi.fn()}),
+    });
+    const base = {style:{transform:'',width:'500px'},getBoundingClientRect:()=>({left:10.25,top:20.25})};
+    const frame = {querySelector:()=>base};
+    const nestedSvg = {closest:()=>frame,style:{width:'100%',height:'100%'}};
+    const root = {querySelectorAll:(selector:string)=>selector==='[data-map-frame]'?[frame]:[nestedSvg],style:{setProperty:vi.fn()}};
+    const redraw = vi.fn();
+    apply(root as unknown as HTMLElement,redraw);
+    expect(observe.mock.calls.map(([element])=>element)).toEqual([frame]);
+    expect(redraw).not.toHaveBeenCalled();
+    scheduled.splice(0).forEach(fn=>fn());
+    expect(redraw).toHaveBeenCalledWith(frame,543,1.5);
+    expect(nestedSvg.style.width).toBe('100%');
+    apply(root as unknown as HTMLElement,redraw);
+    resized(); resized();
+    expect(scheduled).toHaveLength(1);
+    scheduled.splice(0).forEach(fn=>fn());
+    expect(redraw).toHaveBeenCalledTimes(2);
+    expect(disconnect).toHaveBeenCalledTimes(2);
+  });
+
+});
+
+
+describe('틀을 채우는 지도 보기 영역', () => {
+  const map = { w: 1092, h: 1230 };
+  const route = { x: 300, y: 400, w: 200, h: 80 };
+  it.each(DPR)('dpr %s에서 가로와 세로 여백이 들어가는 최대 정수 배율과 폭을 고른다', (dpr) => {
+    for (const width of [278, 543, 1024, 1440]) {
+      const plan = planMapViewport(map, 2, route, width, dpr, 'route');
+      const L = Math.floor(width * dpr / plan.n);
+      expect(plan.n).toBeGreaterThan(1);
+      expect(plan.vb.w).toBe(L * 2);
+      expect(plan.vb.h).toBe(Math.round(L * 10 / 16) * 2);
+      expect(width - plan.cssWidth).toBeGreaterThanOrEqual(0);
+      expect(width - plan.cssWidth).toBeLessThan(plan.n / dpr);
+      expect(plan.vb.x).toBeLessThanOrEqual(route.x - 24);
+      expect(plan.vb.y).toBeLessThanOrEqual(route.y - 24);
+      expect(plan.vb.x + plan.vb.w).toBeGreaterThanOrEqual(route.x + route.w + 24);
+      expect(plan.vb.y + plan.vb.h).toBeGreaterThanOrEqual(route.y + route.h + 24);
+      const nextL = Math.floor(width * dpr / (plan.n + 1));
+      expect(nextL < route.w / 2 + 24 || Math.round(nextL * 10 / 16) < route.h / 2 + 24).toBe(true);
+    }
+  });
+  it('항로 좌표가 소수여도 격자 정렬 뒤 네 방향 최소 여백을 유지한다', () => {
+    const route = {x:300.1,y:400.9,w:200.6,h:80.6};
+    const plan = planMapViewport(map,2,route,500,1,'route');
+    expect(plan.vb.x).toBeLessThanOrEqual(route.x-24);
+    expect(plan.vb.y).toBeLessThanOrEqual(route.y-24);
+    expect(plan.vb.x+plan.vb.w).toBeGreaterThanOrEqual(route.x+route.w+24);
+    expect(plan.vb.y+plan.vb.h).toBeGreaterThanOrEqual(route.y+route.h+24);
+  });
+  it('세로가 긴 항로와 지도 가장자리도 고려한다', () => {
+    const plan = planMapViewport(map, 2, { x: 0, y: 0, w: 50, h: 300 }, 543, 1.5, 'route');
+    expect(plan.n).toBe(2);
+    expect(plan.vb.x).toBe(0); expect(plan.vb.y).toBe(0);
+    expect(plan.cssHeight).toBe(plan.n * (plan.vb.h / 2) / 1.5);
+  });
+  it.each(DPR)('세계 dpr %s에서 최소 720 CSS px와 틀 폭을 유지한다', (dpr) => {
+    for (const width of [278,390,543,1024,1440]) {
+      const plan = planMapViewport({ w: 3600, h: 1220 }, 5, route, width, dpr, 'world');
+      expect(plan.n).toBe(Math.max(Math.ceil(dpr), Math.ceil(width*dpr/720)));
+      expect(plan.cssWidth).toBeGreaterThanOrEqual(Math.max(720,width));
+      expect(plan.vb).toEqual({x:0,y:0,w:3600,h:1220});
+    }
+  });
+  it('SVG 밖 바탕은 바깥 상자 하나에만 배율 속성을 단다', () => {
+    const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
+    const html = renderWorldMap(createGame(config),config,'route',{availableWidth:543,dpr:1.25,baseOutsideSvg:true});
+    expect(html.match(/data-pixel-w=/g)).toHaveLength(1);
+    expect(html).toContain('<div class="map-layers" data-pixel-w=');
+    expect(html.match(/<svg[^>]+>/)?.[0]).not.toContain('data-pixel-');
+    expect(html).not.toContain('<image');
+  });
+  it('위치의 소수 부분을 기기 픽셀 경계로 옮긴다', () => {
+    for (const dpr of DPR) {
+      const element = {style:{transform:''},getBoundingClientRect:()=>({left:17.37,top:25.19})};
+      alignMapPixels(element as unknown as HTMLElement,dpr);
+      const offsets = element.style.transform.match(/translate\(([-\d.e]+)px, ([-\d.e]+)px\)/)!.slice(1).map(Number);
+      expect((17.37+offsets[0]!) * dpr).toBeCloseTo(Math.round(17.37*dpr),12);
+      expect((25.19+offsets[1]!) * dpr).toBeCloseTo(Math.round(25.19*dpr),12);
+    }
   });
 });

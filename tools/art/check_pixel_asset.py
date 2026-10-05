@@ -10,9 +10,11 @@ from PIL import Image
 try:
     from .palette import ROOT, load_palette, palette_rgb
     from .pixelize import parse_size
+    from .png_format import png_errors
 except ImportError:
     from palette import ROOT, load_palette, palette_rgb
     from pixelize import parse_size
+    from png_format import png_errors
 
 SLOTS = {
     'background': ((384, 216), None, 32),
@@ -36,6 +38,7 @@ def slot_spec(slot):
 def check_asset(path, size, frame=None, max_colors=32):
     errors = []
     try:
+        errors.extend(png_errors(Path(path)))
         with Image.open(path) as image:
             if image.format != 'PNG':
                 errors.append('형식: 무손실 PNG 파일이어야 합니다.')

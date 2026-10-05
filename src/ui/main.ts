@@ -191,7 +191,7 @@ function worldMap(): string {
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
       </div>
     </div>
-    <div class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(state, config, mapMode)}</div>
+    <div data-map-frame class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(state, config, mapMode)}</div>
     ${mapLegend()}
     <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
@@ -620,6 +620,9 @@ function logPanel(): string {
 
 function render() {
   view = planState(state, config, pending).state;
+  const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
+  const previousRange = previousMap ? previousMap.scrollWidth - previousMap.clientWidth : 0;
+  const previousMapScroll = previousMap && previousRange > 0 ? previousMap.scrollLeft / previousRange : undefined;
   const focused = document.activeElement as HTMLElement | null;
   // 태그와 모든 대상 속성을 비교한다. 대기열 순번은 삭제 시 바뀌므로 명령 ID를 쓴다.
   const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
@@ -637,7 +640,26 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
-  applyPixelScale(app);
+  applyPixelScale(app, (frame, width, dpr) => {
+    const html = renderWorldMap(view, config, mapMode, { availableWidth: width, dpr });
+    const key = html.match(/data-map-viewport="([^"]+)"/)?.[1];
+    if (frame.dataset.viewportKey === key && frame.dataset.viewportDpr === String(dpr)) return;
+    const previous = frame.querySelector('[data-map-viewport]');
+    const scrollRange = Math.max(0, frame.scrollWidth - frame.clientWidth);
+    const ratio = scrollRange > 0 ? frame.scrollLeft / scrollRange : 0.5;
+    const first = frame.dataset.viewportKey === undefined;
+    frame.innerHTML = html;
+    frame.dataset.viewportKey = key;
+    frame.dataset.viewportDpr = String(dpr);
+    if (mapMode === 'world') {
+      const center = Number(frame.querySelector<HTMLElement>('[data-map-center]')?.dataset.mapCenter ?? 0.5);
+      frame.scrollLeft = first && previousMapScroll !== undefined
+        ? previousMapScroll * Math.max(0, frame.scrollWidth - frame.clientWidth)
+        : first || !previous
+          ? center * frame.scrollWidth - frame.clientWidth / 2
+          : ratio * Math.max(0, frame.scrollWidth - frame.clientWidth);
+    }
+  });
   if (focusData) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
       el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));

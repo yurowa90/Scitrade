@@ -17,6 +17,11 @@ describe('동료 스프라이트', () => {
     expect(html).toContain('animation-duration: 720ms');
     expect(html).toContain('pixel-art');
   });
+  it('다른 칸 수와 직사각형 칸의 크기·줄 위치를 사용한다', () => {
+    const html = spriteHtml({...sheet,frameWidth:24,frameHeight:16,framesPerRow:6}, {row:'happy',scaleN:2});
+    expect(html).toContain('steps(6)'); expect(html).toContain('animation-duration: 1080ms');
+    expect(html).toContain('--sprite-h: 16px'); expect(html).toContain('--sprite-row: 3');
+  });
   it('이름이 있으면 img 역할과 이스케이프한 접근 이름을 단다', () => {
     const html = spriteHtml(sheet, { row: 'happy', scaleN: 2, label: '업무 "완료" <동료>' });
     expect(html).toContain('role="img"');
@@ -42,11 +47,14 @@ describe('동료 스프라이트', () => {
     vi.doMock('../assets/manifest.json', () => ({ default: { ...manifest, assets: [
       ...manifest.assets,
       { id: 'TEST_CARD', kind: 'character', employee_id: 'EMP01', slot: 'card', path: 'card.png', status: 'approved' },
+      { id: 'TEST_PORTRAIT', kind: 'character', employee_id: 'EMP01', slot: 'portrait', path: 'portrait.png', status: 'approved' },
       { id: 'TEST_WORK', kind: 'character', employee_id: 'EMP01', slot: 'work', path: 'work.png', status: 'approved' },
       { id: 'TEST_DRAFT', kind: 'character', employee_id: 'EMP02', slot: 'work', path: 'draft.png', status: 'draft' },
     ] } }));
     const assets = await import('./assets');
     expect(assets.characterImage('EMP01', 'card')).toEqual({ path: 'card.png', logicalWidth: 96, logicalHeight: 128 });
+    expect(assets.characterImage('EMP01', 'portrait')).toEqual({path:'portrait.png',logicalWidth:48,logicalHeight:48});
+    expect(assets.characterImage('EMP01', 'work')).toEqual({path:'work.png',logicalWidth:128,logicalHeight:128});
     expect(assets.characterSprite('EMP01')).toEqual({ ...sheet, path: 'work.png' });
     expect(assets.characterSprite('EMP02')).toBeNull();
     const { crewCard } = await import('./card');

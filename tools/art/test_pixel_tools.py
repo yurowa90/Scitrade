@@ -12,11 +12,11 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 try:
-    from .palette import ROOT, export_palette, load_palette, nearest_color, palette_rgb, rgb_to_lab
+    from .palette import ROOT, export_palette, load_palette, nearest_color, nearest_indices, palette_rgb, rgb_to_lab
     from .pixelize import despeckle_pixels, pixelize
     from .check_pixel_asset import check_asset, slot_spec
 except ImportError:
-    from palette import ROOT, export_palette, load_palette, nearest_color, palette_rgb, rgb_to_lab
+    from palette import ROOT, export_palette, load_palette, nearest_color, nearest_indices, palette_rgb, rgb_to_lab
     from pixelize import despeckle_pixels, pixelize
     from check_pixel_asset import check_asset, slot_spec
 
@@ -56,6 +56,9 @@ class PixelToolsTests(unittest.TestCase):
             check = self.command('check_pixel_asset.py', output_path, '--size', '32x32', '--max-colors', 15)
             self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
         self.assertEqual(hashes[0], hashes[1])
+        with Image.open(output_path) as recovered:
+            actual = np.asarray(recovered)
+        self.assertGreaterEqual(np.mean(np.all(actual == source, axis=2)), 0.98)
 
     def test_checker_rejects_each_error_and_exit_code(self):
         base = np.zeros((8, 8, 4), dtype=np.uint8)
@@ -85,6 +88,10 @@ class PixelToolsTests(unittest.TestCase):
         self.assertTrue(any(e.startswith('칸 격자:') for e in errors))
 
     def test_slot_specs(self):
+        for slot, spec in {'background': ((384,216),None,32), 'icon': ((16,16),None,15),
+                           'map-icon': ((16,16),None,15), 'ship': ((24,16),None,15),
+                           'frame': ((24,24),None,32)}.items():
+            self.assertEqual(slot_spec(slot), spec)
         self.assertEqual(slot_spec('work'), ((128, 128), (32, 32), 15))
         self.assertEqual(slot_spec('portrait'), ((48, 48), None, 15))
         self.assertEqual(slot_spec('card'), ((96, 128), None, 32))
@@ -96,7 +103,7 @@ class PixelToolsTests(unittest.TestCase):
             with self.subTest(mode=mode):
                 palette = copy.deepcopy(self.palette)
                 if mode == 'duplicate':
-                    palette['colors'][1]['hex'] = palette['colors'][0]['hex']
+                    palette['colors'][1]['hex'] = palette['colors'][4]['hex']
                 elif mode == 'reverse':
                     a, b = palette['colors'][:2]
                     a['hex'], b['hex'] = b['hex'], a['hex']
@@ -110,7 +117,9 @@ class PixelToolsTests(unittest.TestCase):
                     palette['colors'][1]['id'] = palette['colors'][0]['id']
                 path = self.directory / 'palette.json'
                 path.write_text(json.dumps(palette))
-                with self.assertRaises(ValueError):
+                messages = {'duplicate': 'hex가 중복', 'reverse': '밝기 역전', 'step': '1~4단계',
+                            'ramp': '8줄기', 'count': '32색', 'id': 'ID가 중복'}
+                with self.assertRaisesRegex(ValueError, messages[mode]):
                     load_palette(path)
 
     def test_gpl_export_and_lab(self):
@@ -146,6 +155,105 @@ class PixelToolsTests(unittest.TestCase):
         self.assertEqual(result[0, 0], -1)
         grid[2, 1] = 8
         self.assertEqual(despeckle_pixels(grid)[2, 2], 8)
+
+
+    def test_lab_choice_differs_from_rgb_distance(self):
+        sample = np.array([60, 46, 205])
+        choices = np.array([[34, 87, 138], [124, 90, 158]])
+        # RGB 거리는 첫 색, CIELAB은 두 번째 색을 고른다.
+        self.assertEqual(((choices-sample)**2).sum(axis=1).argmin(), 0)
+        self.assertEqual(int(nearest_indices(sample, choices)), 1)
+
+    def test_lightness_seven_boundary(self):
+        from unittest.mock import patch
+        base = np.tile([0., 7., 14., 21.], 8)
+        path = self.directory / 'palette.json'
+        path.write_text(json.dumps(self.palette), encoding='utf-8')
+        lab = np.zeros((32,3)); lab[:,0] = base
+        module = load_palette.__module__
+        with patch(module + '.rgb_to_lab', return_value=lab):
+            self.assertEqual(load_palette(path), self.palette)
+        lab[1,0] = 6.99999
+        with patch(module + '.rgb_to_lab', return_value=lab):
+            with self.assertRaisesRegex(ValueError, '최소 7'):
+                load_palette(path)
+
+    def test_max_colors_remaps_to_nearest_retained_lab_color(self):
+        rgba = np.zeros((3,3,4), dtype=np.uint8)
+        rgba[...,3] = 255; rgba[...,:3] = self.colors[4]
+        rgba[0,:2,:3] = self.colors[16]; rgba[2,2,:3] = self.colors[12]
+        out = np.asarray(pixelize(Image.fromarray(rgba), (3,3), self.palette, max_colors=2))
+        expected = self.colors[[4,16]][int(nearest_indices(self.colors[12], self.colors[[4,16]]))]
+        np.testing.assert_array_equal(out[2,2,:3], expected)
+        self.assertEqual(len(np.unique(out[...,:3].reshape(-1,3),axis=0)), 2)
+        source_path, output_path = self.directory/'three-colors.png', self.directory/'two-colors.png'
+        Image.fromarray(rgba).save(source_path)
+        command = self.command('pixelize.py', source_path, output_path, '--size', '3x3', '--max-colors', '2')
+        self.assertEqual(command.returncode, 0, command.stderr)
+        with Image.open(output_path) as image:
+            np.testing.assert_array_equal(np.asarray(image), out)
+
+    def test_despeckle_is_connected_to_pixelize_and_preserves_diagonals(self):
+        grid = np.full((7,7), 4, dtype=np.int16)
+        np.fill_diagonal(grid, 8)
+        np.testing.assert_array_equal(despeckle_pixels(grid), grid)
+        grid = np.full((5,5), 4, dtype=np.int16); grid[2,2] = 8
+        rgba = np.full((5,5,4), 255, dtype=np.uint8); rgba[...,:3] = self.colors[grid]
+        raw = pixelize(Image.fromarray(rgba), (5,5), self.palette)
+        clean = pixelize(Image.fromarray(rgba), (5,5), self.palette, despeckle=True)
+        np.testing.assert_array_equal(np.asarray(raw)[2,2,:3], self.colors[8])
+        np.testing.assert_array_equal(np.asarray(clean)[2,2,:3], self.colors[4])
+        source_path, output_path = self.directory/'speckle.png', self.directory/'clean.png'
+        Image.fromarray(rgba).save(source_path)
+        command = self.command('pixelize.py', source_path, output_path, '--size', '5x5', '--despeckle')
+        self.assertEqual(command.returncode, 0, command.stderr)
+        with Image.open(output_path) as image:
+            np.testing.assert_array_equal(np.asarray(image), np.asarray(clean))
+        # 4표로는 바꾸지 않는다.
+        grid = np.array([[4,4,4],[4,8,12],[12,12,12]],dtype=np.int16)
+        self.assertEqual(despeckle_pixels(grid)[1,1],8)
+
+    def test_alpha_threshold_inclusive_boundary(self):
+        rgba = np.zeros((1,3,4),dtype=np.uint8); rgba[...,:3] = self.colors[4]
+        rgba[...,3] = [127,128,129]
+        out = pixelize(Image.fromarray(rgba),(3,1),self.palette,alpha_threshold=128)
+        np.testing.assert_array_equal(np.asarray(out)[...,3],[[0,255,255]])
+        source_path, output_path = self.directory/'alpha.png', self.directory/'alpha-out.png'
+        Image.fromarray(rgba).save(source_path)
+        command = self.command('pixelize.py', source_path, output_path, '--size', '3x1', '--alpha-threshold', '129')
+        self.assertEqual(command.returncode, 0, command.stderr)
+        with Image.open(output_path) as image:
+            np.testing.assert_array_equal(np.asarray(image)[...,3], [[0,0,255]])
+
+    def test_color_count_fifteen_and_sixteen(self):
+        for count in (15,16):
+            path = self.directory / f'{count}.png'
+            Image.fromarray(self.colors[:count].reshape(1,count,3)).save(path)
+            errors = check_asset(path,(count,1),max_colors=15)
+            self.assertEqual(bool(errors),count==16)
+            if errors: self.assertTrue(errors[0].startswith('색 수:'))
+
+    def test_png_depth_animation_gamma_and_profile(self):
+        import struct
+        from PIL.PngImagePlugin import PngInfo
+        path = self.directory / 'special.png'
+        Image.fromarray(np.full((4,4),40000,dtype=np.uint16)).save(path)
+        self.assertTrue(any(e.startswith('비트 깊이:') for e in check_asset(path,(4,4))))
+        result = self.command('pixelize.py',path,self.directory/'out.png','--size','4x4')
+        self.assertEqual(result.returncode,1); self.assertIn('비트 깊이:',result.stderr)
+        frames = [Image.new('RGB',(4,4),tuple(c)) for c in self.colors[:2]]
+        frames[0].save(path,save_all=True,append_images=frames[1:],duration=100,loop=0)
+        self.assertEqual(check_asset(path,(4,4)),['애니메이션: 움직이는 PNG(APNG)는 허용하지 않습니다.'])
+        for gamma, valid in ((45455,True),(100000,False)):
+            info = PngInfo(); info.add(b'gAMA',struct.pack('>I',gamma))
+            frames[0].save(path,pnginfo=info)
+            self.assertEqual(bool(check_asset(path,(4,4))),not valid)
+        from PIL import ImageCms
+        for profile, valid in ((ImageCms.createProfile('sRGB'),True),(ImageCms.createProfile('LAB'),False)):
+            frames[0].save(path,icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
+            errors = check_asset(path,(4,4))
+            self.assertEqual(bool(errors),not valid)
+            if errors: self.assertTrue(errors[0].startswith('색 프로필:'))
 
 
 if __name__ == '__main__':

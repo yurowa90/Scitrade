@@ -71,7 +71,7 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (경위도 자르기·영역 평균으로 논리 격자 축소·높이 및 근처 색으로 육지 판정·3×3 다수결·해협/운하 좌표에 바다 통로·지형 분류·육지 3×3 최빈값·315° 언덕 음영 3단계·해안 거리별 바다·팔레트 칠하기·육지 쪽 1픽셀 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (Natural Earth 육지·호수 6×6 면적 50% 판정·경도 +360 사본·두 물 기준점 4-연결 통로·실수 경위도 상자로 위성 색 BOX 및 높이 BILINEAR 정렬·지형 분류 3×3 최빈값·해상도 보정 315° 음영 및 분류 안 3×3 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 1픽셀 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
@@ -82,13 +82,27 @@
             "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
             "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
+          },
+          {
+            "name": "Natural Earth 1:10m land",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_land.geojson",
+            "sha256": "1ac90796408bc6ad6911d69448485d3c4dbf2190370080368a09976e1c9f7416",
+            "license": "Public domain",
+            "version": "5.2.0-pre (master, 2026-10-05)"
+          },
+          {
+            "name": "Natural Earth 1:10m lakes",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_lakes.geojson",
+            "sha256": "2d036f53dedec578001c5c30c2959ee7d4eebc1306900fa4367c49929ec8f2d9",
+            "license": "Public domain",
+            "version": "5.2.0-pre (master, 2026-10-05)"
           }
         ],
         "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
-        "attribution": "위성 합성 영상: NASA Blue Marble",
+        "attribution": "위성 지형 색: NASA Blue Marble; 육지·호수: Natural Earth (public domain)",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
         "palette": "scitrade-32 (DRAFT_2026-10-05)",
-        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 바다 통로를 낸 관문: MALACCA_STRAIT. 관문 주변 연결 경고: 없음. 해안에서 1논리 픽셀보다 먼 도시 좌표(옮기지 않음): SHANGHAI, YOKOHAMA, SINGAPORE."
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 표시용 4-연결 통로: MALACCA_STRAIT, KOREA_STRAIT. 전체 바다 연결 및 도시 해안 거리 경고: 없음. 육지 면적 50% 판정과 충돌하는 요청 기준점: 상하이 동쪽 해안."
       },
       "pixel_grid": {
         "logical_width": 546,
@@ -114,7 +128,7 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (경위도 자르기·영역 평균으로 논리 격자 축소·높이 및 근처 색으로 육지 판정·3×3 다수결·해협/운하 좌표에 바다 통로·지형 분류·육지 3×3 최빈값·315° 언덕 음영 3단계·해안 거리별 바다·팔레트 칠하기·육지 쪽 1픽셀 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (Natural Earth 육지·호수 6×6 면적 50% 판정·경도 +360 사본·두 물 기준점 4-연결 통로·실수 경위도 상자로 위성 색 BOX 및 높이 BILINEAR 정렬·지형 분류 3×3 최빈값·해상도 보정 315° 음영 및 분류 안 3×3 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 1픽셀 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
@@ -125,12 +139,26 @@
             "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
             "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
+          },
+          {
+            "name": "Natural Earth 1:50m land",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_land.geojson",
+            "sha256": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b",
+            "license": "Public domain",
+            "version": "5.2.0-pre (master, 2026-10-05)"
+          },
+          {
+            "name": "Natural Earth 1:50m lakes",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson",
+            "sha256": "d350b75978b26fe839b797c2c529b2fb8f47fb3983c03f4964e36d5df9378a52",
+            "license": "Public domain",
+            "version": "5.2.0-pre (master, 2026-10-05)"
           }
         ],
         "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
-        "attribution": "위성 합성 영상: NASA Blue Marble",
+        "attribution": "위성 지형 색: NASA Blue Marble; 육지·호수: Natural Earth (public domain)",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
-        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 바다 통로를 낸 관문: MALACCA_STRAIT, HORMUZ_STRAIT, BAB_EL_MANDEB, SUEZ_CANAL, PANAMA_CANAL. 관문 주변 연결 경고: BAB_EL_MANDEB. 해안에서 1논리 픽셀보다 먼 도시 좌표(옮기지 않음): SHANGHAI.",
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 표시용 4-연결 통로: MALACCA_STRAIT, HORMUZ_STRAIT, BAB_EL_MANDEB, SUEZ_CANAL, PANAMA_CANAL, CAPE_OF_GOOD_HOPE, GIBRALTAR, BOSPORUS, DARDANELLES, KOREA_STRAIT. 전체 바다 연결 및 도시 해안 거리 경고: 없음. 육지 면적 50% 판정과 충돌하는 요청 기준점: 상하이 동쪽 해안, 오키나와 본섬.",
         "palette": "scitrade-32 (DRAFT_2026-10-05)"
       },
       "pixel_grid": {

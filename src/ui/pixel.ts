@@ -25,21 +25,46 @@ let observer: ResizeObserver | null = null;
 let resolution: MediaQueryList | null = null;
 let elements: PixelElement[] = [];
 let activeRoot: HTMLElement | null = null;
+let mapResize: ((frame: HTMLElement, width: number, dpr: number) => void) | undefined;
+let frames: HTMLElement[] = [];
+let pendingFrame: number | null = null;
+
+function scheduleResize() {
+  if (pendingFrame !== null) return;
+  pendingFrame = window.requestAnimationFrame(() => { pendingFrame = null; resizePixels(); });
+}
+
+/** 현재 위치의 소수 부분만 옮겨 지도 왼쪽 위를 기기 픽셀 경계에 놓는다. */
+export function alignMapPixels(element: HTMLElement | SVGElement, dpr: number): void {
+  element.style.transform = '';
+  const rect = element.getBoundingClientRect();
+  const dx = Math.round(rect.left * dpr) / dpr - rect.left;
+  const dy = Math.round(rect.top * dpr) / dpr - rect.top;
+  element.style.transform = `translate(${dx}px, ${dy}px)`;
+}
+
+function innerWidth(parent: HTMLElement): number {
+  const style = window.getComputedStyle(parent);
+  const padding = parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0');
+  const measured = style.width?.endsWith('px') ? parseFloat(style.width) : NaN;
+  const border = parseFloat(style.borderLeftWidth || '0') + parseFloat(style.borderRightWidth || '0');
+  return Math.max(0, Number.isFinite(measured)
+    ? measured - (style.boxSizing === 'border-box' ? padding + border : 0) : parent.clientWidth - padding);
+}
 
 function resizePixels() {
   const dpr = window.devicePixelRatio || 1;
   activeRoot?.style.setProperty('--pixel-dpr', String(dpr));
+  for (const frame of frames) {
+    const width = innerWidth(frame);
+    if (width > 0) mapResize?.(frame, width, dpr);
+    const map = frame.querySelector<HTMLElement | SVGElement>('[data-map-viewport]');
+    if (map) alignMapPixels(map, dpr);
+  }
   for (const element of elements) {
     const parent = element.parentElement;
     if (!parent) continue;
-    const parentStyle = window.getComputedStyle(parent);
-    const padding = parseFloat(parentStyle.paddingLeft || '0') + parseFloat(parentStyle.paddingRight || '0');
-    // clientWidth는 정수로 반올림된다. 계산된 CSS 폭이 있으면 소수 폭도 보존한다.
-    const measured = parentStyle.width?.endsWith('px') ? parseFloat(parentStyle.width) : NaN;
-    const border = parseFloat(parentStyle.borderLeftWidth || '0') + parseFloat(parentStyle.borderRightWidth || '0');
-    const width = Math.max(0, Number.isFinite(measured)
-      ? measured - (parentStyle.boxSizing === 'border-box' ? padding + border : 0)
-      : parent.clientWidth - padding);
+    const width = innerWidth(parent);
     const w = Number(element.dataset.pixelW);
     const h = Number(element.dataset.pixelH);
     if (!(w > 0 && h > 0)) continue;
@@ -59,19 +84,23 @@ function watchResolution() {
 }
 
 function onResolutionChange() {
-  resizePixels();
+  scheduleResize();
   watchResolution();
 }
 
 /** 다시 그린 화면에 감시자 하나를 재연결한다. DOM 기능이 없는 테스트 환경은 건너뛴다. */
-export function applyPixelScale(root: HTMLElement): void {
+export function applyPixelScale(root: HTMLElement, onMapResize?: typeof mapResize): void {
   if (typeof window === 'undefined' || typeof ResizeObserver === 'undefined' || typeof window.matchMedia !== 'function') return;
-  observer ??= new ResizeObserver(resizePixels);
+  observer ??= new ResizeObserver(scheduleResize);
   observer.disconnect();
   activeRoot = root;
-  elements = Array.from(root.querySelectorAll<PixelElement>('[data-pixel-w][data-pixel-h]'));
+  mapResize = onMapResize;
+  frames = Array.from(root.querySelectorAll<HTMLElement>('[data-map-frame]'));
+  elements = Array.from(root.querySelectorAll<PixelElement>('[data-pixel-w][data-pixel-h]'))
+    .filter((element) => !element.closest?.('[data-map-frame]'));
   const parents = new Set(elements.map((element) => element.parentElement).filter((parent) => parent !== null));
+  frames.forEach((frame) => parents.add(frame));
   parents.forEach((parent) => observer!.observe(parent));
-  resizePixels();
+  scheduleResize();
   watchResolution();
 }
