@@ -11,6 +11,7 @@ export class InvariantError extends Error {}
 
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   const problems: string[] = [];
+  if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   const currencies = new Set<Currency>(s.ledger.entries.map((e) => e.currency));
   const kindOf = (contractId: string) => s.contracts.find((c) => c.id === contractId)?.kind;
 
