@@ -5,6 +5,56 @@
 미술 방향은 [ART_DIRECTION.md](../ART_DIRECTION.md), 캐릭터 설정은 `data/characters.json`이 기준이다.
 파라미터 이름과 범위는 미드저니 V7 기준이므로 작업 전에 현재 공식 문서로 확인한다.
 
+## 0. 픽셀아트 제작 절차 — 2026-10-05 (아래 2·5·7·8절보다 우선)
+
+사용자 결정: 그림·지도를 픽셀아트로 바꾸고, **AI 초안 + 사람 보정**으로 만든다. 규격은 [PIXEL_SPEC.md](PIXEL_SPEC.md)다.
+
+**왜 AI 결과를 그대로 쓰지 않는가**
+- 생성형 AI의 ‘픽셀아트’는 대개 진짜 격자가 아니다. 점 크기가 고르지 않고, 격자에서 어긋나고, 가장자리에 중간색(안티앨리어싱)이 섞이고, 색이 수백 개다(Rangy; jenissimo, DEV Community. 아래 참고).
+- 확산 모델은 픽셀 격자가 아닌 잠재 공간에서 그림을 만들기 때문이다. 그래서 격자 맞춤과 팔레트 고정은 도구로, 마무리는 사람이 한다.
+
+**절차**
+
+| 단계 | 할 일 | 도구 | 남길 기록 |
+|---|---|---|---|
+| ① 설정화 | 캐릭터마다 고해상도 기준 그림 1장을 확정한다. 아래 3·4절 프롬프트를 그대로 쓴다. 게임에는 싣지 않는다 | 미드저니 등 | 프롬프트, 작업 ID, 기준 이미지 |
+| ② 픽셀 초안 | 설정화를 참조(`--oref`)로 넣고 아래 픽셀 프롬프트로 뽑는다. 또는 설정화를 바로 ③에 넣는다 | 같음 | 프롬프트, 작업 ID |
+| ③ 격자·팔레트 맞춤 | 목표 크기로 줄이고 공용 팔레트 색으로 바꾼다. 반투명 가장자리는 투명/불투명으로 나눈다 | `tools/art/pixelize.py` | 명령과 설정값 |
+| ④ 사람 보정 | 외곽선 끊김, 계단 모양(재기), 외톨이 픽셀, 눈·소품 모양을 한 점씩 고친다. 걷기·업무 동작의 칸 사이 흔들림을 맞춘다 | 픽셀 편집기 | 고친 내용과 걸린 시간 |
+| ⑤ 검사 | 크기·격자·알파·팔레트·색 수를 검사한다 | `tools/art/check_pixel_asset.py` | 통과 결과 |
+| ⑥ 등록 | `src/assets/manifest.json`에 `approved`로 올린다 | Claude | 8절의 출처 기록 |
+
+- **편집기:** Pixelorama(MIT, 무료), LibreSprite(GPLv2, 2016년 Aseprite GPL 판본에서 갈라짐), Aseprite(유료, 소스 공개 EULA). 셋 다 `.gpl` 팔레트를 불러올 수 있는지 첫 작업 때 확인한다. `tools/art/palette.py`가 `src/assets/palette.json`에서 `.gpl`·`.hex`를 만든다.
+- **시간 실측:** 첫 6종(EMP01~06)의 ④ 보정 시간을 기록하고, 그 값으로 60종 일정을 다시 잡는다. 사람 보정이 이 방식의 실제 비용이다.
+- **권리:** 사람이 한 점씩 고친 부분이 저작권 주장의 근거가 된다(이 문서 1절 3항, `DECISIONS.md` ‘3D 제작 방식 검토’의 권리 항목). ④의 기록을 빠뜨리지 않는다.
+- **동작 칸 수를 줄이는 방법:** 60종 × 16칸이면 960칸이다. 보정 시간이 너무 길면 줄 수를 줄이거나(대기·업무 2줄 우선), 같은 몸통에 머리·소품만 바꾸는 방식을 쓴다. Dead Cells처럼 3D 모델을 픽셀로 렌더링하는 방식도 있지만, 동료의 몸 구조가 다양해 자동 리깅이 맞지 않는 문제(`DECISIONS.md`)가 그대로 남는다.
+
+**픽셀 프롬프트 (② 단계)**
+
+업무 스프라이트:
+
+```
+pixel art sprite, 16-bit era game style, 32x32 pixel character on a clean grid,
+cute chibi animal about 2.5 heads tall, 1-pixel dark outline, limited palette of about 15 colors,
+flat shading with 2 to 3 tones, no anti-aliasing, no gradients, no dithering noise,
+full body, centered, plain flat background
+--ar 1:1 --v 7 --stylize 100
+--no text, letters, logo, watermark, frame, border, ui, blur, photo, 3d render
+```
+
+카드 그림:
+
+```
+pixel art, 16-bit era game illustration, 96x128 pixel canvas, fantasy creature collectible card scene,
+graceful creature with a soft cute face, simplified habitat and legend motifs as large shapes and repeating tiles,
+pastel palette limited to about 32 colors, crisp pixel clusters, no anti-aliasing, no gradients,
+character centered with empty space at the top and bottom 15 percent
+--ar 3:4 --v 7 --stylize 150
+--no text, letters, logo, watermark, card frame, border, badge, number, ui, blur, photo, 3d render
+```
+
+‘32x32’ 같은 숫자를 넣어도 결과가 그 격자로 나오지는 않는다. 격자는 ③ 단계에서 맞춘다.
+
 ## 1. 원칙
 
 1. **그림에는 캐릭터나 장면만 그린다.** 카드 테두리·속성 아이콘·레벨·이름·반짝임은 게임 코드가 그린다. 글자·로고·숫자 배지·테두리가 들어간 결과는 버린다.
@@ -104,6 +154,8 @@ centered, plain white background, no text
 
 업무 동작은 화면에서 약 128px로 작게 보이므로, 세부가 조금 달라도 다시 뽑지 않아도 된다. 카드 그림의 일관성에 시간을 쓴다.
 
+(2026-10-05 픽셀아트 전환: 이 절의 장면 확장은 ① 설정화 단계에서만 쓴다. 게임에 들어가는 동작은 0절의 32×32 스프라이트 시트다.)
+
 ## 6. 배경 — 대항해시대·더 길드 3 수준의 게임 그래픽 느낌
 
 목표는 손으로 칠한 듯한 전략 게임 배경이다. 사실적인 원근, 따뜻한 빛, 작은 사람(동물) 활동이 보이는 장면이다. 게임 이름은 프롬프트에 쓰지 않는다.
@@ -129,12 +181,16 @@ no text, no signs with letters, no ui
 
 배경은 도시마다 같은 화풍 기준(`--sref`)을 쓴다. 실재 랜드마크를 그대로 그리지 않는다.
 
+(2026-10-05 픽셀아트 전환: 위 공통 문구의 `hand-painted strategy game background`를 `16-bit era pixel art strategy game background, 384x216 pixel canvas, crisp pixel clusters, no anti-aliasing`으로 바꿔 ② 픽셀 초안을 뽑는다. 그 뒤 0절 ③~⑥을 따른다.)
+
 ## 7. 점검표 (채택 전)
 
 - [ ] 글자·로고·테두리·숫자 배지가 없다.
 - [ ] 캐릭터 고유 특징이 기준 이미지와 같다.
 - [ ] 손발 개수·눈·대칭이 자연스럽다.
-- [ ] 128px로 줄여도 누구인지 알아볼 수 있다.
+- [ ] 1배 크기(스프라이트 32×32, 카드 96×128)에서 누구인지 알아볼 수 있다.
+- [ ] (픽셀) `check_pixel_asset.py`를 통과했다: 크기·칸 격자, 알파 0/255, 팔레트 밖 색 없음, 스프라이트 불투명 15색 이하.
+- [ ] (픽셀) 외톨이 픽셀·끊긴 외곽선·계단 모양이 없고, 동작 칸 사이에 몸통 크기가 흔들리지 않는다.
 - [ ] 기존 캐릭터와 닮지 않았다 (이미지 역검색으로 표본 확인).
 - [ ] 전투·무기·과도한 위협 표현이 없다.
 - [ ] 국적·종족 고정관념을 드러내는 소품이나 표정이 없다.
@@ -147,10 +203,12 @@ Claude가 변환해 저장하는 위치와 규격:
 
 | 용도 | 경로 | 규격 |
 |---|---|---|
-| 카드 | `public/assets/characters/EMP01/card.webp` | 3:4, 가로 768px 이상, 장면 배경을 꽉 채운 일러스트, 위아래 15%는 화면 표시가 덮음 |
-| 초상 | `public/assets/characters/EMP01/portrait.webp` | 1:1, 256px 이상, 투명 배경 |
-| 업무 동작 | `public/assets/characters/EMP01/work-idle.webp` 등 | 1:1, 256px 이상, 투명 배경 |
-| 배경 | `public/assets/backgrounds/company.webp` 등 | 16:9, 가로 1600px 이상 |
+| 카드 | `public/assets/characters/EMP01/card.png` | 96×128 픽셀아트, 장면 배경을 꽉 채움, 위아래 19줄은 화면 표시가 덮음 |
+| 초상 | `public/assets/characters/EMP01/portrait.png` | 48×48, 투명 배경(알파 0/255) |
+| 업무 동작 | `public/assets/characters/EMP01/work.png` | 스프라이트 시트 128×128 = 32×32 칸 × 4줄(대기·걷기·업무·기쁨) × 4칸 |
+| 배경 | `public/assets/backgrounds/company.png` 등 | 384×216 픽셀아트 |
+
+(2026-10-05 픽셀아트 전환으로 바뀐 규격이다. 모두 무손실 PNG이고 공용 팔레트 색만 쓴다. 자세한 것은 [PIXEL_SPEC.md](PIXEL_SPEC.md).) 대화에 올릴 파일은 ② 픽셀 초안 PNG와 ④ 보정본이다.
 
 `src/assets/manifest.json`에 `status: "approved"`로 등록된 그림만 화면에 쓰인다. 등록 항목 예:
 
@@ -160,7 +218,7 @@ Claude가 변환해 저장하는 위치와 규격:
   "kind": "character",
   "employee_id": "EMP01",
   "slot": "card",
-  "path": "assets/characters/EMP01/card.webp",
+  "path": "assets/characters/EMP01/card.png",
   "status": "approved",
   "created_on": "2026-10-05",
   "provenance": {
@@ -172,9 +230,19 @@ Claude가 변환해 저장하는 위치와 규격:
     "style_reference": "--sref …",
     "omni_reference": null,
     "job_id": "…",
-    "human_edits": "배경 제거, 목도리 색 보정",
+    "human_edits": "pixelize.py 96x128 격자·scitrade-32 팔레트 맞춤 뒤 외곽선·눈·목도리 다시 찍음 (약 n시간)",
+    "palette": "scitrade-32",
     "license_ko": "미드저니 약관(요금제) 확인. AI 단독 산출물은 저작권 보호가 약함",
     "attribution": "미드저니로 생성, ○○ 선별·편집"
   }
 }
 ```
+
+## 참고 (0절)
+
+- Rangy. AI Pixel Art: Why It Isn't Really Pixel Art. https://rangy.ai/blog/ai-pixel-art
+- jenissimo. How to tame your AI pixel art. DEV Community. https://dev.to/jenissimo/how-to-tame-your-ai-pixel-art-3pk5
+- Aseprite. Wikipedia. https://en.wikipedia.org/wiki/Aseprite (2016년 GPLv2에서 EULA로 전환, LibreSprite는 그 직전 판본에서 갈라짐)
+- Dead Cells의 3D→픽셀 제작: 80.lv 인터뷰. https://80.lv/articles/interview-with-the-developers-of-dead-cells
+
+확인 수준: 2026-10-05 검색 요약으로 확인. 본문 문장 대조는 하지 않았다. Pixelorama의 MIT 라이선스도 같은 검색 요약에서 확인했다.

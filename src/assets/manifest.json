@@ -1,31 +1,55 @@
 {
   "schema": "scitrade-art-assets/1",
-  "note_ko": "화면에 쓰는 그림 자산의 출처 기록. status가 approved인 항목만 화면에 쓴다. 그림이 없는 동료는 자리표시자를 유지한다. 규칙과 프롬프트는 docs/art/PROMPTS.md.",
+  "note_ko": "화면에 쓰는 그림 자산의 출처 기록. status가 approved인 항목만 화면에 쓴다. 그림이 없는 동료는 자리표시자를 유지한다. 2026-10-05부터 그림·지도는 픽셀아트다: 규격은 docs/art/PIXEL_SPEC.md, 제작 절차와 프롬프트는 docs/art/PROMPTS.md.",
+  "pixel_art": {
+    "decided_on": "2026-10-05",
+    "spec": "docs/art/PIXEL_SPEC.md",
+    "palette": "src/assets/palette.json",
+    "format": "PNG lossless; alpha 0 or 255 only; every opaque pixel must be a palette color",
+    "rendering": "image-rendering: pixelated; integer scale in device pixels (n = floor(available CSS px * devicePixelRatio / logical px), n >= 1)",
+    "sprite_max_opaque_colors": 15,
+    "frame_ms_default": 180
+  },
   "character_slots": {
     "card": {
-      "path": "assets/characters/{employee_id}/card.webp",
+      "path": "assets/characters/{employee_id}/card.png",
+      "logical_width": 96,
+      "logical_height": 128,
       "aspect": "3:4",
-      "min_width": 768,
-      "background": "full-bleed decorative scene (habitat/legend motifs); no frame, text, badge; keep top and bottom 15% clear for UI",
-      "style": "graceful fantasy creature proportions; office sprites stay chibi"
+      "background": "full-bleed decorative pixel scene (habitat/legend motifs); no frame, text, badge; top 19 and bottom 19 rows are covered by UI",
+      "colors": "shared palette",
+      "style": "graceful fantasy creature proportions within 96x128; office sprites stay chibi"
     },
     "portrait": {
-      "path": "assets/characters/{employee_id}/portrait.webp",
+      "path": "assets/characters/{employee_id}/portrait.png",
+      "logical_width": 48,
+      "logical_height": 48,
       "aspect": "1:1",
-      "min_width": 256,
-      "background": "transparent"
+      "background": "transparent",
+      "max_opaque_colors": 15
     },
     "work": {
-      "path": "assets/characters/{employee_id}/work-{pose}.webp",
-      "aspect": "1:1",
-      "min_width": 256,
-      "poses": [
+      "path": "assets/characters/{employee_id}/work.png",
+      "sheet": true,
+      "frame_width": 32,
+      "frame_height": 32,
+      "rows": [
         "idle",
         "walk",
         "work",
         "happy"
       ],
-      "background": "transparent"
+      "frames_per_row": 4,
+      "logical_width": 128,
+      "logical_height": 128,
+      "frame_ms": 180,
+      "background": "transparent",
+      "max_opaque_colors": 15,
+      "reduced_motion": "show frame 0 of the row only"
+    },
+    "reference": {
+      "path": "(not shipped) docs/art reference sheet kept outside the game bundle",
+      "note_ko": "픽셀 그림의 기준이 되는 고해상도 설정화. 게임에 싣지 않고 출처 기록에만 남긴다(PROMPTS.md 2절)."
     }
   },
   "assets": [

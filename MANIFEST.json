@@ -152,8 +152,8 @@
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 8759,
-      "sha256": "e85d22978ea213f10753d59a67a438a3b5a757fff03f02956175bdb1dd2abd9a"
+      "size_bytes": 12243,
+      "sha256": "06efcc86791a82ccc6e685f7506967d58f4a6f75b31896da3f92912c95164523"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 46660,
-      "sha256": "cd84841416289dcbb63aeb94ac86907a1348e61a6394708cbbb18a3f0c4f879d"
+      "size_bytes": 50997,
+      "sha256": "d140c115d8f961fc793071341766aa4a47545cc0f71b15a7903915d503b002ec"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 9764,
-      "sha256": "09cd55a4a503eb80758e6a02d6e8888188702d748d7e62600397e2e05dae287f"
+      "size_bytes": 9925,
+      "sha256": "358808cc0231808e4f4ff69e1a15387b4dc5b37639a869de5602e157441c6200"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 23664,
-      "sha256": "537354e53eb7ce002e4742d4decc419b614aa78ddb7ff17b8a421a0ff92f2a02"
+      "size_bytes": 25174,
+      "sha256": "63d76814f6775069950aae535c76a20d94ebe386e24bee6aab3c0b5c3463baa1"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 2051,
-      "sha256": "def1e0aab5ce0a35e77706f4235d473b3ea173f231fc934a9fa7868b98577efc"
+      "size_bytes": 2367,
+      "sha256": "a203f2ff2b470fce16cad225a5f6f78c2593d905cae78133005ec198ecd3cfa5"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -251,6 +251,11 @@
       "sha256": "dc0e2672ed486c1250333d08b0f68455df9c92fc88b5b3bfcabbddc2b384999d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
+      "size_bytes": 17204,
+      "sha256": "9c77e260a8a12b125e10f3cee908049262d2a8857f384522f225ecae2bd9c44e"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -272,13 +277,18 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 7522,
-      "sha256": "e2f5169e8a3afc80869b15a6296658e40ced37c31343d38a8982aeb909514d47"
+      "size_bytes": 8496,
+      "sha256": "2c140c69e19cfb5795138aacc009b16d5cf3d654d13fb8b657f4d31863853b9a"
+    },
+    {
+      "path": "docs/art/PIXEL_SPEC.md",
+      "size_bytes": 8600,
+      "sha256": "47d7d6d9f5f0680cc44b1d5061a55a6bf5311b01c751d8178139f79ae174288a"
     },
     {
       "path": "docs/art/PROMPTS.md",
-      "size_bytes": 13489,
-      "sha256": "a299bf94549f2755debe3fe69a33de122fb301cf9982a6545fc53f10ccf29f58"
+      "size_bytes": 19506,
+      "sha256": "60eef332fd1625d0716810ccc1e5960aecac89fd2c4c6e315e61f2e2ec79bded"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",

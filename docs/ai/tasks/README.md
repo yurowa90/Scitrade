@@ -10,7 +10,9 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 | [TASK-0002](TASK-0002-recruitment-ui.md) | 영입 화면·운영표 후보 행·한 번에 확정 공개 조건 | Sol (`gpt-6.1-sol`) | TASK-0001 | 완료 (반려 1회 → [R1](TASK-0002-R1-recruitment-ui-fixes.md), 개발 브랜치 반영) |
 | [TASK-0003](TASK-0003-world-source-check.md) | 세계 거점 근거 18건 원문 대조 (조사) | Sol (`gpt-6.1-sol`) | — | 완료 (Claude 교차 검증 후 데이터 반영) |
 | TASK-0004 | 업무 경험치·레벨·일반 훈련 엔진 (M2a-3) | Astra (`gpt-6-astra`) | TASK-0001·0002 | 검수 중 (작업 브랜치 `codex/TASK-0004`) |
-| TASK-0006 | 영입 검수 잔여 정리 (테스트 보강·접근 이름·내부 ID 문구·검사기 KeyError·원화 보고 행) | Sol (`gpt-6.1-sol`) | 영입 반영 | 지시서 작성 예정 |
+| TASK-0005 | 경험치·레벨·훈련 화면 + 영입 검수 잔여 정리(옛 TASK-0006: 테스트 보강·접근 이름·내부 ID 문구·검사기 KeyError·원화 보고 행) | Sol (`gpt-6.1-sol`) | TASK-0004 반영 | 지시서 작성 예정 |
+| ~~TASK-0006~~ | TASK-0005에 합침 | — | — | — |
+| [TASK-0007](TASK-0007-pixel-rendering.md) | 픽셀아트 렌더링(정수 배율)·픽셀 지도 생성·팔레트·그림 검사 도구 | Sol (`gpt-6.1-sol`) | 픽셀아트 결정(2026-10-05) | 대기 |
 
 상태 값: `대기`, `Codex 실행 중`, `검수 중`, `반려(n회)`, `완료(커밋 해시)`.
 
