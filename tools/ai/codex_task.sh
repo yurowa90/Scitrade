@@ -5,7 +5,8 @@
 #
 # - 지시서 머리말의 `codex_model`, `reasoning_effort`, `web_search` 줄을 읽어 모델을 고른다.
 # - 로컬 작업 브랜치 `codex/<작업 ID>`에서 실행한다. Codex는 커밋·푸시하지 않는다(CODEX_PREAMBLE.md).
-# - 인증: 환경 변수 CODEX_API_KEY(OpenAI API 키). 키는 codex 실행에만 넘기고 화면에 찍지 않는다.
+# - 인증: 사용자의 ChatGPT(Codex Pro) 계정 로그인. 이 클라우드 환경에서는 `codex login --device-auth`로
+#   로그인한다(세션 환경이 새로 만들어지면 다시 로그인). API 키(CODEX_API_KEY)는 쓰지 않는다(2026-10-05 사용자 결정).
 # - 샌드박스: 기본 workspace-write. 컨테이너가 Codex 샌드박스를 지원하지 않으면
 #   CODEX_SANDBOX=danger-full-access 로 다시 실행한다(이 클라우드 컨테이너 자체가 격리 환경일 때만).
 set -euo pipefail
@@ -27,11 +28,11 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "작업 트리에 커밋하지 않은 변경이 있습니다. 검수 대상과 섞이지 않도록 먼저 정리하세요." >&2
   exit 2
 fi
-if [ -z "${CODEX_API_KEY:-}" ]; then
-  echo "CODEX_API_KEY가 없습니다. 클라우드 환경 설정의 환경 변수에 등록한 뒤 새 세션에서 실행하세요." >&2
+command -v codex >/dev/null || npm i -g @openai/codex@0.160.0 >/dev/null
+if ! codex login status 2>/dev/null | grep -q "ChatGPT"; then
+  echo "Codex가 ChatGPT 계정으로 로그인되어 있지 않습니다. 'codex login --device-auth'로 로그인한 뒤 다시 실행하세요." >&2
   exit 3
 fi
-command -v codex >/dev/null || npm i -g @openai/codex@0.160.0 >/dev/null
 
 base="$(git rev-parse --abbrev-ref HEAD)"
 branch="codex/${id}"

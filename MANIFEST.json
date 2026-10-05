@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 39971,
-      "sha256": "ff913e4c93cf1d5dbd37398536fde96cd8122483b7750d3f427f200fc5b0327b"
+      "size_bytes": 41415,
+      "sha256": "8988eadbd5a4dc96f8e29016b2a6e9388a0a4d28215cc3cd2e3e6be7b3e7a732"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 20594,
-      "sha256": "9b534c1d287f703f1a3945fdd381e517a8bbec9ff4fef361eee0ae273dc08324"
+      "size_bytes": 20857,
+      "sha256": "513a226209f83aee7f806d8bb9fe389423c5c9db3822bbf11f85c50d12122b86"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 8755,
-      "sha256": "b15a05323bd8e0a248dabf309f95023e7c998cc0b4adfe5229cf468bca9c888e"
+      "size_bytes": 9364,
+      "sha256": "b2116c50aca08ee5237ecef1a1677238fb10ee252dc1bd6f5aa37667573bbc70"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -217,8 +217,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 1547,
-      "sha256": "c4479bc636d28118575066a6cc95975e8fc89d838e5064b9ad674d0481a56915"
+      "size_bytes": 1503,
+      "sha256": "46a2ff83c3c53537537d847c153608b5343c1b9961d01c0f1945e115a0eea45c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-recruitment-engine.md",
@@ -487,8 +487,8 @@
     },
     {
       "path": "tools/ai/codex_task.sh",
-      "size_bytes": 2895,
-      "sha256": "bbbfcdcf6578686a62684d6f336dd97c8b3df5b9e09e97d5402550279f79d9b3"
+      "size_bytes": 3090,
+      "sha256": "624dd60220ca71bfd3c3966da544d1696b17a16e4a46dca87b8afc84dbc1600d"
     },
     {
       "path": "tools/ai/review_checks.sh",

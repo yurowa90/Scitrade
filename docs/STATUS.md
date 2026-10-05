@@ -7,7 +7,7 @@
 - 자료 묶음: v0.4.1. 게임 설계 기준: v0.4.
 - 현재 요청: 개발 체계를 ‘Claude 총괄·검수 → Codex(Astra·Sol) 구현’으로 바꾸고, 첫 작업(동료 영입)을 Codex 지시서로 준비 (2026-10-05, Claude 코드 세션). 게임 코드는 바꾸지 않았다. 직전 요청은 계획 정리와 사용자 결정 8개 확정이다. 같은 날 아스트라(Codex) 플레이 연구 반영과 세계 거점 배치, 그 전 M2a 첫 단계와 M1 거래 한 건은 구현·검증 완료.
 - 게임 구현: M1·M2a 첫 단계의 내부 검증용 시제품. UI와 분리된 TypeScript 엔진(`src/engine`)과 최소 화면(`src/ui`). 공개 테스트용 MVP가 아님.
-- 다음 구현 단위: M2a-2 동료 발견·면담·영입·고용(도감 발견과 고용 분리). 설계와 수치는 2026-10-05 사용자가 확정했다(`docs/RESEARCH_APPLICATION.md`, `docs/DECISIONS.md` ‘앞으로의 계획과 사용자 결정’). 그 뒤 사람 사용성 시험. 구현은 Codex 지시서 TASK-0001(엔진, Astra)·TASK-0002(화면, Sol)로 맡기며, 이 환경의 Codex 실행 조건(네트워크 `api.openai.com` 허용, `CODEX_API_KEY`)을 사용자가 설정하기 전까지 대기한다.
+- 다음 구현 단위: M2a-2 동료 발견·면담·영입·고용(도감 발견과 고용 분리). 설계와 수치는 2026-10-05 사용자가 확정했다(`docs/RESEARCH_APPLICATION.md`, `docs/DECISIONS.md` ‘앞으로의 계획과 사용자 결정’). 그 뒤 사람 사용성 시험. 구현은 Codex 지시서 TASK-0001(엔진, Astra)·TASK-0002(화면, Sol)로 맡기며, Codex 실행 조건(네트워크 허용, ChatGPT 계정 로그인)은 2026-10-05에 갖췄다.
 - 이 계획의 존재를 게임 구현 착수나 완료로 해석하지 않는다. 다음 세션에서는 사용자가 요청한 작업 범위를 먼저 확인한다.
 
 ## 준비된 자료와 확인 범위
@@ -159,4 +159,8 @@ M2a 남은 위험:
 - 막힌 것: 네트워크 정책이 `api.openai.com`·`chatgpt.com`을 거부(프록시 403), `CODEX_API_KEY` 없음. Codex CLI 0.160.0 설치와 `codex exec` 옵션은 이 세션에서 확인했다. 실행 스크립트는 키가 없으면 종료 코드 3으로 멈추는 것까지 확인했다.
 - 이번 검증: 스크립트 문법 검사(`bash -n`), 지시서 머리말 읽기 시험, `python3 tools/build_package.py --manifest-only`, `python3 tools/validate_data.py`. 게임 코드 변경이 없어 엔진 테스트는 다시 돌리지 않았다(직전 63개 통과).
 - 다음의 가장 작은 작업: 사용자가 환경 설정(네트워크 `api.openai.com` 허용, 환경 변수 `CODEX_API_KEY`)을 마친 새 세션에서 `tools/ai/codex_task.sh docs/ai/tasks/TASK-0001-recruitment-engine.md`를 실행하고 Claude가 검수한다. TASK-0003은 같은 때 병행할 수 있다(파일이 겹치지 않음).
+- 갱신 (같은 날): API 키 대신 사용자의 Codex Pro 구독으로 바꿨다(사용자 결정).
+  - 기기 코드 로그인 성공. Astra·Sol 시험 응답 확인. 샌드박스 동작 확인.
+  - `codex_task.sh`는 ChatGPT 로그인 여부를 확인한다.
+  - 다음은 TASK-0001 실행과 검수다.
 
