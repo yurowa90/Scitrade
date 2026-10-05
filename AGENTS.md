@@ -11,4 +11,6 @@
 
 이 파일과 CLAUDE.md에 게임 규칙을 중복 작성하지 않는다. 공통 규칙을 수정할 때는 WORKFLOW.md를 갱신한다. 작업 단계·완료 상태가 바뀌면 STATUS.md를 실제 실행 근거와 함께 갱신한다. 사용자 지시와 적용되는 상위 지침이 우선한다.
 
+2026-10-05 추가된 레퍼런스는 [연구 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 읽는다. 세 관점의 보고서·개발 및 그래픽 사양·소스 데이터를 현재 구현과 대조하는 자료다.
+
 검증 시작 명령: `python3 tools/validate_data.py`.

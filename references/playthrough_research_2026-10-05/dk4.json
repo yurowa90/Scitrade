@@ -1,0 +1,419 @@
+{
+  "game": "대항해시대 4 HD",
+  "research_date": "2026-10-05",
+  "evidence_method": "시간표시 자동자막 분석. 프레임·음성 직접 확인 없음.",
+  "videos": [
+    {
+      "id": "7SwS3OAFOLw",
+      "title": "대항해시대4 HD리마스터 해보기(닌텐도스위치) -1화-",
+      "channel": "밀덕형",
+      "url": "https://www.youtube.com/watch?v=7SwS3OAFOLw",
+      "duration_seconds": 3084,
+      "transcript_language": "en-US (auto-generated)",
+      "coverage": "자동 생성 자막 전체 검토. 한국어 영상의 영어 제공 자막으로 번역·인식 오류 가능.",
+      "frame_reviewed": false,
+      "audio_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 288,
+          "end_seconds": 379,
+          "reported_play": "교역소·술집에서 구매와 선원 모집을 설명하고, 목적별 자동배치를 선택한다고 말한다.",
+          "design_implication": "도시 시설을 계약·채용·출항 준비의 행동 공간으로 연결한다."
+        },
+        {
+          "start_seconds": 446,
+          "end_seconds": 522,
+          "reported_play": "매입가를 찾지 못해 이익 판단을 여러 번 되짚는다.",
+          "design_implication": "매입 원가·운송비·예상 이익을 같은 거래 화면에서 비교한다."
+        },
+        {
+          "start_seconds": 534,
+          "end_seconds": 638,
+          "reported_play": "측량사와 장비를 통한 자동이동을 설명한다.",
+          "design_implication": "직원 성장으로 반복 업무의 위임 범위를 넓힌다."
+        },
+        {
+          "start_seconds": 654,
+          "end_seconds": 726,
+          "reported_play": "효율적인 교역보다 동료 수집과 이야기를 우선하겠다고 말한다.",
+          "design_implication": "여행 보상에 수익·현지 정보·동료 영입·문화 경험을 함께 둔다."
+        },
+        {
+          "start_seconds": 1551,
+          "end_seconds": 1640,
+          "reported_play": "새 동료의 정보 해설 기능과 능력치를 살피며 배치를 검토한다.",
+          "design_implication": "영입 직후 새 정보나 업무 선택지를 체험하게 한다."
+        },
+        {
+          "start_seconds": 2680,
+          "end_seconds": 2814,
+          "reported_play": "모집 조작 실수 뒤 자금 부족으로 계약하지 못해 귀항 판매한다고 말한다.",
+          "design_implication": "확정 전에 비용·거래 후 잔액·필수 운영비를 보여준다."
+        }
+      ]
+    },
+    {
+      "id": "hA_dNUMdnBE",
+      "title": "[대항해시대4 PK HD(리마스터)] 호드람 일대기 #1",
+      "channel": "함크TV",
+      "url": "https://www.youtube.com/watch?v=hA_dNUMdnBE",
+      "duration_seconds": 3150,
+      "transcript_language": "ko (auto-generated)",
+      "coverage": {
+        "method": "제공된 자막 전체 독해. 프레임·음성은 확인하지 않음.",
+        "read_intervals_seconds": [
+          [
+            0,
+            3150
+          ]
+        ],
+        "transcript_export_truncated": false,
+        "note": "초보 진행자의 조작과 추측을 구분한다. 자동자막의 선박명·수치는 사양으로 사용하지 않는다."
+      },
+      "frame_reviewed": false,
+      "audio_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 555,
+          "end_seconds": 622,
+          "reported_play": "선박을 개조해 화물칸을 늘리고 무역 물량을 확보하려 한다.",
+          "design_implication": "회사의 운송 용량 증설은 적재 공간·고정비·필요 인력을 함께 비교하게 한다."
+        },
+        {
+          "start_seconds": 738,
+          "end_seconds": 807,
+          "reported_play": "술집에서 선원을 모집하며 짧은 항로에서는 최소한의 인원과 보급으로 운영하려 한다.",
+          "design_implication": "인력 규모를 성공 확률 보너스 하나로 처리하지 않고 운항·급여·보급 수요와 연결한다."
+        },
+        {
+          "start_seconds": 870,
+          "end_seconds": 1002,
+          "reported_play": "방향 조작·바람·항구 위치에 혼란을 겪으며 이동 목표를 바꾼다.",
+          "design_implication": "물류 경로의 제약과 도착 전망을 먼저 보여주고, 반복 이동의 직접 조작 부담을 검증한다."
+        },
+        {
+          "start_seconds": 1825,
+          "end_seconds": 1839,
+          "reported_play": "새 인재를 찾을 도시의 단서를 받고 앞으로의 방문 경로를 고민한다.",
+          "design_implication": "직원 영입 단서는 문화 탐방과 신규 거점 진출의 동기가 될 수 있다."
+        },
+        {
+          "start_seconds": 2410,
+          "end_seconds": 2492,
+          "reported_play": "무역 규모가 작은데 선박을 다섯 척 보유할 필요가 있는지 질문하고 정박·매각과 선원 재배치를 검토한다.",
+          "design_implication": "수집한 자산을 모두 가동할 필요는 없게 하되 휴업·매각·재배치의 비용을 비교한다."
+        },
+        {
+          "start_seconds": 2502,
+          "end_seconds": 2546,
+          "reported_play": "새 동료에게 일을 맡기려 하지만 표시된 수치가 현재 능력 보너스인지 직무에 필요한 조건인지 헷갈려 한다.",
+          "design_implication": "현재 능력·필요 자격·배치 후 변화량을 서로 다른 이름과 열로 표시한다."
+        }
+      ]
+    },
+    {
+      "id": "NM7kSHMeQT4",
+      "title": "#1【いざ大海原へ】おついちの「大航海時代IV 」【2BRO.】",
+      "channel": "おついちTube",
+      "url": "https://www.youtube.com/watch?v=NM7kSHMeQT4",
+      "duration_seconds": 15738,
+      "transcript_language": "ja (auto-generated)",
+      "coverage": {
+        "method": "자막 전체에서 교역·계약·동료·배치·항로·자동 이동·보급·투자 관련 단어를 검색하고, 선정한 여섯 구간과 인접 문맥을 읽어 분석했다. 영상 프레임과 오디오는 확인하지 않았다.",
+        "transcript_first_timestamp_seconds": 38,
+        "transcript_last_timestamp_seconds": 15735,
+        "reviewed_intervals_seconds": [
+          [
+            1292,
+            1739
+          ],
+          [
+            2396,
+            2485
+          ],
+          [
+            3631,
+            3935
+          ],
+          [
+            7083,
+            7414
+          ],
+          [
+            11547,
+            12283
+          ],
+          [
+            13872,
+            14295
+          ]
+        ],
+        "player_context": "진행자는 초반에 대항해시대 2를 과거에 플레이했지만 4는 처음 시작한다고 설명한다. 따라서 조작 혼란과 가격 해석은 숙련자의 검증된 공략이 아니라 초보자의 학습 과정으로 다룬다.",
+        "limitations": [
+          "자동자막이 交易를 攻撃, 航海를 後悔, 測量士를 食料士 등으로 반복 오인식한다. 주변 문맥으로 역할을 구분하되 불명확한 고유명사와 수치는 확정하지 않았다.",
+          "reported_play는 진행자가 읽거나 말한 내용을 요약한 것으로 실제 화면 관찰 기록이 아니다.",
+          "게임 대사로 읽힌 튜토리얼, 진행자의 조작 결과 보고, 진행자의 추측을 구분했다.",
+          "design_implication은 Scitrade를 위한 설계 제안이며 원작의 구현 사양이나 실증적인 효과 검증을 뜻하지 않는다."
+        ]
+      },
+      "frame_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 1292,
+          "end_seconds": 1739,
+          "reported_play": "21:32부터 읽는 튜토리얼은 선장·조범수·조타수·부관·측량사 등 직무마다 서로 다른 기능이 있다고 설명하고, 진행자는 소수의 동료를 어느 자리에 둘지 여러 번 바꾸면서 측량 담당자가 없다는 점을 알아차린다. 26:45 이후에는 일반 선원을 모집·배치하며, 인원을 늘리면 보급 소모 때문에 항해 가능 일수가 줄어든다는 안내를 듣고 모든 지원자를 배치하지는 않는다.",
+          "design_implication": "직원 카드에는 능력치뿐 아니라 담당 가능한 업무와 그 업무가 해금하는 기능을 표시한다. 고유 동료를 통한 전문 직무와 일반 인력을 통한 처리량을 구분하고, 채용 확인창에 급여·유지비·운영 가능 기간의 변화를 함께 보여준다.",
+          "evidence_type": "튜토리얼 낭독 + 초보 진행자의 배치 시행착오와 모집 보고"
+        },
+        {
+          "start_seconds": 2396,
+          "end_seconds": 2485,
+          "reported_play": "39:56부터 읽는 설명에서는 인접 도시와의 계약으로 항로가 연결되고, 선장과 측량 담당자가 있으면 연결된 항로에서 자동 이동을 쓸 수 있다고 안내한다. 측량 담당자가 없는 현재 상황을 해결하기 위해 도구를 사서 동료에게 장비하라는 제안이 이어지며, 진행자는 자동 이동을 확보해야 할 당장의 목표로 받아들인다.",
+          "design_implication": "자동 물류 운용에는 확보한 노선과 담당 직원이라는 두 조건을 제시한다. 부족한 자격을 새 직원 채용, 기존 직원 교육, 업무 도구 지원 중 어떤 방식으로 충족할지 선택할 수 있게 설계하되, 초반 핵심 기능의 해금까지 지나치게 오래 반복 조작을 강요하지 않는다.",
+          "evidence_type": "튜토리얼 낭독 + 진행자의 필요성 평가; 이 구간만으로 자동 이동 성공을 확인한 것은 아님"
+        },
+        {
+          "start_seconds": 3631,
+          "end_seconds": 3935,
+          "reported_play": "1:00:31부터 진행자는 보유 도구의 장비와 측량 담당 배치를 시도한 다음 자동 이동 목적지를 선택하며, 한동안 도달 가능한 도시와 클릭 위치를 혼동한다. 이후 목적지 선택이 되었다고 말하고, 1:05:30에는 자동 항해를 쓰자 이동이 한결 편해졌다고 평가한다.",
+          "design_implication": "반복 업무의 위임은 직원 성장의 체감 보상으로 연결할 수 있다. 자동화가 실행되지 않을 때는 미충족 자격·노선 미연결·목적지 선택 문제를 구별해 알려주고, 선택 가능한 목적지와 실행 결과를 즉시 확인하게 한다.",
+          "evidence_type": "초보 진행자의 조작 결과 보고와 사용감 평가; 클릭 문제의 원인에 관한 진행자 추측은 확정하지 않음"
+        },
+        {
+          "start_seconds": 7083,
+          "end_seconds": 7414,
+          "reported_play": "1:58:03부터 새 인물을 동료로 받아들이는 대화가 이어지며, 새 동료는 기존 지역의 높은 계약·투자 비용과 성장 여지의 제약을 설명하고 다른 지역 진출을 권한다. 진행자는 이 설명을 현재의 자금 문제와 연결한 뒤 신규 동료의 능력과 기존 동료의 레벨·장비 효과를 비교하며 배치를 다시 검토한다.",
+          "design_implication": "신규 동료는 능력치 상승 외에 시장 정보, 현지 인맥, 새 계약의 단서를 제공하게 한다. 다만 대항해시대의 지역 발전 서사를 현대 국가의 고정된 우열로 옮기지 않고, 상품별 수요·기업 경쟁·물류 접근성 등 시나리오 조건으로 시장 진출 판단을 구성한다.",
+          "evidence_type": "동료 영입 장면의 대사 낭독 + 진행자의 능력 비교와 배치 검토"
+        },
+        {
+          "start_seconds": 11547,
+          "end_seconds": 12283,
+          "reported_play": "3:12:27부터 진행자는 보유 화물과 도시별 시세를 대조하며, 품목 분류와 가격 지수의 뜻을 확인하고 매입지와 판매지를 정하는 방법을 스스로 정리한다. 이후 특정 도시 사이의 거래를 시험해 이익이 났다고 보고하고, 반복 거래 후 시세 변화와 돌아오는 길에 팔 화물까지 확인하려 하며, 수요가 차면 가격이 하락할 것이라는 말은 이 시점에서 진행자의 가설이다.",
+          "design_implication": "시세 지수만 제시하지 말고 실제 매입 원가·예상 판매액·운송비·왕복 소요일을 한 화면에서 비교하게 한다. 시험 거래의 예상과 결과를 나란히 기록하면 플레이어가 수요 변화와 왕복 노선의 수익성을 학습할 수 있으며, 원작 자막으로 확인하지 못한 가격 공식은 별도 모델로 명시한다.",
+          "evidence_type": "초보 진행자의 가격 해석·가설·거래 결과 보고; 가격 수치와 공식은 검증하지 않음"
+        },
+        {
+          "start_seconds": 13872,
+          "end_seconds": 14295,
+          "reported_play": "3:51:12부터 선박 관리에 관심이 많은 인물을 동료로 영입하는 대화를 읽은 뒤, 담당실과 전문 인력의 조합이 장거리 항해에 어떤 도움을 주는지 설명을 듣는다. 진행자는 이후 선실 개조와 배치를 검토하며 목재실·조리실에 담당자를 둘 생각을 말하고, 인력과 자금이 한정된 상황에서 다른 보직과의 우선순위를 고민한다.",
+          "design_implication": "부서 시설을 짓는 것과 적임자를 배치하는 것을 함께 요구하면 직원 수집과 회사 확장이 연결된다. 예를 들어 법무팀 공간만으로 모든 통관 문제가 해결되지 않고, 관련 전문성을 가진 직원과 업무 도구가 갖춰져야 해당 계약을 처리하도록 구성한다.",
+          "evidence_type": "동료 영입·전문 업무 안내의 대사 낭독 + 진행자의 개조 및 보직 검토"
+        }
+      ],
+      "audio_reviewed": false
+    },
+    {
+      "id": "7tZ7qNukwKo",
+      "title": "[대항해시대4] 세계 7대양을 제패하는 무역 상단이 되어보자!",
+      "channel": "옥냥이 RoofTopCAT",
+      "url": "https://www.youtube.com/watch?v=7tZ7qNukwKo",
+      "duration_seconds": 42778,
+      "transcript_language": "ko (auto-generated)",
+      "coverage": {
+        "method": "내보낸 자막을 키워드 탐색하고 아래 구간의 인접 문맥을 독해. 전편 시청이나 전체 자막 정독 아님.",
+        "read_intervals_seconds": [
+          [
+            820,
+            900
+          ],
+          [
+            2200,
+            2230
+          ],
+          [
+            10110,
+            10165
+          ],
+          [
+            22645,
+            22920
+          ],
+          [
+            23315,
+            23400
+          ]
+        ],
+        "transcript_export_truncated": true,
+        "transcript_last_timestamp_seconds": 27197,
+        "note": "원본 길이 11:52:58이나 자막은 7:33:17에서 잘림. 이후 내용은 분석하지 않았다. 선택 구간 모두 잘림 이전이다."
+      },
+      "frame_reviewed": false,
+      "audio_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 820,
+          "end_seconds": 893,
+          "reported_play": "상품 등급 숫자의 방향을 혼동하고, 투자 확정 전 점유율이 얼마나 늘어나는지 알기 어렵다고 말한다.",
+          "design_implication": "등급에는 의미 라벨을 붙이고 투자 확인창에서 예상 변화와 불확실성을 구분해 보여준다."
+        },
+        {
+          "start_seconds": 2202,
+          "end_seconds": 2229,
+          "reported_play": "도시에 투자할 시점이 고민되지만 우선 선박부터 갖추고 초기 점유율은 작게 유지하기로 한다.",
+          "design_implication": "거점 투자와 운송 능력 증설이 경쟁하는 자본 배분을 비용·매출 전망으로 비교한다."
+        },
+        {
+          "start_seconds": 10119,
+          "end_seconds": 10160,
+          "reported_play": "반복 거래 중 일괄 매각은 있는데 일괄 매입은 왜 없는지 질문한다.",
+          "design_implication": "반복 주문 템플릿을 제공하되 일괄 실행 전 총액·재고·적재량을 다시 검증한다."
+        },
+        {
+          "start_seconds": 22651,
+          "end_seconds": 22915,
+          "reported_play": "월이 바뀌는 시점에 재고를 노려 거래하고, 나중에 가격이 떨어지자 유행이 지났기 때문이라고 해석한다.",
+          "design_implication": "시세와 이벤트 효과에 관측 시각·만료 여부를 표시한다. 진행자의 해석을 검증된 가격 공식으로 사용하지 않는다."
+        },
+        {
+          "start_seconds": 23316,
+          "end_seconds": 23384,
+          "reported_play": "지방 함대를 편성하면서 핵심 동료가 본대에서 빠지는 점을 걱정하고, 해역 위임 뒤 알아서 교역하는지 묻는다.",
+          "design_implication": "부서장 위임에는 본대의 업무 공백과 위임 범위를 미리 보여주고 실행 기록을 제공한다. 이 구간만으로 자동 교역 성공을 확정하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "56IwBEKHtoA",
+      "title": "대항해시대4 HD리마스터 해보기(닌텐도스위치) -2화-",
+      "channel": "밀덕형",
+      "url": "https://www.youtube.com/watch?v=56IwBEKHtoA",
+      "duration_seconds": 3533,
+      "transcript_language": "en-US (auto-generated)",
+      "coverage": {
+        "method": "초반부터 약 33분, 49–52분 및 55–58분 구간의 제공 자막 독해. 전편 재생 아님.",
+        "read_intervals_seconds": [
+          [
+            0,
+            1980
+          ],
+          [
+            2940,
+            3120
+          ],
+          [
+            3300,
+            3524
+          ]
+        ],
+        "transcript_export_truncated": false,
+        "note": "한국어 영상에 영어 제공 자막이므로 번역·인식 오류 가능. 명확한 선택과 발화를 중심으로 요약."
+      },
+      "frame_reviewed": false,
+      "audio_reviewed": false,
+      "observations": [
+        {
+          "start_seconds": 172,
+          "end_seconds": 198,
+          "reported_play": "유적과 신뢰에 관련된 대화를 따라가며 지역 탐색을 진행한다.",
+          "design_implication": "문화 활동이 지역 정보·개인 관계·회사 거래 신뢰 중 무엇을 바꾸는지 구분해서 보여준다."
+        },
+        {
+          "start_seconds": 1169,
+          "end_seconds": 1221,
+          "reported_play": "교역하려는 중 사건이 연이어 나오자 왜 이벤트가 이렇게 많은지 불평하면서도 목적지 단서를 따른다.",
+          "design_implication": "서사 이벤트는 수집·탐방의 동기가 되지만 거래 흐름을 자주 끊을 수 있다. 긴급도가 낮은 사건에는 보류와 기록 기능을 검토한다."
+        },
+        {
+          "start_seconds": 1908,
+          "end_seconds": 1946,
+          "reported_play": "장비의 수혜가 큰 인물을 확인한 뒤에도 능력이 더 낮은 선호 동료를 믿고 장비를 준다.",
+          "design_implication": "좋아하는 동료를 계속 쓰는 선택이 성립하도록 경험·직무 변경·도구 지원을 제공하고 교체와 육성을 함께 비교한다."
+        },
+        {
+          "start_seconds": 2988,
+          "end_seconds": 3106,
+          "reported_play": "반복 구매 품목의 가격이 올라 기다리면 나아질지 시험하지만 가격이 더 올랐다고 말한다.",
+          "design_implication": "한 번 발견한 경로를 영구적인 고정 이익으로 표시하지 않는다. 현재 시세와 과거 거래 결과를 나란히 보여준다."
+        },
+        {
+          "start_seconds": 3445,
+          "end_seconds": 3524,
+          "reported_play": "선박 개량에 현금을 전부 쓰지 않고 일부는 점유율 투자에 남기기로 한다.",
+          "design_implication": "설비 투자 확인창에 운영비·다음 계약 자금·남는 현금을 표시해 투자 후 자금 부족을 예상하게 한다."
+        }
+      ]
+    }
+  ],
+  "cross_video_findings": [
+    {
+      "claim": "전문 동료의 배치가 자동 이동과 신규 업무 접근을 매개한다.",
+      "supporting_video_ids": [
+        "7SwS3OAFOLw",
+        "NM7kSHMeQT4",
+        "hA_dNUMdnBE"
+      ],
+      "caveat": "진행자의 튜토리얼 낭독·조작 결과 보고에 근거하며 빌드별 수치를 검증하지 않았다.",
+      "scitrade_implication": "영입·교육의 보상을 수치 상승 외에 자격과 위임 가능한 업무 확대로 연결한다."
+    },
+    {
+      "claim": "동료와 사건은 이동 동기지만 반복 교역을 끊는 부담도 발생한다.",
+      "supporting_video_ids": [
+        "7SwS3OAFOLw",
+        "56IwBEKHtoA",
+        "NM7kSHMeQT4"
+      ],
+      "caveat": "서로 다른 진행자의 선호이며 이벤트 최적 빈도를 계산한 결과는 아니다.",
+      "scitrade_implication": "긴급 사건과 나중에 방문할 문화·동료 사건을 구분하고 거래 화면의 초안을 보존한다."
+    },
+    {
+      "claim": "작은 능력 숫자만으로 직무 조건·상품 등급·투자 결과를 판단하기 어려운 사례가 반복된다.",
+      "supporting_video_ids": [
+        "hA_dNUMdnBE",
+        "7tZ7qNukwKo",
+        "7SwS3OAFOLw"
+      ],
+      "caveat": "영상 화면을 보지 않아 특정 서체·배치가 원인이라고 단정하지 않는다.",
+      "scitrade_implication": "현재/요구/예상 변화와 단위를 분명히 표기하는 UI를 제안한다."
+    },
+    {
+      "claim": "선박 확대·거점 투자·인재 확보가 같은 현금을 두고 경쟁하며 반복 교역 시세도 달라진다.",
+      "supporting_video_ids": [
+        "7SwS3OAFOLw",
+        "7tZ7qNukwKo",
+        "56IwBEKHtoA",
+        "hA_dNUMdnBE"
+      ],
+      "caveat": "가격 형성 공식이나 최적 투자 비율을 추정하지 않았다.",
+      "scitrade_implication": "성장·유지비·시장 변화를 같은 자금 전망에 연결한다."
+    },
+    {
+      "claim": "선호 동료 유지와 위임에 따른 핵심 인력 이탈은 능력 최댓값만으로 설명하기 어려운 선택이다.",
+      "supporting_video_ids": [
+        "56IwBEKHtoA",
+        "7tZ7qNukwKo"
+      ],
+      "caveat": "표본 발화의 해석이며 모든 플레이어의 성향을 대표하지 않는다.",
+      "scitrade_implication": "애착 있는 신수에게도 경력과 지역 경험의 쓰임을 주고 지점장 파견 전 빈자리를 보여준다."
+    }
+  ],
+  "developer_implications": [
+    {
+      "proposal": "직원 자격·업무 슬롯·사용 가능한 자동화 명령을 별도 데이터로 연결하고 미충족 이유를 반환한다.",
+      "evidence_video_ids": [
+        "NM7kSHMeQT4",
+        "hA_dNUMdnBE"
+      ]
+    },
+    {
+      "proposal": "거래 초안과 실행을 분리하고 사건 화면을 다녀와도 초안을 보존하며 확정 때 다시 자금·시세·용량을 검사한다.",
+      "evidence_video_ids": [
+        "56IwBEKHtoA",
+        "7tZ7qNukwKo"
+      ]
+    },
+    {
+      "proposal": "시세에는 관측 시각, 위임에는 예산·지역·담당자·실행 기록을 저장한다.",
+      "evidence_video_ids": [
+        "7tZ7qNukwKo",
+        "56IwBEKHtoA"
+      ]
+    }
+  ],
+  "limitations": [
+    "서로 다른 영상 5편, 채널 4개. 밀덕형 1·2화는 같은 제작자의 연속 플레이다.",
+    "자동자막 오인식·번역 가능성이 있으며 정확한 비용·능력치·수식은 채택하지 않았다.",
+    "옥냥이 영상 자막은 7:33:17에서 잘렸다.",
+    "모든 개발·시각 제안은 Scitrade의 후보 설계이며 원작 내부 구현 분석이 아니다."
+  ]
+}

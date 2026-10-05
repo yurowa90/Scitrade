@@ -12,13 +12,13 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 1055,
-      "sha256": "d2d8b72a58078b4aada807992754be7ec0d1979265c568a9e104f08ce30a3b5c"
+      "size_bytes": 1303,
+      "sha256": "8b583dcbcdd8db4b2b4610aa078d71fdbcfb5fc2a5902de81a315bd4cf1e1d28"
     },
     {
       "path": "CLAUDE.md",
-      "size_bytes": 1079,
-      "sha256": "0862f27459e4b209a8a5eeb8933658354cca02c466dca58634ef6f421d275e95"
+      "size_bytes": 1327,
+      "sha256": "4eb7b4d42b49a3c2e07c36d8f326db090b639f372cd41987a427c95f73a90eff"
     },
     {
       "path": "PACKAGE_STATUS.json",
@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 11567,
-      "sha256": "47719571855b8045d8eb00138cba6c283df0a4c84083e2c8a682444c33983c7c"
+      "size_bytes": 12425,
+      "sha256": "a24498c3aa09104c01df024eefde48cb44429bd079b949670da9bab556ff2e75"
     },
     {
       "path": "START_HERE.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 12433,
-      "sha256": "24b667ce91e30a9dd8322bde1968e7d8cfccfa4c5e877a7b1abb7745a300ad33"
+      "size_bytes": 13864,
+      "sha256": "8a61064b2f2e67d85a0562685d56d6b260422694bf09342533b64756f45331fa"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,13 +197,13 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 2400,
-      "sha256": "a49aec8abf1b411eae696966484309875598e8cac589e9ff7ad3fd2c63670857"
+      "size_bytes": 2683,
+      "sha256": "bfdb4d4708dbdfa2d74e6060748c3e84e6f913c2d9a9aae56d5231c0ed0e65b9"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 4924,
-      "sha256": "c880524c83e667dab3e5a961b9dccfc2294d7e459458b11340127029b44ce2e4"
+      "size_bytes": 5021,
+      "sha256": "343a8e405c631f42f5d781ca872e7266a1bf292fc5296143ce5dd8375a076ff8"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -229,6 +229,86 @@
       "path": "references/guild3_reference.json",
       "size_bytes": 14269,
       "sha256": "6c6cb4e74b22af093ee03463616bf89d20d2f0e3227c69a747ee7dbb331e0c4d"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/HANDOFF.md",
+      "size_bytes": 4669,
+      "sha256": "3a54ad16312108fb38d56abc0c725b0c1004c91901139e8a7789b5ba873b6bc9"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/MANIFEST.json",
+      "size_bytes": 1695,
+      "sha256": "98561470aaad0640f195357211f37bc46f94152b0f76890d7781a2da9d9ebae2"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/README.md",
+      "size_bytes": 4441,
+      "sha256": "d2fec99b5d183469d9cdf2bd8b8ab9b5b7f35b4f757c114b516c0fa245799647"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/Scitrade_playthrough_research.json",
+      "size_bytes": 193982,
+      "sha256": "db90a10902289ac695c2585cfc11589beda33caf07fd8e7a0d729dcb4cb4b09a"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/Scitrade_playthrough_research_2026-10-05.md",
+      "size_bytes": 97265,
+      "sha256": "f708714a5a9cec0a70fccb0385d48da9094177da7ed93da93c2eb1f84febe5e4"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/developer_implementation_notes.md",
+      "size_bytes": 9266,
+      "sha256": "ca7ba95d38000c067e0e7125ec4a0e6144f0dc8d0b4ce1b3413a47ee3d945dc3"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/dk4.json",
+      "size_bytes": 24006,
+      "sha256": "4327607a60dbe212bd0db1ab6718f85cbf7cc4f4d28f223b4c99d6866688a079"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/game_dev_story.json",
+      "size_bytes": 22824,
+      "sha256": "ce1c62c6ec60af4da3ba8b99bdad17460251d5736a5eefdbef0c2a326ecd7a55"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/guild3.json",
+      "size_bytes": 20380,
+      "sha256": "8c94623e2280ac74c6adc466e37c812d30ba1c39c94011ebd9d0714106e541d8"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/observations.csv",
+      "size_bytes": 52565,
+      "sha256": "82667f19aee0f0c5a19826a49e47b81093f61e06f883c1008888726be647699a"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/software_inc.json",
+      "size_bytes": 25877,
+      "sha256": "1e9eacf15500e0da998c0879ab95ee6b30cfd6fdac9caaf7176e98fb76ac8d79"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/two_point_hospital.json",
+      "size_bytes": 19255,
+      "sha256": "fc7b7da4b62232d3662879abb8dab84018fda2103151dae2ec9537b7442d1433"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/video_index.csv",
+      "size_bytes": 5828,
+      "sha256": "51b1db0852d389c7f52315124133264f87f2bd3b336d8a7f70500ff05fd0cd2b"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/visual_implementation_notes.md",
+      "size_bytes": 10297,
+      "sha256": "6e0d88a8c50eececbb57a8dcc67744fcdabdaead1be895c0f134d95a3ca30ed7"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/visual_review.json",
+      "size_bytes": 30314,
+      "sha256": "bd6dc0ca13fc3d60f182831754bc55077acc355f5774f2b5ef80af6e9592b6c6"
+    },
+    {
+      "path": "references/playthrough_research_2026-10-05/visual_review.md",
+      "size_bytes": 21414,
+      "sha256": "2a89a4e517618a4486a608eae945141ef6ec097d2a619b4c8c633fc4929a22b0"
     },
     {
       "path": "references/source_register.csv",

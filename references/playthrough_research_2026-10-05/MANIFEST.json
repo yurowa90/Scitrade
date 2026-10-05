@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "files_sha256": {
+    "HANDOFF.md": "3a54ad16312108fb38d56abc0c725b0c1004c91901139e8a7789b5ba873b6bc9",
+    "README.md": "d2fec99b5d183469d9cdf2bd8b8ab9b5b7f35b4f757c114b516c0fa245799647",
+    "Scitrade_playthrough_research.json": "db90a10902289ac695c2585cfc11589beda33caf07fd8e7a0d729dcb4cb4b09a",
+    "Scitrade_playthrough_research_2026-10-05.md": "f708714a5a9cec0a70fccb0385d48da9094177da7ed93da93c2eb1f84febe5e4",
+    "developer_implementation_notes.md": "ca7ba95d38000c067e0e7125ec4a0e6144f0dc8d0b4ce1b3413a47ee3d945dc3",
+    "dk4.json": "4327607a60dbe212bd0db1ab6718f85cbf7cc4f4d28f223b4c99d6866688a079",
+    "game_dev_story.json": "ce1c62c6ec60af4da3ba8b99bdad17460251d5736a5eefdbef0c2a326ecd7a55",
+    "guild3.json": "8c94623e2280ac74c6adc466e37c812d30ba1c39c94011ebd9d0714106e541d8",
+    "observations.csv": "82667f19aee0f0c5a19826a49e47b81093f61e06f883c1008888726be647699a",
+    "software_inc.json": "1e9eacf15500e0da998c0879ab95ee6b30cfd6fdac9caaf7176e98fb76ac8d79",
+    "two_point_hospital.json": "fc7b7da4b62232d3662879abb8dab84018fda2103151dae2ec9537b7442d1433",
+    "video_index.csv": "51b1db0852d389c7f52315124133264f87f2bd3b336d8a7f70500ff05fd0cd2b",
+    "visual_implementation_notes.md": "6e0d88a8c50eececbb57a8dcc67744fcdabdaead1be895c0f134d95a3ca30ed7",
+    "visual_review.json": "bd6dc0ca13fc3d60f182831754bc55077acc355f5774f2b5ef80af6e9592b6c6",
+    "visual_review.md": "2a89a4e517618a4486a608eae945141ef6ec097d2a619b4c8c633fc4929a22b0"
+  },
+  "contains_original_transcripts_or_images": false,
+  "github_edition_note": "기존 15파일 배포본에 HANDOFF를 추가하고 README의 재시작 오해를 방지하는 문구를 보완함."
+}
