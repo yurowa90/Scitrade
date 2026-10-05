@@ -356,6 +356,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
       customsDays: num(s, 'customs_days'),
       deliveryDeadlineDay: optNum(s, 'delivery_deadline_day'),
       paymentDueDay: optNum(s, 'cash_payment_due_day'),
+      // ROUTE01 검산 예시를 호환용으로 보존한다. 예약 정산에는 사용하지 않는다.
       preDepartureFreightRefundMinor: termMinor(cancel.freight_refund),
       preDepartureCancellationFeeMinor: termMinor(cancel.cancellation_fee),
       customerCancellationCompensationMinor: termMinor(cancel.customer_compensation),

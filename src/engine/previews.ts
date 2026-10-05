@@ -18,17 +18,19 @@ export function trainingPreview(state: GameState, config: ScenarioConfig, employ
     ? planState(state, config, [{ id, type: 'START_TRAINING', employeeId }]).results[0]!
     : { status: 'REJECTED', reasonKo: phaseReason };
   const allowed = result.status === 'APPLIED';
-  const xpGain = training?.xpOnCompletion ?? 0;
-  const xpAfter = (state.employees.find((e) => e.id === employeeId)?.xp ?? 0) + xpGain;
+  const employee = state.employees.find((e) => e.id === employeeId);
+  const xpGain = employee ? training?.xpOnCompletion ?? 0 : 0;
+  const xpAfter = employee ? employee.xp + xpGain : null;
   const def = config.employees.find((e) => e.id === employeeId);
   // 거절 상태에서도 조건을 갖췄을 때의 비용·성장 결과를 비교할 수 있게 한다.
   return { allowed, reasonKo: allowed ? null : result.reasonKo, fee,
-    durationDays: training?.durationDays ?? 0, xpGain, levelAfter: levelFor(xpAfter),
-    statsAfter: def ? statsFor(def, xpAfter) : null,
+    durationDays: training?.durationDays ?? 0, xpGain, levelAfter: xpAfter === null ? null : levelFor(xpAfter),
+    statsAfter: def && xpAfter !== null ? statsFor(def, xpAfter) : null,
     availableBeforeMinor, availableAfterMinor: availableBeforeMinor - fee.minor };
 }
 
-/** 현재 자금으로 급여를 끝까지 낼 마지막 날. 캠페인 끝까지 가능하면 null이다.
+/** 급여 통화의 현금에서 미지급 의무와 추가 지출을 한 번씩 뺀 뒤 급여를 완납할 마지막 날.
+ * 계약 자금 예약은 빼지 않는다. 잔액이 정확히 0이 되는 날까지 포함하며 캠페인 끝까지 가능하면 null이다.
  * 오늘 급여도 못 내면 state.day - 1을 반환한다(1일이면 0).
  */
 export function payrollRunwayDay(state: GameState, config: ScenarioConfig, extraOutlayMinor = 0): number | null {

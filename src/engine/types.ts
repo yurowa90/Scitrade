@@ -116,8 +116,9 @@ export interface ScenarioTerms {
   /** 시나리오가 직접 정한 납기·결제일 (M1). null이면 고객 견적의 값을 쓴다. */
   deliveryDeadlineDay: number | null;
   paymentDueDay: number | null;
-  /** 출항 전 예약 취소 시 운임 환급액과 취소비 (최소 단위). */
+  /** ROUTE01 기준 환급 검산 예시 (최소 단위). 실제 정산은 예약 선급 운임에서 취소비를 뺀다. */
   preDepartureFreightRefundMinor: number;
+  /** 출항 전 예약 취소의 고정 수수료 (최소 단위). */
   preDepartureCancellationFeeMinor: number;
   /** 고객 계약 취소 보상 (이 fixture에서는 0). */
   customerCancellationCompensationMinor: number;

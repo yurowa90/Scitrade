@@ -269,3 +269,71 @@ describe('급여 지급 가능일 표시', () => {
     expect(payrollRunwayDay(s, cfg)).toBeNull();
   });
 });
+
+describe('TASK-0008 통화·경계·거절 결과', () => {
+  it('미지급 USD 의무는 KRW 훈련의 자금과 실제 시작을 막지 않는다', () => {
+    const cfg = { ...config, startingCash: { ...config.startingCash, KRW: 50_000 } };
+    const s = open(cfg);
+    post(s.ledger, { id: 'USD-DEBT', day: 1, currency: 'USD', reason: '다른 통화 미지급 의무 검증',
+      lines: [{ account: 'CANCELLATION_EXPENSE', amount: 50_001 }, { account: 'ACCOUNTS_PAYABLE', amount: -50_001 }] });
+    s.obligations.push({ id: 'USD-DEBT', currency: 'USD', amountMinor: 50_001, reasonKo: '미지급 의무', incurredDay: 1, paidDay: null });
+    expect(pure(s, cfg, () => trainingPreview(s, cfg, 'EMP01'))).toMatchObject({
+      allowed: true, availableBeforeMinor: 50_000, availableAfterMinor: 0,
+    });
+    const result = planState(s, cfg, [training]);
+    expect(result.results[0]!.status).toBe('APPLIED');
+    expect(fundsPosition(result.state, cfg, 'KRW').cash).toBe(0);
+    expect(result.state.obligations).toEqual(s.obligations);
+  });
+
+  it.each([[80_000, 62], [80_001, 61]])('미지급 %i원을 한 번 빼면 마지막 완납일은 %i일이다', (unpaid, day) => {
+    const s = open();
+    debt(s, unpaid!);
+    expect(pure(s, config, () => payrollRunwayDay(s, config))).toBe(day);
+  });
+
+  it('급여 가능일은 계약의 KRW 자금 예약을 빼지 않는다', () => {
+    const cfg = structuredClone(config);
+    cfg.routes[0]!.currency = 'KRW';
+    cfg.routes[0]!.bookingFeeMinor = 100_000;
+    cfg.offers.find((o) => o.id === 'OFFER_FWD_01')!.currency = 'KRW';
+    const result = planState(open(cfg), cfg, [{ id: 'FWD', type: 'ACCEPT_FORWARDING', offerId: 'OFFER_FWD_01' }]);
+    expect(result.results[0]!.status).toBe('APPLIED');
+    expect(fundsPosition(result.state, cfg, 'KRW').reserved).toBe(100_000);
+    expect(pure(result.state, cfg, () => payrollRunwayDay(result.state, cfg))).toBe(62);
+  });
+
+  it.each(['MISSING', 'EMP02'])('상태에 없는 직원 %s의 훈련 미리보기는 가상 경험치·레벨·능력을 만들지 않는다', (employeeId) => {
+    const s = open();
+    s.employees = s.employees.filter((e) => e.id !== employeeId);
+    const preview = pure(s, config, () => trainingPreview(s, config, employeeId));
+    const actual = planState(s, config, [{ ...training, employeeId }]).results[0]!;
+    expect(actual.status).toBe('REJECTED');
+    expect(preview).toMatchObject({ allowed: false, reasonKo: actual.reasonKo,
+      xpGain: 0, levelAfter: null, statsAfter: null });
+  });
+
+  it.each([
+    ['후보', 'EMP04', '고용 중인 직원이 아닙니다.'],
+    ['없는 직원', 'MISSING', '고용 중인 직원이 아닙니다.'],
+    ['근무 시작 전', 'EMP01', '귀솔은(는) 2일부터 업무를 맡을 수 있습니다.'],
+    ['다른 도시', 'EMP01', '일반 훈련은 부산에서만 할 수 있습니다.'],
+    ['자금 부족', 'EMP01', '훈련비 자금이 부족합니다. 필요 50,000원, 사용 가능 49,999원.'],
+    ['업무 중', 'EMP01', '귀솔은(는) 다른 업무(항만 물류단지 현장 조사)를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.'],
+  ])('훈련 거절 %s는 processedCommands 전체에 정확한 일자·종류·상태·이유만 추가한다', (reason, employeeId, reasonKo) => {
+    const cfg = structuredClone(config);
+    if (reason === '자금 부족') cfg.startingCash.KRW = 49_999;
+    let s = open(cfg);
+    if (reason === '근무 시작 전') emp(s).availableFromDay = 2;
+    if (reason === '다른 도시') emp(s).locationCityId = 'YOKOHAMA';
+    if (reason === '업무 중') s = planState(s, cfg, [scout]).state;
+    const before = structuredClone(s);
+    const result = planState(s, cfg, [{ ...training, employeeId: employeeId! }]);
+    expect(result.results[0]!.status).toBe('REJECTED');
+    expect(result.state.processedCommands).toEqual({ ...before.processedCommands,
+      TRAIN: { day: 1, type: 'START_TRAINING', status: 'REJECTED', reasonKo },
+    });
+    expect(result.state).toEqual({ ...before, processedCommands: result.state.processedCommands });
+    expect(s).toEqual(before);
+  });
+});

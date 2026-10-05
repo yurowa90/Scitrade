@@ -15,18 +15,33 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
   if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');
   if (new Set(s.ledger.entries.map((e) => e.id)).size !== s.ledger.entries.length) problems.push('장부 항목 ID는 유일해야 합니다');
+  const entryIds = new Set(s.ledger.entries.map((e) => e.id));
+  const postedIds = Object.keys(s.ledger.postedIds);
+  if (postedIds.length !== entryIds.size || postedIds.some((id) => !entryIds.has(id))) {
+    problems.push('ledger.postedIds와 실제 원장 항목 ID가 다릅니다');
+  }
+  const candidateIds = new Set(s.recruitment.candidates.map((c) => c.employeeId));
+  if (candidateIds.size !== s.recruitment.candidates.length) problems.push('영입 후보 직원 ID는 유일해야 합니다');
+  const taskIds = new Set(s.tasks.map((t) => t.id));
   const employeeIds = new Set(s.employees.map((emp) => emp.id));
   for (const task of s.tasks) {
+    if (task.kind === 'RECRUIT_QUEST' && (task.subjectId === null || !candidateIds.has(task.subjectId))) {
+      problems.push(`${task.id}: 영입 의뢰 대상 ${task.subjectId} 후보가 없습니다`);
+    }
     if (task.assignedEmployeeId !== null && !employeeIds.has(task.assignedEmployeeId)) {
       problems.push(`${task.id}: 업무 담당자 ${task.assignedEmployeeId} 직원이 없습니다`);
     }
   }
   for (const contract of s.contracts) {
+    if (!taskIds.has(contract.prepTaskId)) problems.push(`${contract.id}: 준비 업무 ${contract.prepTaskId}가 없습니다`);
     if (contract.ownerEmployeeId !== null && !employeeIds.has(contract.ownerEmployeeId)) {
       problems.push(`${contract.id}: 계약 담당자 ${contract.ownerEmployeeId} 직원이 없습니다`);
     }
   }
   for (const candidate of s.recruitment.candidates) {
+    if (candidate.questTaskId !== null && !taskIds.has(candidate.questTaskId)) {
+      problems.push(`${candidate.employeeId}: 영입 의뢰 업무 ${candidate.questTaskId}가 없습니다`);
+    }
     if (!employeeIds.has(candidate.employeeId)) problems.push(`영입 후보 ${candidate.employeeId} 직원이 없습니다`);
   }
   const currencies = new Set<Currency>(s.ledger.entries.map((e) => e.currency));
@@ -100,6 +115,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   }
   for (const emp of s.employees) {
     const def = config.employees.find((e) => e.id === emp.id);
+    if (!def) problems.push(`${emp.id}: 직원 정의가 없습니다`);
     const awarded = Object.entries(s.xpAwardAmounts)
       .filter(([key]) => key.split('|')[0] === emp.id)
       .reduce((sum, [, amount]) => sum + amount, 0);
@@ -139,7 +155,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   }
   for (const task of s.tasks.filter((t) => t.kind === 'TRAINING')) {
     const fees = s.ledger.entries.filter((e) => e.id === `TRAINING-FEE-${task.id}`);
-    if (fees.length > 1) problems.push(`${task.id}: 훈련비 중복 기록`);
+    if (fees.length !== 1) problems.push(`${task.id}: 훈련비 중복 또는 누락 기록 (정확히 하나 필요)`);
   }
   for (const fee of s.ledger.entries.filter((e) => e.lines.some((l) => l.account === 'TRAINING_EXPENSE'))) {
     if (!s.tasks.some((t) => t.kind === 'TRAINING' && fee.id === `TRAINING-FEE-${t.id}`)) {

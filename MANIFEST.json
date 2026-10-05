@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 16874,
-      "sha256": "c0ff025ddf08f625f4c45590ce3a36129cf4e5cdcd219d1c22bbbb5426e7f611"
+      "size_bytes": 17342,
+      "sha256": "e2a9242b3b7176bc8c55fb676b08a912f89e9da75cdb614874bae2d32cfe4aa5"
     },
     {
       "path": "data/securities.json",
@@ -271,6 +271,11 @@
       "sha256": "9c77e260a8a12b125e10f3cee908049262d2a8857f384522f225ecae2bd9c44e"
     },
     {
+      "path": "docs/ai/tasks/TASK-0008-engine-robustness.md",
+      "size_bytes": 8055,
+      "sha256": "3c61597d9959ff2f5ee4f4a5a4d281f0c3c1e460d38d661806b596e758a5309b"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -294,6 +299,11 @@
       "path": "docs/ai/tasks/results/TASK-0004.md",
       "size_bytes": 31204,
       "sha256": "455d3d8ea42e5a28cf1a093db882b9593103316ec4ac18ef9dd4f0a6e58f23de"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0008.md",
+      "size_bytes": 10808,
+      "sha256": "8b420f3de9e2dec2de8bdca1a452ab763b55dbceb444e72c1642aae679e52c3b"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -562,8 +572,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 40207,
-      "sha256": "28fa416c284f672dd0fa6efb4553a16a84bff79f511164e71f91c74d1314ee39"
+      "size_bytes": 41261,
+      "sha256": "8c135fa457aa48ffe2fdc56f2fad5ad8b60dfcfab16fc43497927a67c84c3c7e"
     }
   ]
 }

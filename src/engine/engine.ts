@@ -673,10 +673,10 @@ function bookSailing(s: GameState, config: ScenarioConfig, contractId: string, s
 
 /** 출항 전 예약 해제. 운임 환급과 취소비를 계약 조건대로 정산한다. */
 function releaseBooking(s: GameState, config: ScenarioConfig, booking: Booking, why: string) {
-  const refund = config.terms.preDepartureFreightRefundMinor;
   const fee = config.terms.preDepartureCancellationFeeMinor;
-  if (refund + fee !== booking.prepaidFreightMinor) {
-    throw new EngineError(`${booking.id}: 환급(${refund})+취소비(${fee})가 선급운임(${booking.prepaidFreightMinor})과 다릅니다.`);
+  const refund = booking.prepaidFreightMinor - fee;
+  if (refund < 0) {
+    throw new Error(`${booking.id}: 자료 오류 — 취소비(${fee})가 선급운임(${booking.prepaidFreightMinor})보다 큽니다.`);
   }
   const currency = routeOf(config, booking.routeId).currency;
   const lines: LedgerLine[] = [{ account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor }];
