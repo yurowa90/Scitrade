@@ -445,7 +445,45 @@
         "DESIGN-V03",
         "DESIGN-V04"
       ],
-      "scope_note": "M2a 첫 단계: 복수 계약·운송 주선·자원 예약. 기대값은 USD 거래 장부만 검증하며 KRW 급여는 별도. 창고·고용·성장·문화 활동은 이후 단계."
+      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 창고·성장·문화 활동은 이후 단계.",
+      "recruitment": {
+        "data_basis": "DESIGN",
+        "status": "USER_REVIEWED_2026-10-05",
+        "decision_ref": "docs/DECISIONS.md 앞으로의 계획과 사용자 결정 — 2026-10-05",
+        "candidate_employee_ids": [
+          "EMP03",
+          "EMP04",
+          "EMP05",
+          "EMP06"
+        ],
+        "scout_work_units": 1,
+        "quest_work_units": 3,
+        "signing_fee_wage_days": 5,
+        "scout_sites": [
+          {
+            "venue_id": "VEN_LOUNGE",
+            "city_id": "BUSAN",
+            "candidate_employee_ids": [
+              "EMP03"
+            ]
+          },
+          {
+            "venue_id": "VEN_PORT",
+            "city_id": "BUSAN",
+            "candidate_employee_ids": [
+              "EMP04",
+              "EMP06"
+            ]
+          },
+          {
+            "venue_id": "VEN_TRADE",
+            "city_id": "BUSAN",
+            "candidate_employee_ids": [
+              "EMP05"
+            ]
+          }
+        ]
+      }
     }
   ],
   "$schema": "../schemas/scenarios.schema.json",

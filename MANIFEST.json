@@ -23,17 +23,17 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "e9c8ed248d1c3d63a43a3fd13134d9fcd6ce57dbbf67093ffd44b7cc66fb80e7"
+      "sha256": "1eda0a36e1cbae7b9e32dcb7c73294247e00d5c9d82a9a1653db83e99552df2f"
     },
     {
       "path": "README.md",
-      "size_bytes": 12717,
-      "sha256": "11f661200edd588efe6e64cadbb6e1ed5b4527c3765e6202eee2e18c0dbfb442"
+      "size_bytes": 12746,
+      "sha256": "b1a7a3762c613159a53d8a81258c3e2f2ce5bc31f3485ce0032c36040e2b02f4"
     },
     {
       "path": "START_HERE.md",
-      "size_bytes": 2878,
-      "sha256": "d55fdc220b5bbb064eafd2eee35145b3c6ed33d0a27fc5527a8a12feeea9a892"
+      "size_bytes": 2892,
+      "sha256": "082826c8dd56a65231d7cab5ebef5bd41dfc11e62f2fce009dda34bc2412725b"
     },
     {
       "path": "data/character_rules.json",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 15810,
-      "sha256": "a908784120df142939569171c14357077a79555bf73c465b28fef0e76a83d1a9"
+      "size_bytes": 16837,
+      "sha256": "9af6a97f9d09ceeb7d3d111b459ca538d8921f550a99faa9c502c25ac926747d"
     },
     {
       "path": "data/securities.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 44434,
-      "sha256": "58842da6bf769bd49158ac7b205245bcbd2ee8c76a8b342e053506b4b441d71d"
+      "size_bytes": 46660,
+      "sha256": "cd84841416289dcbb63aeb94ac86907a1348e61a6394708cbbb18a3f0c4f879d"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 9751,
-      "sha256": "426da91638de8b301a4036c246e35bc766c0406f9dc80de3b3d1d43a9a809f68"
+      "size_bytes": 9764,
+      "sha256": "09cd55a4a503eb80758e6a02d6e8888188702d748d7e62600397e2e05dae287f"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 21429,
-      "sha256": "bf4c3eca0165102cd8ff5f9f15367b5d50b735f3255312f775d595f21a980e9a"
+      "size_bytes": 23664,
+      "sha256": "537354e53eb7ce002e4742d4decc419b614aa78ddb7ff17b8a421a0ff92f2a02"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,13 +222,23 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 1537,
-      "sha256": "312e782099bf4c31b5638137725ced15e609d2015b18706c115f564c144961f6"
+      "size_bytes": 2051,
+      "sha256": "def1e0aab5ce0a35e77706f4235d473b3ea173f231fc934a9fa7868b98577efc"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
+      "size_bytes": 5426,
+      "sha256": "db5ee6b13ffc3415d6b9a92cccf7dcb15cf1e85fe554f44c3378874035d783d9"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-recruitment-engine.md",
       "size_bytes": 12558,
       "sha256": "242da58b647c06a987a31f761f3c9d2faab2e59c5206c70192e8589d859f0877"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0002-R1-recruitment-ui-fixes.md",
+      "size_bytes": 5127,
+      "sha256": "84cf088087242c6d8b62bb58c2198cf47d25d402b89d3370a8e3b1f7f78ac2ee"
     },
     {
       "path": "docs/ai/tasks/TASK-0002-recruitment-ui.md",
@@ -244,6 +254,16 @@
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0001.md",
+      "size_bytes": 17932,
+      "sha256": "db9babf8b54836d814baea369a3708357eb23fba5b50117d166fc9c57a40cd80"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0002.md",
+      "size_bytes": 17137,
+      "sha256": "5a517c50ab2e2deac18e9dbea78fa3dc99ccaf02a783ab1b1e9bd7d8d1b721fb"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0003.md",
@@ -452,8 +472,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 18025,
-      "sha256": "ec79e36272a852b887b1dabad1c5b3640138f936c5f7d0f83b324b4066a42f03"
+      "size_bytes": 20318,
+      "sha256": "c46ee8bf09bc0811e50886d90e103426b80fc757fff7f3365dd69dd7c8b98e6a"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -487,8 +507,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 34197,
-      "sha256": "754ee0fab04477a0c91c215c1a2af1cf9591a4d7af8117100cedea10176eaedb"
+      "size_bytes": 35893,
+      "sha256": "f0341db62d73ee79f1c112f50e2b7a121bd214f2216780dfa5d5f4170af84cdf"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -512,8 +532,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 33257,
-      "sha256": "ab5210fe00efc2a7a49da591643a233a24677adeb88931f9ab9569beb800a495"
+      "size_bytes": 36730,
+      "sha256": "edc742164e1a98aad2b480c1f02f05e185bb75b7194db2991bf8143fe952f648"
     }
   ]
 }

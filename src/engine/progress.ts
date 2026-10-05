@@ -2,6 +2,7 @@
 // "무엇이 다음 단계를 막고 있는가"를 화면이 직원 처리량·운항표·사건과 같은 근거로 설명하게 한다.
 
 import { cityName, findSailing, listSailings, routeBetween } from './catalog';
+import { employedDefs } from './employees';
 import { formatMoney } from './money';
 import type { Contract, GameState, ScenarioConfig } from './types';
 
@@ -68,7 +69,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
   if (task?.status === 'QUEUED') {
     blockers.push({ code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: `준비 업무 ${task.requiredWorkUnits}pt를 맡을 직원이 없습니다. 배정하기 전에는 화물이 출발할 수 없습니다.` });
   } else if (task?.status === 'RUNNING') {
-    const emp = config.employees.find((e) => e.id === task.assignedEmployeeId);
+    const emp = employedDefs(s, config).find((e) => e.id === task.assignedEmployeeId);
     const rate = emp?.workUnitsPerDay ?? 0;
     const remaining = task.requiredWorkUnits - task.progressWorkUnits;
     // 업무는 하루 마감 때 진행되고, 출항은 같은 날 업무 진행 뒤에 처리한다. 그래서 출항일에 끝나도 실을 수 있다.

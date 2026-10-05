@@ -20,6 +20,7 @@ import {
   type OfferDef,
   type PortRestrictionDef,
   type RouteDef,
+  type RecruitmentDef,
   type RulesVersion,
   type ScenarioConfig,
   type ScenarioRules,
@@ -294,6 +295,21 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     });
   }
 
+  const rawRecruitment = s.recruitment as {
+    candidate_employee_ids: string[]; scout_work_units: number; quest_work_units: number;
+    signing_fee_wage_days: number;
+    scout_sites: { venue_id: string; city_id: string; candidate_employee_ids: string[] }[];
+  } | undefined;
+  const recruitment: RecruitmentDef | null = rawRecruitment ? {
+    candidateEmployeeIds: rawRecruitment.candidate_employee_ids,
+    scoutWorkUnits: rawRecruitment.scout_work_units,
+    questWorkUnits: rawRecruitment.quest_work_units,
+    signingFeeWageDays: rawRecruitment.signing_fee_wage_days,
+    scoutSites: rawRecruitment.scout_sites.map((site) => ({
+      venueId: site.venue_id, cityId: site.city_id, candidateEmployeeIds: site.candidate_employee_ids,
+    })),
+  } : null;
+
   return {
     id,
     titleKo: (s.title_ko as string | undefined) ?? TITLES[id as M1ScenarioId] ?? id,
@@ -310,7 +326,8 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     goods: goodIds.map(toGood),
     routes: routeDefs,
     offers,
-    employees: (s.employee_ids as string[]).map(toEmployee),
+    employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map(toEmployee),
+    recruitment,
     terms: {
       prepWorkUnits: terms.prep_work_units,
       forwardingPrepWorkUnits: terms.forwarding_prep_work_units ?? 0,

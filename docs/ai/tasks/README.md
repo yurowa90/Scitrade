@@ -6,9 +6,11 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 
 | ID | 내용 | 담당 모델 | 선행 | 상태 |
 |---|---|---|---|---|
-| [TASK-0001](TASK-0001-recruitment-engine.md) | 동료 발견·의뢰·고용 엔진 (M2a-2) | Astra (`gpt-6-astra`) | — | 실행 준비됨 |
-| [TASK-0002](TASK-0002-recruitment-ui.md) | 영입 화면·운영표 후보 행·한 번에 확정 공개 조건 | Sol (`gpt-6.1-sol`) | TASK-0001 검수 통과 | 대기 |
+| [TASK-0001](TASK-0001-recruitment-engine.md) | 동료 발견·의뢰·고용 엔진 (M2a-2) | Astra (`gpt-6-astra`) | — | 완료 (반려 1회 → [R1](TASK-0001-R1-recruitment-engine-fixes.md), 개발 브랜치 반영) |
+| [TASK-0002](TASK-0002-recruitment-ui.md) | 영입 화면·운영표 후보 행·한 번에 확정 공개 조건 | Sol (`gpt-6.1-sol`) | TASK-0001 | 완료 (반려 1회 → [R1](TASK-0002-R1-recruitment-ui-fixes.md), 개발 브랜치 반영) |
 | [TASK-0003](TASK-0003-world-source-check.md) | 세계 거점 근거 18건 원문 대조 (조사) | Sol (`gpt-6.1-sol`) | — | 완료 (Claude 교차 검증 후 데이터 반영) |
+| TASK-0004 | 업무 경험치·레벨·일반 훈련 엔진 (M2a-3) | Astra (`gpt-6-astra`) | TASK-0001·0002 | 검수 중 (작업 브랜치 `codex/TASK-0004`) |
+| TASK-0006 | 영입 검수 잔여 정리 (테스트 보강·접근 이름·내부 ID 문구·검사기 KeyError·원화 보고 행) | Sol (`gpt-6.1-sol`) | 영입 반영 | 지시서 작성 예정 |
 
 상태 값: `대기`, `Codex 실행 중`, `검수 중`, `반려(n회)`, `완료(커밋 해시)`.
 

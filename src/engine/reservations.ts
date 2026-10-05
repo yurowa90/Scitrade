@@ -2,6 +2,7 @@
 // 예약은 상태에서 매번 계산하며 따로 저장하지 않는다. 같은 돈·직원·공간을 두 곳에 기록하지 않기 위해서다.
 
 import { cargoSpace, dutyEstimate, routeBetween, routeOf, type Sailing } from './catalog';
+import { isAvailableFromToday } from './employees';
 import { balance } from './ledger';
 import type { Currency } from './money';
 import type { GameState, ScenarioConfig, Task } from './types';
@@ -121,5 +122,6 @@ export const fmtM3 = (liters: number) => `${(liters / 1000).toLocaleString('ko-K
 
 /** 직원이 지금 맡고 있는 업무. 한 사람은 한 번에 업무 하나만 진행한다(M2a). */
 export function runningTaskOf(s: GameState, employeeId: string): Task | undefined {
+  if (!isAvailableFromToday(s, employeeId)) return undefined;
   return s.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === employeeId);
 }

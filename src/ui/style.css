@@ -331,3 +331,21 @@ table.roster th .nm { display: block; font-weight: 700; white-space: nowrap; mar
 table.roster thead th, table.roster td.num { white-space: nowrap; }
 table.roster td.num { text-align: right; }
 table.roster .chip { font-size: .7rem; padding: 0 .4rem; }
+
+/* 영입: 좁은 동료 칸에서도 비용과 담당 선택을 줄바꿈한다. */
+.recruitment { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; }
+.recruit-site, .recruit-candidate { border: 1px solid var(--line); border-radius: 10px; padding: .6rem; margin-top: .6rem; }
+.recruitment h4, .interview h4 { margin: 0 0 .4rem; }
+.recruitment p { font-size: .82rem; }
+.recruitment label { display: flex; flex-direction: column; font-size: .8rem; margin-bottom: .4rem; }
+.recruitment select { width: 100%; min-width: 0; }
+.recruitment button { max-width: 100%; }
+.interview { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--line); }
+.interview-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: .5rem; font-size: .8rem; }
+.interview-facts dt { color: var(--navy-soft); }
+.interview-facts dd { margin: 0; font-weight: 700; }
+@media (max-width: 640px) {
+  .planner label, .planner select { min-width: 0; max-width: 100%; width: 100%; }
+  table.roster { table-layout: fixed; }
+  table.roster thead th, table.roster td.num { white-space: normal; }
+}

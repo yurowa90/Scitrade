@@ -1,6 +1,7 @@
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
 
 import { findSailing, routeOf } from './catalog';
+import { isEmployed } from './employees';
 import { balance } from './ledger';
 import type { Currency } from './money';
 import { sailingLoad } from './reservations';
@@ -10,6 +11,7 @@ export class InvariantError extends Error {}
 
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   const problems: string[] = [];
+  if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   const currencies = new Set<Currency>(s.ledger.entries.map((e) => e.currency));
   const kindOf = (contractId: string) => s.contracts.find((c) => c.id === contractId)?.kind;
 
@@ -81,9 +83,23 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   }
   for (const emp of s.employees) {
     const running = s.tasks.filter((t) => t.status === 'RUNNING' && t.assignedEmployeeId === emp.id);
+    if (running.length && (!isEmployed(s, emp.id) || emp.availableFromDay > s.day)) {
+      problems.push(`${emp.id}: 근무 가능한 고용 직원이 아닌데 진행 중 업무가 있습니다`);
+    }
+    const wages = s.ledger.entries.filter((e) => /^WAGE-D\d+-/.test(e.id) && e.id.endsWith(`-${emp.id}`));
+    if (!isEmployed(s, emp.id) && wages.length) problems.push(`${emp.id}: 미고용 직원의 급여 기록`);
+    if (wages.some((e) => e.day < emp.availableFromDay)) problems.push(`${emp.id}: 근무 시작일 이전 급여 기록`);
     if (running.length > 1) {
       problems.push(`${emp.id}에게 진행 중 업무가 ${running.length}건입니다`);
     }
+  }
+
+  for (const candidate of s.recruitment.candidates) {
+    if (candidate.stage === 'HIRED' && !isEmployed(s, candidate.employeeId)) {
+      problems.push(`${candidate.employeeId}: 고용 확정 후보의 고용 상태 불일치`);
+    }
+    const signings = s.ledger.entries.filter((e) => e.id === `SIGNING-${candidate.employeeId}`);
+    if (signings.length > 1) problems.push(`${candidate.employeeId}: 계약금 중복 기록`);
   }
 
   if (problems.length > 0) {

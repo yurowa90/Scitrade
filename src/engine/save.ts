@@ -8,8 +8,9 @@ export const SAVE_FORMAT = 'scitrade-save';
 /**
  * 1: M1 (계약은 직접 무역뿐, 화물은 회사 소유뿐).
  * 2: M2a (운송 주선 계약 `serviceOfferId`, 화물 소유자 `ownerPartyId` 추가).
+ * 3: 영입 후보 상태·근무 시작일·업무 대상 추가.
  */
-export const SAVE_FORMAT_VERSION = 2;
+export const SAVE_FORMAT_VERSION = 3;
 
 export interface SaveFile {
   format: typeof SAVE_FORMAT;
@@ -50,6 +51,15 @@ function migrateV1toV2(state: GameState): GameState {
   return s;
 }
 
+/** 판본 2 → 3: 기존 고용·경제 값은 유지하고 영입 후보를 소급 생성하지 않는다. */
+export function migrateV2toV3(state: GameState): GameState {
+  const s = structuredClone(state);
+  for (const emp of s.employees) emp.availableFromDay = 1;
+  for (const task of s.tasks) task.subjectId = null;
+  s.recruitment = { candidates: [], scoutedVenueIds: [] };
+  return s;
+}
+
 export function deserializeSave(text: string, expected: { dataVersion: string; rulesVersion?: string }): GameState {
   let file: SaveFile;
   try {
@@ -58,7 +68,7 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError('저장 파일을 읽을 수 없습니다 (JSON 형식 오류).');
   }
   if (file?.format !== SAVE_FORMAT) throw new SaveError('Scitrade 저장 파일이 아닙니다.');
-  if (file.formatVersion !== 1 && file.formatVersion !== SAVE_FORMAT_VERSION) {
+  if (file.formatVersion !== 1 && file.formatVersion !== 2 && file.formatVersion !== SAVE_FORMAT_VERSION) {
     throw new SaveError(`지원하지 않는 저장 형식 판본입니다 (${file.formatVersion}).`);
   }
   const known = (SUPPORTED_RULES_VERSIONS as readonly string[]).includes(file.rulesVersion);
@@ -71,5 +81,6 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError(`다른 데이터 판본(${file.dataVersion})의 저장입니다. 현재 데이터는 ${expected.dataVersion}입니다.`);
   }
   if (!file.state || typeof file.state.day !== 'number') throw new SaveError('저장 파일에 게임 상태가 없습니다.');
-  return file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
+  const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
+  return file.formatVersion <= 2 ? migrateV2toV3(v2) : file.state;
 }

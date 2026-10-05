@@ -1,7 +1,10 @@
 // 동료 카드 자리표시자. 실제 일러스트가 생기면 .card-art 안의 내용만 교체한다.
 // 구도(상단 이름·속성, 중앙 그림, 하단 레벨·일정)는 docs/ART_DIRECTION.md를 따르며 레퍼런스의 프레임·배지·이름은 쓰지 않는다.
 
-import type { EmployeeDef, GameState } from '../engine/types';
+import { isAvailableFromToday } from '../engine/employees';
+import { runningTaskOf } from '../engine/reservations';
+import type { EmployeeDef, GameState, Task } from '../engine/types';
+import { esc } from './html';
 import { characterImage } from './assets';
 
 const ATTRIBUTE: Record<string, { ko: string; icon: string }> = {
@@ -25,41 +28,47 @@ const ROLE_ICON: Record<string, string> = {
 export function roleBadge(role: string): string {
   const ko = ROLE_KO[role] ?? role;
   const icon = ROLE_ICON[role];
-  return `<span class="chip role role-${role}">${icon ? `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>` : ''}${ko}</span>`;
+  return `<span class="chip role role-${esc(role)}">${icon ? `<svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>` : ''}${esc(ko)}</span>`;
 }
 
 export function attributeChip(attribute: string | null): string {
   const a = attribute ? ATTRIBUTE[attribute] : undefined;
   if (!a) return '<span class="chip">속성 미정</span>';
-  return `<span class="chip attr attr-${attribute}"><svg viewBox="0 0 24 24" aria-hidden="true">${a.icon}</svg>${a.ko}</span>`;
+  return `<span class="chip attr attr-${esc(attribute ?? '')}"><svg viewBox="0 0 24 24" aria-hidden="true">${a.icon}</svg>${a.ko}</span>`;
 }
 
-export function crewCard(def: EmployeeDef, state: GameState, selected: boolean): string {
-  const running = state.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === def.id);
-  const schedule = running
-    ? `${running.contractId} ${running.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비'} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
-    : '대기 — 배정 가능';
+export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, scheduleKo?: string): string {
+  if (!isAvailableFromToday(state, def.id)) return '';
+  const running = runningTaskOf(state, def.id);
+  const schedule = scheduleKo ?? (running
+    ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
+    : '대기 — 배정 가능');
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
   return `
-  <article class="card attr-bg-${def.character.attribute ?? 'none'} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${def.id}" tabindex="0"
-    aria-label="${def.nameKo} 직원 카드, ${roleKo}, 레벨 1, ${schedule}">
+  <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0"
+    aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 1, ${esc(schedule)}">
     <header class="card-top">
-      <span class="card-name">${def.nameKo}</span>
+      <span class="card-name">${esc(def.nameKo)}</span>
       ${attributeChip(def.character.attribute)}
     </header>
     <div class="card-art">
       <span class="card-tag ${running ? 'busy' : ''}">${running ? '● 업무 중' : '○ 대기'}</span>
       ${art
-        ? `<img class="card-img" src="${art}" alt="${def.nameKo} 일러스트" loading="lazy" decoding="async" />`
-        : `<div class="card-face" aria-hidden="true">${initial}</div>
-      <p class="card-motif">${def.character.visualMotif ?? ''}</p>
+        ? `<img class="card-img" src="${esc(art)}" alt="${esc(def.nameKo)} 일러스트" loading="lazy" decoding="async" />`
+        : `<div class="card-face" aria-hidden="true">${esc(initial)}</div>
+      <p class="card-motif">${esc(def.character.visualMotif ?? '')}</p>
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
-      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${def.id}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
-      <span class="card-schedule">${schedule}</span>
+      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${esc(def.id)}</span><span class="card-level">레벨 1 · 강화 +0</span></div>
+      <span class="card-schedule">${esc(schedule)}</span>
     </footer>
   </article>`;
+}
+
+/** 계약에 속하지 않는 조사·의뢰도 기존 업무 설명에 표시한다. */
+export function taskName(kind: Task['kind']): string {
+  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰' }[kind];
 }

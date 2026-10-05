@@ -146,7 +146,9 @@ export interface ScenarioConfig {
   goods: GoodDef[];
   routes: RouteDef[];
   offers: OfferDef[];
+  /** 시작 직원과 영입 후보의 정의. 고용 여부는 GameState.employees만 판단한다. */
   employees: EmployeeDef[];
+  recruitment: RecruitmentDef | null;
   terms: ScenarioTerms;
   portRestrictions: PortRestrictionDef[];
   /** 시나리오 문서에 적힌 기대 일정 (검산용). */
@@ -268,9 +270,11 @@ export interface Shipment {
 
 export interface Task {
   id: string;
-  /** EXPORT_PREP: 회사 상품 수출 준비. FORWARDING_PREP: 고객 화물 인수·선적 서류. */
-  kind: 'EXPORT_PREP' | 'FORWARDING_PREP';
-  contractId: string;
+  /** 계약 준비와 현장 조사·영입 의뢰가 같은 직원 시간 예약을 쓴다. */
+  kind: 'EXPORT_PREP' | 'FORWARDING_PREP' | 'SCOUT' | 'RECRUIT_QUEST';
+  contractId: string | null;
+  /** 조사 장소 ID 또는 의뢰 후보 ID. 계약 준비는 null. */
+  subjectId: string | null;
   cityId: string;
   requiredWorkUnits: number;
   progressWorkUnits: number;
@@ -283,7 +287,25 @@ export interface Task {
 export interface EmployeeState {
   id: string;
   locationCityId: string;
-  employmentStatus: 'employed';
+  employmentStatus: 'employed' | 'candidate';
+  availableFromDay: number;
+}
+
+export interface RecruitmentDef {
+  candidateEmployeeIds: string[];
+  scoutWorkUnits: number;
+  questWorkUnits: number;
+  signingFeeWageDays: number;
+  scoutSites: { venueId: string; cityId: string; candidateEmployeeIds: string[] }[];
+}
+
+export interface CandidateState {
+  employeeId: string;
+  stage: 'UNDISCOVERED' | 'DISCOVERED' | 'QUEST_RUNNING' | 'INTERVIEW_READY' | 'HIRED';
+  discoveredDay: number | null;
+  questTaskId: string | null;
+  interviewReadyDay: number | null;
+  hiredDay: number | null;
 }
 
 export interface Invoice {
@@ -355,6 +377,7 @@ export interface GameState {
   shipments: Shipment[];
   tasks: Task[];
   employees: EmployeeState[];
+  recruitment: { candidates: CandidateState[]; scoutedVenueIds: string[] };
   invoices: Invoice[];
   obligations: Obligation[];
   notices: Notice[];
@@ -377,6 +400,9 @@ export interface CommitPlan {
 }
 
 export type Command =
+  | { id: string; type: 'SCOUT_SITE'; venueId: string; employeeId: string }
+  | { id: string; type: 'START_RECRUIT_QUEST'; candidateId: string; employeeId: string }
+  | { id: string; type: 'HIRE_CANDIDATE'; candidateId: string }
   | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; plan?: CommitPlan }
   | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string; plan?: CommitPlan }
   | { id: string; type: 'ASSIGN_TASK'; taskId: string; employeeId: string }
