@@ -27,13 +27,13 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 12717,
-      "sha256": "11f661200edd588efe6e64cadbb6e1ed5b4527c3765e6202eee2e18c0dbfb442"
+      "size_bytes": 12746,
+      "sha256": "b1a7a3762c613159a53d8a81258c3e2f2ce5bc31f3485ce0032c36040e2b02f4"
     },
     {
       "path": "START_HERE.md",
-      "size_bytes": 2878,
-      "sha256": "d55fdc220b5bbb064eafd2eee35145b3c6ed33d0a27fc5527a8a12feeea9a892"
+      "size_bytes": 2892,
+      "sha256": "082826c8dd56a65231d7cab5ebef5bd41dfc11e62f2fce009dda34bc2412725b"
     },
     {
       "path": "data/character_rules.json",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 16807,
-      "sha256": "ed1b5d55e99916234fb8ba020c1563be6f4d3aa9dc12ce885e5951367b99ec73"
+      "size_bytes": 16837,
+      "sha256": "9af6a97f9d09ceeb7d3d111b459ca538d8921f550a99faa9c502c25ac926747d"
     },
     {
       "path": "data/securities.json",
@@ -221,6 +221,11 @@
       "sha256": "46a2ff83c3c53537537d847c153608b5343c1b9961d01c0f1945e115a0eea45c"
     },
     {
+      "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
+      "size_bytes": 5426,
+      "sha256": "db5ee6b13ffc3415d6b9a92cccf7dcb15cf1e85fe554f44c3378874035d783d9"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0001-recruitment-engine.md",
       "size_bytes": 12558,
       "sha256": "242da58b647c06a987a31f761f3c9d2faab2e59c5206c70192e8589d859f0877"
@@ -247,8 +252,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
-      "size_bytes": 7955,
-      "sha256": "7739c8db8f61ef682c322c200b0f6374ed15a059f48e95572359e29b722c9eb9"
+      "size_bytes": 16529,
+      "sha256": "5b53b5d6ecc176d35b9459fdc0b4a381e5f875c2f786ca0df4ec286943af0118"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0002.md",
@@ -517,8 +522,8 @@
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 36230,
-      "sha256": "2edbcd5809015da571469ea9320b1d7bf12e903c3a716911c936d91638bc5fc5"
+      "size_bytes": 36730,
+      "sha256": "edc742164e1a98aad2b480c1f02f05e185bb75b7194db2991bf8143fe952f648"
     }
   ]
 }

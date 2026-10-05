@@ -94,8 +94,10 @@ describe('P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들�
     const working = until(2);
     expect(candidate(working)).toMatchObject({ stage: 'QUEST_RUNNING', questTaskId: 'RECRUIT-EMP04', interviewReadyDay: null });
     expect(runningTaskOf(working, 'EMP01')!.progressWorkUnits).toBe(2);
-    const busy = plan(working, [quest('TWICE'), trade(), assign('EMP01'), quest('OTHER', 'EMP06')]);
+    const busy = plan(working, [quest('TWICE', 'EMP04', 'EMP02'), trade(), assign('EMP01'), quest('OTHER', 'EMP06')]);
     expect(busy.results.map((r) => r.status)).toEqual(['REJECTED', 'APPLIED', 'REJECTED', 'REJECTED']);
+    expect(busy.results[0]!.reasonKo).toBe('발견한 후보에게만 영입 의뢰를 시작할 수 있습니다.');
+    expect(busy.state.tasks).toHaveLength(working.tasks.length + 1);
     expect(candidate(busy.state, 'EMP06').stage).toBe('DISCOVERED');
     expect(busy.state.tasks.some((t) => t.id === 'RECRUIT-EMP06')).toBe(false);
     const ready = until(3);
@@ -103,6 +105,42 @@ describe('P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들�
     expect(isEmployed(ready, 'EMP04')).toBe(false);
     expect(ready.ledger).toEqual(runDays(createGame(config), config, 3).state.ledger);
     checkInvariants(ready, config);
+  });
+
+  it.each([2, 3, 4])('%i일 마감 뒤 다른 대기 직원도 같은 후보 의뢰를 다시 시작할 수 없다', (day) => {
+    const s = openDay(until(day), config).state;
+    expect(runningTaskOf(s, 'EMP02')).toBeUndefined();
+    const p = plan(s, [quest('RETRY', 'EMP04', 'EMP02')]);
+    expect(p.results[0]!.status).toBe('REJECTED');
+    expect(p.results[0]!.reasonKo).toBe('발견한 후보에게만 영입 의뢰를 시작할 수 있습니다.');
+    expect(p.state.tasks).toHaveLength(s.tasks.length);
+    unchangedExceptCommand(s, p.state);
+  });
+
+  it.each([1, 2])('%i일 마감 뒤 면담 전 고용은 장부와 상태를 바꾸지 않는다', (day) => {
+    const s = openDay(until(day), config).state;
+    expect(candidate(s).stage).toBe(day === 1 ? 'DISCOVERED' : 'QUEST_RUNNING');
+    const p = plan(s, [hire()]);
+    expect(p.results[0]!.status).toBe('REJECTED');
+    expect(p.results[0]!.reasonKo).toBe('면담 가능한 후보만 고용할 수 있습니다.');
+    unchangedExceptCommand(s, p.state);
+  });
+
+  it('업무 ID가 이미 있거나 담당자가 바쁘면 새 영입 업무를 남기지 않는다', () => {
+    // 단계 검사와 독립적으로 기존 업무 ID 충돌 방어를 시험한다.
+    const collision = openDay(until(2), config).state;
+    candidate(collision).stage = 'DISCOVERED';
+    const duplicate = plan(collision, [quest('COLLISION', 'EMP04', 'EMP02')]);
+    expect(duplicate.results[0]!.reasonKo).toBe('이미 생성된 업무 ID입니다.');
+    expect(duplicate.state.tasks).toHaveLength(collision.tasks.length);
+    unchangedExceptCommand(collision, duplicate.state);
+
+    const busy = openDay(until(2), config).state;
+    const rejected = plan(busy, [quest('BUSY', 'EMP06', 'EMP01')]);
+    expect(rejected.results[0]!.status).toBe('REJECTED');
+    expect(rejected.results[0]!.reasonKo).toContain('다른 업무');
+    expect(rejected.state.tasks).toHaveLength(busy.tasks.length);
+    unchangedExceptCommand(busy, rejected.state);
   });
 
   it('조사·의뢰 명령 ID를 재전송해도 업무와 진행량을 복제하지 않는다', () => {
@@ -197,6 +235,41 @@ describe('P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여',
     checkInvariants(p.state, poor);
   });
 
+  it('일급 0원 후보는 장부 기록 없이 고용하고 다음 날부터 업무를 맡는다', () => {
+    const free = { ...config, employees: config.employees.map((e) => e.id === 'EMP04' ? { ...e, salaryPerDayMinor: 0 } : e) };
+    const ready = until(3, free, { ...script, 1: [scout(), trade()] });
+    const p = plan(ready, [hire(), assign('EMP04')], free);
+    expect(p.results.map((r) => r.status)).toEqual(['APPLIED', 'REJECTED']);
+    expect(p.results[1]!.reasonKo).toContain('5일부터');
+    expect(p.state.ledger).toEqual(ready.ledger);
+    expect(candidate(p.state)).toMatchObject({ stage: 'HIRED', hiredDay: 4 });
+    expect(p.state.employees.find((e) => e.id === 'EMP04')!.availableFromDay).toBe(5);
+    const next = runDays(p.state, free, 4).state;
+    const assigned = plan(next, [assign('EMP04', 'NEXT')], free);
+    expect(assigned.results[0]!.status).toBe('APPLIED');
+    const done = runDays(assigned.state, free, 5).state;
+    expect(done.tasks.find((t) => t.id === 'TASK001')!.status).toBe('DONE');
+    expect(wages(done)).toEqual([]);
+    expect(done.ledger.entries.some((e) => e.id === 'SIGNING-EMP04')).toBe(false);
+    checkInvariants(done, free);
+  });
+
+  it.each([0, 1])('사용 가능 원화가 계약금보다 %i원 적을 때 경계값을 지킨다', (shortfall) => {
+    const cfg = { ...config, startingCash: { ...config.startingCash, KRW: 3 * 160_000 + spec.signing_fee! - shortfall } };
+    const s = openDay(until(3, cfg), cfg).state;
+    expect(summarize(s.ledger, 'KRW').cash).toBe(spec.signing_fee! - shortfall);
+    const p = plan(s, [hire()], cfg);
+    expect(p.results[0]!.status).toBe(shortfall === 0 ? 'APPLIED' : 'REJECTED');
+    if (shortfall === 0) {
+      expect(summarize(p.state.ledger, 'KRW').cash).toBe(0);
+      expect(candidate(p.state).stage).toBe('HIRED');
+    } else {
+      expect(p.results[0]!.reasonKo).toContain('계약금 자금이 부족');
+      unchangedExceptCommand(s, p.state);
+    }
+    checkInvariants(p.state, cfg);
+  });
+
   it('현금이 계약금보다 많아도 같은 통화 미지급 의무를 빼면 부족할 수 있다', () => {
     const s = openDay(until(3), config).state;
     const cash = summarize(s.ledger, 'KRW').cash;
@@ -253,6 +326,12 @@ describe('저장 이관·기준 경로·불변 조건', () => {
     expect(SAVE_FORMAT_VERSION).toBe(3);
     expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(3);
     expect(restored).toEqual(original);
+    for (const currency of ['KRW', 'USD'] as const) {
+      expect(summarize(restored.ledger, currency)).toEqual(summarize(original.ledger, currency));
+    }
+    expect(restored.cargoLots).toEqual(original.cargoLots);
+    expect(restored.tasks).toEqual(original.tasks);
+    expect(restored.bookings).toEqual(original.bookings);
     const p = plan(restored, [scout(), quest(), hire()]);
     expect(p.results.every((r) => r.status === 'REJECTED' && r.reasonKo.includes('후보 정보가 없습니다'))).toBe(true);
     expect(runDays(restored, config, 5).state).toEqual(runDays(original, legacyConfig, 5).state);
@@ -285,6 +364,12 @@ describe('저장 이관·기준 경로·불변 조건', () => {
     expect(summarize(s.ledger, 'KRW').wageExpense).toBe(17 * 160_000);
     expect(summarize(s.ledger, 'KRW').recruitmentExpense).toBe(0);
     checkInvariants(s, config);
+  });
+
+  it('중복 업무 ID를 불변 조건 위반으로 탐지한다', () => {
+    const s = until(2);
+    s.tasks.push(structuredClone(s.tasks[0]!));
+    expect(() => checkInvariants(s, config)).toThrow(/업무 ID는 유일/);
   });
 
   it('후보의 진행 업무·급여, 고용 상태 불일치, 이른 급여, 중복 계약금을 탐지한다', () => {

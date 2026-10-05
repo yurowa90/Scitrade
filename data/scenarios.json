@@ -445,7 +445,7 @@
         "DESIGN-V03",
         "DESIGN-V04"
       ],
-      "scope_note": "M2a 첫 단계: 복수 계약·운송 주선·자원 예약. 기대값은 USD 거래 장부만 검증하며 KRW 급여는 별도. 창고·고용·성장·문화 활동은 이후 단계.",
+      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 창고·성장·문화 활동은 이후 단계.",
       "recruitment": {
         "data_basis": "DESIGN",
         "status": "USER_REVIEWED_2026-10-05",

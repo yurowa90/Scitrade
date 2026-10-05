@@ -234,12 +234,18 @@ def check_recruitment(tables):
         if recruitment is None:
             continue
         label = scenario['id'] + ': 영입 '
-        candidates = recruitment['candidate_employee_ids']
-        sites = recruitment['scout_sites']
+        for key in ('data_basis', 'status', 'decision_ref', 'candidate_employee_ids',
+                    'scout_sites', 'scout_work_units', 'quest_work_units', 'signing_fee_wage_days'):
+            check(key in recruitment, label + key + ' 필수 키')
+        candidates = recruitment.get('candidate_employee_ids', [])
+        sites = recruitment.get('scout_sites', [])
+        for site in sites:
+            for key in ('venue_id', 'city_id', 'candidate_employee_ids'):
+                check(key in site, label + '장소 ' + key + ' 필수 키')
         check(bool(candidates) and len(candidates) == len(set(candidates)), label + '후보 목록 중복 없음')
-        check(len({s['venue_id'] for s in sites}) == len(sites), label + '장소 중복 없음')
+        check(len({s.get('venue_id') for s in sites}) == len(sites), label + '장소 중복 없음')
         for key in ('scout_work_units', 'quest_work_units', 'signing_fee_wage_days'):
-            value = recruitment[key]
+            value = recruitment.get(key)
             check(type(value) is int and value > 0, label + key + ' 양의 정수')
         for cid in candidates:
             employee = tables['employees'].get(cid)
@@ -251,18 +257,18 @@ def check_recruitment(tables):
             check(character is not None and character['recruitment']['start_employed'] is False,
                   label + cid + ' 처음에는 미고용')
             check(cid not in scenario.get('employee_ids', []), label + cid + ' 시작 직원과 분리')
-            check(sum(s['candidate_employee_ids'].count(cid) for s in sites) == 1,
+            check(sum(s.get('candidate_employee_ids', []).count(cid) for s in sites) == 1,
                   label + cid + ' 조사 장소 정확히 하나')
         for site in sites:
-            venue = tables['venues'].get(site['venue_id'])
-            check(venue is not None, label + site['venue_id'] + ' 장소 존재')
-            check(venue is not None and venue['city_id'] == site['city_id'], label + '장소 도시 일치')
-            check(bool(site['candidate_employee_ids']), label + '장소에 후보 존재')
-            for cid in site['candidate_employee_ids']:
+            venue = tables['venues'].get(site.get('venue_id'))
+            check(venue is not None, label + str(site.get('venue_id')) + ' 장소 존재')
+            check(venue is not None and venue['city_id'] == site.get('city_id'), label + '장소 도시 일치')
+            check(bool(site.get('candidate_employee_ids', [])), label + '장소에 후보 존재')
+            for cid in site.get('candidate_employee_ids', []):
                 check(cid in candidates, label + cid + ' 시나리오 후보에 포함')
                 employee = tables['employees'].get(cid)
                 character = tables['characters'].get(employee['character_id']) if employee else None
-                check(character is not None and site['city_id'] == character['encounter']['city_id'],
+                check(character is not None and site.get('city_id') == character['encounter']['city_id'],
                       label + cid + ' 만남 도시 일치')
 
 

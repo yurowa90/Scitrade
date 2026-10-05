@@ -471,6 +471,11 @@ function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: s
 function assignTask(s: GameState, config: ScenarioConfig, taskId: string, employeeId: string): string | null {
   const task = s.tasks.find((t) => t.id === taskId);
   if (!task) return '업무를 찾을 수 없습니다.';
+  return assignTaskObject(s, config, task, employeeId);
+}
+
+/** 배정 검사를 마친 뒤에만 업무·계약·로그를 갱신한다. */
+function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, employeeId: string): string | null {
   if (task.status !== 'QUEUED') return '이미 배정했거나 종료된 업무입니다.';
   const rejection = employeeUnavailable(s, config, employeeId, task.cityId);
   if (rejection) return rejection;
@@ -495,10 +500,11 @@ function recruitmentUnavailable(s: GameState, config: ScenarioConfig): string | 
 
 /** 계약 업무 ID와 별도 접두사를 써 기존 계약의 순번을 유지한다. */
 function startRecruitmentTask(s: GameState, config: ScenarioConfig, task: Task, employeeId: string): string | null {
-  const rejection = employeeUnavailable(s, config, employeeId, task.cityId);
+  if (s.tasks.some((existing) => existing.id === task.id)) return '이미 생성된 업무 ID입니다.';
+  const rejection = assignTaskObject(s, config, task, employeeId);
   if (rejection) return rejection;
   s.tasks.push(task);
-  return assignTask(s, config, task.id, employeeId);
+  return null;
 }
 
 function scoutSite(s: GameState, config: ScenarioConfig, venueId: string, employeeId: string): string | null {
@@ -553,7 +559,7 @@ function hireCandidate(s: GameState, config: ScenarioConfig, candidateId: string
   const funds = fundsPosition(s, config, def.salaryCurrency);
   const available = funds.cash - funds.unpaidObligations;
   if (available < fee) return `영입 계약금 자금이 부족합니다. 필요 ${formatMoney(def.salaryCurrency, fee)}, 사용 가능 ${formatMoney(def.salaryCurrency, available)}.`;
-  postOrThrow(s, {
+  if (fee > 0) postOrThrow(s, {
     id: `SIGNING-${candidateId}`, currency: def.salaryCurrency, reason: `${def.nameKo} 영입 계약금`,
     lines: [{ account: 'RECRUITMENT_EXPENSE', amount: fee }, { account: 'CASH', amount: -fee }],
   });

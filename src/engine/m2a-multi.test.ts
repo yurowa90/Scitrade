@@ -264,10 +264,27 @@ describe('저장 판본 2와 이관', () => {
     const atDay3 = runDays(createGame(m1), m1, 3, script).state;
     const v1 = JSON.parse(serializeSave(atDay3));
     v1.formatVersion = 1;
+    delete v1.state.recruitment;
+    for (const e of v1.state.employees) delete e.availableFromDay;
+    for (const t of v1.state.tasks) delete t.subjectId;
     for (const c of v1.state.contracts) delete c.serviceOfferId;
     for (const l of v1.state.cargoLots) delete l.ownerPartyId;
     const migrated = deserializeSave(JSON.stringify(v1), { dataVersion: m1.dataVersion, rulesVersion: 'M1-rules-1' });
     expect(migrated).toEqual(atDay3);
+    expect(JSON.parse(serializeSave(migrated)).formatVersion).toBe(3);
+    for (const currency of ['USD', 'KRW'] as const) {
+      expect(summarize(migrated.ledger, currency)).toEqual(summarize(atDay3.ledger, currency));
+    }
+    expect(migrated.cargoLots).toEqual(atDay3.cargoLots);
+    expect(migrated.tasks).toEqual(atDay3.tasks);
+    expect(migrated.bookings).toEqual(atDay3.bookings);
+    const recruitmentCommands: Command[] = [
+      { id: 'LEGACY-SCOUT', type: 'SCOUT_SITE', venueId: 'VEN_PORT', employeeId: 'EMP02' },
+      { id: 'LEGACY-QUEST', type: 'START_RECRUIT_QUEST', candidateId: 'EMP04', employeeId: 'EMP01' },
+      { id: 'LEGACY-HIRE', type: 'HIRE_CANDIDATE', candidateId: 'EMP04' },
+    ];
+    const rejected = planCommands(openDay(migrated, m1).state, m1, recruitmentCommands);
+    expect(rejected.every((r) => r.status === 'REJECTED' && r.reasonKo.includes('이 시나리오에서는 동료 영입을 할 수 없습니다'))).toBe(true);
     expect(book(runDays(migrated, m1, 10, script).state).cash).toBe(usd(10150));
   });
 });
