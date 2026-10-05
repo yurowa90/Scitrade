@@ -49,11 +49,13 @@ prompt="$(cat docs/ai/tasks/CODEX_PREAMBLE.md)
 
 $(cat "$task")"
 
+# --search(웹 검색)는 exec가 아니라 codex 전체 옵션이라 exec 앞에 둔다.
+global=()
+[ "$search" = "on" ] && global+=(--search)
 args=(exec -m "$model" -c "model_reasoning_effort=\"$effort\"" --sandbox "${CODEX_SANDBOX:-workspace-write}" -C "$root" -o "$log_dir/$id.last.md" --json)
-[ "$search" = "on" ] && args+=(--search)
 
 set +e
-codex "${args[@]}" "$prompt" >"$log_dir/$id.jsonl" 2>"$log_dir/$id.stderr.log"
+codex "${global[@]}" "${args[@]}" "$prompt" >"$log_dir/$id.jsonl" 2>"$log_dir/$id.stderr.log" </dev/null
 status=$?
 set -e
 
