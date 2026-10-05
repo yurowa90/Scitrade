@@ -64,6 +64,26 @@ def validate_growth(rules, characters):
           'ordinary training fee excludes salary')
 
 
+def validate_cancellation(scenarios, routes):
+    """상속한 계약 조건을 포함해 모든 시나리오 노선의 고정 취소비를 검사한다."""
+    def resolve(sid):
+        scenario = scenarios[sid]
+        base = resolve(scenario['base_scenario_id']) if scenario.get('base_scenario_id') else {}
+        return {**base, **scenario}
+
+    for sid in scenarios:
+        scenario = resolve(sid)
+        cancel = scenario.get('contract_terms', {}).get('pre_departure_cancellation')
+        if cancel is None:
+            continue
+        fee = cancel['cancellation_fee']
+        route_ids = scenario.get('route_ids', [scenario['route_id']] if 'route_id' in scenario else [])
+        for rid in route_ids:
+            freight = routes[rid]['booking_fee']
+            check(fee['currency'] == freight['currency'], f'{sid}/{rid}: cancellation fee currency matches booking fee')
+            check(fee['amount'] <= freight['amount'], f'{sid}/{rid}: cancellation fee <= booking fee')
+
+
 def read(relative):
     return json.loads((ROOT / relative).read_text(encoding='utf-8'))
 
@@ -517,6 +537,7 @@ def main():
               'rules_version': 'M1-rules-1', 'funds_check': 'immediate_cash', 'forwarding_enabled': False},
               sid + ': M1 rule set unchanged')
     check_m2a(tables)
+    validate_cancellation(tables['scenarios'], tables['routes'])
 
     cases = read('tests/acceptance_cases.json')['cases']
     index(cases, 'acceptance cases')

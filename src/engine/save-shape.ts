@@ -55,7 +55,7 @@ const stateShape = obj({
   meta: obj({ engineVersion: str, rulesVersion: str, dataVersion: str, scenarioId: str }),
   day: scalar((v) => Number.isSafeInteger(v) && (v as number) >= 1),
   phase: enumShape('phase'),
-  rng: obj({ seed: int, cursors: map(int) }),
+  rng: obj({ seed: int, cursors: map(scalar((v) => Number.isSafeInteger(v) && (v as number) >= 0)) }),
   ledger: obj({ entries: array(obj({ id: str, day: int, currency, reason: str, contractId: optional(str),
     lines: array(obj({ amount: int, account: enumShape('account') })) })),
     postedIds: map(oneOf(true)) }),
