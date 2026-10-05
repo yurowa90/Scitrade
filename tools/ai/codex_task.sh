@@ -29,7 +29,7 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 2
 fi
 command -v codex >/dev/null || npm i -g @openai/codex@0.160.0 >/dev/null
-if ! codex login status 2>/dev/null | grep -q "ChatGPT"; then
+if ! codex login status 2>&1 | grep -q "ChatGPT"; then
   echo "Codex가 ChatGPT 계정으로 로그인되어 있지 않습니다. 'codex login --device-auth'로 로그인한 뒤 다시 실행하세요." >&2
   exit 3
 fi
