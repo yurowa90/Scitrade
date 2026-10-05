@@ -12,6 +12,23 @@ export class InvariantError extends Error {}
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   const problems: string[] = [];
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
+  if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
+  if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');
+  if (new Set(s.ledger.entries.map((e) => e.id)).size !== s.ledger.entries.length) problems.push('장부 항목 ID는 유일해야 합니다');
+  const employeeIds = new Set(s.employees.map((emp) => emp.id));
+  for (const task of s.tasks) {
+    if (task.assignedEmployeeId !== null && !employeeIds.has(task.assignedEmployeeId)) {
+      problems.push(`${task.id}: 업무 담당자 ${task.assignedEmployeeId} 직원이 없습니다`);
+    }
+  }
+  for (const contract of s.contracts) {
+    if (contract.ownerEmployeeId !== null && !employeeIds.has(contract.ownerEmployeeId)) {
+      problems.push(`${contract.id}: 계약 담당자 ${contract.ownerEmployeeId} 직원이 없습니다`);
+    }
+  }
+  for (const candidate of s.recruitment.candidates) {
+    if (!employeeIds.has(candidate.employeeId)) problems.push(`영입 후보 ${candidate.employeeId} 직원이 없습니다`);
+  }
   const currencies = new Set<Currency>(s.ledger.entries.map((e) => e.currency));
   const kindOf = (contractId: string) => s.contracts.find((c) => c.id === contractId)?.kind;
 

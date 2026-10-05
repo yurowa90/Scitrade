@@ -127,10 +127,12 @@ describe('CHAR-ACC-02 누적 경험치로 레벨·능력 재계산', () => {
       expect(employee(state).xp).toBe(spec.expected.cumulative_xp);
       expect(levelFor(employee(state).xp)).toBe(spec.expected.level);
       expect(statsFor(def, employee(state).xp)).toEqual({ primary: spec.expected.primary_ability, secondary: spec.expected.secondary_ability });
-      expect(crewCard(def, state, false)).toContain('레벨 3');
+      expect(crewCard(def, state, false)).toContain(`레벨 ${spec.expected.level}`);
       checkInvariants(state, cfg);
     }
-    expect(s.log.filter((l) => l.textKo.includes('레벨')).map((l) => l.textKo)).toEqual([`${def.nameKo} 레벨 2 달성`, `${def.nameKo} 레벨 3 달성`]);
+    const levelLogs = spec.expected.crossed_thresholds!.map((xp) =>
+      `${def.nameKo} 레벨 ${rules.xp_thresholds.find((t) => t.cumulative_xp === xp)!.level} 달성`);
+    expect(s.log.filter((l) => l.textKo.includes('레벨')).map((l) => l.textKo)).toEqual(levelLogs);
     expect(def).toEqual(initialDef);
     expect(JSON.parse(serializeSave(s)).state.employees[0]).not.toHaveProperty('level');
     expect(JSON.parse(serializeSave(s)).state.employees[0]).not.toHaveProperty('stats');
@@ -254,6 +256,11 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
       const p = planState(s, config, [training()]);
       expect(p.results[0]!.status).toBe('REJECTED');
       unchangedExceptCommand(s, p.state);
+      expect(p.state.processedCommands.TRAIN).toMatchObject({ status: 'REJECTED' });
+      if (reason === 'busy') {
+        expect(s.processedCommands.TRADE).toMatchObject({ status: 'APPLIED' });
+        expect(p.state.processedCommands.TRADE).toEqual(s.processedCommands.TRADE);
+      }
       checkInvariants(p.state, config);
     }
   });
@@ -291,6 +298,7 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     const highLevel = structuredClone(config);
     for (const def of highLevel.employees) def.growth!.startXp = 4500;
     const high = until(17, highLevel, script);
+    expect(withoutGrowth(high)).toEqual(withoutGrowth(disabled));
     expect(high.ledger).toEqual(s.ledger);
     expect(high.tasks).toEqual(s.tasks);
     expect(high.shipments).toEqual(s.shipments);
@@ -373,7 +381,7 @@ describe('재작업 1 회귀 방어', () => {
     expect(summarize(retry.state.ledger, 'KRW').trainingExpense).toBe(0);
   });
 
-  it.each(['담당자 불일치', '미고용', '지급량 불일치'])('awardXp는 %s에서 false이고 상태를 보존한다', (reason) => {
+  it.each(['담당자 불일치', '미고용', '지급량 불일치', '적은 지급량', '보상 종류 불일치'])('awardXp는 %s에서 false이고 상태를 보존한다', (reason) => {
     const s = until(2, config, { 1: [trade()] });
     employee(s).xp = 0;
     s.xpAwards = {};
@@ -381,15 +389,17 @@ describe('재작업 1 회귀 방어', () => {
     if (reason === '미고용') employee(s).employmentStatus = 'candidate';
     const before = structuredClone(s);
     expect(awardXp(s, config, reason === '담당자 불일치' ? 'EMP02' : 'EMP01',
-      'TASK-DONE-TASK001', 'TASK_COMPLETION_XP', reason === '지급량 불일치' ? 11 : 10)).toBe(false);
+      'TASK-DONE-TASK001', reason === '보상 종류 불일치' ? 'TRAINING_XP' : 'TASK_COMPLETION_XP',
+      reason === '지급량 불일치' ? 11 : reason === '적은 지급량' ? 9 : 10)).toBe(false);
     expect(s).toEqual(before);
   });
 
-  it.each(['TRAINING', 'EXPORT_PREP', 'SCOUT', 'RECRUIT_QUEST'])('%s 완료 로그 다음에 레벨 달성 로그를 쓴다', (kind) => {
+  it.each(['TRAINING', 'EXPORT_PREP', 'FORWARDING_PREP', 'SCOUT', 'RECRUIT_QUEST'])('%s 완료 로그 다음에 레벨 달성 로그를 쓴다', (kind) => {
     const cfg = structuredClone(config);
     for (const def of cfg.employees) def.growth!.startXp = 90;
     let s = openDay(createGame(cfg), cfg).state;
     const cmd: Command = kind === 'TRAINING' ? training() : kind === 'EXPORT_PREP' ? trade()
+      : kind === 'FORWARDING_PREP' ? { id: 'FWD', type: 'ACCEPT_FORWARDING', offerId: 'OFFER_FWD_01', plan: { employeeId: 'EMP01' } }
       : kind === 'SCOUT' ? { id: 'SCOUT', type: 'SCOUT_SITE', venueId: 'VEN_PORT', employeeId: 'EMP01' }
       : { id: 'QUEST', type: 'START_RECRUIT_QUEST', candidateId: 'EMP04', employeeId: 'EMP01' };
     if (kind === 'RECRUIT_QUEST') s.recruitment.candidates.find((c) => c.employeeId === 'EMP04')!.stage = 'DISCOVERED';
@@ -472,5 +482,90 @@ describe('재작업 1 회귀 방어', () => {
       else file.state.ledger.entries[0].lines[0].amount++;
       expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
     }
+  });
+});
+
+describe('재작업 2 저장 검증·보상 방어', () => {
+  it.each([
+    ['state.offers[0]', (s: any) => { s.offers = [null]; }],
+    ['state.log', (s: any) => { s.log = null; }],
+    ['state.recruitment.scoutedVenueIds', (s: any) => { s.recruitment.scoutedVenueIds = null; }],
+    ['state.employees[0].availableFromDay', (s: any) => { s.employees[0].availableFromDay = '1'; }],
+    ['state.ledger.entries[0].lines', (s: any) => { s.ledger.entries[0].lines = {}; }],
+  ] as const)('판본 4 모양 손상 %s를 정확한 경로의 SaveError로 거절한다', (path, corrupt) => {
+    const file = JSON.parse(serializeSave(createGame(config)));
+    corrupt(file.state);
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config });
+    expect(load).toThrow(SaveError);
+    expect(load).toThrow(path);
+  });
+
+  it.each(['state.scenarioId', 'state.rulesVersion', 'state.dataVersion', 'config.rulesVersion', 'config.dataVersion'])
+  ('판본 4 메타 정보 불일치 %s를 거절한다', (field) => {
+    const file = JSON.parse(serializeSave(createGame(config)));
+    const cfg = structuredClone(config);
+    if (field.startsWith('state.')) file.state.meta[field.split('.')[1]!] = 'MISMATCH';
+    else if (field === 'config.rulesVersion') cfg.rules.rulesVersion = 'M1-rules-1';
+    else cfg.dataVersion = 'MISMATCH';
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: cfg });
+    expect(load).toThrow(SaveError);
+    expect(load).toThrow('저장 메타 정보와 설정이 다릅니다.');
+  });
+
+  it('판본 4는 설정을 전달하지 않는 화면 경로에서도 정상 복원하고 손상을 거절한다', () => {
+    const state = until(1, config, { 1: [training()] });
+    const file = JSON.parse(serializeSave(state));
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
+    expect(load()).toEqual(state);
+    file.state.offers = [null];
+    expect(load).toThrow(SaveError);
+    expect(load).toThrow('state.offers[0]');
+  });
+
+  it.each([
+    ['employees', '직원'], ['tasks', '업무'], ['contracts', '계약'], ['ledger', '장부 항목'],
+  ] as const)('판본 4 %s ID 중복을 거절한다', (field, label) => {
+    const s = planState(openDay(createGame(config), config).state, config, [trade()]).state;
+    const entries = field === 'ledger' ? s.ledger.entries : s[field];
+    // 장부는 기초 자본 분개를 복제해 별도 훈련비 중복 방어에 기대지 않는다.
+    entries.push(structuredClone(entries[0]!) as never);
+    const load = () => reload(s);
+    expect(load).toThrow(SaveError);
+    expect(load).toThrow(`${label} ID는 유일해야 합니다`);
+  });
+
+  it.each(['업무 담당자', '계약 담당자', '영입 후보'])('판본 4 %s의 없는 직원 참조를 거절한다', (reference) => {
+    const s = planState(openDay(createGame(config), config).state, config, [trade()]).state;
+    if (reference === '업무 담당자') s.tasks[0]!.assignedEmployeeId = 'MISSING';
+    if (reference === '계약 담당자') s.contracts[0]!.ownerEmployeeId = 'MISSING';
+    if (reference === '영입 후보') s.recruitment.candidates[0]!.employeeId = 'MISSING';
+    expect(() => reload(s)).toThrow(SaveError);
+    expect(() => reload(s)).toThrow(`${reference} MISSING 직원이 없습니다`);
+  });
+
+  it('일반 업무에 TRAINING_XP를 기록하면 보상 종류 불일치를 탐지한다', () => {
+    const s = until(2, config, { 1: [trade()] });
+    const key = Object.keys(s.xpAwards)[0]!;
+    const wrongKey = key.replace('TASK_COMPLETION_XP', 'TRAINING_XP');
+    s.xpAwards = { [wrongKey]: true };
+    s.xpAwardAmounts = { [wrongKey]: s.xpAwardAmounts[key]! };
+    expect(() => checkInvariants(s, config)).toThrow(/보상 종류가 다릅니다/);
+  });
+
+  it('TRAINING-FEE- 접두어가 있어도 일치하는 훈련 업무가 없으면 비용을 거절한다', () => {
+    const cfg = fixtureConfig();
+    const s = until(1, cfg, { 1: [training()] });
+    s.ledger.entries.find((e) => e.id.startsWith('TRAINING-FEE-'))!.id = 'TRAINING-FEE-MISSING';
+    expect(() => checkInvariants(s, cfg)).toThrow(/훈련 업무 없는 훈련비/);
+  });
+
+  it('훈련 완료에 일반 업무 보상 종류를 요청하면 지급 전에 거절하고 상태를 보존한다', () => {
+    const s = until(1, config, { 1: [training()] });
+    employee(s).xp = 0;
+    s.xpAwards = {};
+    s.xpAwardAmounts = {};
+    const before = structuredClone(s);
+    expect(awardXp(s, config, 'EMP01', 'TASK-DONE-TRAINING-EMP01-D1', 'TASK_COMPLETION_XP', 60)).toBe(false);
+    expect(s).toEqual(before);
   });
 });

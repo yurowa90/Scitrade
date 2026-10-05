@@ -18,7 +18,7 @@ import {
 } from './catalog';
 import { balance, emptyLedger, post, type LedgerLine } from './ledger';
 import { formatMoney, type Currency } from './money';
-import { fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
+import { trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
   ENGINE_VERSION,
@@ -518,8 +518,7 @@ function startTraining(s: GameState, config: ScenarioConfig, employeeId: string)
   const training = config.growth.ordinaryTraining;
   const taskId = `TRAINING-${employeeId}-D${s.day}`;
   if (s.tasks.some((t) => t.id === taskId)) return '이미 생성된 업무 ID입니다.';
-  const funds = fundsPosition(s, config, training.currency);
-  const available = funds.cash - funds.unpaidObligations;
+  const available = trainingAvailableMinor(s, config, training.currency);
   if (available < training.feeMinor) return `훈련비 자금이 부족합니다. 필요 ${formatMoney(training.currency, training.feeMinor)}, 사용 가능 ${formatMoney(training.currency, available)}.`;
   const task: Task = {
     id: taskId, kind: 'TRAINING', contractId: null, subjectId: employeeId, cityId,

@@ -1,5 +1,30 @@
 // 저장은 외부 입력이다. 이관한 판본 4의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
-import type { GameState } from './types';
+import { ACCOUNT_KIND } from './ledger';
+import { MINOR_PER_MAJOR } from './money';
+import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task,
+  EmployeeState, CandidateState, Invoice, Notice, DelayDecision, CommandRecord } from './types';
+
+// 실행 시점 상수가 없는 열거형도 전수 목록을 요구해 타입에 값이 늘면 컴파일에서 확인한다.
+export const SAVE_ENUMS = {
+  currency: MINOR_PER_MAJOR,
+  account: ACCOUNT_KIND,
+  phase: { PENDING_OPEN: true, AWAITING_INPUT: true, ENDED: true } satisfies Record<DayPhase, true>,
+  offerStatus: { OPEN: true, ACCEPTED: true, EXPIRED: true } satisfies Record<OfferState['status'], true>,
+  contractKind: { DIRECT_TRADE: true, FORWARDING: true } satisfies Record<Contract['kind'], true>,
+  contractStatus: { ACTIVE: true, IN_PROGRESS: true, COMPLETED: true, CANCELLED: true } satisfies Record<Contract['status'], true>,
+  cargoOwner: { COMPANY: true, CUSTOMER: true } satisfies Record<CargoLot['owner'], true>,
+  cargoStatus: { PREPARING: true, AWAITING_DEPARTURE: true, IN_TRANSIT: true, ARRIVED_RELEASING: true,
+    DELIVERED: true, HELD_UNALLOCATED: true, RETURNED_TO_OWNER: true } satisfies Record<CargoLot['status'], true>,
+  bookingStatus: { BOOKED: true, DEPARTED: true, CANCELLED: true } satisfies Record<Booking['status'], true>,
+  taskKind: { EXPORT_PREP: true, FORWARDING_PREP: true, SCOUT: true, RECRUIT_QUEST: true, TRAINING: true } satisfies Record<Task['kind'], true>,
+  taskStatus: { QUEUED: true, RUNNING: true, DONE: true, ABORTED: true } satisfies Record<Task['status'], true>,
+  employmentStatus: { employed: true, candidate: true } satisfies Record<EmployeeState['employmentStatus'], true>,
+  candidateStage: { UNDISCOVERED: true, DISCOVERED: true, QUEST_RUNNING: true, INTERVIEW_READY: true, HIRED: true } satisfies Record<CandidateState['stage'], true>,
+  invoiceStatus: { OUTSTANDING: true, OVERDUE: true, PAID: true } satisfies Record<Invoice['status'], true>,
+  noticeKind: { PORT_RESTRICTION: true } satisfies Record<Notice['kind'], true>,
+  delayChoice: { KEEP_SHIPMENT_BOOKING: true } satisfies Record<NonNullable<DelayDecision['choice']>, true>,
+  commandStatus: { APPLIED: true, REJECTED: true } satisfies Record<CommandRecord['status'], true>,
+};
 
 type Shape = (value: unknown, path: string) => void;
 const scalar = (test: (v: unknown) => boolean): Shape => (v, path) => {
@@ -22,51 +47,50 @@ const map = (shape: Shape): Shape => (v, path) => {
   for (const [key, item] of Object.entries(v)) shape(item, `${path}.${key}`);
 };
 const oneOf = (...values: unknown[]) => scalar((v) => values.includes(v));
+const enumShape = (name: keyof typeof SAVE_ENUMS) => oneOf(...Object.keys(SAVE_ENUMS[name]));
 const nullable = (shape: Shape): Shape => (v, path) => { if (v !== null) shape(v, path); };
 const optional = (shape: Shape): Shape => (v, path) => { if (v !== undefined) shape(v, path); };
-const ns = nullable(str), ni = nullable(int), strings = array(str), currency = oneOf('KRW', 'USD', 'XXX');
+const ns = nullable(str), ni = nullable(int), strings = array(str), currency = enumShape('currency');
 const stateShape = obj({
   meta: obj({ engineVersion: str, rulesVersion: str, dataVersion: str, scenarioId: str }),
   day: scalar((v) => Number.isSafeInteger(v) && (v as number) >= 1),
-  phase: oneOf('PENDING_OPEN', 'AWAITING_INPUT', 'ENDED'),
+  phase: enumShape('phase'),
   rng: obj({ seed: int, cursors: map(int) }),
   ledger: obj({ entries: array(obj({ id: str, day: int, currency, reason: str, contractId: optional(str),
-    lines: array(obj({ amount: int, account: oneOf('CASH', 'INVENTORY', 'PREPAID_FREIGHT', 'FORWARDING_WIP',
-      'ACCOUNTS_RECEIVABLE', 'ACCOUNTS_PAYABLE', 'OPENING_EQUITY', 'REVENUE', 'COST_OF_GOODS_SOLD',
-      'FORWARDING_REVENUE', 'FORWARDING_COST', 'CANCELLATION_EXPENSE', 'WAGE_EXPENSE', 'RECRUITMENT_EXPENSE', 'TRAINING_EXPENSE') })) })),
+    lines: array(obj({ amount: int, account: enumShape('account') })) })),
     postedIds: map(oneOf(true)) }),
-  offers: array(obj({ id: str, status: oneOf('OPEN', 'ACCEPTED', 'EXPIRED') })),
-  contracts: array(obj({ id: str, kind: oneOf('DIRECT_TRADE', 'FORWARDING'),
-    status: oneOf('ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'), buyOfferId: ns, sellOfferId: ns,
+  offers: array(obj({ id: str, status: enumShape('offerStatus') })),
+  contracts: array(obj({ id: str, kind: enumShape('contractKind'),
+    status: enumShape('contractStatus'), buyOfferId: ns, sellOfferId: ns,
     serviceOfferId: ns, supplierId: ns, customerId: str, goodId: str, quantity: int,
     purchaseAmountMinor: int, saleAmountMinor: int, currency, originCityId: str, destinationCityId: str,
     deliveryDeadlineDay: int, paymentDueDay: int, acceptedDay: int, ownerEmployeeId: ns, cargoLotId: str,
     prepTaskId: str, bookingId: ns, invoiceId: ns, deliveredDay: ni, lateDays: int, priceReductionMinor: int,
     cancelledDay: ni, completedDay: ni })),
-  cargoLots: array(obj({ id: str, owner: oneOf('COMPANY', 'CUSTOMER'), ownerPartyId: ns, goodId: str,
+  cargoLots: array(obj({ id: str, owner: enumShape('cargoOwner'), ownerPartyId: ns, goodId: str,
     quantity: int, originCountryCode: str, carryingAmountMinor: int, currency, locationCityId: ns,
-    status: oneOf('PREPARING', 'AWAITING_DEPARTURE', 'IN_TRANSIT', 'ARRIVED_RELEASING', 'DELIVERED', 'HELD_UNALLOCATED', 'RETURNED_TO_OWNER'),
+    status: enumShape('cargoStatus'),
     contractId: ns, shipmentId: ns })),
   bookings: array(obj({ id: str, contractId: str, routeId: str, sailingId: str, departureDay: int,
-    massGrams: int, volumeLiters: int, prepaidFreightMinor: int, status: oneOf('BOOKED', 'DEPARTED', 'CANCELLED') })),
+    massGrams: int, volumeLiters: int, prepaidFreightMinor: int, status: enumShape('bookingStatus') })),
   shipments: array(obj({ id: str, bookingId: str, contractId: str, cargoLotId: str, departureDay: int,
     scheduledArrivalDay: int, arrivalDay: ni, releaseDay: ni, observedWaitDays: int, delayEventIds: strings,
     dutyMinor: ni, dutyPaid: bool })),
-  tasks: array(obj({ id: str, kind: oneOf('EXPORT_PREP', 'FORWARDING_PREP', 'SCOUT', 'RECRUIT_QUEST', 'TRAINING'),
+  tasks: array(obj({ id: str, kind: enumShape('taskKind'),
     contractId: ns, subjectId: ns, cityId: str, requiredWorkUnits: int, progressWorkUnits: int,
-    status: oneOf('QUEUED', 'RUNNING', 'DONE', 'ABORTED'), assignedEmployeeId: ns, startedDay: ni, completedDay: ni })),
-  employees: array(obj({ id: str, xp: int, locationCityId: str, employmentStatus: oneOf('employed', 'candidate'), availableFromDay: int })),
+    status: enumShape('taskStatus'), assignedEmployeeId: ns, startedDay: ni, completedDay: ni })),
+  employees: array(obj({ id: str, xp: int, locationCityId: str, employmentStatus: enumShape('employmentStatus'), availableFromDay: int })),
   recruitment: obj({ candidates: array(obj({ employeeId: str,
-    stage: oneOf('UNDISCOVERED', 'DISCOVERED', 'QUEST_RUNNING', 'INTERVIEW_READY', 'HIRED'),
+    stage: enumShape('candidateStage'),
     discoveredDay: ni, questTaskId: ns, interviewReadyDay: ni, hiredDay: ni })), scoutedVenueIds: strings }),
   invoices: array(obj({ id: str, contractId: str, currency, amountMinor: int, issuedDay: int, dueDay: int,
-    status: oneOf('OUTSTANDING', 'OVERDUE', 'PAID'), receiptIds: strings })),
+    status: enumShape('invoiceStatus'), receiptIds: strings })),
   obligations: array(obj({ id: str, currency, amountMinor: int, reasonKo: str, incurredDay: int, paidDay: ni })),
-  notices: array(obj({ id: str, day: int, kind: oneOf('PORT_RESTRICTION'), eventInstanceId: str,
+  notices: array(obj({ id: str, day: int, kind: enumShape('noticeKind'), eventInstanceId: str,
     titleKo: str, bodyKo: str, affectedShipmentIds: strings, evidenceKo: str })),
-  delayDecisions: array(obj({ noticeId: str, shipmentId: str, choice: oneOf(null, 'KEEP_SHIPMENT_BOOKING'), decidedDay: ni })),
+  delayDecisions: array(obj({ noticeId: str, shipmentId: str, choice: nullable(enumShape('delayChoice')), decidedDay: ni })),
   appliedEventIds: map(oneOf(true)), xpAwards: map(oneOf(true)), xpAwardAmounts: map(int),
-  processedCommands: map(obj({ day: int, type: str, status: oneOf('APPLIED', 'REJECTED'), reasonKo: str })),
+  processedCommands: map(obj({ day: int, type: str, status: enumShape('commandStatus'), reasonKo: str })),
   closedDays: array(int), log: array(obj({ day: int, textKo: str })),
 } satisfies Record<keyof GameState, Shape>);
 

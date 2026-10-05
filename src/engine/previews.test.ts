@@ -5,6 +5,7 @@ import { commitDay, createGame, openDay, planState } from './engine';
 import { levelProgress, statsFor } from './growth';
 import { post } from './ledger';
 import { payrollRunwayDay, trainingPreview } from './previews';
+import { fundsPosition } from './reservations';
 import { taskSubjectKo } from './tasks';
 import type { Command, GameState, ScenarioConfig, Task } from './types';
 
@@ -70,22 +71,36 @@ describe('화면용 성장·업무 읽기 함수', () => {
     expect(reason).not.toContain('EMP01');
   });
 
-  it.each([0, 90, 100, 320, 4500, 5000])('levelProgress(%i)는 문턱·남은 경험치·능력을 읽고 상태를 보존한다', (xp) => {
+  it.each([0, 90, 99, 100, 299, 320, 4499, 4500, 5000])('levelProgress(%i)는 문턱·남은 경험치·능력을 읽고 상태를 보존한다', (xp) => {
     const s = open();
     emp(s).xp = xp;
-    const p = pure(s, config, () => levelProgress(s, config, 'EMP01'));
+    const p = pure(s, config, () => levelProgress(s, config, 'EMP01'))!;
     expect(p.xp).toBe(xp);
     expect(p.stats).toEqual(statsFor(config.employees[0]!, xp));
     if (xp >= 4500) expect(p).toMatchObject({ level: 10, levelFloorXp: 4500, nextLevelXp: null, xpToNext: null });
+    else if (xp === 4499) expect(p).toMatchObject({ level: 9, levelFloorXp: 3600, nextLevelXp: 4500, xpToNext: 1 });
     else if (xp >= 300) expect(p).toMatchObject({ level: 3, levelFloorXp: 300, nextLevelXp: 600, xpToNext: 600 - xp });
     else if (xp >= 100) expect(p).toMatchObject({ level: 2, levelFloorXp: 100, nextLevelXp: 300, xpToNext: 300 - xp });
     else expect(p).toMatchObject({ level: 1, levelFloorXp: 0, nextLevelXp: 100, xpToNext: 100 - xp });
   });
 
+  it('배열 첫 직원과 다른 경험치를 가진 직원을 ID로 찾고 없는 ID는 null이다', () => {
+    const s = open();
+    emp(s).xp = 320;
+    s.employees.find((e) => e.id === 'EMP02')!.xp = 99;
+    expect(pure(s, config, () => levelProgress(s, config, 'EMP02'))).toEqual({
+      xp: 99, level: 1, levelFloorXp: 0, nextLevelXp: 100, xpToNext: 1,
+      stats: statsFor(config.employees.find((e) => e.id === 'EMP02')!, 99),
+    });
+    expect(pure(s, config, () => levelProgress(s, config, 'MISSING'))).toBeNull();
+    s.employees = s.employees.filter((e) => e.id !== 'EMP02');
+    expect(pure(s, config, () => levelProgress(s, config, 'EMP02'))).toBeNull();
+  });
+
   it('성장 없는 직원의 stats는 null이다', () => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     const s = open(cfg);
-    expect(pure(s, cfg, () => levelProgress(s, cfg, 'EMP01')).stats).toBeNull();
+    expect(pure(s, cfg, () => levelProgress(s, cfg, 'EMP01'))!.stats).toBeNull();
   });
 
   it('훈련 미리보기는 실제 완료 비용·성장과 같고 명령 ID 충돌에도 입력을 보존한다', () => {
@@ -97,7 +112,7 @@ describe('화면용 성장·업무 읽기 함수', () => {
     expect(p).toMatchObject({ allowed: true, reasonKo: null, fee: { currency: 'KRW', minor: 50_000 },
       durationDays: 1, xpGain: 60, levelAfter: 2, availableBeforeMinor: 10_000_000, availableAfterMinor: 9_950_000 });
     const done = commitDay(s, cfg, [training]).state;
-    expect(p.levelAfter).toBe(levelProgress(done, cfg, 'EMP01').level);
+    expect(p.levelAfter).toBe(levelProgress(done, cfg, 'EMP01')!.level);
     expect(p.statsAfter).toEqual(statsFor(cfg.employees[0]!, emp(done).xp));
   });
 
@@ -118,6 +133,76 @@ describe('화면용 성장·업무 읽기 함수', () => {
     expect(p.allowed).toBe(false);
     expect(p.reasonKo).toBe(actual.reasonKo);
     if (reason === '성장 꺼짐') expect(p.reasonKo).toBe('이 시나리오에서는 일반 훈련을 할 수 없습니다.');
+  });
+
+  it.each([
+    ['PENDING_OPEN', '하루를 연 뒤에 훈련을 시작할 수 있습니다.'],
+    ['ENDED', '캠페인이 끝났습니다.'],
+  ] as const)('%s 단계에서는 훈련 미리보기를 거절한다', (phase, reasonKo) => {
+    const s = createGame(config);
+    s.phase = phase;
+    if (phase === 'ENDED') s.day = config.campaignDays + 1;
+    expect(pure(s, config, () => trainingPreview(s, config, 'EMP01'))).toMatchObject({ allowed: false, reasonKo });
+    expect(() => commitDay(s, config, [training])).toThrow();
+  });
+
+  it('미지급 의무가 있으면 훈련 사용 가능액 49,999와 훈련 후 −1을 표시한다', () => {
+    const s = open();
+    debt(s, 9_950_001);
+    const p = pure(s, config, () => trainingPreview(s, config, 'EMP01'));
+    expect(p).toMatchObject({ allowed: false, availableBeforeMinor: 49_999, availableAfterMinor: -1 });
+    expect(p.reasonKo).toContain('사용 가능 49,999원');
+    expect(planState(s, config, [training]).results[0]).toMatchObject({ status: 'REJECTED', reasonKo: p.reasonKo });
+  });
+
+  it('계약 자금 예약이 있어도 기존 훈련 규칙의 사용 가능액과 판정을 유지한다', () => {
+    const cfg = structuredClone(config);
+    cfg.routes.forEach((r) => { r.currency = 'KRW'; r.bookingFeeMinor = 100_000; });
+    cfg.offers.find((o) => o.id === 'OFFER_FWD_01')!.currency = 'KRW';
+    cfg.startingCash.KRW = 100_000;
+    const planned = planState(open(cfg), cfg, [{ id: 'FWD', type: 'ACCEPT_FORWARDING', offerId: 'OFFER_FWD_01' }]);
+    expect(planned.results[0]!.status).toBe('APPLIED');
+    const s = planned.state;
+    expect(fundsPosition(s, cfg, 'KRW')).toMatchObject({ cash: 100_000, reserved: 100_000, available: 0 });
+    expect(pure(s, cfg, () => trainingPreview(s, cfg, 'EMP01'))).toMatchObject({
+      allowed: true, availableBeforeMinor: 100_000, availableAfterMinor: 50_000,
+    });
+    expect(planState(s, cfg, [training]).results[0]!.status).toBe('APPLIED');
+    debt(s, 50_001);
+    const p = pure(s, cfg, () => trainingPreview(s, cfg, 'EMP01'));
+    expect(p).toMatchObject({ allowed: false, availableBeforeMinor: 49_999, availableAfterMinor: -1 });
+    expect(planState(s, cfg, [training]).results[0]).toMatchObject({ status: 'REJECTED', reasonKo: p.reasonKo });
+  });
+
+  it('성장 비활성 훈련의 비용·기간·경험치는 0이고 능력은 null이다', () => {
+    const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
+    const s = open(cfg);
+    expect(pure(s, cfg, () => trainingPreview(s, cfg, 'EMP01'))).toMatchObject({
+      allowed: false, reasonKo: '이 시나리오에서는 일반 훈련을 할 수 없습니다.',
+      fee: { currency: cfg.payrollCurrency, minor: 0 }, durationDays: 0, xpGain: 0,
+      levelAfter: 1, statsAfter: null, availableBeforeMinor: cfg.startingCash.KRW,
+      availableAfterMinor: cfg.startingCash.KRW,
+    });
+  });
+
+  it.each(['EXPORT_PREP', 'FORWARDING_PREP'] as const)('%s 배정 로그·바쁨 문구에 계약 번호를 쓴다', (kind) => {
+    const cmd: Command = kind === 'EXPORT_PREP'
+      ? { id: 'TRADE', type: 'ACCEPT_TRADE', buyOfferId: 'OFFER_BUY_01', sellOfferId: 'OFFER_SELL_01', plan: { employeeId: 'EMP01' } }
+      : { id: 'FWD', type: 'ACCEPT_FORWARDING', offerId: 'OFFER_FWD_01', plan: { employeeId: 'EMP01' } };
+    const p = planState(open(), config, [cmd]);
+    expect(p.results[0]!.status).toBe('APPLIED');
+    const contractId = p.state.contracts[0]!.id;
+    expect(p.state.log.filter((l) => l.textKo.includes('업무 배정')).map((l) => l.textKo).join()).toContain(contractId);
+    expect(trainingPreview(p.state, config, 'EMP01').reasonKo).toContain(contractId);
+  });
+
+  it('모든 조사 장소 제목을 자료에서 읽어 업무 대상에 표시한다', () => {
+    const s = planState(open(), config, [scout]).state;
+    for (const site of config.recruitment!.scoutSites) {
+      const venue = venues.items.find((v) => v.id === site.venueId)!;
+      expect(site.titleKo).toBe(venue.title_ko);
+      expect(pure(s, config, () => taskSubjectKo(config, { ...s.tasks[0]!, subjectId: venue.id }))).toBe(venue.title_ko);
+    }
   });
 
   it('훈련 위치 거절은 설정의 본거지 이름을 사용한다', () => {
@@ -156,6 +241,21 @@ describe('급여 지급 가능일 표시', () => {
     debt(s, 100_000);
     // 800,000 - 100,000 - 10,000 - 160,000*2 - 270,000 = 100,000: 3일까지.
     expect(pure(s, cfg, () => payrollRunwayDay(s, cfg, 10_000))).toBe(3);
+  });
+
+  it('시작 원화 10,000,000에서 미지급 100,000을 빼면 62일 대신 61일까지다', () => {
+    const s = open();
+    expect(payrollRunwayDay(s, config)).toBe(62);
+    debt(s, 100_000);
+    expect(pure(s, config, () => payrollRunwayDay(s, config))).toBe(61);
+  });
+
+  it('캠페인 마지막 63일째에 처음 부족해지면 62일을 반환한다', () => {
+    const cfg = { ...config, campaignDays: 63 };
+    const s = open(cfg);
+    expect(pure(s, cfg, () => payrollRunwayDay(s, cfg))).toBe(62);
+    const exact = { ...cfg, startingCash: { KRW: 160_000 * 63 } };
+    expect(payrollRunwayDay(open(exact), exact)).toBeNull();
   });
 
   it('캠페인 마지막 날까지 충분하거나 급여가 없거나 종료했으면 null이다', () => {
