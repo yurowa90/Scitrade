@@ -2,6 +2,7 @@
 // 화면은 엔진 상태를 읽고 명령을 대기열에 넣을 뿐, 현금·재고·예약을 따로 들고 있지 않다.
 
 import './style.css';
+import { esc } from './html';
 import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
@@ -12,8 +13,8 @@ import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLo
 import { SaveError, deserializeSave, serializeSave } from '../engine/save';
 import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
-import { crewCard, taskName, roleBadge } from './card';
-import { batchUnlocked, candidateLabel, crewEntries, recruitmentPanel, species, taskSchedule, venueTitle } from './recruitment';
+import { crewCard, taskName } from './card';
+import { batchUnlocked, candidateCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
@@ -47,6 +48,7 @@ function startScenario(id: ScenarioId) {
   pending = [];
   flash = null;
   selectedCard = null;
+  crewFilter = 'all';
   interviewId = null;
   for (const key of Object.keys(recruitSelections)) delete recruitSelections[key];
   for (const k of Object.keys(plans)) delete plans[k];
@@ -58,8 +60,6 @@ function newId(type: string): string {
   return `UI-${state.day}-${type}-${Date.now().toString(36)}-${commandSeq}`;
 }
 
-const esc = (text: string) =>
-  text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const usd = (minor: number) => formatMoney(config.tradeCurrency, minor);
 const krw = (minor: number) => formatMoney(config.payrollCurrency, minor);
 const committedRule = () => config.rules.fundsCheck === 'COMMITTED_OUTLAYS';
@@ -245,7 +245,7 @@ function planner(cmd: Command, q: QuotePreview, key: string, originCityId: strin
   const empOptions = local
     .map((e) => {
       const t = busyTask(e.id);
-      return `<option value="${e.id}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${e.nameKo} · 하루 ${e.workUnitsPerDay}pt${t ? ` (업무 중: ${t.contractId ?? t.subjectId})` : ''}</option>`;
+      return `<option value="${esc(e.id)}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${esc(e.nameKo)} · 하루 ${e.workUnitsPerDay}pt${t ? ` (${esc(taskSchedule(t, config))})` : ''}</option>`;
     })
     .join('');
   const sailOptions = sailings
@@ -472,7 +472,7 @@ function resourcePanel(): string {
   };
   const crew = employedDefs(view, config).map((e) => {
     const t = runningTaskOf(view, e.id);
-    return `<li><b>${e.nameKo}</b> ${t ? `업무 중 — ${taskSchedule(t, config)}` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
+    return `<li><b>${esc(e.nameKo)}</b> ${t ? `업무 중 — ${esc(taskSchedule(t, config))}` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
   });
   const sailings = config.routes.flatMap((r) => listSailings(config, r.id, view.day).slice(0, 2)).sort((a, b) => a.departureDay - b.departureDay || a.id.localeCompare(b.id));
   const space = sailings.map((s) => {
@@ -545,21 +545,13 @@ function crewPanel(): string {
   const filterBtn = (f: typeof crewFilter, label: string) =>
     `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${crewFilter === f}">${label}</button>`;
   // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
-  const rows = shown
-    .map(({ def: e, candidate, task: t }) => {
-      const loc = view.employees.find((x) => x.id === e.id)?.locationCityId ?? null;
-      return `<tr class="${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-selected="${selectedCard === e.id}">
-        <th scope="row"><span class="nm">${e.nameKo}</span>${roleBadge(e.role)}</th>
-        <td>${candidate ? candidateLabel(view, candidate) : t ? `● 업무 중<small>${taskSchedule(t, config)}</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
-        <td class="num">${e.workUnitsPerDay}pt/일<small>${krw(e.salaryPerDayMinor)}</small></td></tr>`;
-    })
-    .join('');
+  const rows = shown.map(({ def, candidate, task }) => crewRow(def, view, config, selectedCard === def.id, candidate, task)).join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
-    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}${filterBtn('candidate', '후보')}</div>
+    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
     <div class="crew-cards">${shown.map(({ def: e, candidate: c, task }) => {
-      return c ? `<article class="card ${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-label="${e.nameKo} 후보 카드"><h3>${e.nameKo} · ${species(e.id)}</h3>${roleBadge(e.role)}<p>${candidateLabel(view, c)}</p><p>하루 ${e.workUnitsPerDay}pt · 일급 ${krw(e.salaryPerDayMinor)}</p><p class="muted small">그림 미제작</p></article>` : crewCard(e, view, selectedCard === e.id, task ? taskSchedule(task, config) : undefined);
+      return c ? candidateCard(e, view, c, selectedCard === e.id, config) : crewCard(e, view, selectedCard === e.id, task ? taskSchedule(task, config) : undefined);
     }).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
@@ -609,9 +601,9 @@ function queuePanel(): string {
   const plan = planCommands(state, config, pending);
   return `
   <section class="panel queue" aria-labelledby="queue-h">
-    <h2 id="queue-h">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
+    <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
     ${flash ? `<p class="flash ${flash.kind}" role="status">${esc(flash.text)}</p>` : ''}
-    ${pending.length ? `<ol class="pending">${pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
+    ${pending.length ? `<ol class="pending">${pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
   </section>`;
 }
 
@@ -628,7 +620,11 @@ function logPanel(): string {
 function render() {
   view = planState(state, config, pending).state;
   const focused = document.activeElement as HTMLElement | null;
-  const focusKey = focused?.dataset?.action ? `[data-action="${focused.dataset.action}"]${['contract', 'key', 'candidate', 'venue', 'emp', 'filter'].map((key) => focused.dataset[key] ? `[data-${key}="${focused.dataset[key]}"]` : '').join('')}` : null;
+  // 태그와 모든 대상 속성을 비교한다. 대기열 순번은 삭제 시 바뀌므로 명령 ID를 쓴다.
+  const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
+  if (focusData) delete focusData.index;
+  const tag = focused?.tagName;
+  const blockHeading = focused?.closest('.recruit-site, .recruit-candidate')?.querySelector('h4')?.id;
   app.innerHTML = `
     ${topbar()}
     <main class="layout ${mapMode === 'world' ? 'map-wide' : ''}">
@@ -640,7 +636,12 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
-  if (focusKey) app.querySelector<HTMLElement>(focusKey)?.focus();
+  if (focusData) {
+    const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
+      el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));
+    const fallback = blockHeading ? document.getElementById(blockHeading) : document.getElementById('queue-h');
+    (target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback)?.focus();
+  }
 }
 
 // ── 이벤트 ──
@@ -762,6 +763,9 @@ function loadText(text: string) {
     const loaded = deserializeSave(text, { dataVersion: cfg.dataVersion, rulesVersion: cfg.rules.rulesVersion });
     config = cfg;
     state = openDay(loaded, config).state;
+    interviewId = null;
+    for (const key of Object.keys(recruitSelections)) delete recruitSelections[key];
+    crewFilter = 'all';
     pending = [];
     flash = { kind: 'info', text: `${cfg.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
   } catch (err) {
