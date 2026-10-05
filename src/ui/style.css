@@ -205,7 +205,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
   .card.is-selected::after { animation: none; display: none; }
 }
 
-/* 세계지도 — 위성 합성 영상 위의 게임식 표시 */
+/* 세계지도 — 픽셀 지도 위의 게임식 표시 */
 .world-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; flex-wrap: wrap; }
 .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
 .seg button { border: none; border-radius: 0; padding: .25rem .65rem; font-size: .82rem; }
@@ -213,7 +213,8 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .map-frame {
   border-radius: 12px; overflow: hidden; line-height: 0;
   border: 3px solid #c9a24a; box-shadow: inset 0 0 0 2px #6b4f1d, 0 6px 18px rgba(20, 30, 50, .25);
-  background: #0b2140;
+  background: #16365c; /* 공용 팔레트 sea-1 */
+  overflow-x: auto;
 }
 .sea-map { width: 100%; height: auto; display: block; }
 .sea-map text { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
@@ -247,7 +248,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .compass-ew { fill: #c9a24a; stroke: #6b4f1d; stroke-width: .6; }
 .compass-north { fill: #b5532a; }
 .compass text { fill: #fff6df; font-weight: 700; font-size: 14px; paint-order: stroke; stroke: #1f2a44; stroke-width: 3px; }
-.card-img { width: 100%; height: auto; border-radius: 10px; display: block; }
+.card-img { max-width: 100%; height: auto; border-radius: 10px; display: block; }
 @media (prefers-reduced-motion: reduce) {
   .route-line, .storm.active .storm-zone { animation: none; }
 }
@@ -292,7 +293,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .gate-mark { fill: rgba(127, 214, 220, .9); stroke: #0f3a4a; stroke-width: 1; }
 .gate-label { fill: #d7f4f6; font-weight: 600; paint-order: stroke; stroke: rgba(10, 20, 40, .85); stroke-width: 3px; }
 .map-frame.is-world { overflow-x: auto; }
-.sea-map.is-world { min-width: 720px; }
+
 .map-legend { display: flex; flex-wrap: wrap; gap: .35rem .9rem; list-style: none; padding: 0; margin: .5rem 0 0; font-size: .78rem; color: var(--navy-soft); }
 .map-legend li { display: inline-flex; align-items: center; gap: .3rem; }
 .lg { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #6b4f1d; }
@@ -348,4 +349,32 @@ table.roster .chip { font-size: .7rem; padding: 0 .4rem; }
   .planner label, .planner select { min-width: 0; max-width: 100%; width: 100%; }
   table.roster { table-layout: fixed; }
   table.roster thead th, table.roster td.num { white-space: normal; }
+}
+
+/* 기기 픽셀 정수 배율. 지원되는 브라우저에서는 뒤의 pixelated가 우선한다. */
+.pixel-art { image-rendering: crisp-edges; image-rendering: pixelated; }
+.sea-map[data-pixel-w] { width: auto; max-width: 100%; margin-inline: auto; }
+.sea-map[data-pixel-w][style], .card-img[data-pixel-w][style], .map-layers[style] { max-width: none; }
+.map-layers { position: relative; display: grid; max-width: 100%; margin-inline: auto; overflow: hidden; }
+.map-layers > img { position: absolute; max-width: none; }
+.map-layers > svg { position: relative; grid-area: 1 / 1; margin: 0; }
+
+.pixel-sprite {
+  --sprite-unit: calc(var(--sprite-scale) / var(--pixel-dpr, 1));
+  display: inline-block;
+  width: calc(var(--sprite-w) * var(--sprite-unit));
+  height: calc(var(--sprite-h) * var(--sprite-unit));
+  background-repeat: no-repeat;
+  background-size: calc(var(--sprite-w) * var(--sprite-columns) * var(--sprite-unit)) calc(var(--sprite-h) * var(--sprite-rows) * var(--sprite-unit));
+  background-position-x: 0;
+  background-position-y: calc(-1 * var(--sprite-row) * var(--sprite-h) * var(--sprite-unit));
+  animation-name: sprite-frames;
+  animation-iteration-count: infinite;
+}
+@keyframes sprite-frames {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(-1 * var(--sprite-w) * var(--sprite-columns) * var(--sprite-unit)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-sprite { animation: none; background-position-x: 0; }
 }

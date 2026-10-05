@@ -1,4 +1,4 @@
-// 세계지도(UI_WORLD): 위성 합성 영상 위에 거점 휘장·이름 리본·항로·선박·해협·항만 사건·나침반을 겹친다.
+// 세계지도(UI_WORLD): 픽셀 지도 위에 거점 휘장·이름 리본·항로·선박·해협·항만 사건·나침반을 겹친다.
 // ‘이번 항로’는 1장 동아시아 확대 지도, ‘전 세계’는 태평양 중심 세계지도를 쓴다.
 // 지도 위치는 표시용이며 운송시간·거리 계산에 쓰지 않는다.
 
@@ -12,6 +12,19 @@ export type MapMode = 'route' | 'world';
 
 const REGION_MAP = mapAsset('MAP_EAST_ASIA');
 const WORLD_MAP = mapAsset('MAP_WORLD');
+
+// 브라우저 검수에서 SVG image의 보간이 꺼지지 않으면 true로 바꾼다.
+export const MAP_BASE_OUTSIDE_SVG = false;
+
+/** 원래 영역을 포함하도록 격자 경계를 바깥으로 맞춘 뒤 지도 범위에서 자른다. */
+export function snapViewBox(vb: Box, unitsPerPixel: number, mapW: number, mapH: number): Box {
+  if (!(unitsPerPixel > 0) || !Number.isFinite(unitsPerPixel)) throw new RangeError('지도 픽셀 단위를 확인해 주세요.');
+  const x = Math.max(0, Math.floor(vb.x / unitsPerPixel) * unitsPerPixel);
+  const y = Math.max(0, Math.floor(vb.y / unitsPerPixel) * unitsPerPixel);
+  const right = Math.min(mapW, Math.ceil((vb.x + vb.w) / unitsPerPixel) * unitsPerPixel);
+  const bottom = Math.min(mapH, Math.ceil((vb.y + vb.h) / unitsPerPixel) * unitsPerPixel);
+  return { x: Math.min(x, mapW), y: Math.min(y, mapH), w: Math.max(0, right - x), h: Math.max(0, bottom - y) };
+}
 
 /** Catmull-Rom 스플라인을 3차 베지어로 바꿔 부드러운 항로선을 만든다. */
 function smoothPath(points: { x: number; y: number }[]): string {
@@ -133,6 +146,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     }
     vb = { x: Math.max(0, x0), y: Math.max(0, y0), w: Math.min(map.width, x1) - Math.max(0, x0), h: Math.min(map.height, y1) - Math.max(0, y0) };
   }
+  if (map.pixelGrid) vb = snapViewBox(vb, map.pixelGrid.unitsPerPixel, map.width, map.height);
   // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
   const k = (vb.w / 620) * (world ? 0.45 : 1);
 
@@ -257,13 +271,15 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const counts = { active: hubs.filter((h) => h.status === 'active').length, preview: hubs.filter((h) => h.status === 'preview').length };
   const cx = vb.x + vb.w - 52 * k;
   const cy = vb.y + vb.h - 60 * k;
-  return `
-  <svg class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
+  const pixelData = map.pixelGrid ? `data-pixel-w="${vb.w / map.pixelGrid.unitsPerPixel}" data-pixel-h="${vb.h / map.pixelGrid.unitsPerPixel}"` : '';
+  const externalBase = MAP_BASE_OUTSIDE_SVG && !!map.pixelGrid;
+  const svg = `
+  <svg ${pixelData} class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
     aria-label="${world ? '태평양 중심 세계지도' : '동아시아 해역 지도'}. 항로 ${routeNames.join(', ')}. 이번 시나리오 거점 ${counts.active}곳, 세계 확장 미리 보기 거점 ${counts.preview}곳, 해협·운하 ${gates.length}곳${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
     <defs>
       <radialGradient id="port-glow" r="0.5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".85"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
     </defs>
-    <image href="${map.path}" x="0" y="0" width="${map.width}" height="${map.height}" preserveAspectRatio="none"/>
+    ${externalBase ? '' : `<image class="map-base ${map.pixelGrid ? 'pixel-art' : ''}" href="${map.path}" x="0" y="0" width="${map.width}" height="${map.height}" preserveAspectRatio="none"/>`}
     <g class="graticule" stroke-width="${0.8 * k}">${grid.join('')}</g>
     ${routePaths}
     ${gateMarks.join('')}
@@ -272,6 +288,12 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     ${ships.join('')}
     ${compass(cx, cy, 34 * k)}
   </svg>`;
+  if (!externalBase) return svg;
+  // 같은 보기 영역의 비율로 원본 그림을 잘라, 정수 배율 SVG 표시와 겹친다.
+  return `<div class="map-layers" ${pixelData}>
+    <img class="map-base pixel-art" src="${map.path}" alt="" aria-hidden="true" style="left: ${-vb.x / vb.w * 100}%; top: ${-vb.y / vb.h * 100}%; width: ${map.width / vb.w * 100}%; height: ${map.height / vb.h * 100}%;" />
+    ${svg}
+  </div>`;
 }
 
 /** 지도 아래 범례. 색·모양만으로 뜻을 전하지 않도록 글자로도 적는다. */

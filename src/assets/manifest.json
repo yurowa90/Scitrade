@@ -56,7 +56,7 @@
     {
       "id": "MAP_EAST_ASIA",
       "kind": "map",
-      "path": "assets/maps/east-asia.webp",
+      "path": "assets/maps/east-asia.png",
       "width": 1092,
       "height": 1230,
       "status": "approved",
@@ -67,47 +67,11 @@
         "lat_min": -10.0,
         "lat_max": 44.0
       },
-      "created_on": "2026-10-04",
-      "provenance": {
-        "method": "processed_public_domain_imagery",
-        "ai_generated": false,
-        "processing": "scripts/build_map.py (자르기·2배 확대·산맥 음영·바다 그라데이션·해안선·가장자리 어둡게)",
-        "sources": [
-          {
-            "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
-            "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-blue-marble.jpg",
-            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01"
-          },
-          {
-            "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
-            "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
-            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
-          }
-        ],
-        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
-        "attribution": "위성 합성 영상: NASA Blue Marble",
-        "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)"
-      }
-    },
-    {
-      "id": "MAP_WORLD",
-      "kind": "map",
-      "path": "assets/maps/world.webp",
-      "width": 3600,
-      "height": 1220,
-      "status": "approved",
-      "projection": "equirectangular",
-      "bounds": {
-        "lon_min": -30.0,
-        "lon_max": 330.0,
-        "lat_min": -50.0,
-        "lat_max": 72.0
-      },
       "created_on": "2026-10-05",
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "scripts/build_map.py --region world (태평양 중심으로 이어 붙여 자르기·1°당 10px로 축소·산맥 음영·바다 그라데이션·해안선·가장자리 어둡게). 경도 −30°에서 잘라 330°까지 펼침",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (경위도 자르기·영역 평균으로 논리 격자 축소·높이 및 근처 색으로 육지 판정·3×3 다수결·해협/운하 좌표에 바다 통로·지형 분류·육지 3×3 최빈값·315° 언덕 음영 3단계·해안 거리별 바다·팔레트 칠하기·육지 쪽 1픽셀 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
@@ -123,7 +87,56 @@
         "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
         "attribution": "위성 합성 영상: NASA Blue Marble",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
-        "known_issues_ko": "북극 해빙이 육지 판정에 섞여 위쪽 가장자리에 흰 얼룩이 있다. 1°당 10px라 지역을 확대하면 거칠다. 최종 그림 작업 때 고해상도 NASA 원본으로 다시 만든다."
+        "palette": "scitrade-32 (DRAFT_2026-10-05)",
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 바다 통로를 낸 관문: MALACCA_STRAIT. 관문 주변 연결 경고: 없음. 해안에서 1논리 픽셀보다 먼 도시 좌표(옮기지 않음): SHANGHAI, YOKOHAMA, SINGAPORE."
+      },
+      "pixel_grid": {
+        "logical_width": 546,
+        "logical_height": 615,
+        "units_per_pixel": 2
+      }
+    },
+    {
+      "id": "MAP_WORLD",
+      "kind": "map",
+      "path": "assets/maps/world.png",
+      "width": 3600,
+      "height": 1220,
+      "status": "approved",
+      "projection": "equirectangular",
+      "bounds": {
+        "lon_min": -30.0,
+        "lon_max": 330.0,
+        "lat_min": -50.0,
+        "lat_max": 72.0
+      },
+      "created_on": "2026-10-05",
+      "provenance": {
+        "method": "processed_public_domain_imagery",
+        "ai_generated": false,
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (경위도 자르기·영역 평균으로 논리 격자 축소·높이 및 근처 색으로 육지 판정·3×3 다수결·해협/운하 좌표에 바다 통로·지형 분류·육지 3×3 최빈값·315° 언덕 음영 3단계·해안 거리별 바다·팔레트 칠하기·육지 쪽 1픽셀 해안선·무손실 PNG)",
+        "sources": [
+          {
+            "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
+            "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-blue-marble.jpg",
+            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01"
+          },
+          {
+            "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
+            "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
+            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
+          }
+        ],
+        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
+        "attribution": "위성 합성 영상: NASA Blue Marble",
+        "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 바다 통로를 낸 관문: MALACCA_STRAIT, HORMUZ_STRAIT, BAB_EL_MANDEB, SUEZ_CANAL, PANAMA_CANAL. 관문 주변 연결 경고: BAB_EL_MANDEB. 해안에서 1논리 픽셀보다 먼 도시 좌표(옮기지 않음): SHANGHAI.",
+        "palette": "scitrade-32 (DRAFT_2026-10-05)"
+      },
+      "pixel_grid": {
+        "logical_width": 720,
+        "logical_height": 244,
+        "units_per_pixel": 5
       }
     }
   ]

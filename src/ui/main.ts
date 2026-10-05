@@ -2,6 +2,7 @@
 // 화면은 엔진 상태를 읽고 명령을 대기열에 넣을 뿐, 현금·재고·예약을 따로 들고 있지 않다.
 
 import './style.css';
+import { applyPixelScale } from './pixel';
 import { esc } from './html';
 import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
@@ -636,6 +637,7 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
+  applyPixelScale(app);
   if (focusData) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
       el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));
