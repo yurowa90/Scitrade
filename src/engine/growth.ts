@@ -58,3 +58,14 @@ export function awardTaskCompletion(s: GameState, config: ScenarioConfig, task: 
     training ? 'TRAINING_XP' : 'TASK_COMPLETION_XP',
     training ? config.growth.ordinaryTraining.xpOnCompletion : config.growth.taskCompletionXp);
 }
+
+/** 최대 레벨에는 다음 문턱이 없다. 정의가 없는 직원은 성장 정보 없이 표시한다. */
+export function levelProgress(state: GameState, config: ScenarioConfig, employeeId: string) {
+  const xp = state.employees.find((e) => e.id === employeeId)?.xp ?? 0;
+  const def = config.employees.find((e) => e.id === employeeId);
+  const level = levelFor(xp);
+  const levelFloorXp = rules.xp_thresholds.find((t) => t.level === level)!.cumulative_xp;
+  const nextLevelXp = rules.xp_thresholds.find((t) => t.level === level + 1)?.cumulative_xp ?? null;
+  return { level, xp, levelFloorXp, nextLevelXp, xpToNext: nextLevelXp === null ? null : nextLevelXp - xp,
+    stats: def ? statsFor(def, xp) : null };
+}

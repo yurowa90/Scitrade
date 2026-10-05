@@ -2,8 +2,11 @@
 // 다른 규칙·데이터 판본의 저장은 조용히 이어 쓰지 않고 거절한다.
 // 저장 형식이 바뀌면 판본을 올리고, 이전 판본은 명시한 이관 함수로만 읽는다.
 
-import { loadScenario, type ScenarioId } from '../content/scenario';
+import { loadScenario, SCENARIO_IDS, type ScenarioId } from '../content/scenario';
 import { ENGINE_VERSION, SUPPORTED_RULES_VERSIONS, type GameState, type ScenarioConfig } from './types';
+
+import { checkSaveShape } from './save-shape';
+import { checkInvariants } from './invariants';
 
 export const SAVE_FORMAT = 'scitrade-save';
 /**
@@ -96,10 +99,23 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError(`다른 데이터 판본(${file.dataVersion})의 저장입니다. 현재 데이터는 ${expected.dataVersion}입니다.`);
   }
   if (!file.state || typeof file.state.day !== 'number') throw new SaveError('저장 파일에 게임 상태가 없습니다.');
-  const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
-  const v3 = file.formatVersion <= 2 ? migrateV2toV3(v2) : file.state;
-  if (file.formatVersion === SAVE_FORMAT_VERSION) return file.state;
-  const config = expected.config ?? loadScenario(file.scenarioId as ScenarioId);
-  if (config.id !== file.scenarioId) throw new SaveError('이관 설정과 저장 시나리오가 다릅니다.');
-  return migrateV3toV4(v3, config);
+  try {
+    if (!expected.config && !(SCENARIO_IDS as readonly string[]).includes(file.scenarioId)) {
+      throw new SaveError(`알 수 없는 저장 시나리오입니다 (${file.scenarioId}).`);
+    }
+    const config = expected.config ?? loadScenario(file.scenarioId as ScenarioId);
+    if (config.id !== file.scenarioId) throw new SaveError('이관 설정과 저장 시나리오가 다릅니다.');
+    const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
+    const v3 = file.formatVersion <= 2 ? migrateV2toV3(v2) : v2;
+    const state = file.formatVersion < SAVE_FORMAT_VERSION ? migrateV3toV4(v3, config) : file.state;
+    checkSaveShape(state);
+    if (state.meta.scenarioId !== file.scenarioId || state.meta.rulesVersion !== file.rulesVersion
+      || state.meta.dataVersion !== file.dataVersion || config.rules.rulesVersion !== file.rulesVersion
+      || config.dataVersion !== file.dataVersion) throw new SaveError('저장 메타 정보와 설정이 다릅니다.');
+    checkInvariants(state, config);
+    return state;
+  } catch (error) {
+    if (error instanceof SaveError) throw error;
+    throw new SaveError(`저장 상태 검증 실패: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

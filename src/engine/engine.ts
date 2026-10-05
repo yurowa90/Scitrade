@@ -37,6 +37,7 @@ import {
 import { isEmployed, isAvailableFromToday } from './employees';
 import { checkInvariants } from './invariants';
 import { awardTaskCompletion } from './growth';
+import { taskSubjectKo } from './tasks';
 
 export { cargoSpace, cityName, findSailing, listSailings, type Sailing } from './catalog';
 
@@ -212,10 +213,7 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   }
   const status = rejection === null ? 'APPLIED' : 'REJECTED';
   const reasonKo = rejection ?? '처리됨';
-  // 훈련 거절은 명령 기록까지 그대로 둔다. 자금·예약 조건을 고친 뒤 재시도할 수 있다.
-  if (cmd.type !== 'START_TRAINING' || rejection === null) {
-    s.processedCommands[cmd.id] = { day: s.day, type: cmd.type, status, reasonKo };
-  }
+  s.processedCommands[cmd.id] = { day: s.day, type: cmd.type, status, reasonKo };
   return { commandId: cmd.id, status, reasonKo };
 }
 
@@ -474,7 +472,7 @@ function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: s
     return `${def.nameKo}은(는) ${cityName(config, emp.locationCityId)}에 있습니다. 이 업무는 ${cityName(config, cityId)} 현지 인력이 필요합니다.`;
   }
   const busy = runningTaskOf(s, employeeId);
-  if (busy) return `${def.nameKo}은(는) 다른 업무(${busy.contractId ?? busy.subjectId} ${taskLabel(busy.kind)})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+  if (busy) return `${def.nameKo}은(는) 다른 업무(${[taskSubjectKo(config, busy), taskLabel(busy.kind)].filter(Boolean).join(' ')})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
   return null;
 }
 
@@ -498,7 +496,13 @@ function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, empl
     if (contract.status === 'ACTIVE') contract.status = 'IN_PROGRESS';
   }
   const def = config.employees.find((e) => e.id === employeeId)!;
-  log(s, `${def.nameKo}에게 ${task.contractId ?? task.subjectId} ${taskLabel(task.kind)} 업무 배정 (${task.requiredWorkUnits} ${task.kind === 'TRAINING' ? '일' : '업무 포인트'})`);
+  const label = [taskSubjectKo(config, task), taskLabel(task.kind)].filter(Boolean).join(' ');
+  if (task.kind === 'TRAINING') {
+    const fee = config.growth!.ordinaryTraining;
+    log(s, `${def.nameKo} ${label} 시작 (${task.requiredWorkUnits}일, 훈련비 ${formatMoney(fee.currency, fee.feeMinor)})`);
+  } else {
+    log(s, `${def.nameKo}에게 ${label} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  }
   return null;
 }
 
@@ -508,7 +512,7 @@ function startTraining(s: GameState, config: ScenarioConfig, employeeId: string)
   const cityId = emp?.locationCityId ?? config.homeCityId;
   const unavailable = employeeUnavailable(s, config, employeeId, cityId);
   if (unavailable) return unavailable;
-  if (cityId !== config.homeCityId) return '일반 훈련은 부산에서만 할 수 있습니다.';
+  if (cityId !== config.homeCityId) return `일반 훈련은 ${cityName(config, config.homeCityId)}에서만 할 수 있습니다.`;
   const def = config.employees.find((e) => e.id === employeeId)!;
   if (!def.growth) return '성장 정보가 없는 직원입니다.';
   const training = config.growth.ordinaryTraining;
@@ -793,7 +797,6 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
     if (task.progressWorkUnits >= task.requiredWorkUnits) {
       task.status = 'DONE';
       task.completedDay = s.day;
-      awardTaskCompletion(s, config, task);
       if (task.kind === 'TRAINING') {
         log(s, `${def.nameKo}: 일반 훈련 완료`);
       } else if (task.kind === 'SCOUT') {
@@ -805,7 +808,7 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
           log(s, `${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 발견: 영입 의뢰 가능`);
         }
         s.recruitment.scoutedVenueIds.push(site.venueId);
-        log(s, `${def.nameKo}: ${site.venueId} 현장 조사 완료`);
+        log(s, `${def.nameKo}: ${taskSubjectKo(config, task)} 현장 조사 완료`);
       } else if (task.kind === 'RECRUIT_QUEST') {
         const c = s.recruitment.candidates.find((x) => x.employeeId === task.subjectId)!;
         c.stage = 'INTERVIEW_READY';
@@ -816,6 +819,7 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
         if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
         log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
       }
+      awardTaskCompletion(s, config, task);
     }
   }
 }

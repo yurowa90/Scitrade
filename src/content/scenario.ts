@@ -10,6 +10,7 @@ import employees from '../../data/employees.json';
 import characters from '../../data/characters.json';
 import characterRules from '../../data/character_rules.json';
 import world from '../../data/world.json';
+import venues from '../../data/venues.json';
 import packageStatus from '../../PACKAGE_STATUS.json';
 
 import { rateToBasisPoints, toMinor, type Currency } from '../engine/money';
@@ -315,7 +316,8 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     questWorkUnits: rawRecruitment.quest_work_units,
     signingFeeWageDays: rawRecruitment.signing_fee_wage_days,
     scoutSites: rawRecruitment.scout_sites.map((site) => ({
-      venueId: site.venue_id, cityId: site.city_id, candidateEmployeeIds: site.candidate_employee_ids,
+      venueId: site.venue_id, titleKo: str(findById(venues, site.venue_id), 'title_ko'),
+      cityId: site.city_id, candidateEmployeeIds: site.candidate_employee_ids,
     })),
   } : null;
 

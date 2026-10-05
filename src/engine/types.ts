@@ -308,7 +308,7 @@ export interface RecruitmentDef {
   scoutWorkUnits: number;
   questWorkUnits: number;
   signingFeeWageDays: number;
-  scoutSites: { venueId: string; cityId: string; candidateEmployeeIds: string[] }[];
+  scoutSites: { venueId: string; titleKo: string; cityId: string; candidateEmployeeIds: string[] }[];
 }
 
 export interface CandidateState {

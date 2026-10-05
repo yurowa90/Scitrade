@@ -23,6 +23,47 @@ def check(condition, message):
         ERRORS.append(message)
 
 
+def validate_growth(rules, characters):
+    """성장 자료와 엔진이 고정한 의미를 대조한다. 누락도 검사 실패로 보고한다."""
+    level_min, level_max = rules.get('level_min'), rules.get('level_max')
+    bounds_ok = (type(level_min) is int and type(level_max) is int
+                 and 1 <= level_min <= level_max)
+    check(bounds_ok, 'positive ordered level_min and level_max')
+    thresholds = rules.get('xp_thresholds')
+    thresholds_ok = isinstance(thresholds, list) and all(
+        isinstance(t, dict) and type(t.get('level')) is int
+        and type(t.get('cumulative_xp')) is int for t in thresholds)
+    check(thresholds_ok, 'XP thresholds contain integer level and cumulative_xp')
+    if thresholds_ok and bounds_ok:
+        check(level_max == len(thresholds), 'level_max equals XP threshold count')
+        check([t['level'] for t in thresholds] == list(range(level_min, level_max + 1)),
+              'complete level_min-level_max thresholds')
+        for t in thresholds:
+            check(t['cumulative_xp'] == 50*(t['level']-1)*t['level'], 'XP threshold arithmetic')
+        for cid, character in characters.items():
+            xp = character.get('xp_total')
+            check(type(xp) is int and xp >= 0, cid + ': nonnegative integer XP')
+            if type(xp) is int:
+                level = max([level_min] + [min(level_max, t['level']) for t in thresholds
+                                           if xp >= t['cumulative_xp']])
+                check(character.get('level') == level, cid + ': level matches XP')
+    training = rules.get('ordinary_training')
+    check(isinstance(training, dict), 'ordinary training definition exists')
+    training = training if isinstance(training, dict) else {}
+    fee = training.get('fee')
+    fee = fee if isinstance(fee, dict) else {}
+    for name, value in [('task_completion_xp', rules.get('task_completion_xp')),
+                        ('duration_days', training.get('duration_days')),
+                        ('fee.amount', fee.get('amount')),
+                        ('xp_on_completion', training.get('xp_on_completion'))]:
+        check(type(value) is int and value > 0, name + ': positive integer')
+    check(fee.get('currency') == 'KRW', 'ordinary training fee uses KRW')
+    check(training.get('occupies_employee_reservation') is True,
+          'ordinary training occupies employee reservation')
+    check(training.get('salary_included_in_fee') is False,
+          'ordinary training fee excludes salary')
+
+
 def read(relative):
     return json.loads((ROOT / relative).read_text(encoding='utf-8'))
 
@@ -550,15 +591,7 @@ def main():
         check(job['affinity_attribute'] in attributes, job['id'] + ': affinity')
         check(sum(Decimal(str(v)) for v in job['stat_weights'].values()) == 1,
               job['id'] + ': stat weights sum to one')
-    for threshold in rules['xp_thresholds']:
-        level = threshold['level']
-        check(threshold['cumulative_xp'] == 50*(level-1)*level, 'XP threshold arithmetic')
-    check([t['level'] for t in rules['xp_thresholds']] == list(range(1, 11)), 'complete level 1-10 thresholds')
-    training = rules['ordinary_training']
-    check(all(type(v) is int and v > 0 for v in
-              (training['duration_days'], training['fee']['amount'], training['xp_on_completion'])),
-          'ordinary training duration, fee and XP are positive integers')
-    check(training['fee']['currency'] == 'KRW', 'ordinary training fee uses KRW')
+    validate_growth(rules, characters)
     check(tables['scenarios']['SCENARIO_M2_MULTI_TRADE'].get('growth') == {'enabled': True},
           'M2 multi trade enables growth without copying numeric rules')
     check(all('growth' not in s for sid, s in tables['scenarios'].items() if sid.startswith('SCENARIO_M1_')),

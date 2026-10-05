@@ -11,7 +11,7 @@ import { checkInvariants } from './invariants';
 import { post, summarize } from './ledger';
 import { companyReport } from './reports';
 import { runningTaskOf } from './reservations';
-import { deserializeSave, SAVE_FORMAT_VERSION, serializeSave } from './save';
+import { deserializeSave, SAVE_FORMAT_VERSION, SaveError, serializeSave } from './save';
 import { runDays, standardDayOneCommands, type DayScript } from './testkit';
 import type { Command, GameState, ScenarioConfig } from './types';
 
@@ -22,6 +22,19 @@ const trade = (assigned = true): Command => ({ id: 'TRADE', type: 'ACCEPT_TRADE'
 const assign = (id = 'ASSIGN'): Command => ({ id, type: 'ASSIGN_TASK', taskId: 'TASK001', employeeId: 'EMP01' });
 const until = (day: number, cfg = config, script: DayScript = {}) => runDays(createGame(cfg), cfg, day, script).state;
 const reload = (s: GameState, cfg = config) => deserializeSave(serializeSave(s), { dataVersion: cfg.dataVersion, config: cfg });
+
+function unchangedExceptCommand(before: GameState, after: GameState) {
+  expect({ ...after, processedCommands: before.processedCommands }).toEqual(before);
+}
+
+function withoutGrowth(state: GameState) {
+  const s = structuredClone(state);
+  for (const emp of s.employees) emp.xp = 0;
+  s.xpAwards = {};
+  s.xpAwardAmounts = {};
+  s.log = s.log.filter((l) => !/레벨 \d+ 달성/.test(l.textKo));
+  return s;
+}
 
 function fixtureConfig(): ScenarioConfig {
   const setup = acceptance.items.find((c) => c.id === 'CHAR-ACC-08')!.setup;
@@ -113,7 +126,7 @@ describe('CHAR-ACC-02 누적 경험치로 레벨·능력 재계산', () => {
     for (const state of [s, reload(s, cfg)]) {
       expect(employee(state).xp).toBe(spec.expected.cumulative_xp);
       expect(levelFor(employee(state).xp)).toBe(spec.expected.level);
-      for (let i = 0; i < 3; i++) expect(statsFor(def, employee(state).xp)).toEqual({ primary: 54, secondary: 42 });
+      expect(statsFor(def, employee(state).xp)).toEqual({ primary: spec.expected.primary_ability, secondary: spec.expected.secondary_ability });
       expect(crewCard(def, state, false)).toContain('레벨 3');
       checkInvariants(state, cfg);
     }
@@ -139,6 +152,13 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
   it('CHAR-ACC-08 훈련비 20,000·급여 10,000·현금 470,000·경험치 60이며 중복하지 않는다', () => {
     const cfg = fixtureConfig();
     const spec = acceptance.items.find((c) => c.id === 'CHAR-ACC-08')!.expected;
+    const direct = commitDay(openDay(createGame(cfg), cfg).state, cfg, [training()]);
+    expect(direct.results[0]!.status).toBe('APPLIED');
+    expect(companyReport(direct.state, cfg).payroll).toMatchObject({
+      trainingExpense: spec.training_fee_expense_krw, wageExpense: spec.regular_salary_expense_krw,
+      cash: spec.ending_cash_krw,
+    });
+    expect(employee(direct.state).xp).toBe(spec.cumulative_xp);
     const opened = openDay(createGame(cfg), cfg).state;
     const started = planState(opened, cfg, [training(), training(), training('SECOND')]);
     expect(started.results.map((r) => r.status)).toEqual(['APPLIED', 'DUPLICATE', 'REJECTED']);
@@ -175,7 +195,7 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
     expect(crewCard(config.employees[0]!, p.state, false)).toContain('0/1일');
     expect(taskSchedule(runningTaskOf(p.state, 'EMP01')!, config)).toContain('일반 훈련');
     const tomorrow = until(1, config, { 1: [trade(false), training()] });
-    expect(planState(tomorrow, config, [assign('NEXT')]).results[0]!.status).toBe('APPLIED');
+    expect(planState(openDay(tomorrow, config).state, config, [assign('NEXT')]).results[0]!.status).toBe('APPLIED');
     checkInvariants(p.state, config);
   });
 
@@ -194,14 +214,14 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
     checkInvariants(second, cfg);
   });
 
-  it('자금이 1원 부족하면 기록도 남기지 않고, 정확한 금액이면 시작한다', () => {
+  it('자금이 1원 부족하면 명령 기록만 남기고, 정확한 금액이면 시작한다', () => {
     for (const shortfall of [1, 0]) {
       const cfg = fixtureConfig();
       cfg.startingCash.KRW = cfg.growth!.ordinaryTraining.feeMinor - shortfall;
       const s = openDay(createGame(cfg), cfg).state;
       const p = planState(s, cfg, [training()]);
       expect(p.results[0]!.status).toBe(shortfall ? 'REJECTED' : 'APPLIED');
-      if (shortfall) expect(p.state).toEqual(s);
+      if (shortfall) unchangedExceptCommand(s, p.state);
       else expect(summarize(p.state.ledger, 'KRW').cash).toBe(0);
       checkInvariants(p.state, cfg);
     }
@@ -215,16 +235,16 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
     s.obligations.push({ id: 'DEBT', currency: 'KRW', amountMinor: debt, reasonKo: '미지급 비용', incurredDay: 1, paidDay: null });
     const p = planState(s, cfg, [training()]);
     expect(p.results[0]!.reasonKo).toContain('훈련비 자금이 부족');
-    expect(p.state).toEqual(s);
+    unchangedExceptCommand(s, p.state);
     checkInvariants(p.state, cfg);
   });
 
-  it('후보·없는 직원·근무 시작 전·다른 도시·업무 중 훈련은 상태 전체를 보존한다', () => {
+  it('후보·없는 직원·근무 시작 전·다른 도시·업무 중 훈련은 명령 기록 외 상태를 보존한다', () => {
     for (const employeeId of ['EMP04', 'MISSING']) {
       const s = openDay(createGame(config), config).state;
       const p = planState(s, config, [training('REJECT', employeeId)]);
       expect(p.results[0]!.status).toBe('REJECTED');
-      expect(p.state).toEqual(s);
+      unchangedExceptCommand(s, p.state);
     }
     for (const reason of ['future', 'city', 'busy']) {
       let s = openDay(createGame(config), config).state;
@@ -233,7 +253,7 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
       if (reason === 'busy') s = planState(s, config, [trade()]).state;
       const p = planState(s, config, [training()]);
       expect(p.results[0]!.status).toBe('REJECTED');
-      expect(p.state).toEqual(s);
+      unchangedExceptCommand(s, p.state);
       checkInvariants(p.state, config);
     }
   });
@@ -247,7 +267,7 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     expect(cfg.employees.every((e) => e.growth === null)).toBe(true);
     const p = planState(s, cfg, [training()]);
     expect(p.results[0]!.status).toBe('REJECTED');
-    expect(p.state).toEqual(s);
+    unchangedExceptCommand(s, p.state);
     expect(awardXp(s, cfg, 'EMP01', 'DISABLED', 'TRAINING_XP', 60)).toBe(false);
     const done = until(17, cfg, { 1: standardDayOneCommands(cfg) });
     expect(employee(done).xp).toBe(0);
@@ -267,9 +287,7 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     };
     const s = until(17, config, script);
     const disabled = until(17, { ...config, growth: null }, script);
-    expect(s.ledger).toEqual(disabled.ledger);
-    expect(s.tasks).toEqual(disabled.tasks);
-    expect(s.shipments).toEqual(disabled.shipments);
+    expect(withoutGrowth(s)).toEqual(withoutGrowth(disabled));
     const highLevel = structuredClone(config);
     for (const def of highLevel.employees) def.growth!.startXp = 4500;
     const high = until(17, highLevel, script);
@@ -282,7 +300,7 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     checkInvariants(s, config);
   });
 
-  it.each([1, 2, 3])('판본 %i의 실제 누락 필드를 채워 판본 4로 이관하고 과거 완료에는 소급 보상하지 않는다', (version) => {
+  it.each([1, 2, 3])('판본 %i의 누락 필드를 복원하고 성장 활성 판본 2·3에서 소급 보상하지 않는다', (version) => {
     const cfg = version === 1 ? loadScenario('SCENARIO_M1_ONE_TRADE') : fixtureConfig();
     if (cfg.employees[0]!.growth) cfg.employees[0]!.growth.startXp = 90;
     const s = until(2, { ...cfg, growth: null }, { 1: [trade()] });
@@ -306,7 +324,7 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     expect(restored).toEqual(s);
     expect(employee(restored).xp).toBe(cfg.employees[0]!.growth?.startXp ?? 0);
     expect(restored.xpAwards).toEqual({});
-    expect(runDays(restored, cfg, 3).state.xpAwards).toEqual({});
+    if (version !== 1) expect(runDays(restored, cfg, 3).state.xpAwards).toEqual({});
     checkInvariants(restored, cfg);
   });
 
@@ -335,5 +353,124 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     duplicate.ledger.entries.push(structuredClone(duplicate.ledger.entries.find((e) => e.id.startsWith('TRAINING-FEE-'))!));
     expect(() => checkInvariants(duplicate, cfg)).toThrow(/훈련비 중복/);
     checkInvariants(s, cfg);
+  });
+});
+
+describe('재작업 1 회귀 방어', () => {
+  it('거절한 훈련 ID는 다음 날 조건을 갖춰도 DUPLICATE이며 훈련비가 빠지지 않는다', () => {
+    const cfg = fixtureConfig();
+    let s = openDay(createGame(cfg), cfg).state;
+    employee(s).availableFromDay = 2;
+    const rejected = planState(s, cfg, [training()]);
+    expect(rejected.results[0]!.status).toBe('REJECTED');
+    unchangedExceptCommand(s, rejected.state);
+    s = openDay(commitDay(rejected.state, cfg, []).state, cfg).state;
+    expect(planState(s, cfg, [training('FRESH')]).results[0]!.status).toBe('APPLIED');
+    const retry = planState(s, cfg, [training()]);
+    expect(retry.results[0]!.status).toBe('DUPLICATE');
+    expect(rejected.state.processedCommands.TRAIN).toMatchObject({ status: 'REJECTED' });
+    expect(retry.state).toEqual(s);
+    expect(summarize(retry.state.ledger, 'KRW').trainingExpense).toBe(0);
+  });
+
+  it.each(['담당자 불일치', '미고용', '지급량 불일치'])('awardXp는 %s에서 false이고 상태를 보존한다', (reason) => {
+    const s = until(2, config, { 1: [trade()] });
+    employee(s).xp = 0;
+    s.xpAwards = {};
+    s.xpAwardAmounts = {};
+    if (reason === '미고용') employee(s).employmentStatus = 'candidate';
+    const before = structuredClone(s);
+    expect(awardXp(s, config, reason === '담당자 불일치' ? 'EMP02' : 'EMP01',
+      'TASK-DONE-TASK001', 'TASK_COMPLETION_XP', reason === '지급량 불일치' ? 11 : 10)).toBe(false);
+    expect(s).toEqual(before);
+  });
+
+  it.each(['TRAINING', 'EXPORT_PREP', 'SCOUT', 'RECRUIT_QUEST'])('%s 완료 로그 다음에 레벨 달성 로그를 쓴다', (kind) => {
+    const cfg = structuredClone(config);
+    for (const def of cfg.employees) def.growth!.startXp = 90;
+    let s = openDay(createGame(cfg), cfg).state;
+    const cmd: Command = kind === 'TRAINING' ? training() : kind === 'EXPORT_PREP' ? trade()
+      : kind === 'SCOUT' ? { id: 'SCOUT', type: 'SCOUT_SITE', venueId: 'VEN_PORT', employeeId: 'EMP01' }
+      : { id: 'QUEST', type: 'START_RECRUIT_QUEST', candidateId: 'EMP04', employeeId: 'EMP01' };
+    if (kind === 'RECRUIT_QUEST') s.recruitment.candidates.find((c) => c.employeeId === 'EMP04')!.stage = 'DISCOVERED';
+    s = commitDay(s, cfg, [cmd]).state;
+    if (s.tasks[0]!.status !== 'DONE') s = runDays(s, cfg, 3).state;
+    const texts = s.log.map((l) => l.textKo);
+    const complete = texts.findIndex((l) => l.startsWith('귀솔:') && l.includes('완료'));
+    const level = texts.indexOf('귀솔 레벨 2 달성');
+    expect(complete).toBeGreaterThanOrEqual(0);
+    expect(level).toBeGreaterThan(complete);
+  });
+
+  function oldSave(cfg = config) {
+    const file = JSON.parse(serializeSave(createGame(cfg)));
+    file.formatVersion = 3;
+    delete file.state.xpAwards;
+    delete file.state.xpAwardAmounts;
+    for (const e of file.state.employees) delete e.xp;
+    return file;
+  }
+
+  it('판본 3 이관은 전달한 설정의 0이 아닌 시작 경험치를 사용한다', () => {
+    const cfg = structuredClone(config);
+    cfg.employees[0]!.growth!.startXp = 90;
+    const restored = deserializeSave(JSON.stringify(oldSave(cfg)), { dataVersion: cfg.dataVersion, config: cfg });
+    expect(employee(restored).xp).toBe(90);
+    expect(restored).toEqual(createGame(cfg));
+  });
+
+  it('판본 3은 다른 시나리오 설정과 직원 정의 누락을 SaveError로 거절한다', () => {
+    const file = oldSave();
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config });
+    const other = { ...config, id: 'OTHER' };
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: other }))
+      .toThrow(/이관 설정과 저장 시나리오가 다릅니다/);
+    file.state.employees[0].id = 'MISSING';
+    expect(load).toThrow(SaveError);
+    expect(load).toThrow(/직원 정의가 없습니다/);
+  });
+
+  it.each([1, 2, 3, 4])('판본 %i의 알 수 없는 시나리오를 SaveError로 거절한다', (version) => {
+    const file = oldSave();
+    file.formatVersion = version;
+    file.scenarioId = 'MISSING';
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(SaveError);
+  });
+
+  it('훈련 업무 없는 훈련비와 업무 종류가 다른 보상 키를 탐지한다', () => {
+    const cfg = fixtureConfig();
+    const s = until(1, cfg, { 1: [training()] });
+    const orphan = structuredClone(s);
+    orphan.ledger.entries.find((e) => e.id.startsWith('TRAINING-FEE-'))!.id = 'ORPHAN';
+    expect(() => checkInvariants(orphan, cfg)).toThrow(/훈련 업무 없는 훈련비/);
+    const wrongKind = structuredClone(s);
+    const key = Object.keys(wrongKind.xpAwards)[0]!;
+    const wrongKey = key.replace('TRAINING_XP', 'TASK_COMPLETION_XP');
+    wrongKind.xpAwards = { [wrongKey]: true };
+    wrongKind.xpAwardAmounts = { [wrongKey]: 60 };
+    expect(() => checkInvariants(wrongKind, cfg)).toThrow(/보상 종류가 다릅니다/);
+  });
+
+  it.each(['지급액 누락', '경험치 불일치', '배열 누락', '직원 모양', '장부 모양', '단계 오류'])('판본 4 %s를 불러올 때 SaveError로 거절한다', (reason) => {
+    const cfg = fixtureConfig();
+    const file = JSON.parse(serializeSave(until(1, cfg, { 1: [training()] })));
+    if (reason === '지급액 누락') delete file.state.xpAwardAmounts;
+    if (reason === '경험치 불일치') file.state.employees[0].xp++;
+    if (reason === '배열 누락') delete file.state.tasks;
+    if (reason === '직원 모양') file.state.employees[0].availableFromDay = '2';
+    if (reason === '장부 모양') file.state.ledger.entries[0].lines = null;
+    if (reason === '단계 오류') file.state.phase = 'INVALID';
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
+  });
+
+  it.each([1, 2, 3])('판본 %i 이관 결과에도 모양·불변 조건 검사를 한다', (version) => {
+    const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
+    for (const reason of ['shape', 'invariant']) {
+      const file = oldSave(cfg);
+      file.formatVersion = version;
+      if (reason === 'shape') file.state.obligations = null;
+      else file.state.ledger.entries[0].lines[0].amount++;
+      expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
+    }
   });
 });
