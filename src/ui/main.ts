@@ -13,6 +13,7 @@ import { SaveError, deserializeSave, serializeSave } from '../engine/save';
 import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { crewCard, taskName, roleBadge } from './card';
+import { batchUnlocked, candidateLabel, crewEntries, recruitmentPanel, species, taskSchedule, venueTitle } from './recruitment';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
@@ -28,11 +29,13 @@ let pending: Command[] = [];
 let flash: { kind: 'info' | 'warn'; text: string } | null = null;
 let selectedCard: string | null = null;
 /** 동료 카드와 운영표가 함께 쓰는 필터 (REF-05). */
-let crewFilter: 'all' | 'free' | 'busy' = 'all';
+let crewFilter: 'all' | 'free' | 'busy' | 'candidate' = 'all';
 /** 견적별 ‘한 번에 확정’ 계획 (REF-02). 키는 견적 쌍 또는 운송 주선 견적 ID. */
 const plans: Record<string, CommitPlan> = {};
 /** 플레이어가 직접 고친 계획. 고치지 않은 계획은 매번 현재 상태(바쁜 직원·남은 편)로 기본값을 다시 고른다. */
 const touchedPlans = new Set<string>();
+const recruitSelections: Record<string, string> = {};
+let interviewId: string | null = null;
 let mapMode: MapMode = 'route';
 let commandSeq = 0;
 
@@ -44,6 +47,8 @@ function startScenario(id: ScenarioId) {
   pending = [];
   flash = null;
   selectedCard = null;
+  interviewId = null;
+  for (const key of Object.keys(recruitSelections)) delete recruitSelections[key];
   for (const k of Object.keys(plans)) delete plans[k];
   touchedPlans.clear();
 }
@@ -225,6 +230,7 @@ const busyTask = (employeeId: string) => runningTaskOf(view, employeeId);
 
 /** REF-02 한 번에 확정: 준비 담당과 운송편을 함께 골라 하나의 명령으로 넣는다. 하나라도 안 되면 수락까지 철회된다. */
 function planner(cmd: Command, q: QuotePreview, key: string, originCityId: string): string {
+  if (!batchUnlocked(view)) return '<p class="muted small">첫 계약을 단계별로 마치면 한 번에 확정을 쓸 수 있습니다</p>';
   if (cmd.type !== 'ACCEPT_TRADE' && cmd.type !== 'ACCEPT_FORWARDING') return '';
   const sailings = listSailings(config, q.routeId, view.day + 1).slice(0, 3);
   const local = employedDefs(view, config).filter((e) => view.employees.find((x) => x.id === e.id)?.locationCityId === originCityId);
@@ -466,7 +472,7 @@ function resourcePanel(): string {
   };
   const crew = employedDefs(view, config).map((e) => {
     const t = runningTaskOf(view, e.id);
-    return `<li><b>${e.nameKo}</b> ${t ? `업무 중 — ${t.contractId ?? t.subjectId} ${taskName(t.kind)} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
+    return `<li><b>${e.nameKo}</b> ${t ? `업무 중 — ${taskSchedule(t, config)}` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
   });
   const sailings = config.routes.flatMap((r) => listSailings(config, r.id, view.day).slice(0, 2)).sort((a, b) => a.departureDay - b.departureDay || a.id.localeCompare(b.id));
   const space = sailings.map((s) => {
@@ -535,30 +541,32 @@ function reportPanel(): string {
 
 function crewPanel(): string {
   const e0 = employedDefs(view, config)[0];
-  const shown = employedDefs(view, config).filter((e) => crewFilter === 'all' || (crewFilter === 'busy') === Boolean(busyTask(e.id)));
+  const shown = crewEntries(view, config, crewFilter);
   const filterBtn = (f: typeof crewFilter, label: string) =>
     `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${crewFilter === f}">${label}</button>`;
   // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
   const rows = shown
-    .map((e) => {
-      const t = busyTask(e.id);
+    .map(({ def: e, candidate, task: t }) => {
       const loc = view.employees.find((x) => x.id === e.id)?.locationCityId ?? null;
       return `<tr class="${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-selected="${selectedCard === e.id}">
         <th scope="row"><span class="nm">${e.nameKo}</span>${roleBadge(e.role)}</th>
-        <td>${t ? `● 업무 중<small>${t.contractId ?? t.subjectId} ${taskName(t.kind)} ${t.progressWorkUnits}/${t.requiredWorkUnits}pt</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
+        <td>${candidate ? candidateLabel(view, candidate) : t ? `● 업무 중<small>${taskSchedule(t, config)}</small>` : '○ 대기<small>배정 가능</small>'}<small>${cityName(config, loc)}</small></td>
         <td class="num">${e.workUnitsPerDay}pt/일<small>${krw(e.salaryPerDayMinor)}</small></td></tr>`;
     })
     .join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
-    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}</div>
-    <div class="crew-cards">${shown.map((e) => crewCard(e, view, selectedCard === e.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}${filterBtn('candidate', '후보')}</div>
+    <div class="crew-cards">${shown.map(({ def: e, candidate: c, task }) => {
+      return c ? `<article class="card ${selectedCard === e.id ? 'is-selected' : ''}" data-action="select-card" data-emp="${e.id}" tabindex="0" aria-label="${e.nameKo} 후보 카드"><h3>${e.nameKo} · ${species(e.id)}</h3>${roleBadge(e.role)}<p>${candidateLabel(view, c)}</p><p>하루 ${e.workUnitsPerDay}pt · 일급 ${krw(e.salaryPerDayMinor)}</p><p class="muted small">그림 미제작</p></article>` : crewCard(e, view, selectedCard === e.id, task ? taskSchedule(task, config) : undefined);
+    }).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="muted small">처리량은 고정값(LEGACY_FIXED, 하루 ${e0?.workUnitsPerDay ?? 0}pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(영입·성장)와 M2b에서 켭니다. 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
+    ${recruitmentPanel(view, config, recruitSelections, interviewId, tryCommand)}
+    <p class="muted small">처리량은 고정값(LEGACY_FIXED, 하루 ${e0?.workUnitsPerDay ?? 0}pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다. 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
   </aside>`;
 }
 
@@ -579,7 +587,7 @@ function commandLabel(c: Command): string {
       return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})${planLabel(c.plan)}`;
     }
     case 'SCOUT_SITE':
-      return `${c.venueId} 현장 조사 → ${employeeName(c.employeeId)}`;
+      return `${venueTitle(c.venueId)} 현장 조사 → ${employeeName(c.employeeId)}`;
     case 'START_RECRUIT_QUEST':
       return `${employeeName(c.candidateId)} 영입 의뢰 → ${employeeName(c.employeeId)}`;
     case 'HIRE_CANDIDATE':
@@ -620,7 +628,7 @@ function logPanel(): string {
 function render() {
   view = planState(state, config, pending).state;
   const focused = document.activeElement as HTMLElement | null;
-  const focusKey = focused?.dataset?.action ? `[data-action="${focused.dataset.action}"]${focused.dataset.contract ? `[data-contract="${focused.dataset.contract}"]` : ''}` : null;
+  const focusKey = focused?.dataset?.action ? `[data-action="${focused.dataset.action}"]${['contract', 'key', 'candidate', 'venue', 'emp', 'filter'].map((key) => focused.dataset[key] ? `[data-${key}="${focused.dataset[key]}"]` : '').join('')}` : null;
   app.innerHTML = `
     ${topbar()}
     <main class="layout ${mapMode === 'world' ? 'map-wide' : ''}">
@@ -642,6 +650,15 @@ app.addEventListener('click', (ev) => {
   if (!el || (el as HTMLButtonElement).disabled) return;
   const d = el.dataset;
   switch (d.action) {
+    case 'scout':
+      return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
+    case 'recruit-quest':
+      return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
+    case 'interview':
+      interviewId = interviewId === d.candidate ? null : d.candidate!;
+      return render();
+    case 'hire':
+      return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
     case 'end-day':
       return endDay();
     case 'accept':
@@ -667,7 +684,7 @@ app.addEventListener('click', (ev) => {
       selectedCard = selectedCard === d.emp ? null : (d.emp ?? null);
       return render();
     case 'crew-filter':
-      crewFilter = d.filter === 'free' || d.filter === 'busy' ? d.filter : 'all';
+      crewFilter = d.filter === 'free' || d.filter === 'busy' || d.filter === 'candidate' ? d.filter : 'all';
       return render();
     case 'accept-plan': {
       const base = offerCommands[d.key!];
@@ -719,6 +736,9 @@ app.addEventListener('change', async (ev) => {
   const el = ev.target as HTMLInputElement | HTMLSelectElement;
   if (el.dataset.action === 'scenario') {
     startScenario(el.value as ScenarioId);
+    render();
+  } else if (el.dataset.action === 'recruit-emp') {
+    recruitSelections[el.dataset.key!] = el.value;
     render();
   } else if (el.dataset.action === 'plan-emp' || el.dataset.action === 'plan-sailing') {
     const key = el.dataset.key!;

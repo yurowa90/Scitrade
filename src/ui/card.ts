@@ -36,12 +36,12 @@ export function attributeChip(attribute: string | null): string {
   return `<span class="chip attr attr-${attribute}"><svg viewBox="0 0 24 24" aria-hidden="true">${a.icon}</svg>${a.ko}</span>`;
 }
 
-export function crewCard(def: EmployeeDef, state: GameState, selected: boolean): string {
+export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, scheduleKo?: string): string {
   if (!isAvailableFromToday(state, def.id)) return '';
   const running = runningTaskOf(state, def.id);
-  const schedule = running
+  const schedule = scheduleKo ?? (running
     ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}pt`
-    : '대기 — 배정 가능';
+    : '대기 — 배정 가능');
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
