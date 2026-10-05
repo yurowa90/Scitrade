@@ -12,13 +12,13 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 1303,
-      "sha256": "8b583dcbcdd8db4b2b4610aa078d71fdbcfb5fc2a5902de81a315bd4cf1e1d28"
+      "size_bytes": 1507,
+      "sha256": "d3b08a0786eaf5d70d1a4aefdd618362d3ef1a010f4c45434f97aa63ee406473"
     },
     {
       "path": "CLAUDE.md",
-      "size_bytes": 1327,
-      "sha256": "4eb7b4d42b49a3c2e07c36d8f326db090b639f372cd41987a427c95f73a90eff"
+      "size_bytes": 1556,
+      "sha256": "535ac821b5adc01cb40e7a4c99a3dd5977dc8397f79ea1a709c4f08bb6ed3b19"
     },
     {
       "path": "PACKAGE_STATUS.json",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 36016,
-      "sha256": "999eb53d04d6ef22068eae13ca73f647ea2f4aedd300a55a13eb4789ae61571e"
+      "size_bytes": 39971,
+      "sha256": "ff913e4c93cf1d5dbd37398536fde96cd8122483b7750d3f427f200fc5b0327b"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 9623,
-      "sha256": "88839b5f1f0d73412176db9e79f9d6ae6063300c71c868e0955e661f8ffb1fb2"
+      "size_bytes": 9699,
+      "sha256": "149678d0bac714b9f438ad4dff4b44aef10bee74c6f7dbb462734baf14a5cc01"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 18546,
-      "sha256": "e37169143dc852c53af6ec3863866f0a433cdf63639bb33944066c710cfa408e"
+      "size_bytes": 20594,
+      "sha256": "9b534c1d287f703f1a3945fdd381e517a8bbec9ff4fef361eee0ae273dc08324"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -202,13 +202,43 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 2810,
-      "sha256": "f108adb6c24f734570abc469e976460436c60a7f1404aa37fc8d66fe3f11d600"
+      "size_bytes": 3092,
+      "sha256": "02a7dbe1ecff4732ff865bfc83677666f6c3dd9c05e8e137e534c0ef08b5dffa"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 5021,
-      "sha256": "343a8e405c631f42f5d781ca872e7266a1bf292fc5296143ce5dd8375a076ff8"
+      "size_bytes": 8755,
+      "sha256": "b15a05323bd8e0a248dabf309f95023e7c998cc0b4adfe5229cf468bca9c888e"
+    },
+    {
+      "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
+      "size_bytes": 2643,
+      "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
+    },
+    {
+      "path": "docs/ai/tasks/README.md",
+      "size_bytes": 1547,
+      "sha256": "c4479bc636d28118575066a6cc95975e8fc89d838e5064b9ad674d0481a56915"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0001-recruitment-engine.md",
+      "size_bytes": 12558,
+      "sha256": "242da58b647c06a987a31f761f3c9d2faab2e59c5206c70192e8589d859f0877"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0002-recruitment-ui.md",
+      "size_bytes": 6025,
+      "sha256": "cc46aa71a8eeeb359343d7e8becdd9bfae57f5eb94703696fdbb328f7ab97cd7"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0003-world-source-check.md",
+      "size_bytes": 3325,
+      "sha256": "dc0e2672ed486c1250333d08b0f68455df9c92fc88b5b3bfcabbddc2b384999d"
+    },
+    {
+      "path": "docs/ai/tasks/results/.gitkeep",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -454,6 +484,16 @@
       "path": "tests/character_acceptance_cases.json",
       "size_bytes": 15041,
       "sha256": "0e441434f9efa1859d1b5fb9b13f06f669c2406fbd6ad72b15db446f6401a286"
+    },
+    {
+      "path": "tools/ai/codex_task.sh",
+      "size_bytes": 2895,
+      "sha256": "bbbfcdcf6578686a62684d6f336dd97c8b3df5b9e09e97d5402550279f79d9b3"
+    },
+    {
+      "path": "tools/ai/review_checks.sh",
+      "size_bytes": 827,
+      "sha256": "65394bd55d70a48c8e581d9b120b25b38737f5472addf18c5e644b0189ea05bd"
     },
     {
       "path": "tools/build_package.py",

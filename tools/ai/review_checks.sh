@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Claude 검수 단계의 자동 검사. Codex 작업 브랜치에서 실행한다.
+# API 키가 테스트·빌드 과정(의존성 스크립트 포함)에 넘어가지 않도록 키 변수를 지운 환경에서 돌린다.
+# 화면 확인(Playwright)과 diff 읽기는 Claude가 따로 한다.
+set -uo pipefail
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+run() {
+  echo "▶ $*"
+  if env -u CODEX_API_KEY -u OPENAI_API_KEY "$@"; then echo "  통과"; else echo "  실패 ($*)"; failed=1; fi
+}
+failed=0
+run python3 tools/build_package.py --manifest-only
+run python3 tools/validate_data.py
+run npm run --silent typecheck
+run npx vitest run
+run npm run --silent build
+
+echo
+echo "변경 요약 (기준: ${1:-HEAD}):"
+git diff --stat "${1:-HEAD}"
+git status --short | grep '^??' || true
+exit "$failed"

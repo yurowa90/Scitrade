@@ -13,4 +13,6 @@
 
 2026-10-05 추가된 레퍼런스는 [연구 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 읽는다. 세 관점의 보고서·개발 및 그래픽 사양·소스 데이터를 현재 구현과 대조하는 자료다.
 
+Claude는 총괄·검수를 맡고 구현은 Codex(Astra·Sol)에 지시서로 맡긴다. 역할과 흐름은 WORKFLOW.md의 ‘역할 분담’, 지시서 목록은 [docs/ai/tasks/README.md](docs/ai/tasks/README.md)에 있다.
+
 검증 시작 명령: `python3 tools/validate_data.py`.
