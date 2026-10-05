@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 9699,
-      "sha256": "149678d0bac714b9f438ad4dff4b44aef10bee74c6f7dbb462734baf14a5cc01"
+      "size_bytes": 9751,
+      "sha256": "426da91638de8b301a4036c246e35bc766c0406f9dc80de3b3d1d43a9a809f68"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -196,14 +196,19 @@
       "sha256": "6f1aa5842937fd909c3f1dd363e3f680606cd9f34065728e2e1dd7c5af017773"
     },
     {
+      "path": "docs/USABILITY_TEST_M2A.md",
+      "size_bytes": 7718,
+      "sha256": "a3fb2fb43691c78ff34e56430bbf5adc46002a0cdeb6b737231355e8d7f60252"
+    },
+    {
       "path": "docs/VALIDATION.md",
       "size_bytes": 2677,
       "sha256": "8ea72adf66be353756a4e3b7d286fb93957f5a99105f9da1ceae9fad890e1d76"
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 3092,
-      "sha256": "02a7dbe1ecff4732ff865bfc83677666f6c3dd9c05e8e137e534c0ef08b5dffa"
+      "size_bytes": 3231,
+      "sha256": "64e52babfdfd60e235aa7a633a8453571b06aa6db55a1210fc5510b4a0258efb"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
