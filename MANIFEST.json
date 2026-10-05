@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 56942,
-      "sha256": "e1510fb8de94045d149e3a3c03a8574fd6e3cc267a3b0fa1f67befbd8a3f7b21"
+      "size_bytes": 58307,
+      "sha256": "9bf5d4a4c40a378ae350f9d8d96b2ab5aa0ce0c932b68386dd847872a6dd52a1"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 10139,
-      "sha256": "d29295a4f7a88c08c4a6eeae8b851deec7c6f0ce0c32034bbf8052babc8e62d0"
+      "size_bytes": 10280,
+      "sha256": "e83f99d935842f63d7b883e4dae19926f7895651b06ac102f16856db0a43c724"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 26201,
-      "sha256": "5c6124d0f6e7733555c573b6baaec46188bffd7ebc8ad82f800df73a89e4ac6e"
+      "size_bytes": 26356,
+      "sha256": "03df568f640ce2737c897463fd7f4a55482316903e4998057db9f240cf78cb32"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 8423,
-      "sha256": "f376074f58fa86d254094dd1a151a1af4275a409fcd85a8e73dfd5fcccafef8c"
+      "size_bytes": 9792,
+      "sha256": "5891baed105cefb35b065ba713b2a20abdae658c76c40d9565afdd780c983f59"
     },
     {
       "path": "docs/VALIDATION.md",
