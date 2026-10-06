@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 77388,
-      "sha256": "7ffccd15649b5d48f757932e980137e273a5326d95ce0bece82de3859ba9d6b4"
+      "size_bytes": 86139,
+      "sha256": "d93795fa2e1e4366fee90428c15f4accd65e996805b59ed08cf00fa515841d28"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 10420,
-      "sha256": "921d1d7ae08bada2901ff076ec580b863c7c6bc434569f3773d5c024214c1e5c"
+      "size_bytes": 10950,
+      "sha256": "3c45a24a9d9f3e1c9064a655cfe52547d779242ec7b943a40bd3bb573535b31c"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 31868,
-      "sha256": "9c97fcfa29a5c6ad1769807d1f02888dcb0bb7616f722eb87580df7838618000"
+      "size_bytes": 32394,
+      "sha256": "300bd5698e08da3ec534fb47a43a0612b05e280ae668c2abdfc8a4b340ed3dee"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 3490,
-      "sha256": "8469ddc0461df198d73273fce10aedeef9ea709e69a65c86c7e6e9031fa4c153"
+      "size_bytes": 4158,
+      "sha256": "f046327cc2cfa33abb2ff2a0ec5f6a6282f9477dc83e36c8e20ad77341e84b24"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -314,6 +314,11 @@
       "path": "docs/ai/tasks/TASK-0009-port-wait-and-freeze-polish.md",
       "size_bytes": 7474,
       "sha256": "2dad3d93973df470bbcfaf65e30e9e20db512b7a7a61ea8d1add0496067fee8f"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0010-save-v5-foundation.md",
+      "size_bytes": 16081,
+      "sha256": "6744323010df62ba70f6156dd858914451440936ba757f9026eaad6afba0d259"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
