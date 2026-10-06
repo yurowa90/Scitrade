@@ -367,3 +367,11 @@ M2a 남은 위험:
   - 측정표와 바꿔 적은 기준 하나는 `docs/ai/tasks/results/TASK-0014.md` ‘검수’와 DECISIONS ‘사용성 시험 기기’에 있다.
 - **사용성 시험 빌드:** 이 반영 커밋으로 다시 고정한다(2판). 성장 화면, TASK-0013 표시 수정, 문화 엔진(화면 없음)이 들어 있다. 진행자 주의(`docs/USABILITY_TEST_M2A.md` 4절)를 이 빌드에 맞췄다.
 - **한계:** Safari(WebKit)·삼성 인터넷·실제 터치는 확인하지 못했다. 실기기 점검 항목은 DECISIONS에 있다.
+
+## 시험 빌드 2판 배포 기록 (2026-10-06, Claude)
+
+- **빌드:** `fa47606`(휴대폰·태블릿 대응 반영 병합 커밋). 깨끗한 작업 트리에서 빌드해 `dist`만 올렸다. 측정한 빌드와 비교해 T1·T2·T5 값이 같음을 다시 확인했다.
+- **주소:** https://scitrade-usability-test.netlify.app — `version.txt`가 `fa47606`을 가리킨다. `noindex`·`robots.txt` 유지.
+- **확인 (배포한 주소, Chromium 에뮬레이션):** iPhone 13·Galaxy S24·iPad gen 7·Galaxy Tab S9에서 오류·실패한 요청 0, 가로 넘침 0. 고정 막대 120·135·79·102px. ‘금액은 확정 기준’이 버튼과 겹치지 않는다. 수락하면 아래쪽 알림이 뜨고 오늘 할 일에 하나가 들어간다.
+- **주의:** Netlify 배지를 숨기지 않으면 휴대폰에서 아래쪽 알림의 오른쪽 절반을 가린다. 시험 전 기기마다 숨긴다(`docs/USABILITY_TEST_M2A.md` 8절).
+- **남은 것:** 실제 iPhone·iPad(Safari)·안드로이드 기기 확인은 사용자가 한다(DECISIONS ‘TASK-0014 검수 결과’의 실기기 항목).
