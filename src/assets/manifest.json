@@ -71,7 +71,7 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (Natural Earth 육지·호수 6×6 면적 50% 판정·경도 +360 사본·두 물 기준점 4-연결 통로·실수 경위도 상자로 위성 색 BOX 및 높이 BILINEAR 정렬·지형 분류 3×3 최빈값·해상도 보정 315° 음영 및 분류 안 3×3 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 1픽셀 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·4칸 미만 내륙 물 정리(통로 기준점 물 제외)·지역별 연결 검사·끊긴 곳만 최소 육지 4-연결 통로(최대 6칸)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
@@ -85,24 +85,29 @@
           },
           {
             "name": "Natural Earth 1:10m land",
-            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_land.geojson",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_10m_land.geojson",
             "sha256": "1ac90796408bc6ad6911d69448485d3c4dbf2190370080368a09976e1c9f7416",
             "license": "Public domain",
-            "version": "5.2.0-pre (master, 2026-10-05)"
+            "version": "5.2.0-pre (ca96624a56bd078437bca8184e78163e5039ad19)"
           },
           {
             "name": "Natural Earth 1:10m lakes",
-            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_lakes.geojson",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_10m_lakes.geojson",
             "sha256": "2d036f53dedec578001c5c30c2959ee7d4eebc1306900fa4367c49929ec8f2d9",
             "license": "Public domain",
-            "version": "5.2.0-pre (master, 2026-10-05)"
+            "version": "5.2.0-pre (ca96624a56bd078437bca8184e78163e5039ad19)"
           }
         ],
-        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
+        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다. Natural Earth 육지·호수 데이터는 공공 도메인으로 자유롭게 사용할 수 있다.",
         "attribution": "위성 지형 색: NASA Blue Marble; 육지·호수: Natural Earth (public domain)",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
         "palette": "scitrade-32 (DRAFT_2026-10-05)",
-        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 표시용 4-연결 통로: MALACCA_STRAIT, KOREA_STRAIT. 전체 바다 연결 및 도시 해안 거리 경고: 없음. 육지 면적 50% 판정과 충돌하는 요청 기준점: 상하이 동쪽 해안."
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 육지 변경 통로: 없음. 전체·지역 바다 연결, 도시 해안 거리 경고: 없음.",
+        "versions": {
+          "Pillow": "12.3.0",
+          "numpy": "2.4.6"
+        },
+        "output_sha256": "196d84fb1bc7570b3a6837f3d84854335508ecdc0a36f69feda905e63ea9c968"
       },
       "pixel_grid": {
         "logical_width": 546,
@@ -128,7 +133,7 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (Natural Earth 육지·호수 6×6 면적 50% 판정·경도 +360 사본·두 물 기준점 4-연결 통로·실수 경위도 상자로 위성 색 BOX 및 높이 BILINEAR 정렬·지형 분류 3×3 최빈값·해상도 보정 315° 음영 및 분류 안 3×3 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 1픽셀 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·4칸 미만 내륙 물 정리(통로 기준점 물 제외)·지역별 연결 검사·끊긴 곳만 최소 육지 4-연결 통로(최대 6칸)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
@@ -142,24 +147,29 @@
           },
           {
             "name": "Natural Earth 1:50m land",
-            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_land.geojson",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_50m_land.geojson",
             "sha256": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b",
             "license": "Public domain",
-            "version": "5.2.0-pre (master, 2026-10-05)"
+            "version": "5.2.0-pre (ca96624a56bd078437bca8184e78163e5039ad19)"
           },
           {
             "name": "Natural Earth 1:50m lakes",
-            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_lakes.geojson",
+            "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_50m_lakes.geojson",
             "sha256": "d350b75978b26fe839b797c2c529b2fb8f47fb3983c03f4964e36d5df9378a52",
             "license": "Public domain",
-            "version": "5.2.0-pre (master, 2026-10-05)"
+            "version": "5.2.0-pre (ca96624a56bd078437bca8184e78163e5039ad19)"
           }
         ],
-        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다.",
+        "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다. Natural Earth 육지·호수 데이터는 공공 도메인으로 자유롭게 사용할 수 있다.",
         "attribution": "위성 지형 색: NASA Blue Marble; 육지·호수: Natural Earth (public domain)",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
-        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 표시용 4-연결 통로: MALACCA_STRAIT, HORMUZ_STRAIT, BAB_EL_MANDEB, SUEZ_CANAL, PANAMA_CANAL, CAPE_OF_GOOD_HOPE, GIBRALTAR, BOSPORUS, DARDANELLES, KOREA_STRAIT. 전체 바다 연결 및 도시 해안 거리 경고: 없음. 육지 면적 50% 판정과 충돌하는 요청 기준점: 상하이 동쪽 해안, 오키나와 본섬.",
-        "palette": "scitrade-32 (DRAFT_2026-10-05)"
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 육지 변경 통로: BAB_EL_MANDEB 1칸, SUEZ_CANAL 6칸, PANAMA_CANAL 1칸, GIBRALTAR 1칸, BOSPORUS 1칸, DARDANELLES 3칸. 전체·지역 바다 연결, 도시 해안 거리 경고: 없음. 상하이 시가지 기준점은 50% 규칙을 유지하기 위해 세계지도에서만 121.4°E 31.2°N을 쓴다. 오키나와 본섬은 0.5° 칸의 절반 미만이라 세계 기준점에서 제외한다.",
+        "palette": "scitrade-32 (DRAFT_2026-10-05)",
+        "versions": {
+          "Pillow": "12.3.0",
+          "numpy": "2.4.6"
+        },
+        "output_sha256": "eccf0800276fd6951f64241a6df2959f08bbb6ef307f40475ebb486097b37bfd"
       },
       "pixel_grid": {
         "logical_width": 720,

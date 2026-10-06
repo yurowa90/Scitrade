@@ -58,7 +58,7 @@ class PixelToolsTests(unittest.TestCase):
         self.assertEqual(hashes[0], hashes[1])
         with Image.open(output_path) as recovered:
             actual = np.asarray(recovered)
-        self.assertGreaterEqual(np.mean(np.all(actual == source, axis=2)), 0.98)
+        self.assertEqual(np.mean(np.all(actual == source, axis=2)), 1.0)
 
     def test_checker_rejects_each_error_and_exit_code(self):
         base = np.zeros((8, 8, 4), dtype=np.uint8)
@@ -180,10 +180,12 @@ class PixelToolsTests(unittest.TestCase):
 
     def test_max_colors_remaps_to_nearest_retained_lab_color(self):
         rgba = np.zeros((3,3,4), dtype=np.uint8)
-        rgba[...,3] = 255; rgba[...,:3] = self.colors[4]
-        rgba[0,:2,:3] = self.colors[16]; rgba[2,2,:3] = self.colors[12]
+        rgba[...,3] = 255; rgba[...,:3] = self.colors[0]
+        rgba[0,:2,:3] = self.colors[1]; rgba[2,2,:3] = self.colors[12]
         out = np.asarray(pixelize(Image.fromarray(rgba), (3,3), self.palette, max_colors=2))
-        expected = self.colors[[4,16]][int(nearest_indices(self.colors[12], self.colors[[4,16]]))]
+        expected = self.colors[[0,1]][int(nearest_indices(self.colors[12], self.colors[[0,1]]))]
+        rgb_choice = ((self.colors[[0,1]].astype(int)-self.colors[12])**2).sum(axis=1).argmin()
+        self.assertFalse(np.array_equal(expected,self.colors[[0,1]][rgb_choice]))
         np.testing.assert_array_equal(out[2,2,:3], expected)
         self.assertEqual(len(np.unique(out[...,:3].reshape(-1,3),axis=0)), 2)
         source_path, output_path = self.directory/'three-colors.png', self.directory/'two-colors.png'
@@ -212,6 +214,8 @@ class PixelToolsTests(unittest.TestCase):
         # 4표로는 바꾸지 않는다.
         grid = np.array([[4,4,4],[4,8,12],[12,12,12]],dtype=np.int16)
         self.assertEqual(despeckle_pixels(grid)[1,1],8)
+        grid[2,0] = 4  # 정확히 5표부터 바꾼다.
+        self.assertEqual(despeckle_pixels(grid)[1,1],4)
 
     def test_alpha_threshold_inclusive_boundary(self):
         rgba = np.zeros((1,3,4),dtype=np.uint8); rgba[...,:3] = self.colors[4]
@@ -244,16 +248,58 @@ class PixelToolsTests(unittest.TestCase):
         frames = [Image.new('RGB',(4,4),tuple(c)) for c in self.colors[:2]]
         frames[0].save(path,save_all=True,append_images=frames[1:],duration=100,loop=0)
         self.assertEqual(check_asset(path,(4,4)),['애니메이션: 움직이는 PNG(APNG)는 허용하지 않습니다.'])
-        for gamma, valid in ((45455,True),(100000,False)):
+        for gamma, valid in ((45455,True),(45454,True),(45456,True),(45457,False),(100000,False)):
             info = PngInfo(); info.add(b'gAMA',struct.pack('>I',gamma))
             frames[0].save(path,pnginfo=info)
             self.assertEqual(bool(check_asset(path,(4,4))),not valid)
         from PIL import ImageCms
-        for profile, valid in ((ImageCms.createProfile('sRGB'),True),(ImageCms.createProfile('LAB'),False)):
-            frames[0].save(path,icc_profile=ImageCms.ImageCmsProfile(profile).tobytes())
+        srgb = ImageCms.ImageCmsProfile(ImageCms.createProfile('sRGB')).tobytes()
+        # 이름과 RGB 색 공간은 유지하고 실제 전달 곡선의 감마만 바꾼다.
+        altered = bytearray(srgb)
+        count = struct.unpack('>I',altered[128:132])[0]
+        for i in range(count):
+            tag,offset,length = struct.unpack('>4sII',altered[132+i*12:144+i*12])
+            if tag in (b'rTRC',b'gTRC',b'bTRC'):
+                self.assertEqual(altered[offset:offset+4],b'para')
+                altered[offset+12:offset+16] = struct.pack('>i',round(1.6*65536))
+        for profile, valid in ((srgb,True),(bytes(altered),False)):
+            frames[0].save(path,icc_profile=profile)
             errors = check_asset(path,(4,4))
             self.assertEqual(bool(errors),not valid)
             if errors: self.assertTrue(errors[0].startswith('색 프로필:'))
+        # 원본 청크 순서가 IDAT 뒤여도 ICC 검사에서 예외가 나지 않는다.
+        data=path.read_bytes();offset=8;chunks=[]
+        while offset < len(data):
+            length=struct.unpack('>I',data[offset:offset+4])[0]
+            chunks.append(data[offset:offset+length+12]);offset+=length+12
+        iccp=next(c for c in chunks if c[4:8]==b'iCCP')
+        reordered=[c for c in chunks if c[4:8] not in (b'iCCP',b'IEND')]+[iccp,chunks[-1]]
+        path.write_bytes(data[:8]+b''.join(reordered))
+        self.assertTrue(any(e.startswith('색 프로필:') for e in check_asset(path,(4,4))))
+
+    def test_four_bit_palette_png_is_valid(self):
+        from tools.art.png_format import png_errors
+        path=self.directory/'four-bit.png'
+        image=Image.new('P',(4,4))
+        image.putpalette(self.colors[:16].reshape(-1).tolist())
+        image.putdata(list(range(16)))
+        image.save(path,bits=4)
+        self.assertEqual(path.read_bytes()[24],4)
+        self.assertEqual(png_errors(path),[])
+        self.assertEqual(check_asset(path,(4,4)),[])
+        with Image.open(path) as source:
+            self.assertEqual(pixelize(source,(4,4),self.palette).size,(4,4))
+
+    def test_pixelize_function_rejects_sixteen_bit_rgb_png(self):
+        import struct,zlib,io
+        def chunk(kind,data):
+            return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data))
+        header=struct.pack('>IIBBBBB',1,1,16,2,0,0,0)
+        raw=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',header)+chunk(b'IDAT',zlib.compress(b'\0'+struct.pack('>HHH',40000,20000,10000)))+chunk(b'IEND',b'')
+        with Image.open(io.BytesIO(raw)) as source:
+            self.assertEqual(source.mode,'RGB')
+            with self.assertRaisesRegex(ValueError,'비트 깊이:'):
+                pixelize(source,(1,1),self.palette)
 
 
 if __name__ == '__main__':

@@ -3,10 +3,11 @@
 
 입력 (공공 도메인 위성 합성 영상과 지형 높이 지도, 정거원통도법 4096×2048 / 2048×1024):
   bluemarble.jpg  NASA Blue Marble 합성 영상 — GitHub vasturiano/three-globe 예제 사본에서 받음
+  ne/ne_{10m,50m}_{land,lakes}.geojson  Natural Earth 공공 도메인 육지·호수 벡터
   topology.png    지형 높이 회색조 지도(바다 0) — 같은 저장소 예제 사본
 출력: 기본 pixel은 논리 해상도 PNG, satellite은 기존 WebP를 재현한다.
 
-픽셀 처리: 벡터 육지·호수 6×6 면적 판정 → 관문 4-연결 통로 → 위성 색 지형 분류
+픽셀 처리: 벡터 육지·호수 7×7 면적 판정 → 관문 4-연결 통로 → 위성 색 지형 분류
 → 해상도 보정 언덕 음영·분류 안 최빈값 → 팔레트·해안선 → 무손실 PNG.
 위성 처리: 지역 자르기 → 2배 확대 → 산맥 음영(북서쪽 광원) → 수심 느낌의 바다 그라데이션
 → 모래색 해안선 → 가장자리 어둡게. 지형 색은 원본 위성 영상에서 가져오고 새로 칠하지 않는다.
@@ -22,7 +23,7 @@ import hashlib
 import json
 
 import numpy as np
-from PIL import Image, ImageFilter, ImageDraw
+from PIL import Image, ImageFilter, __version__ as PILLOW_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 REGIONS = {
@@ -142,7 +143,7 @@ def build_satellite(args):
 
 
 # 픽셀 분류 경계값. 높이는 원본 회색조의 0~1 값이며 실제 미터가 아니다.
-MOUNTAIN_HEIGHT = 0.38  # 이보다 높은 곳은 색보다 산지 분류가 우선
+MOUNTAIN_HEIGHT = 0.38  # 눈·얼음을 제외한 높은 곳을 산지로 분류
 SNOW_BRIGHTNESS = 0.72  # 밝고 무채색에 가까운 눈·얼음
 SNOW_SATURATION = 0.16
 DRY_RED_GREEN = 1.12  # 붉은빛이 초록보다 강한 흙·건조지
@@ -157,7 +158,7 @@ TERRAIN_RAMPS = {
     LOWLAND: ('green-2', 'green-3', 'green-4'),
     FOREST: ('green-1', 'green-2', 'green-3'),
     DRY: ('earth-2', 'earth-3', 'earth-4'),
-    MOUNTAIN: ('earth-1', 'earth-2', 'earth-3'),
+    MOUNTAIN: ('ink-2', 'ink-3', 'ink-4'),
     SNOW: ('light-2', 'light-3', 'light-4'),
 }
 
@@ -173,11 +174,6 @@ def shifted(array, dy, dx, fill=None):
     return padded[pad + dy:pad + dy + h, pad + dx:pad + dx + w]
 
 
-def majority_land(land):
-    votes = sum(shifted(land.astype(np.int16), dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1))
-    return votes >= 5
-
-
 def classify_terrain(rgb, height, land):
     r, g, b = np.moveaxis(rgb, -1, 0)
     brightness = rgb.mean(axis=2)
@@ -185,8 +181,8 @@ def classify_terrain(rgb, height, land):
     classes = np.full(land.shape, LOWLAND, dtype=np.int16)
     classes[(g > r + FOREST_GREEN_MARGIN) & (g > b) & (brightness < FOREST_MAX_BRIGHTNESS)] = FOREST
     classes[(r > g * DRY_RED_GREEN) & (brightness > DRY_BRIGHTNESS)] = DRY
-    classes[(brightness > SNOW_BRIGHTNESS) & (saturation < SNOW_SATURATION)] = SNOW
     classes[height > MOUNTAIN_HEIGHT] = MOUNTAIN
+    classes[(brightness > SNOW_BRIGHTNESS) & (saturation < SNOW_SATURATION)] = SNOW
     return np.where(land, classes, -1)
 
 
@@ -223,15 +219,15 @@ def geo_pixel(position, bounds, size):
 
 # 좁은 해협·운하를 가로지르는 양쪽 물의 기준점. 지도 표시만 바꾸며 운송 데이터는 그대로다.
 PASSAGES = {
-    'MALACCA_STRAIT': ((97.0, 7.0), (105.0, 1.0)),
+    'MALACCA_STRAIT': ((98.0, 7.0), (103.9, 1.15)),
     'HORMUZ_STRAIT': ((54.0, 26.0), (59.0, 24.0)),
     'BAB_EL_MANDEB': ((42.0, 15.0), (45.0, 12.0)),
     'SUEZ_CANAL': ((32.0, 32.0), (34.0, 27.0)),
     'PANAMA_CANAL': ((-80.0, 7.0), (-79.0, 10.0)),
     'CAPE_OF_GOOD_HOPE': ((17.5, -35.0), (20.0, -35.0)),
     'GIBRALTAR': ((-7.0, 36.0), (-4.0, 36.0)),
-    'BOSPORUS': ((28.5, 40.5), (30.0, 42.0)),
-    'DARDANELLES': ((25.0, 39.0), (28.5, 40.5)),
+    'BOSPORUS': ((28.0, 40.8), (30.0, 42.0)),
+    'DARDANELLES': ((25.0, 39.0), (28.0, 40.8)),
     'KOREA_STRAIT': ((129.0, 32.0), (130.5, 36.0)),
 }
 SEA_PAIRS = {
@@ -244,7 +240,7 @@ SEA_PAIRS = {
     '동해–동중국해': ((133, 39), (125, 29)),
 }
 CHECK_POINTS = {
-    '상하이 동쪽 해안': (122.0, 31.0, True),
+    '상하이 시가지': (121.5, 31.2, True),
     '상하이 동쪽 바다': (123.5, 31.0, False),
     '슈피리어호': (-87.5, 47.5, False),
     '카스피해': (51.0, 42.0, False),
@@ -287,37 +283,126 @@ def sea_connections(land, bounds):
     return checks
 
 
-def carve_gate_passages(land, gates, bounds):
-    """두 물 기준점을 맨해튼 계단으로 연결한다. 대각선에도 4-연결이 끊기지 않는다."""
+# 창 밖을 막고 검사하여 희망봉 우회가 운하 검사를 대신하지 못하게 한다.
+PASSAGE_WINDOWS = {
+    'MALACCA_STRAIT': (97, 106, -1, 8), 'HORMUZ_STRAIT': (50, 61, 22, 29),
+    'BAB_EL_MANDEB': (39, 48, 10, 17), 'SUEZ_CANAL': (30, 36, 26, 34),
+    'PANAMA_CANAL': (-83, -76, 5, 12), 'CAPE_OF_GOOD_HOPE': (15, 23, -38, -32),
+    'GIBRALTAR': (-8, -3, 34, 38), 'BOSPORUS': (27, 32, 39, 43),
+    'DARDANELLES': (24, 30, 37, 42), 'KOREA_STRAIT': (125, 134, 30, 38),
+}
+MAX_PASSAGE_LAND_CELLS = 6
+
+
+def passage_window(name, bounds, size):
+    lon0, lon1, lat0, lat1 = PASSAGE_WINDOWS[name]
+    center = (bounds['lon_min'] + bounds['lon_max']) / 2
+    lon0 = (lon0 - center + 180) % 360 - 180 + center
+    lon1 = lon0 + PASSAGE_WINDOWS[name][1] - PASSAGE_WINDOWS[name][0]
+    w, h = size
+    x0 = max(0, int(np.floor((lon0-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*w)))
+    x1 = min(w, int(np.ceil((lon1-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*w)))
+    y0 = max(0, int(np.floor((bounds['lat_max']-lat1)/(bounds['lat_max']-bounds['lat_min'])*h)))
+    y1 = min(h, int(np.ceil((bounds['lat_max']-lat0)/(bounds['lat_max']-bounds['lat_min'])*h)))
+    return x0, y0, x1, y1
+
+
+def passage_points(pair, bounds, size):
+    points = [geo_pixel({'lon': lon, 'lat': lat}, bounds, size) for lon, lat in pair]
+    if all(p is None for p in points):
+        return None
+    if None in points:
+        points = [geo_pixel({'lon': max(bounds['lon_min'], min(bounds['lon_max']-1e-8, lon)),
+                             'lat': max(bounds['lat_min'], min(bounds['lat_max'], lat))}, bounds, size)
+                  for lon, lat in pair]
+    return points
+
+
+def passage_connections(land, bounds):
+    checks = []
+    size = land.shape[1], land.shape[0]
+    for name, pair in PASSAGES.items():
+        points = passage_points(pair, bounds, size)
+        if points is None:
+            continue
+        x0, y0, x1, y1 = passage_window(name, bounds, size)
+        labels = component_labels(land[y0:y1, x0:x1])
+        components = [int(labels[y-y0, x-x0]) for x, y in points]
+        checks.append({'id': name, 'pixels': points, 'window_pixels': [x0,y0,x1,y1],
+                       'connected': components[0] >= 0 and components[0] == components[1]})
+    return checks
+
+
+def minimum_land_path(land, start, end):
+    """육지 칸 수, 길이 순으로 최소인 4-연결 경로. 동률 순서도 고정한다."""
+    import heapq
+    h, w = land.shape
+    costs = {start: (0, 0)}
+    previous = {}
+    pending = [(0, 0, start)]
+    while pending:
+        cells, steps, point = heapq.heappop(pending)
+        if costs[point] != (cells, steps):
+            continue
+        if point == end:
+            path = [point]
+            while point != start:
+                point = previous[point]
+                path.append(point)
+            return path
+        x, y = point
+        for nx, ny in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+            if not (0 <= nx < w and 0 <= ny < h):
+                continue
+            cost = cells + int(land[ny,nx]), steps + 1
+            neighbor = nx, ny
+            if cost < costs.get(neighbor, (w*h+1,w*h+1)):
+                costs[neighbor] = cost
+                previous[neighbor] = point
+                heapq.heappush(pending, (*cost, neighbor))
+    raise ValueError('통로 경로를 찾지 못했습니다.')
+
+
+def carve_gate_passages(land, gates, bounds, fractions=None):
+    """지역 안에서 이미 이어진 바다는 보존하고, 끊긴 곳만 최소 육지 경로를 연다."""
     result = land.copy()
     opened = []
-    size = (land.shape[1], land.shape[0])
+    size = land.shape[1], land.shape[0]
+    fractions = land.astype(float) if fractions is None else fractions
     for name, pair in PASSAGES.items():
-        points = [geo_pixel({'lon': lon, 'lat': lat}, bounds, size) for lon, lat in pair]
-        # 한 끝이 지도 밖이면 경계에서 자른다(동아시아 믈라카).
-        if all(p is None for p in points):
+        points = passage_points(pair, bounds, size)
+        if points is None:
             continue
-        if None in points:
-            points = [geo_pixel({'lon': max(bounds['lon_min'], min(bounds['lon_max']-1e-8, lon)),
-                                 'lat': max(bounds['lat_min'], min(bounds['lat_max'], lat))}, bounds, size)
-                      for lon, lat in pair]
-        gate = next((g for g in gates if g['id'] == name), None)
-        center = geo_pixel(gate['geo_position'], bounds, size) if gate else None
-        waypoints = [points[0]] + ([center] if center else []) + [points[1]]
-        for (x0, y0), (x1, y1) in zip(waypoints, waypoints[1:]):
-            steps = max(abs(x1-x0), abs(y1-y0), 1)
-            x, y = x0, y0
-            result[y, x] = False
-            for step in range(1, steps+1):
-                nx = round(x0 + (x1-x0)*step/steps)
-                ny = round(y0 + (y1-y0)*step/steps)
-                result[y, nx] = False
-                result[ny, nx] = False
-                x, y = nx, ny
-        opened.append({'id': name, 'endpoints': pair, 'pixels': points, 'via_pixel': center})
-    checks = sea_connections(result, bounds)
-    warnings = [c for c in checks if not c['connected']]
+        if any(result[y,x] for x,y in points):
+            raise ValueError(f'{name}: 통로 기준점은 물 위에 있어야 합니다: {points}')
+        x0,y0,x1,y1 = passage_window(name, bounds, size)
+        local = result[y0:y1,x0:x1]
+        start, end = [(x-x0,y-y0) for x,y in points]
+        labels = component_labels(local)
+        changed = []
+        already = labels[start[1],start[0]] == labels[end[1],end[0]]
+        if not already:
+            path = minimum_land_path(local, start, end)
+            changed = [(x+x0,y+y0) for x,y in path if local[y,x]]
+            if len(changed) > MAX_PASSAGE_LAND_CELLS:
+                raise ValueError(f'{name}: 통로 육지 변경 {len(changed)}칸이 상한 {MAX_PASSAGE_LAND_CELLS}칸을 넘습니다.')
+            for x,y in changed:
+                result[y,x] = False
+        opened.append({'id': name, 'endpoints': pair, 'pixels': points, 'already_connected': bool(already),
+                       'changed_cells': len(changed), 'source_land_cells': sum(int(fractions[y,x] >= .5) for x,y in changed),
+                       'changed_pixels': changed})
+    warnings = [c for c in sea_connections(result, bounds) + passage_connections(result, bounds) if not c['connected']]
     return result, opened, warnings
+
+
+def remove_small_inland_water(land, minimum_cells=4, protected=()):
+    """테두리·통로 기준점에 닿지 않는 4-연결 물이 4칸 미만이면 육지로 정리한다."""
+    labels = component_labels(land)
+    sizes = np.bincount(labels[labels >= 0])
+    border = set(np.concatenate((labels[0],labels[-1],labels[:,0],labels[:,-1])))
+    border.update(labels[y,x] for x,y in protected)
+    small = [i for i,n in enumerate(sizes) if n < minimum_cells and i not in border]
+    return land | np.isin(labels, small)
 
 
 def resize_equirect(image, bounds, size, resample):
@@ -333,27 +418,51 @@ def resize_equirect(image, bounds, size, resample):
     return image.resize(size, resample=resample, box=box)
 
 
-def rasterize_land(land_path, lakes_path, bounds, size, subdivisions=6, return_fraction=False):
-    """벡터 다각형과 안쪽 구멍을 초과 표본화하고 칸별 육지 면적 50%로 판정한다."""
+def rasterize_land(land_path, lakes_path, bounds, size, subdivisions=7, return_fraction=False):
+    """부분 칸 중심을 짝-홀 규칙으로 표본화한다. 구멍은 해당 다각형에만 적용한다."""
+    if subdivisions < 1 or subdivisions % 2 == 0:
+        raise ValueError('다각형 표본 수는 양의 홀수여야 합니다.')
     w, h = size
-    mask = Image.new('L', (w*subdivisions, h*subdivisions))
-    draw = ImageDraw.Draw(mask)
-    for path, value in ((land_path, 255), (lakes_path, 0)):
+    sw, sh = w*subdivisions, h*subdivisions
+    mask = np.zeros((sh,sw), dtype=bool)
+    def ring_mask(ring, offset, x0,y0,x1,y1):
+        points = np.asarray(ring, dtype=float)[:,:2]
+        px = (points[:,0]+offset-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*sw
+        py = (bounds['lat_max']-points[:,1])/(bounds['lat_max']-bounds['lat_min'])*sh
+        ax, ay = px, py
+        bx, by = np.roll(px, -1), np.roll(py, -1)
+        xs = np.arange(x0,x1)+.5
+        inside = np.zeros((y1-y0,x1-x0), dtype=bool)
+        for row, y in enumerate(np.arange(y0,y1)+.5):
+            crossing = (ay > y) != (by > y)
+            intersections = ax[crossing] + (y-ay[crossing])*(bx[crossing]-ax[crossing])/(by[crossing]-ay[crossing])
+            inside[row] = np.searchsorted(np.sort(intersections),xs,side='right') % 2 == 1
+        return inside
+    for path, is_land in ((land_path, True), (lakes_path, False)):
         geo = json.loads(Path(path).read_text(encoding='utf-8'))
+        layer = np.zeros_like(mask)
         for feature in geo['features']:
             geometry = feature['geometry']
             polygons = [geometry['coordinates']] if geometry['type'] == 'Polygon' else geometry['coordinates']
             for polygon in polygons:
-                for offset in (-360, 0, 360):
-                    for i, ring in enumerate(polygon):
-                        if max(p[0]+offset for p in ring) < bounds['lon_min'] or min(p[0]+offset for p in ring) > bounds['lon_max']:
-                            continue
-                        points = [((lon+offset-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*w*subdivisions,
-                                   (bounds['lat_max']-lat)/(bounds['lat_max']-bounds['lat_min'])*h*subdivisions) for lon, lat, *rest in ring]
-                        draw.polygon(points, fill=value if i == 0 else 255-value)
-    samples = np.asarray(mask).reshape(h, subdivisions, w, subdivisions)
-    fractions = samples.mean(axis=(1, 3)) / 255
-    return fractions if return_fraction else fractions >= 0.5
+                outer = np.asarray(polygon[0])
+                for offset in (-360,0,360):
+                    x0 = max(0, int(np.floor((outer[:,0].min()+offset-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*sw)))
+                    x1 = min(sw, int(np.ceil((outer[:,0].max()+offset-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*sw)))
+                    y0 = max(0, int(np.floor((bounds['lat_max']-outer[:,1].max())/(bounds['lat_max']-bounds['lat_min'])*sh)))
+                    y1 = min(sh, int(np.ceil((bounds['lat_max']-outer[:,1].min())/(bounds['lat_max']-bounds['lat_min'])*sh)))
+                    if x1 <= x0 or y1 <= y0:
+                        continue
+                    filled = ring_mask(polygon[0], offset, x0,y0,x1,y1)
+                    for hole in polygon[1:]:
+                        filled &= ~ring_mask(hole, offset, x0,y0,x1,y1)
+                    layer[y0:y1,x0:x1] |= filled
+        if is_land:
+            mask |= layer
+        else:
+            mask &= ~layer
+    fractions = mask.reshape(h,subdivisions,w,subdivisions).mean(axis=(1,3))
+    return fractions if return_fraction else fractions >= .5
 
 
 def smooth_shades(shade, classes, land):
@@ -451,17 +560,24 @@ def build_pixel(args, inputs, output_dir=None):
     resolution = '10m' if args.region == 'east-asia' else '50m'
     fractions = rasterize_land(args.source_dir / f'ne/ne_{resolution}_land.geojson',
                           args.source_dir / f'ne/ne_{resolution}_lakes.geojson', bounds, size, return_fraction=True)
-    land = fractions >= 0.5
+    protected = [p for pair in PASSAGES.values() for p in (passage_points(pair, bounds, size) or [])]
+    land = remove_small_inland_water(fractions >= 0.5, protected=protected)
     world = json.loads((ROOT / 'data/world.json').read_text(encoding='utf-8'))
     regional = args.region == 'east-asia'
-    land, opened, gate_warnings = carve_gate_passages(land, world.get('sea_gates', []), bounds)
+    land, opened, gate_warnings = carve_gate_passages(land, world.get('sea_gates', []), bounds, fractions)
     classes = smooth_classes(classify_terrain(rgb, height, land), land)
     ratio = isolated_ratio(classes, land)
-    limits = (2, 6) if regional else (1, 3)
+    limits = (2, 6) if regional else (1.5, 3)
     shade = smooth_shades(hillshade(height, size[0] / (bounds['lon_max'] - bounds['lon_min'])), classes, land)
     out = paint_palette(classes, land, shade, sea_distance(land, limits[1]), limits, load_palette())
     point_checks = []
     for name, (lon, lat, expected) in CHECK_POINTS.items():
+        # 오키나와 본섬은 세계 0.5° 칸의 절반 미만이므로 세계 기준점에서 제외한다.
+        if name == '오키나와 본섬' and not regional:
+            continue
+        # 121.5°E는 세계 격자 경계이고 동쪽 칸은 육지 36.7%다. 같은 시가지 서쪽 칸을 검사한다.
+        if name == '상하이 시가지' and not regional:
+            lon = 121.4
         point = geo_pixel({'lon': lon, 'lat': lat}, bounds, size)
         if point is not None:
             x, y = point
@@ -494,6 +610,21 @@ def build_pixel(args, inputs, output_dir=None):
         if distance is None or distance > 1:
             city_warnings.append({'id': city['id'], 'pixel': [x, y], 'coast_distance_px': distance,
                                   'warning_ko': '도시 좌표가 육지 쪽 해안선에서 1논리 픽셀보다 멉니다.'})
+    sea_y, sea_x = np.nonzero(~land)
+    gate_water_checks = []
+    for gate in world.get('sea_gates', []):
+        position = gate['geo_position']
+        if geo_pixel(position, bounds, size) is None:
+            continue
+        lon = (position['lon'] - bounds['lon_min']) % 360 + bounds['lon_min']
+        gx = (lon - bounds['lon_min']) / (bounds['lon_max'] - bounds['lon_min']) * size[0]
+        gy = (bounds['lat_max'] - position['lat']) / (bounds['lat_max'] - bounds['lat_min']) * size[1]
+        distances = np.hypot(np.maximum(np.maximum(sea_x-gx,gx-sea_x-1),0),
+                             np.maximum(np.maximum(sea_y-gy,gy-sea_y-1),0))
+        nearest = int(distances.argmin())
+        distance = float(distances[nearest])
+        gate_water_checks.append({'id': gate['id'], 'nearest_water_pixel': [int(sea_x[nearest]),int(sea_y[nearest])],
+                                  'water_distance_px': distance, 'passed': distance <= 1})
     dest = (output_dir or ROOT / 'public/assets/maps') / f'{args.region}.png'
     dest.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(out).save(dest, 'PNG', optimize=False, compress_level=9)
@@ -501,10 +632,13 @@ def build_pixel(args, inputs, output_dir=None):
             'bounds': bounds, 'projection': 'equirectangular', 'inputs_sha256': inputs,
             'output_sha256': hashlib.sha256(dest.read_bytes()).hexdigest(),
             'colors_used': len(np.unique(out.reshape(-1, 3), axis=0)), 'isolated_ratio': ratio,
-            'land_source_resolution': resolution, 'raster_subdivisions': 6,
+            'land_source_resolution': resolution, 'raster_subdivisions': 7,
+            'versions': {'Pillow': PILLOW_VERSION, 'numpy': np.__version__},
+            'inland_water_minimum_cells': 4, 'sea_limits': limits,
+            'passage_connections': passage_connections(land, bounds),
             'color_isolated_ratio_4': color_isolated_ratio(out, ((-1,0),(1,0),(0,-1),(0,1))),
             'color_isolated_ratio_8': color_isolated_ratio(out, [(dy,dx) for dy in (-1,0,1) for dx in (-1,0,1) if dy or dx]),
-            'point_checks': point_checks, 'sea_connections': connections, 'city_coast_checks': city_checks,
+            'point_checks': point_checks, 'gate_water_checks': gate_water_checks, 'sea_connections': connections, 'city_coast_checks': city_checks,
             'gates_opened': opened, 'gate_warnings': gate_warnings, 'city_coast_warnings': city_warnings}
     print(json.dumps(meta, ensure_ascii=False, indent=2))
     return meta

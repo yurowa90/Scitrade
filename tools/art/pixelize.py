@@ -52,6 +52,23 @@ def pixelize(image, size, palette, max_colors=None, despeckle=False, alpha_thres
         raise ValueError('색 수 상한은 1~32여야 합니다.')
     if image.mode.startswith('I;16') or image.mode in ('I', 'F'):
         raise ValueError('비트 깊이: 16비트 및 고정밀 입력은 8비트로 변환한 뒤 사용해 주세요.')
+    # Pillow는 16비트 RGB도 RGB 모드로 열므로 원본 IHDR를 함께 검사한다.
+    try:
+        from .png_format import png_depth_errors
+    except ImportError:
+        from png_format import png_depth_errors
+    header = b''
+    if getattr(image, 'fp', None) is not None:
+        position = image.fp.tell()
+        image.fp.seek(0)
+        header = image.fp.read(29)
+        image.fp.seek(position)
+    elif getattr(image, 'filename', ''):
+        with open(image.filename, 'rb') as source_file:
+            header = source_file.read(29)
+    errors = png_depth_errors(header)
+    if errors:
+        raise ValueError(errors[0])
     source = np.asarray(image.convert('RGBA'))
     colors = palette_rgb(palette)
     opaque = source[..., 3] >= alpha_threshold

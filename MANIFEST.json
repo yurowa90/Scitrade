@@ -256,6 +256,11 @@
       "sha256": "7dab320a76718b1cfeb17ce6142b1a67ce9d661703843aeb6512195633a03bbd"
     },
     {
+      "path": "docs/ai/tasks/TASK-0007-R2-pixel-map-polish.md",
+      "size_bytes": 12566,
+      "sha256": "836ed7149d36571932ebe0440d40034d4c6351d2533b6264518861d2106fde50"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
       "size_bytes": 17204,
       "sha256": "9c77e260a8a12b125e10f3cee908049262d2a8857f384522f225ecae2bd9c44e"
@@ -282,8 +287,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0007.md",
-      "size_bytes": 40003,
-      "sha256": "967b640a0c08a3ac12c979ce891d95c992095cf3a13c5af29bff2213652edcfa"
+      "size_bytes": 75695,
+      "sha256": "11543da6f8a5a17ddce63c57df9b444df970575a8435cc4dc13309e50ca531b2"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -567,18 +572,18 @@
     },
     {
       "path": "tools/art/pixelize.py",
-      "size_bytes": 4748,
-      "sha256": "00a08c8e3c56fafa068d00eadfb2ec802207c7e9138524eda7c8e7a8a92e0b92"
+      "size_bytes": 5389,
+      "sha256": "4c26177ce1a504e2224d573141dbec92e51f2d4afe998b9c83d1cf54c6b1acfe"
     },
     {
       "path": "tools/art/png_format.py",
-      "size_bytes": 1823,
-      "sha256": "1528d63d25a43f8dfb5150369711fbd0159eb3c7a42066f4ad46dcd76e772538"
+      "size_bytes": 2504,
+      "sha256": "901487fa83660c6815991368cc3b40de45dcb596a1d43a3b9be65de6a02e0e25"
     },
     {
       "path": "tools/art/test_pixel_tools.py",
-      "size_bytes": 14383,
-      "sha256": "a52bb0a72b15750b6f2aa16ae75b82a68c8c1dac79501f7db85ec26a8533fafd"
+      "size_bytes": 17049,
+      "sha256": "67a7619967c4c48b9c205d61db659fa1a854bdddd9b051d5e631925d671099e1"
     },
     {
       "path": "tools/build_package.py",

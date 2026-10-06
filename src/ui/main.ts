@@ -16,7 +16,7 @@ import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { crewCard, taskName } from './card';
 import { batchUnlocked, candidateCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
-import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, type MapMode } from './map';
+import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, worldMapViewport, mapViewportKey, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
@@ -39,11 +39,17 @@ const touchedPlans = new Set<string>();
 const recruitSelections: Record<string, string> = {};
 let interviewId: string | null = null;
 let mapMode: MapMode = 'route';
+const mapMeasurements = new MapMeasurementMemory();
+const MAP_BASE_OUTSIDE_SVG = false;
+let mapScrollRatio: number | undefined;
+let resetMapScroll = true;
 let commandSeq = 0;
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
 function startScenario(id: ScenarioId) {
+  resetMapScroll = true;
+  mapScrollRatio = undefined;
   config = loadScenario(id);
   state = openDay(createGame(config), config).state;
   pending = [];
@@ -174,8 +180,8 @@ function topbar(): string {
 }
 
 function worldMap(): string {
-  const moving = state.shipments.filter((x) => x.arrivalDay === null);
-  const waiting = moving.filter((x) => state.day >= x.scheduledArrivalDay);
+  const moving = view.shipments.filter((x) => x.arrivalDay === null);
+  const waiting = moving.filter((x) => view.day >= x.scheduledArrivalDay);
   const status = moving.length
     ? `운항 중 화물 ${moving.length}건${waiting.length ? ` · 대기 ${waiting.length}건 (하역 재개를 기다림)` : ''}`
     : '운항 중인 화물 없음';
@@ -191,7 +197,8 @@ function worldMap(): string {
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
       </div>
     </div>
-    <div data-map-frame class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(state, config, mapMode)}</div>
+    <div data-map-frame ${mapMode === 'world' ? 'tabindex="0" role="region" aria-label="세계지도 — 좌우로 움직여 볼 수 있음"' : ''} class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG })}</div>
+    ${mapMode === 'world' ? '<p class="muted small">세계지도는 좌우로 움직여 볼 수 있습니다. 지도를 선택하고 화살표 키를 눌러 보세요.</p>' : ''}
     ${mapLegend()}
     <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
@@ -621,8 +628,10 @@ function logPanel(): string {
 function render() {
   view = planState(state, config, pending).state;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
-  const previousRange = previousMap ? previousMap.scrollWidth - previousMap.clientWidth : 0;
-  const previousMapScroll = previousMap && previousRange > 0 ? previousMap.scrollLeft / previousRange : undefined;
+  if (!resetMapScroll && previousMap?.dataset.measured === 'true') {
+    const range = previousMap.scrollWidth - previousMap.clientWidth;
+    if (range > 0) mapScrollRatio = previousMap.scrollLeft / range;
+  }
   const focused = document.activeElement as HTMLElement | null;
   // 태그와 모든 대상 속성을 비교한다. 대기열 순번은 삭제 시 바뀌므로 명령 ID를 쓴다.
   const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
@@ -640,25 +649,34 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
+  const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
+  frame.dataset.viewportKey = mapViewportKey(worldMapViewport(config, mapMode, mapMeasurements.get(mapMode)), mapMeasurements.get(mapMode).dpr);
+  const positionMap = () => {
+    if (mapMode !== 'world') return;
+    const center = Number(frame.querySelector<HTMLElement>('[data-map-center]')?.dataset.mapCenter ?? 0.5);
+    frame.scrollLeft = mapScrollRatio === undefined
+      ? center * frame.scrollWidth - frame.clientWidth / 2
+      : mapScrollRatio * Math.max(0, frame.scrollWidth - frame.clientWidth);
+  };
+  if (mapMeasurements.has(mapMode)) {
+    frame.dataset.measured = 'true';
+    positionMap();
+    resetMapScroll = false;
+  }
   applyPixelScale(app, (frame, width, dpr) => {
-    const html = renderWorldMap(view, config, mapMode, { availableWidth: width, dpr });
-    const key = html.match(/data-map-viewport="([^"]+)"/)?.[1];
-    if (frame.dataset.viewportKey === key && frame.dataset.viewportDpr === String(dpr)) return;
-    const previous = frame.querySelector('[data-map-viewport]');
-    const scrollRange = Math.max(0, frame.scrollWidth - frame.clientWidth);
-    const ratio = scrollRange > 0 ? frame.scrollLeft / scrollRange : 0.5;
-    const first = frame.dataset.viewportKey === undefined;
-    frame.innerHTML = html;
-    frame.dataset.viewportKey = key;
-    frame.dataset.viewportDpr = String(dpr);
-    if (mapMode === 'world') {
-      const center = Number(frame.querySelector<HTMLElement>('[data-map-center]')?.dataset.mapCenter ?? 0.5);
-      frame.scrollLeft = first && previousMapScroll !== undefined
-        ? previousMapScroll * Math.max(0, frame.scrollWidth - frame.clientWidth)
-        : first || !previous
-          ? center * frame.scrollWidth - frame.clientWidth / 2
-          : ratio * Math.max(0, frame.scrollWidth - frame.clientWidth);
+    const key = mapViewportKey(worldMapViewport(config, mapMode, { availableWidth: width, dpr }), dpr);
+    if (!resetMapScroll && frame.dataset.measured === 'true') {
+      const range = frame.scrollWidth - frame.clientWidth;
+      if (range > 0) mapScrollRatio = frame.scrollLeft / range;
     }
+    mapMeasurements.remember(mapMode, width, dpr);
+    if (frame.dataset.viewportKey !== key) {
+      frame.innerHTML = renderWorldMap(view, config, mapMode, { availableWidth: width, dpr, baseOutsideSvg: MAP_BASE_OUTSIDE_SVG });
+      frame.dataset.viewportKey = key;
+    }
+    frame.dataset.measured = 'true';
+    positionMap();
+    resetMapScroll = false;
   });
   if (focusData) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
@@ -785,6 +803,8 @@ function loadText(text: string) {
     if (!peek.scenarioId || !(SCENARIO_IDS as readonly string[]).includes(peek.scenarioId)) throw new SaveError('이 시제품의 시나리오 저장이 아닙니다.');
     const cfg = loadScenario(peek.scenarioId as ScenarioId);
     const loaded = deserializeSave(text, { dataVersion: cfg.dataVersion, rulesVersion: cfg.rules.rulesVersion });
+    resetMapScroll = true;
+    mapScrollRatio = undefined;
     config = cfg;
     state = openDay(loaded, config).state;
     interviewId = null;

@@ -34,15 +34,6 @@ function scheduleResize() {
   pendingFrame = window.requestAnimationFrame(() => { pendingFrame = null; resizePixels(); });
 }
 
-/** 현재 위치의 소수 부분만 옮겨 지도 왼쪽 위를 기기 픽셀 경계에 놓는다. */
-export function alignMapPixels(element: HTMLElement | SVGElement, dpr: number): void {
-  element.style.transform = '';
-  const rect = element.getBoundingClientRect();
-  const dx = Math.round(rect.left * dpr) / dpr - rect.left;
-  const dy = Math.round(rect.top * dpr) / dpr - rect.top;
-  element.style.transform = `translate(${dx}px, ${dy}px)`;
-}
-
 function innerWidth(parent: HTMLElement): number {
   const style = window.getComputedStyle(parent);
   const padding = parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0');
@@ -58,8 +49,6 @@ function resizePixels() {
   for (const frame of frames) {
     const width = innerWidth(frame);
     if (width > 0) mapResize?.(frame, width, dpr);
-    const map = frame.querySelector<HTMLElement | SVGElement>('[data-map-viewport]');
-    if (map) alignMapPixels(map, dpr);
   }
   for (const element of elements) {
     const parent = element.parentElement;

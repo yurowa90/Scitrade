@@ -216,6 +216,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
   background: #16365c; /* 공용 팔레트 sea-1 */
   overflow-x: auto;
 }
+.map-frame:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
 .sea-map { width: 100%; height: auto; display: block; }
 .sea-map text { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
 .graticule line { stroke: rgba(255, 255, 255, .22); }

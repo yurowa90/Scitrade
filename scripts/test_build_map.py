@@ -1,10 +1,11 @@
 """논리 격자의 지도 처리: 합성 배열과 실제 생성물의 팔레트 계약을 확인한다."""
 import unittest
+import os
 from pathlib import Path
 import numpy as np
 
 from build_map import (ROOT, LOWLAND, FOREST, DRY, MOUNTAIN, SNOW, REGIONS, PIXEL_SIZES,
-                       majority_land, classify_terrain, smooth_classes, isolated_ratio, coastline,
+                       classify_terrain, smooth_classes, isolated_ratio, coastline,
                        carve_gate_passages, geo_pixel, paint_palette, sea_distance)
 import sys
 sys.path.insert(0, str(ROOT))
@@ -14,20 +15,50 @@ import json
 
 
 class BuildMapTests(unittest.TestCase):
-    def test_gate_paths_are_four_connected_and_leave_other_land(self):
-        bounds = {'lon_min': 30, 'lon_max': 36, 'lat_min': 26, 'lat_max': 34}
-        land = np.ones((80,60),dtype=bool)
-        carved, opened, _ = carve_gate_passages(land, [], bounds)
-        self.assertTrue(land.all()); self.assertFalse(carved[70,40])
-        self.assertTrue(carved[0,0])
-        from build_map import component_labels
-        self.assertEqual(len(set(component_labels(carved)[~carved])),1)
+    def test_gate_paths_are_minimum_land_and_enforce_limit(self):
+        from unittest.mock import patch
+        from build_map import PASSAGES, component_labels
+        bounds = {'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
+        land = np.zeros((80,60),dtype=bool); land[30:35,:] = True
+        with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}):
+            carved, opened, _ = carve_gate_passages(land, [], bounds)
+            self.assertEqual(opened[0]['changed_cells'],5)
+            self.assertEqual(opened[0]['source_land_cells'],5)
+            self.assertEqual(np.count_nonzero(land & ~carved),5)
+            self.assertEqual(len(set(component_labels(carved)[~carved])),1)
+            land[35:38] = True
+            with self.assertRaisesRegex(ValueError,'상한'):
+                carve_gate_passages(land,[],bounds)
 
-    def test_majority_and_mode_remove_isolated_pixels(self):
+    def test_connected_water_does_not_carve_or_request_path(self):
+        from unittest.mock import patch
+        from build_map import PASSAGES
+        bounds = {'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
+        land = np.zeros((80,60),dtype=bool);land[30:35,10:50] = True
+        with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}), patch('build_map.minimum_land_path') as path:
+            carved,opened,_ = carve_gate_passages(land,[],bounds)
+            np.testing.assert_array_equal(carved,land)
+            path.assert_not_called()
+            self.assertTrue(opened[0]['already_connected'])
+            self.assertEqual(opened[0]['source_land_cells'],0)
+
+    def test_suez_local_window_does_not_accept_ocean_detour(self):
+        from unittest.mock import patch
+        from build_map import PASSAGES, passage_connections, sea_connections
+        bounds = {'lon_min':20,'lon_max':50,'lat_min':0,'lat_max':40}
+        land = np.zeros((80,60),dtype=bool);land[20:24,20:32] = True
+        with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}):
+            self.assertTrue(all(c['connected'] for c in sea_connections(land,bounds)))
+            self.assertFalse(passage_connections(land,bounds)[0]['connected'])
+            carved,opened,_ = carve_gate_passages(land,[],bounds)
+            self.assertEqual(opened[0]['changed_cells'],4)
+            self.assertTrue(passage_connections(carved,bounds)[0]['connected'])
+            bad = land.copy();bad[16,24] = True
+            with self.assertRaisesRegex(ValueError,'기준점은 물'):
+                carve_gate_passages(bad,[],bounds)
+
+    def test_mode_remove_isolated_pixels(self):
         land = np.ones((5, 5), dtype=bool)
-        land[2, 2] = False
-        self.assertTrue(majority_land(land).all())
-        land[:] = True
         classes = np.full((5, 5), LOWLAND, dtype=np.int16)
         classes[2, 2] = FOREST
         self.assertGreater(isolated_ratio(classes, land), 0)
@@ -52,7 +83,7 @@ class BuildMapTests(unittest.TestCase):
                          [0.9, 0.9, 0.9], [0.9, 0.9, 0.9], [0.1, 0.2, 0.4]]])
         height = np.array([[0.1, 0.1, 0.1, 0.5, 0.1, 0]])
         land = height > 0
-        np.testing.assert_array_equal(classify_terrain(rgb, height, land), [[LOWLAND, FOREST, DRY, MOUNTAIN, SNOW, -1]])
+        np.testing.assert_array_equal(classify_terrain(rgb, height, land), [[LOWLAND, FOREST, DRY, SNOW, SNOW, -1]])
 
     def test_distance_and_palette_painting(self):
         land = np.zeros((9, 9), dtype=bool)
@@ -60,6 +91,8 @@ class BuildMapTests(unittest.TestCase):
         distance = sea_distance(land, 3)
         self.assertEqual(distance[3, 2], 1)
         self.assertAlmostEqual(distance[2, 2], np.sqrt(2))
+        painted=paint_palette(np.zeros((9,9),dtype=int),land,np.zeros((9,9),dtype=int),distance,(1.5,3),load_palette())
+        np.testing.assert_array_equal(painted[2,2],palette_rgb(load_palette())[6])
         classes = np.arange(81).reshape(9, 9) % 5
         shade = np.arange(81).reshape(9, 9) % 3
         palette = load_palette()
@@ -87,18 +120,15 @@ class BuildMapTests(unittest.TestCase):
                     point = geo_pixel(gate['geo_position'], REGIONS[region]['bounds'], size)
                     if point:
                         x, y = point
-                        self.assertIn(tuple(pixels[y, x]), sea, gate['id'])
+                        yy,xx=np.nonzero(np.any(np.all(pixels[:,:,None,:] == np.array(list(sea)),axis=3),axis=2))
+                        bounds=REGIONS[region]['bounds'];position=gate['geo_position']
+                        lon=(position['lon']-bounds['lon_min'])%360+bounds['lon_min']
+                        cx=(lon-bounds['lon_min'])/(bounds['lon_max']-bounds['lon_min'])*size[0]
+                        cy=(bounds['lat_max']-position['lat'])/(bounds['lat_max']-bounds['lat_min'])*size[1]
+                        distance=np.hypot(np.maximum(np.maximum(xx-cx,cx-xx-1),0),
+                                          np.maximum(np.maximum(yy-cy,cy-yy-1),0))
+                        self.assertLessEqual(distance.min(),1,gate['id'])
 
-    def test_majority_preserves_peninsula_core_and_island_without_dilation(self):
-        land = np.zeros((11,15),dtype=bool)
-        land[2:8,2:6] = True
-        land[4:7,6:10] = True  # 폭 3칸 반도
-        land[3:6,12:15] = True  # 떨어진 섬
-        out = majority_land(land)
-        self.assertTrue(out[5,8]); self.assertTrue(out[4,13])
-        self.assertFalse(out[3,8]); self.assertFalse(out[8,3])
-        lone = np.zeros((5,5),dtype=bool); lone[2,2] = True
-        self.assertFalse(majority_land(lone).any())
 
     def test_exact_palette_sea_coast_terrain_and_shade(self):
         palette = load_palette()
@@ -114,7 +144,7 @@ class BuildMapTests(unittest.TestCase):
         for x in range(5,20):
             self.assertEqual(tuple(out[3,x]),lookup[TERRAIN_RAMPS[classes[3,x]][shade[3,x]]])
         self.assertNotIn('teal-4',{color for ramp in TERRAIN_RAMPS.values() for color in ramp})
-        self.assertTrue(set(TERRAIN_RAMPS[MOUNTAIN]).isdisjoint(TERRAIN_RAMPS[SNOW]))
+        self.assertTrue(set(TERRAIN_RAMPS[MOUNTAIN]).isdisjoint(TERRAIN_RAMPS[SNOW] + TERRAIN_RAMPS[DRY]))
 
     def test_vector_area_holes_longitude_wrap_and_thin_islands(self):
         import tempfile
@@ -127,7 +157,7 @@ class BuildMapTests(unittest.TestCase):
             land.write_text(json.dumps({'features':[polygon([rectangle(-175,0,-171,4),rectangle(-174,1,-173,2)])]}),encoding='utf-8')
             lakes.write_text(json.dumps({'features':[polygon([rectangle(-172,2,-171,3)])]}),encoding='utf-8')
             bounds={'lon_min':180,'lon_max':190,'lat_min':0,'lat_max':5}
-            mask=rasterize_land(land,lakes,bounds,(10,5),12)
+            mask=rasterize_land(land,lakes,bounds,(10,5),7)
             self.assertTrue(mask[2,5]);self.assertFalse(mask[3,6]);self.assertFalse(mask[2,8])
             self.assertFalse(mask[2,4])
 
@@ -143,7 +173,7 @@ class BuildMapTests(unittest.TestCase):
         from unittest.mock import patch
         from build_map import build_pixel, source_hashes
         args=self.source_args('east-asia')
-        if not (args.source_dir/'topology.png').exists(): self.skipTest('높이 원본이 없어 생성기 확대 검사 생략')
+        self.require_sources(args)
         calls=[]
         def resized(image,bounds,size,resample):
             calls.append((image.mode,resample))
@@ -156,7 +186,16 @@ class BuildMapTests(unittest.TestCase):
 
     def source_args(self,region):
         from types import SimpleNamespace
-        return SimpleNamespace(source_dir=ROOT.parent/'map',region=region,style='pixel')
+        return SimpleNamespace(source_dir=Path(os.environ.get('SCITRADE_MAP_SOURCES', ROOT.parent/'map')),region=region,style='pixel')
+
+    def require_sources(self,args):
+        resolution='10m' if args.region=='east-asia' else '50m'
+        required=['bluemarble.jpg','topology.png',f'ne/ne_{resolution}_land.geojson',f'ne/ne_{resolution}_lakes.geojson']
+        missing=[name for name in required if not (args.source_dir/name).exists()]
+        if missing:
+            reason=f'재생성 원본 없음 ({args.source_dir}): '+', '.join(missing)
+            print(reason, file=sys.stderr)
+            self.skipTest(reason)
 
     def test_regeneration_byte_identity_geography_and_connections(self):
         from build_map import build_pixel,source_hashes,CHECK_POINTS
@@ -164,34 +203,71 @@ class BuildMapTests(unittest.TestCase):
         from pathlib import Path
         for region in PIXEL_SIZES:
             args=self.source_args(region)
-            resolution='10m' if region=='east-asia' else '50m'
-            required=['bluemarble.jpg','topology.png',f'ne/ne_{resolution}_land.geojson',f'ne/ne_{resolution}_lakes.geojson']
-            missing=[name for name in required if not (args.source_dir/name).exists()]
-            if missing: self.skipTest('재생성 원본 없음: '+', '.join(missing))
+            self.require_sources(args)
             with self.subTest(region=region),tempfile.TemporaryDirectory() as directory,contextlib.redirect_stdout(io.StringIO()):
                 meta=build_pixel(args,source_hashes(args),Path(directory))
                 self.assertEqual((Path(directory)/f'{region}.png').read_bytes(),(ROOT/f'public/assets/maps/{region}.png').read_bytes())
                 self.assertTrue(all(c['passed'] for c in meta['city_coast_checks']),meta['city_coast_checks'])
+                self.assertTrue(all(c['passed'] for c in meta['gate_water_checks']),meta['gate_water_checks'])
                 self.assertTrue(all(c['connected'] for c in meta['sea_connections']),meta['sea_connections'])
                 self.assertEqual(meta['gate_warnings'],[])
                 self.assertLessEqual(meta['color_isolated_ratio_8'],0.003)
-                # 50% 면적 규칙과 충돌하는 기준점은 명시적인 예외 목록으로 남긴다.
-                unresolved={'상하이 동쪽 해안'} | ({'오키나와 본섬'} if region=='world' else set())
-                self.assertEqual({c['name'] for c in meta['point_checks'] if not c['passed']},unresolved)
-                self.assertTrue(all(c['passed'] for c in meta['point_checks'] if c['name'] not in unresolved))
+                self.assertTrue(all(c['passed'] for c in meta['point_checks']),meta['point_checks'])
+                self.assertTrue(all(c['connected'] for c in meta['passage_connections']),meta['passage_connections'])
+                for passage in meta['gates_opened']:
+                    if passage['id'] in ('MALACCA_STRAIT','KOREA_STRAIT','CAPE_OF_GOOD_HOPE'):
+                        self.assertTrue(passage['already_connected'],passage)
+                        self.assertEqual(passage['source_land_cells'],0)
+                    self.assertLessEqual(passage['changed_cells'],6)
+                meta2=build_pixel(args,source_hashes(args),Path(directory))
+                self.assertEqual(meta['output_sha256'],meta2['output_sha256'])
 
-    def test_suez_passage_required_for_full_sea_connectivity(self):
-        from build_map import sea_connections,PASSAGES
-        # 지도 전체의 수에즈 양쪽을 막은 합성 육지 장벽. 다른 대양 우회는 없다.
-        bounds={'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
-        land=np.zeros((80,60),dtype=bool);land[30:40,:]=True
-        gates=[]
-        carved,opened,_=carve_gate_passages(land,gates,bounds)
-        self.assertIn('SUEZ_CANAL',[p['id'] for p in opened])
-        from build_map import component_labels,geo_pixel
-        labels=component_labels(carved)
-        points=[geo_pixel({'lon':lon,'lat':lat},bounds,(60,80)) for lon,lat in PASSAGES['SUEZ_CANAL']]
-        self.assertEqual(labels[points[0][1],points[0][0]],labels[points[1][1],points[1][0]])
+    def test_generation_fails_when_connection_check_fails(self):
+        from unittest.mock import patch
+        from build_map import build_pixel, source_hashes, carve_gate_passages as carve
+        import tempfile,contextlib,io
+        args=self.source_args('world');self.require_sources(args)
+        def disconnected(*a):
+            land, opened, _ = carve(*a)
+            return land, opened, [{'id':'SUEZ_CANAL','connected':False}]
+        with tempfile.TemporaryDirectory() as directory, patch('build_map.carve_gate_passages',side_effect=disconnected), contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(ValueError,'바다 연결 실패'):
+                build_pixel(args,source_hashes(args),Path(directory))
+            self.assertFalse((Path(directory)/'world.png').exists())
+
+    def test_exact_center_samples_and_polygon_holes_do_not_erase_other_islands(self):
+        import tempfile
+        from build_map import rasterize_land
+        def rect(x0,y0,x1,y1):return [[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]
+        def feature(rings):return {'geometry':{'type':'Polygon','coordinates':rings}}
+        with tempfile.TemporaryDirectory() as directory:
+            land=Path(directory)/'land.json'; lakes=Path(directory)/'lakes.json'
+            lakes.write_text(json.dumps({'features':[]}))
+            bounds={'lon_min':0,'lon_max':1,'lat_min':0,'lat_max':1}
+            land.write_text(json.dumps({'features':[feature([rect(0,0,.45,1)])]}))
+            fraction=rasterize_land(land,lakes,bounds,(1,1),return_fraction=True)
+            self.assertAlmostEqual(fraction[0,0],3/7)
+            self.assertFalse(rasterize_land(land,lakes,bounds,(1,1))[0,0])
+            island=feature([rect(.3,.3,.7,.7)])
+            mainland=feature([rect(0,0,1,1),rect(.2,.2,.8,.8)])
+            land.write_text(json.dumps({'features':[island,mainland]}))
+            self.assertTrue(rasterize_land(land,lakes,bounds,(10,10))[5,5])
+            land.write_text(json.dumps({'features':[mainland,island]}))
+            self.assertTrue(rasterize_land(land,lakes,bounds,(10,10))[5,5])
+            with self.assertRaisesRegex(ValueError,'홀수'):
+                rasterize_land(land,lakes,bounds,(1,1),6)
+
+    def test_small_inland_water_and_color_isolation(self):
+        from build_map import remove_small_inland_water, color_isolated_ratio
+        land=np.ones((8,8),dtype=bool);land[0,0]=False;land[3,3]=False;land[5:7,5:7]=False
+        clean=remove_small_inland_water(land)
+        self.assertTrue(clean[3,3]);self.assertFalse(clean[0,0]);self.assertFalse(clean[5,5])
+        self.assertFalse(remove_small_inland_water(land,protected=[(3,3)])[3,3])
+        out=np.zeros((5,5,3),dtype=np.uint8);out[2,2]=255;out[1,1]=255
+        four=((-1,0),(1,0),(0,-1),(0,1))
+        eight=[(dy,dx) for dy in (-1,0,1) for dx in (-1,0,1) if dy or dx]
+        self.assertEqual(color_isolated_ratio(out,four),2/25)
+        self.assertEqual(color_isolated_ratio(out,eight),0)
 
 
 if __name__ == '__main__':

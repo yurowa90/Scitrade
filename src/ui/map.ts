@@ -20,8 +20,9 @@ export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: nu
   routeBox: Box, availableWidth: number, dpr: number, mode: MapMode): MapViewport {
   if (![map.w, map.h, unitsPerPixel, availableWidth, dpr].every((v) => Number.isFinite(v) && v > 0))
     throw new RangeError('지도 크기와 기기 배율을 확인해 주세요.');
+  const cap = Math.max(1, Math.floor(3 * dpr));
   if (mode === 'world') {
-    const n = Math.max(Math.ceil(dpr), Math.ceil(availableWidth * dpr / 720));
+    const n = Math.min(cap, Math.max(Math.ceil(dpr), Math.ceil(availableWidth * dpr / 720)));
     return { vb: { x: 0, y: 0, w: map.w, h: map.h }, n,
       cssWidth: n * map.w / unitsPerPixel / dpr, cssHeight: n * map.h / unitsPerPixel / dpr };
   }
@@ -30,9 +31,9 @@ export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: nu
   const bottom = Math.ceil((routeBox.y + routeBox.h) / unitsPerPixel);
   const requiredW = right - left + 24;
   const requiredH = bottom - top + 24;
-  let n = Math.max(1, Math.floor(availableWidth * dpr / Math.max(requiredW, requiredH * 16 / 10)));
-  // 세로 반올림 경계에서도 최소 여백이 들어가는지 확인한다.
-  while (n > 1 && Math.round(Math.floor(availableWidth * dpr / n) * 10 / 16) < requiredH) n--;
+  // round(L × 10 / 16) ≥ requiredH를 만족하는 최소 정수 L.
+  const minimumL = Math.max(requiredW, Math.ceil((requiredH - 0.5) * 16 / 10));
+  const n = Math.min(cap, Math.max(1, Math.floor(availableWidth * dpr / minimumL)));
   const logicalW = Math.max(1, Math.floor(availableWidth * dpr / n));
   const logicalH = Math.max(1, Math.round(logicalW * 10 / 16));
   const w = logicalW * unitsPerPixel, h = logicalH * unitsPerPixel;
@@ -138,6 +139,35 @@ function chooseMap(config: ScenarioConfig, mode: MapMode): MapAsset | null {
   return pts.every((p) => inBounds(p, REGION_MAP.bounds)) ? REGION_MAP : (WORLD_MAP ?? REGION_MAP);
 }
 
+export interface MapMeasurement { availableWidth: number; dpr: number }
+
+/** 전체 다시 그리기도 마지막 측정 크기로 시작해 지도 높이가 잠시 바뀌지 않는다. */
+export class MapMeasurementMemory {
+  private values: Partial<Record<MapMode, MapMeasurement>> = {};
+  get(mode: MapMode): MapMeasurement { return this.values[mode] ?? { availableWidth: 620, dpr: 1 }; }
+  has(mode: MapMode): boolean { return this.values[mode] !== undefined; }
+  remember(mode: MapMode, availableWidth: number, dpr: number): void { this.values[mode] = { availableWidth, dpr }; }
+}
+
+export function mapViewportKey(plan: MapViewport, dpr: number): string {
+  const { vb } = plan;
+  return `${plan.n}:${vb.w}:${vb.h}:${vb.x}:${vb.y}:${dpr}`;
+}
+
+/** 크기 감시에서는 HTML을 만들기 전에 이 계획만 비교한다. */
+export function worldMapViewport(config: ScenarioConfig, mode: MapMode, options: MapMeasurement): MapViewport {
+  const map = chooseMap(config, mode)!;
+  const world = map === WORLD_MAP;
+  const allPts = config.routes.flatMap((r) => loadRouteWaypoints(r.id))
+    .map((p) => project(p, map.bounds, map.width, map.height));
+  const xs = allPts.map((p) => p.x), ys = allPts.map((p) => p.y);
+  const routeBox = allPts.length ? { x: Math.min(...xs), y: Math.min(...ys),
+    w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }
+    : { x: map.width / 2, y: map.height / 2, w: 0, h: 0 };
+  return planMapViewport({ w: map.width, h: map.height }, map.pixelGrid?.unitsPerPixel ?? 1,
+    routeBox, options.availableWidth, options.dpr, world ? 'world' : 'route');
+}
+
 export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode, options: { availableWidth?: number; dpr?: number; baseOutsideSvg?: boolean } = {}): string {
   const map = chooseMap(config, mode);
   if (!map) return '<p class="muted">지도 자산이 없습니다.</p>';
@@ -147,14 +177,8 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const gates = loadSeaGates().filter((g) => inBounds(g, map.bounds));
   const routeCities = new Set(config.routes.flatMap((r) => [r.fromCityId, r.toCityId]));
   const routeLines = config.routes.map((r) => ({ route: r, pts: loadRouteWaypoints(r.id).map(proj) }));
-  const allPts = routeLines.flatMap((l) => l.pts);
 
-  const xs = allPts.map((p) => p.x), ys = allPts.map((p) => p.y);
-  const routeBox = allPts.length ? { x: Math.min(...xs), y: Math.min(...ys),
-    w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }
-    : { x: map.width / 2, y: map.height / 2, w: 0, h: 0 };
-  const plan = planMapViewport({ w: map.width, h: map.height }, map.pixelGrid?.unitsPerPixel ?? 1,
-    routeBox, options.availableWidth ?? 620, options.dpr ?? 1, world ? 'world' : 'route');
+  const plan = worldMapViewport(config, mode, { availableWidth: options.availableWidth ?? 620, dpr: options.dpr ?? 1 });
   const vb = plan.vb;
   // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
   const k = (vb.w / 620) * (world ? 0.45 : 1);
@@ -287,7 +311,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const scenarioCenter = hubXs.length ? (Math.min(...hubXs) + Math.max(...hubXs)) / 2 / map.width : 0.5;
   const viewportData = `data-map-viewport="${plan.n}:${vb.w}:${vb.h}:${vb.x}:${vb.y}" data-map-center="${scenarioCenter}"`;
   const svg = `
-  <svg ${externalBase ? '' : `${pixelData} ${viewportData} style="${sizeStyle}"`} class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
+  <svg ${externalBase ? '' : `${pixelData} ${viewportData} style="${sizeStyle}"`} preserveAspectRatio="none" width="${plan.cssWidth}" height="${plan.cssHeight}" class="sea-map ${world ? 'is-world' : ''}" viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" role="img"
     aria-label="${world ? '태평양 중심 세계지도' : '동아시아 해역 지도'}. 항로 ${routeNames.join(', ')}. 이번 시나리오 거점 ${counts.active}곳, 세계 확장 미리 보기 거점 ${counts.preview}곳, 해협·운하 ${gates.length}곳${voyages.size ? `, 화물선 ${voyages.size}척 운항 중` : ''}">
     <defs>
       <radialGradient id="port-glow" r="0.5"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".85"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
