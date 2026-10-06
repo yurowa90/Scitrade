@@ -44,10 +44,14 @@ describe('TASK-0013 실제 화면 표시', () => {
     const ui = await startUi();
     const header = () => ui.app.innerHTML.match(/<header class="topbar">([\s\S]*?)<\/header>/)![1]!;
     const original = header();
-    expect(original).toContain('<small class="amount-basis">확정 기준 · 오늘 할 일은 하루 진행 때 반영</small>');
+    const queue = () => ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
+    const note = '위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.';
+    expect(original).toContain('<small class="amount-basis">금액은 확정 기준</small>');
+    expect(queue()).not.toContain(note);
     ui.click({ action: 'accept', buy: 'OFFER_BUY_02', sell: 'OFFER_SELL_02' });
     expect(header()).toBe(original);
-    expect(ui.app.innerHTML.match(/확정 기준 · 오늘 할 일은 하루 진행 때 반영/g)).toHaveLength(1);
+    expect(queue()).toContain(note);
+    expect(ui.app.innerHTML.match(/금액은 확정 기준/g)).toHaveLength(2);
     const resources = ui.app.innerHTML.split('<section class="panel resources"')[1]!.split('</section>')[0]!;
     expect(header()).toContain('<b>3,000.00 USD</b>');
     expect(resources).toContain('<th>현금</th><td>1,000.00 USD</td>');
