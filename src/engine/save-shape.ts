@@ -18,7 +18,7 @@ export const SAVE_ENUMS = {
   cargoStatus: { PREPARING: true, AWAITING_DEPARTURE: true, IN_TRANSIT: true, ARRIVED_RELEASING: true,
     DELIVERED: true, HELD_UNALLOCATED: true, RETURNED_TO_OWNER: true } satisfies Record<CargoLot['status'], true>,
   bookingStatus: { BOOKED: true, DEPARTED: true, CANCELLED: true } satisfies Record<Booking['status'], true>,
-  taskKind: { EXPORT_PREP: true, FORWARDING_PREP: true, SCOUT: true, RECRUIT_QUEST: true, TRAINING: true } satisfies Record<Task['kind'], true>,
+  taskKind: { CULTURE: true, EXPORT_PREP: true, FORWARDING_PREP: true, SCOUT: true, RECRUIT_QUEST: true, TRAINING: true } satisfies Record<Task['kind'], true>,
   taskStatus: { QUEUED: true, RUNNING: true, DONE: true, ABORTED: true } satisfies Record<Task['status'], true>,
   employmentStatus: { employed: true, candidate: true } satisfies Record<EmployeeState['employmentStatus'], true>,
   candidateStage: { UNDISCOVERED: true, DISCOVERED: true, QUEST_RUNNING: true, INTERVIEW_READY: true, HIRED: true } satisfies Record<CandidateState['stage'], true>,

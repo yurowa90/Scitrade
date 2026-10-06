@@ -441,14 +441,14 @@
       "start_with_existing_employment": true,
       "character_system_enabled": false,
       "productivity_mode": "LEGACY_FIXED",
-      "culture_enabled": false,
+      "culture_enabled": true,
       "securities_enabled": false,
       "ipo_enabled": false,
       "source_refs": [
         "DESIGN-V03",
         "DESIGN-V04"
       ],
-      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 창고·성장·문화 활동은 이후 단계.",
+      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 부산 현지 활동 3종(원화 비용, USD 기대값과 무관). 창고는 이후 단계.",
       "recruitment": {
         "data_basis": "DESIGN",
         "status": "USER_REVIEWED_2026-10-05",
@@ -485,6 +485,16 @@
               "EMP05"
             ]
           }
+        ]
+      },
+      "culture": {
+        "data_basis": "DESIGN",
+        "status": "USER_REVIEWED_2026-10-06",
+        "decision_ref": "docs/DECISIONS.md M2a-4 도시 방문·문화 활동",
+        "activity_ids": [
+          "CA01",
+          "CA02",
+          "CA03"
         ]
       }
     }

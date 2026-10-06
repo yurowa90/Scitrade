@@ -37,6 +37,7 @@ import {
 } from './types';
 import { isEmployed, isAvailableFromToday } from './employees';
 import { checkInvariants } from './invariants';
+import { cultureKeys, recordCultureCompletion } from './culture';
 import { awardTaskCompletion } from './growth';
 import { isDayBasedTask, taskSubjectKo } from './tasks';
 
@@ -182,6 +183,9 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
   }
   let rejection: string | null;
   switch (cmd.type) {
+    case 'START_CULTURE_ACTIVITY':
+      rejection = startCultureActivity(s, config, cmd.activityId, cmd.employeeId);
+      break;
     case 'START_TRAINING':
       rejection = startTraining(s, config, cmd.employeeId);
       break;
@@ -462,7 +466,7 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
 
 function taskLabel(kind: Task['kind']): string {
   return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '운송 주선 준비(화물 인수·선적 서류)',
-    SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', TRAINING: '일반 훈련' }[kind];
+    SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', CULTURE: '현지 활동', TRAINING: '일반 훈련' }[kind];
 }
 
 function employeeUnavailable(s: GameState, config: ScenarioConfig, employeeId: string, cityId: string): string | null {
@@ -500,6 +504,11 @@ function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, empl
   const def = config.employees.find((e) => e.id === employeeId)!;
   const label = [taskSubjectKo(config, task), taskLabel(task.kind)].filter(Boolean).join(' ');
   switch (task.kind) {
+    case 'CULTURE': {
+      const activity = config.culture!.activities.find((a) => a.id === task.subjectId)!;
+      log(s, `${def.nameKo} ${activity.titleKo} 시작 (${task.requiredWorkUnits}일, 현지 활동비 ${formatMoney(activity.currency, activity.costMinor)})`);
+      break;
+    }
     case 'TRAINING': {
       const fee = config.growth!.ordinaryTraining;
       log(s, `${def.nameKo} ${label} 시작 (${task.requiredWorkUnits}일, 훈련비 ${formatMoney(fee.currency, fee.feeMinor)})`);
@@ -516,6 +525,35 @@ function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, empl
       throw new EngineError(`알 수 없는 업무 종류입니다 (${unknown}).`);
     }
   }
+  return null;
+}
+
+function startCultureActivity(s: GameState, config: ScenarioConfig, activityId: string, employeeId: string): string | null {
+  if (!config.culture) return '이 시나리오에서는 현지 활동을 할 수 없습니다.';
+  const activity = config.culture.activities.find((a) => a.id === activityId);
+  if (!activity) return '현지 활동을 찾을 수 없습니다.';
+  const unavailable = employeeUnavailable(s, config, employeeId, activity.cityId);
+  if (unavailable) return unavailable;
+  const employee = config.employees.find((e) => e.id === employeeId)!;
+  const keys = cultureKeys(config, activity, employeeId);
+  if (s.culture.experiences.some((e) => e.key === keys.actorExperience)) {
+    return `${employee.nameKo}은(는) 이미 이 활동에 참여했습니다. 다시 해도 새로 생기는 기록이 없습니다.`;
+  }
+  const running = s.tasks.find((t) => t.kind === 'CULTURE' && t.subjectId === activityId
+    && t.status === 'RUNNING' && t.assignedEmployeeId !== employeeId);
+  if (running) return `같은 활동에 오늘 이미 ${config.employees.find((e) => e.id === running.assignedEmployeeId)!.nameKo}이(가) 갑니다. 끝난 뒤에 보낼 수 있습니다.`;
+  const taskId = `CULTURE-${activityId}-${employeeId}-D${s.day}`;
+  if (s.tasks.some((t) => t.id === taskId)) return '이미 생성된 업무 ID입니다.';
+  const available = cashLessUnpaidMinor(s, config, activity.currency);
+  if (available < activity.costMinor) return `현지 활동비 자금이 부족합니다. 필요 ${formatMoney(activity.currency, activity.costMinor)}, 사용 가능 ${formatMoney(activity.currency, available)}.`;
+  const task: Task = { id: taskId, kind: 'CULTURE', contractId: null, subjectId: activityId, cityId: activity.cityId,
+    requiredWorkUnits: activity.durationDays, progressWorkUnits: 0, status: 'QUEUED',
+    assignedEmployeeId: null, startedDay: null, completedDay: null };
+  const rejection = assignTaskObject(s, config, task, employeeId);
+  if (rejection) return rejection;
+  s.tasks.push(task);
+  postOrThrow(s, { id: `CULTURE-FEE-${taskId}`, currency: activity.currency, reason: `${employee.nameKo} 현지 활동비`,
+    lines: [{ account: 'CULTURE_EXPENSE', amount: activity.costMinor }, { account: 'CASH', amount: -activity.costMinor }] });
   return null;
 }
 
@@ -792,7 +830,7 @@ export function commitDay(
     }
   }
   // 8. 불변 조건 검사·마감
-  checkInvariants(s, config);
+  checkInvariants(s, config, { closing: true });
   s.closedDays.push(day);
   s.day = day + 1;
   s.phase = s.day > config.campaignDays ? 'ENDED' : 'PENDING_OPEN';
@@ -809,6 +847,9 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
       task.status = 'DONE';
       task.completedDay = s.day;
       switch (task.kind) {
+        case 'CULTURE':
+          recordCultureCompletion(s, config, task);
+          break;
         case 'TRAINING':
           log(s, `${def.nameKo}: 일반 훈련 완료`);
           break;

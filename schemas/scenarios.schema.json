@@ -726,6 +726,38 @@
               }
             },
             "additionalProperties": false
+          },
+          "culture": {
+            "type": "object",
+            "required": [
+              "data_basis",
+              "status",
+              "decision_ref",
+              "activity_ids"
+            ],
+            "properties": {
+              "data_basis": {
+                "type": "string",
+                "enum": [
+                  "DESIGN"
+                ]
+              },
+              "status": {
+                "type": "string"
+              },
+              "decision_ref": {
+                "type": "string"
+              },
+              "activity_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

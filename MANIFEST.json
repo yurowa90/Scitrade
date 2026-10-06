@@ -57,8 +57,8 @@
     },
     {
       "path": "data/culture_activities.json",
-      "size_bytes": 18216,
-      "sha256": "7cccdd575b0d43e52db72bc5ef74b020fff2417e01aa52d82f7ecf72743406cf"
+      "size_bytes": 20208,
+      "sha256": "f701b9cb92c235f36f77a9450c46fc25098891fdc1ab60e7ec281ae85365792a"
     },
     {
       "path": "data/curriculum_links.json",
@@ -117,8 +117,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 17342,
-      "sha256": "e2a9242b3b7176bc8c55fb676b08a912f89e9da75cdb614874bae2d32cfe4aa5"
+      "size_bytes": 17660,
+      "sha256": "f8720b6302b33fb39ff03c8285ff16ba7e8185244ee95392bdad84b847baf5e1"
     },
     {
       "path": "data/securities.json",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 35806,
-      "sha256": "060681ee096305777775ce156ef4245cc83204549b7335bb6736cbdb3e3fb2ff"
+      "size_bytes": 37295,
+      "sha256": "e2a671223396bbb1b3b19d9e095da07ad872a979505a69b75266da6b941f4903"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 4652,
-      "sha256": "16e45cf99f943622a8cfacf482161a53c9be0ab61325b466b0ac0817f8d7b98b"
+      "size_bytes": 4697,
+      "sha256": "cd519370889cc6ae6a0e963bf941e57cbb4b4e1e3161b9fd0a5f3385ffaf5a94"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -321,6 +321,11 @@
       "sha256": "6744323010df62ba70f6156dd858914451440936ba757f9026eaad6afba0d259"
     },
     {
+      "path": "docs/ai/tasks/TASK-0011-R1-culture-hardening.md",
+      "size_bytes": 7615,
+      "sha256": "88345686f74a8456539543d5249d6f528ad182c1ab40b0b057644efab5ac90ba"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0011-culture-engine.md",
       "size_bytes": 22660,
       "sha256": "cf727eb3cee8f0614edbc54bf23ccdbea7aa1a2c1c6e6a5f5d6ed1b500fafa50"
@@ -379,6 +384,11 @@
       "path": "docs/ai/tasks/results/TASK-0010.md",
       "size_bytes": 15733,
       "sha256": "81c0f12de76c1d39dd24bc88cae537fa37e7b945e1ef4072cd705192acdf1516"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0011.md",
+      "size_bytes": 31806,
+      "sha256": "0a19bf41a840a64ff4af6b30074b9739a73cca97192c94a5a27a4436279c9262"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0013.md",
@@ -542,8 +552,8 @@
     },
     {
       "path": "schemas/culture_activities.schema.json",
-      "size_bytes": 5617,
-      "sha256": "296b564e84d35125014c39548e02a004ed7d24cd6f96c3e1b51e1994bf27bdc8"
+      "size_bytes": 6257,
+      "sha256": "e87b9e40e44746eb37bb2efe4808032633996bf914678536bd46797a8fb2043b"
     },
     {
       "path": "schemas/curriculum_links.schema.json",
@@ -602,8 +612,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 20552,
-      "sha256": "e44f91d76bd8ec7c58179042bfe2662300e6b123e8979a2bbe1505d8650f6208"
+      "size_bytes": 21394,
+      "sha256": "20a206e81d770d478a2c61becf15d054a6feee790ef6d74323ce6f9305607ecb"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -637,8 +647,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 35929,
-      "sha256": "1f2419fb71aba76d2ee87670c220319045a1c43ab2bf4c14dc21ef912c59674c"
+      "size_bytes": 39613,
+      "sha256": "3a5c3807f8b80f24393beb34191f966f7fbbf50d4633b65891d9f0e3f3ff07cf"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -687,13 +697,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 1978,
-      "sha256": "79d59d49feb96b624729ba9cc1717a9f4081852e85d5d11d8e188960fa550dab"
+      "size_bytes": 7860,
+      "sha256": "49e79b0b14c4021c011009819613619127eb79b8eca452e8bc1c859a534136dd"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 41817,
-      "sha256": "daa6298056f28a57e11ac05c410832a877a15791dd428d9704388ea76b37e9e1"
+      "size_bytes": 46694,
+      "sha256": "fdb8485d1c30ce897683541d9741834b129d5b94daf83243b3b6d7c8ac8db56a"
     }
   ]
 }

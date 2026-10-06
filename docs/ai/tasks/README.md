@@ -16,7 +16,7 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 | [TASK-0008](TASK-0008-engine-robustness.md) | 엔진 견고성: ROUTE02 취소 정산 오류(기존 결함) + 저장 무결성·테스트 강도 잔여 | Astra (`gpt-6-astra`) | TASK-0004 반영 | 완료 (반려 없음, 개발 브랜치 반영) |
 | [TASK-0009](TASK-0009-port-wait-and-freeze-polish.md) | 거짓 ‘하역 중단 대기’ 경고(기존 결함) 수정 + 사용성 시험 빌드 마무리 | Astra (`gpt-6-astra`) | TASK-0005-R3 | 완료 (반려 없음, TASK-0005와 한 병합 커밋으로 개발 브랜치 반영, 사용성 시험 빌드) |
 | [TASK-0010](TASK-0010-save-v5-foundation.md) | M2a-4 기반: 저장 판본 5(현지 활동 기록 칸), 숨어 있던 업무 종류 분기를 오류로 드러내기, 자금 판단 함수 통합 — 동작 불변 | Astra (`gpt-6-astra`) | 사용성 시험 빌드 `f260a7c` | 완료 (반려 없음, 개발 브랜치 반영) |
-| [TASK-0011](TASK-0011-culture-engine.md) | M2a-4 문화 활동 엔진·자료·검사기 (부산 CA01~03, 직원·활동별 첫 완료 경험치, 4줄 기록) | Astra (`gpt-6-astra`) | TASK-0010 반영, 4줄 기록 문장 사용자 검토 | 반려(1회) → R1 Codex 실행 중 (작업 브랜치에 R1 지시서) |
+| [TASK-0011](TASK-0011-culture-engine.md) | M2a-4 문화 활동 엔진·자료·검사기 (부산 CA01~03, 직원·활동별 첫 완료 경험치, 4줄 기록) | Astra (`gpt-6-astra`) | TASK-0010 반영, 4줄 기록 문장 사용자 검토 | 완료 (반려 1회 → [R1](TASK-0011-R1-culture-hardening.md), Claude 검수 수정 4건, 개발 브랜치 반영) |
 | TASK-0012 | M2a-4 화면: 부산 현지 진입점·활동 카드·결과 카드·지역 기록장 | Sol (`gpt-6.1-sol`) | TASK-0011 반영 | 대기 |
 | [TASK-0013](TASK-0013-deferred-display-fixes.md) | 사용성 시험 빌드에서 미룬 표시 수정 8건(수금일 당일 문구, 선복 반영 예약 안내, 확정 미리 보기 문구, 위쪽 막대 기준, 면담 전 계약금 규칙 등) | Sol (`gpt-6.1-sol`) | TASK-0010 반영 | 완료 (반려 없음, Claude 검수 수정 2건, 개발 브랜치 반영) |
 

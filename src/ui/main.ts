@@ -578,6 +578,10 @@ function planLabel(plan: CommitPlan | undefined): string {
 
 function commandLabel(c: Command): string {
   switch (c.type) {
+    case 'START_CULTURE_ACTIVITY': {
+      const activity = config.culture?.activities.find((a) => a.id === c.activityId);
+      return `${activity?.titleKo ?? c.activityId} → ${employeeName(c.employeeId)}${activity ? ` (${formatMoney(activity.currency, activity.costMinor)}·${activity.durationDays}일)` : ''}`;
+    }
     case 'START_TRAINING':
       return `${employeeName(c.employeeId)} 일반 훈련`;
     case 'ACCEPT_TRADE': {

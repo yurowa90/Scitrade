@@ -4,7 +4,7 @@ import { isDayBasedTask, taskSubjectKo } from '../engine/tasks';
 import { EngineError, type GameState, type ScenarioConfig, type Task } from '../engine/types';
 
 export function taskSchedule(t: Task, config: ScenarioConfig): string {
-  const name = { TRAINING: '일반 훈련', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비' }[t.kind];
+  const name = { CULTURE: '현지 활동', TRAINING: '일반 훈련', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비' }[t.kind];
   const subject = taskSubjectKo(config, t);
   return `${name} 중 — ${subject ? `${subject} ` : ''}${t.progressWorkUnits}/${t.requiredWorkUnits}${isDayBasedTask(t.kind) ? '일' : 'pt'}`;
 }
@@ -31,6 +31,7 @@ export function crewNoteKo(config: ScenarioConfig, state?: GameState): string {
 export function crewStatusKo(task?: Task): string {
   if (!task) return '○ 대기';
   switch (task.kind) {
+    case 'CULTURE': return `◇ 현지 활동 중 ${task.progressWorkUnits}/${task.requiredWorkUnits}일`;
     case 'TRAINING': return `◆ 교육 중 ${task.progressWorkUnits}/${task.requiredWorkUnits}일`;
     case 'EXPORT_PREP':
     case 'FORWARDING_PREP':

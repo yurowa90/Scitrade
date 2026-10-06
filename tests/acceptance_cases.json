@@ -182,7 +182,31 @@
         "단순 출입에 경비·관계·지식 보상이나 임금 정산이 발생하지 않는다.",
         "P0 금융센터가 미구현 주식 주문·IPO 실행을 완료된 서비스처럼 제공하지 않는다."
       ],
-      "human_review_check": "화면 동작 전후 날짜·현금·위치·Task·지식 기록을 비교한다. 버튼 클릭 수와 시뮬레이션 시간이 분리되어야 한다."
+      "human_review_check": "화면 동작 전후 날짜·현금·위치·Task·지식 기록을 비교한다. 버튼 클릭 수와 시뮬레이션 시간이 분리되어야 한다.",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "engine_test_ref": "src/engine/m2a-culture.test.ts",
+      "engine_fixture_mapping": {
+        "ACT_A": "CA01",
+        "CONTACT_A": "NPC_MARKET",
+        "CONTACT_B": "NPC_GUIDE",
+        "EMPLOYEE_A": "EMP01",
+        "EMPLOYEE_B": "EMP02",
+        "CITY_HOME": "BUSAN",
+        "CITY_REMOTE": "SHANGHAI"
+      },
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다.",
+      "unexecuted_assertions": [
+        {
+          "assertion": "5개 도시 진입점을 각각 열고 닫고 다른 도시 화면과 공개 보고를 반복 열람해도 날짜·현금·위치·업무·기록이 그대로다.",
+          "status": "미실행 단언",
+          "reason_ko": "화면 범위이며 TASK-0012에서 확인한다."
+        },
+        {
+          "assertion": "P0 금융센터가 미구현 주식 주문·IPO 실행을 완료된 서비스처럼 제공하지 않는다.",
+          "status": "미실행 단언",
+          "reason_ko": "화면 범위이며 TASK-0012에서 확인한다."
+        }
+      ]
     },
     {
       "id": "P0-CITY-02",
@@ -232,7 +256,19 @@
         "반복 완료 이벤트·대화 열람으로 기록·비용·관계 보상이 다시 발생하지 않는다.",
         "새 주제 또는 의미 있는 후속 단계는 별도 ID와 완료 조건을 갖춘 경우에만 새 활동이 된다."
       ],
-      "human_review_check": "100−2=98. 기록 1개·완료 1회·경비 2가 재전송 전후 동일한지 확인한다."
+      "human_review_check": "100−2=98. 기록 1개·완료 1회·경비 2가 재전송 전후 동일한지 확인한다.",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "engine_test_ref": "src/engine/m2a-culture.test.ts",
+      "engine_fixture_mapping": {
+        "ACT_A": "CA01",
+        "CONTACT_A": "NPC_MARKET",
+        "CONTACT_B": "NPC_GUIDE",
+        "EMPLOYEE_A": "EMP01",
+        "EMPLOYEE_B": "EMP02",
+        "CITY_HOME": "BUSAN",
+        "CITY_REMOTE": "SHANGHAI"
+      },
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다."
     },
     {
       "id": "P0-CITY-03",
@@ -278,7 +314,26 @@
         "관계가 생겼다는 이유만으로 거래 이행 신뢰를 올리지 않는다.",
         "직원이 퇴사해도 제출한 회사 보고서는 남지만 개인 친분이 다른 직원에게 자동 이전되지 않는다."
       ],
-      "human_review_check": "관계 변경 대상이 특정 인물 쌍인지 확인하고, 동일 국가의 미접촉 인물과 다른 직원의 관계가 그대로인지 비교한다."
+      "human_review_check": "관계 변경 대상이 특정 인물 쌍인지 확인하고, 동일 국가의 미접촉 인물과 다른 직원의 관계가 그대로인지 비교한다.",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "engine_test_ref": "src/engine/m2a-culture.test.ts",
+      "engine_fixture_mapping": {
+        "ACT_A": "CA01",
+        "CONTACT_A": "NPC_MARKET",
+        "CONTACT_B": "NPC_GUIDE",
+        "EMPLOYEE_A": "EMP01",
+        "EMPLOYEE_B": "EMP02",
+        "CITY_HOME": "BUSAN",
+        "CITY_REMOTE": "SHANGHAI"
+      },
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다.",
+      "unexecuted_assertions": [
+        {
+          "assertion": "직원이 퇴사해도 제출한 회사 보고서는 남지만 개인 친분이 다른 직원에게 자동 이전되지 않는다.",
+          "status": "미실행 단언",
+          "reason_ko": "퇴사 기능이 없어 실행하지 않는다."
+        }
+      ]
     },
     {
       "id": "P0-CITY-04",
@@ -328,7 +383,19 @@
         "P0에 미구현된 출장을 자동 완료하거나 이동 경비 없는 출장으로 대체하지 않는다.",
         "원격 연락이 허용된 업무와 현장 방문이 필요한 업무를 구분한다. 향후 출장 구현 시 출발·도착·비용·업무 공백을 별도 검수한다."
       ],
-      "human_review_check": "도시 선택만으로 위치·도착일·현장 수행 자격이 바뀌지 않는지 확인한다. 이 사례는 출장 엔진 구현을 요구하지 않는다."
+      "human_review_check": "도시 선택만으로 위치·도착일·현장 수행 자격이 바뀌지 않는지 확인한다. 이 사례는 출장 엔진 구현을 요구하지 않는다.",
+      "scenario_id": "SCENARIO_M2_MULTI_TRADE",
+      "engine_test_ref": "src/engine/m2a-culture.test.ts",
+      "engine_fixture_mapping": {
+        "ACT_A": "CA01",
+        "CONTACT_A": "NPC_MARKET",
+        "CONTACT_B": "NPC_GUIDE",
+        "EMPLOYEE_A": "EMP01",
+        "EMPLOYEE_B": "EMP02",
+        "CITY_HOME": "BUSAN",
+        "CITY_REMOTE": "SHANGHAI"
+      },
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다."
     },
     {
       "id": "P0-TIME-01",
