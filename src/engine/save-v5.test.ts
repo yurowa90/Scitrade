@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadScenario, SCENARIO_IDS } from '../content/scenario';
+import { loadScenario, M1_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
 import rules from '../../data/character_rules.json';
 import fixture from './fixtures/save-v4-m2.json';
 import { createGame } from './engine';
@@ -85,10 +85,14 @@ describe('실제 판본 4 저장 보존', () => {
 });
 
 describe('판본 5와 이전 판본 읽기', () => {
+  it('실제 설정은 M1에서 비활성이고 M2에서 활성이다', () => {
+    for (const id of M1_SCENARIO_IDS) expect(loadScenario(id).culture).toBeNull();
+    expect(loadScenario('SCENARIO_M2_MULTI_TRADE').culture).not.toBeNull();
+  });
+
   it.each(SCENARIO_IDS)('%s의 culture 비활성 설정·초깃값은 비어 있고 판본 5로 왕복한다', id => {
     // M2 활성화 뒤에도 선행 작업의 비활성 저장 계약은 별도 설정으로 검증한다.
     const cfg = { ...loadScenario(id), culture: null };
-    expect(cfg.culture).toBeNull();
     const s = createGame(cfg);
     expect(s.culture).toEqual(emptyCulture);
     const text = serializeSave(s);

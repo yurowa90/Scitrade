@@ -1,6 +1,5 @@
 // P0-CITY-01~04: 열람·직접 경험·개인 관계·계약 실적을 분리하고 저장 근거를 검증한다.
 import { describe, expect, it } from 'vitest';
-import taskText from '../../docs/ai/tasks/TASK-0011-culture-engine.md?raw';
 import activities from '../../data/culture_activities.json';
 import contacts from '../../data/contacts.json';
 import gameConfig from '../../data/game_config.json';
@@ -10,6 +9,7 @@ import { crewStatusKo, taskSchedule } from '../ui/crew-status';
 import { taskName } from '../ui/card';
 import { commitDay, createGame, openDay, planState } from './engine';
 import { cultureBook, cultureKey, cultureKeys, counterpartyRecord } from './culture';
+import { cultureProblems } from './culture-invariants';
 import { culturePreview, payrollRunwayDay } from './previews';
 import { awardXp, completionReward } from './growth';
 import { checkInvariants } from './invariants';
@@ -56,13 +56,23 @@ describe('자료·키·기존 판본', () => {
     expect([config.dataVersion, config.rules.rulesVersion, SAVE_FORMAT_VERSION]).toEqual(['0.4.1', 'M2a-rules-1', 5]);
   });
 
-  it('사용자 승인 문장 12개는 지시서와 글자 단위로 같다', () => {
-    const matches = [...taskText.matchAll(/\| (CA0[123]) \| `(\w+_ko)` \| (.*?) \|/g)];
-    expect(matches).toHaveLength(12);
-    for (const [, id, key, sentence] of matches) {
-      const activity = activities.items.find((a) => a.id === id)!;
-      expect((activity.report_ko as Record<string, string>)[key!]).toBe(sentence);
-    }
+  // 문장을 수정할 때 자료와 이 표를 함께 갱신한다.
+  it.each([
+    ["CA01", "finding_ko", "윤서: “지금 들여오는 상자는 우리 가게 선반에 다 들어가지 않아요. 더 작은 묶음이면 좋겠어요.”"],
+    ["CA01", "scope_ko", "판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다."],
+    ["CA01", "not_claimed_ko", "부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다."],
+    ["CA01", "open_question_ko", "윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지."],
+    ["CA02", "finding_ko", "하람: “같은 배를 두고 전시 안내문과 옛 장부의 날짜가 달라요. 어느 쪽이 맞는지 정하기 전에, 각각 누가 언제 무엇을 보고 썼는지부터 확인해야 해요.”"],
+    ["CA02", "scope_ko", "가상 전시 1곳의 기록 2건을 안내자 1명(하람)과 비교했습니다. 어느 기록이 맞는지는 확인하지 않았습니다."],
+    ["CA02", "not_claimed_ko", "두 기록 가운데 어느 쪽이 옳은지, 그리고 실제 부산항의 역사(이 전시는 가상입니다)."],
+    ["CA02", "open_question_ko", "두 기록을 쓴 사람·시점·근거, 그리고 둘 다 틀렸을 가능성."],
+    ["CA03", "finding_ko", "윤서: “‘다음 주 초에 조금 더’라고 하면 저는 월요일에 열 상자 정도를 뜻해요.” / 하람: “같은 말도 사람마다 뜻이 다를 수 있으니, 날짜와 숫자로 다시 말해 달라고 하세요.”"],
+    ["CA03", "scope_ko", "2명(윤서·하람)과 하루의 대화. ‘월요일·열 상자 정도’는 윤서 본인에게 확인한 뜻입니다. 다른 거래처의 표현은 확인하지 않았습니다."],
+    ["CA03", "not_claimed_ko", "부산의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다."],
+    ["CA03", "open_question_ko", "‘정도’가 몇 상자까지인지, 매주 같은 양인지."],
+  ])('사용자 승인 문장 %s %s', (id, key, sentence) => {
+    const activity = activities.items.find((a) => a.id === id)!;
+    expect((activity.report_ko as Record<string, string>)[key!]).toBe(sentence);
   });
 
   it.each(['P1', '도시', '통화', '인물'])('로더는 잘못된 %s 연결을 거절한다', (field) => {
@@ -75,6 +85,32 @@ describe('자료·키·기존 판본', () => {
       if (field === '인물') a.contact_ids = ['UNKNOWN'];
       expect(() => loadScenario('SCENARIO_M2_MULTI_TRADE')).toThrow();
     } finally { Object.assign(a, before); }
+  });
+
+  it('로더는 USD 활동비를 거절한다', () => {
+    const a = activities.items[0]!, before = a.money_cost.currency;
+    try {
+      a.money_cost.currency = 'USD';
+      expect(() => loadScenario('SCENARIO_M2_MULTI_TRADE')).toThrow(/현지 활동비는 급여 통화/);
+    } finally { a.money_cost.currency = before; }
+  });
+
+  it.each([
+    ['completion_dedupe_key_template', 'company_id', '필수'],
+    ['completion_dedupe_key_template', 'actor_id', '금지'],
+    ['completion_dedupe_key_template', 'contact_id', '금지'],
+    ['actor_experience_dedupe_key_template', 'actor_id', '필수'],
+    ['actor_experience_dedupe_key_template', 'contact_id', '금지'],
+    ['relationship_dedupe_key_template', 'actor_id', '필수'],
+    ['relationship_dedupe_key_template', 'contact_id', '필수'],
+  ] as const)('로더 키 자리 %s %s %s', (field, slot, rule) => {
+    const a = activities.items[0]!, before = a[field];
+    try {
+      a[field] = rule === '필수' ? before.replace(`{${slot}}`, slot) : `${before}:{${slot}}`;
+      expect(() => loadScenario('SCENARIO_M2_MULTI_TRADE')).toThrow(/키 템플릿 자리 오류/);
+      a[field] = `${before}:actor_id:contact_id`;
+      expect(() => loadScenario('SCENARIO_M2_MULTI_TRADE')).not.toThrow();
+    } finally { a[field] = before; }
   });
 
   it('키는 여섯 자리만 채우며 모르는 자리·값 누락·깨진 괄호는 거절한다', () => {
@@ -205,6 +241,24 @@ describe('P0-CITY-02 비용·완료·중복', () => {
     expect(second.results[0]!.reasonKo).toBe('같은 활동에 오늘 이미 귀솔이(가) 갑니다. 끝난 뒤에 보낼 수 있습니다.');
     unchangedExceptCommand(first.state, second.state);
     expect(culturePreview(first.state, config, 'CA01', 'EMP02').allowed).toBe(false);
+  });
+
+  it.each(['반복', '두 번째 직원'])('자금 부족보다 %s 거절 이유가 먼저다', (which) => {
+    const s = which === '반복' ? openDay(done(), config).state : plan(fresh(), [start()]).state;
+    const spend = cashLessUnpaidMinor(s, config, 'KRW');
+    post(s.ledger, { id: 'SPEND', day: s.day, currency: 'KRW', reason: '시험 잔액 조정',
+      lines: [{ account: 'WAGE_EXPENSE', amount: spend }, { account: 'CASH', amount: -spend }] });
+    expect(cashLessUnpaidMinor(s, config, 'KRW')).toBe(0);
+    const result = plan(s, [start('CA01', which === '반복' ? 'EMP01' : 'EMP02', 'RETRY')]);
+    expect(result.results[0]).toMatchObject({ status: 'REJECTED', reasonKo: which === '반복'
+      ? '귀솔은(는) 이미 이 활동에 참여했습니다. 다시 해도 새로 생기는 기록이 없습니다.'
+      : '같은 활동에 오늘 이미 귀솔이(가) 갑니다. 끝난 뒤에 보낼 수 있습니다.' });
+    unchangedExceptCommand(s, result.state);
+  });
+
+  it.each([['CA01', '윤서와'], ['CA02', '하람과'], ['CA03', '윤서·하람과']])('%s 완료 기록의 조사', (activityId, names) => {
+    const s = done(config, [start(activityId)]);
+    expect(s.log.some((l) => l.textKo.endsWith(`${names} 함께한 활동`))).toBe(true);
   });
 
   it('다음 날 두 번째 직원은 비용·경험·관계를 쓰고 회사 보고서·출처는 늘리지 않는다', () => {
@@ -385,46 +439,170 @@ describe('직원·활동별 첫 완료 경험치', () => {
   });
 });
 
-const mutations: [string, (s: GameState) => void][] = [
-  ...(['reports', 'experiences', 'relationEvents'] as const).map((group): [string, (s: GameState) => void] => [
+type SaveMutation = [string, (s: GameState) => void, RegExp, (() => GameState)?];
+const feeOf = (s: GameState) => s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!;
+function addXp(s: GameState, key: string, employeeId = 'EMP01') {
+  s.xpAwards[key] = true;
+  s.xpAwardAmounts[key] = 10;
+  s.employees.find((e) => e.id === employeeId)!.xp += 10;
+}
+const mutations: SaveMutation[] = [
+  ...(['reports', 'experiences', 'relationEvents'] as const).map((group): SaveMutation => [
     `${group} 키 중복`, (s) => { const records = s.culture[group]; records.push(structuredClone(records[0]!) as never); },
+    /현지 활동 기록 키 중복/,
   ]),
-  ['DONE 업무 없음', (s) => { s.tasks[0]!.status = 'RUNNING'; }],
-  ['비용 누락', (s) => { s.ledger.entries = s.ledger.entries.filter((e) => !e.id.startsWith('CULTURE-FEE-')); s.ledger.postedIds = Object.fromEntries(s.ledger.entries.map((e) => [e.id, true])); }],
-  ['비용 중복', (s) => { s.ledger.entries.push(structuredClone(s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!)); }],
-  ['활동에 없는 인물', (s) => { const r = s.culture.relationEvents[0]!; r.contactId = 'NPC_GUIDE'; r.key = cultureKeys(config, config.culture!.activities[0]!, 'EMP01').relationship('NPC_GUIDE'); }],
-  ...(['reports', 'experiences', 'relationEvents'] as const).map((group): [string, (s: GameState) => void] => [
-    `${group} 키 불일치`, (s) => { s.culture[group][0]!.key += '-변조'; },
+  ['DONE 업무 없음', (s) => {
+    const r = s.culture.experiences[0]!;
+    s.culture.experiences.push({ ...r, employeeId: 'EMP02', completedTaskId: 'FORGED',
+      key: cultureKeys(config, config.culture!.activities[0]!, 'EMP02').actorExperience });
+  }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['비용 누락', (s) => {
+    const fee = feeOf(s);
+    s.ledger.entries = s.ledger.entries.filter((e) => e !== fee);
+    delete s.ledger.postedIds[fee.id];
+  }, /현지 활동비 중복 또는 누락/],
+  ['비용 중복', (s) => { s.ledger.entries.push(structuredClone(feeOf(s))); }, /현지 활동비 중복 또는 누락/],
+  ['X1 활동에 없는 인물', (s) => {
+    s.culture.relationEvents.push({ ...s.culture.relationEvents[0]!, contactId: 'NPC_GUIDE',
+      key: cultureKeys(config, config.culture!.activities[0]!, 'EMP01').relationship('NPC_GUIDE') });
+  }, /함께한 인물·기록 종류 오류/],
+  ...(['reports', 'experiences', 'relationEvents'] as const).map((group): SaveMutation => [
+    `${group} 키 불일치`, (s) => {
+      const records = s.culture[group];
+      records.push({ ...records[0]!, key: records[0]!.key + '-변조' } as never);
+    }, /다시 만든 기록 키와 다름/,
   ]),
-  ['보고 날짜', (s) => { s.culture.reports[0]!.day++; }],
-  ['경험 날짜', (s) => { s.culture.experiences[0]!.verifiedDay++; }],
-  ['관계 날짜', (s) => { s.culture.relationEvents[0]!.day++; }],
-  ['첫 XP 누락', (s) => { delete s.xpAwards[xpKey()]; delete s.xpAwardAmounts[xpKey()]; s.employees[0]!.xp -= 10; }],
-  ['첫 XP 중복 별칭', (s) => { const key = `${xpKey()}|중복`; s.xpAwards[key] = true; s.xpAwardAmounts[key] = 10; s.employees[0]!.xp += 10; }],
-  ['업무 ID 첫 XP', (s) => { const key = `EMP01|CULTURE-FIRST-${s.tasks[0]!.id}|CULTURE_FIRST_XP`; delete s.xpAwards[xpKey()]; delete s.xpAwardAmounts[xpKey()]; s.xpAwards[key] = true; s.xpAwardAmounts[key] = 10; }],
-  ['일반 TASK-DONE 보상', (s) => { const key = `EMP01|TASK-DONE-${s.tasks[0]!.id}|TASK_COMPLETION_XP`; s.xpAwards[key] = true; s.xpAwardAmounts[key] = 10; s.employees[0]!.xp += 10; }],
-  ['금액', (s) => { s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!.lines.forEach((l) => l.amount *= 2); }],
-  ['통화', (s) => { s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!.currency = 'USD'; }],
-  ['업무 없는 비용', (s) => { const fee = s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!; delete s.ledger.postedIds[fee.id]; fee.id = 'ORPHAN'; s.ledger.postedIds[fee.id] = true; }],
-  ['훈련비 재사용', (s) => { s.ledger.entries.find((e) => e.id.startsWith('CULTURE-FEE-'))!.lines[0]!.account = 'TRAINING_EXPENSE'; }],
-  ['활동 도시', (s) => { s.tasks[0]!.cityId = 'SHANGHAI'; }],
-  ['기간', (s) => { s.tasks[0]!.requiredWorkUnits = 2; }],
-  ['계약 연결', (s) => { s.tasks[0]!.contractId = 'CT001'; }],
-  ['보고 출처', (s) => { s.culture.reports[0]!.sourceContactIds = ['NPC_GUIDE']; }],
-  ['경험 국가', (s) => { s.culture.experiences[0]!.countryCode = 'CN'; }],
-  ['담당자', (s) => { s.culture.experiences[0]!.employeeId = 'EMP02'; }],
-  ['같은 직원·활동 업무 중복', (s) => { s.tasks.push({ ...s.tasks[0]!, id: 'DUPLICATE-TASK' }); }],
+  ['보고 날짜', (s) => { s.culture.reports[0]!.day++; }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['경험 날짜', (s) => { s.culture.experiences[0]!.verifiedDay++; }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['관계 날짜', (s) => { s.culture.relationEvents[0]!.day++; }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['첫 XP 누락', (s) => { delete s.xpAwards[xpKey()]; delete s.xpAwardAmounts[xpKey()]; s.employees[0]!.xp -= 10; },
+    /CULTURE-FIRST 경험치 누락·금액 오류/],
+  ['업무 ID 첫 XP', (s) => { addXp(s, `EMP01|CULTURE-FIRST-${s.tasks[0]!.id}|CULTURE_FIRST_XP`); }, /CULTURE-FIRST 경험치 근거 오류/],
+  ['일반 TASK-DONE 보상', (s) => { addXp(s, `EMP01|TASK-DONE-${s.tasks[0]!.id}|TASK_COMPLETION_XP`); }, /문화 업무 일반 완료 경험치 금지/],
+  ['금액', (s) => { feeOf(s).lines.forEach((l) => l.amount *= 2); }, /현지 활동비 통화·금액·계정 오류/],
+  ['통화', (s) => { feeOf(s).currency = 'USD'; }, /현지 활동비 통화·금액·계정 오류/],
+  ['X4 업무 없는 비용', (s) => { post(s.ledger, { ...structuredClone(feeOf(s)), id: 'ORPHAN' }); }, /현지 활동 업무 없는 비용/],
+  ['훈련비 재사용', (s) => { feeOf(s).lines[0]!.account = 'TRAINING_EXPENSE'; }, /현지 활동비 통화·금액·계정 오류/],
+  ['활동 도시', (s) => { s.tasks[0]!.cityId = 'SHANGHAI'; }, /현지 활동 업무 정의 불일치/],
+  ['기간', (s) => { s.tasks[0]!.requiredWorkUnits = 2; }, /현지 활동 업무 정의 불일치/, () => plan(fresh(), [start()]).state],
+  ['계약 연결', (s) => { s.tasks[0]!.contractId = 'CT001'; }, /현지 활동 업무 정의 불일치/],
+  ['보고 출처', (s) => { s.culture.reports[0]!.sourceContactIds = ['NPC_GUIDE']; }, /보고서 출처·상태 오류/],
+  ['경험 국가', (s) => { s.culture.experiences[0]!.countryCode = 'CN'; }, /경험 국가 불일치/],
+  ['X2 활동하지 않은 담당자', (s) => {
+    s.culture.experiences.push({ ...s.culture.experiences[0]!, employeeId: 'EMP02', completedTaskId: 'FORGED',
+      key: cultureKeys(config, config.culture!.activities[0]!, 'EMP02').actorExperience });
+  }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['X3 다른 직원의 첫 XP', (s) => { addXp(s, xpKey('CA01', 'EMP02'), 'EMP02'); }, /CULTURE-FIRST 경험치 근거 오류/],
+  ['X5 같은 직원·활동 업무 중복', (s) => {
+    const task = { ...s.tasks[0]!, id: 'DUPLICATE-TASK', status: 'RUNNING' as const,
+      startedDay: s.day, completedDay: null, progressWorkUnits: 0 };
+    s.tasks.push(task);
+    post(s.ledger, { ...structuredClone(feeOf(s)), id: `CULTURE-FEE-${task.id}`, day: s.day });
+  }, /직원·활동 업무 중복/],
+  ['X6 보고 주제', (s) => { s.culture.reports[0]!.topicId = 'FORGED'; }, /주제 불일치/],
+  ['X7 활동비 날짜', (s) => { feeOf(s).day++; }, /현지 활동비 통화·금액·계정 오류/],
+  ['X8 완료일 계산', (s) => {
+    s.tasks[0]!.completedDay = s.tasks[0]!.completedDay! + 1;
+    s.culture.reports[0]!.day++;
+    s.culture.experiences[0]!.verifiedDay++;
+    s.culture.relationEvents[0]!.day++;
+  }, /현지 활동 완료일·진행 오류/],
+  ['내용 판본', (s) => {
+    const r = s.culture.reports[0]!;
+    r.contentRevision = '2';
+    r.key = cultureKey(config.culture!.activities[0]!.keyTemplates.companyReport, {
+      company_id: config.culture!.companyId, activity_id: r.activityId, city_id: r.cityId, content_revision: r.contentRevision });
+    // 기존 완료 업무의 보고서는 보존해 판본 대조만 실패하게 한다.
+    s.culture.reports.unshift(done().culture.reports[0]!);
+  }, /기록 도시·내용 판본 불일치/],
+  ...(['reports', 'experiences', 'relationEvents'] as const).map((group): SaveMutation => [
+    `${group} 완료 기록 누락`, (s) => { s.culture[group] = []; },
+    group === 'reports' ? /회사 보고서 누락/ : group === 'experiences' ? /직접 경험 누락·중복/ : /함께한 활동 누락·중복/,
+  ]),
 ];
 describe('변조 저장', () => {
-  it.each(mutations)('%s은 SaveError로 거절한다', (_name, mutate) => {
-    const s = done();
+  it.each(mutations)('%s은 SaveError로 거절한다', (name, mutate, message, setup = done) => {
+    const s = setup();
+    expect(reload(s)).toEqual(s);
     mutate(s);
+    if (name.startsWith('X')) expect(cultureProblems(s, config)).toEqual([expect.stringMatching(message)]);
     expect(() => reload(s)).toThrow(SaveError);
+    expect(() => reload(s)).toThrow(message);
+  });
+
+  it('첫 XP 중복 별칭은 지급 키 형식으로 거절한다', () => {
+    const s = done();
+    addXp(s, `${xpKey()}|중복`);
+    expect(() => reload(s)).toThrow(SaveError);
+    expect(() => reload(s)).toThrow(/경험치 지급 기록 오류/);
   });
 
   it('문화 비활성 설정은 업무·기록·비용을 모두 거절한다', () => {
     const cfg = { ...config, culture: null };
     for (const s of [done(), plan(fresh(), [start()]).state]) expect(() => reload(s, cfg)).toThrow(SaveError);
+  });
+});
+
+describe('진행 중 문화 업무 저장', () => {
+  it.each(['QUEUED', 'ABORTED'] as const)('%s 문화 업무를 거절한다', (status) => {
+    const s = plan(fresh(), [start()]).state;
+    s.tasks[0]!.status = status;
+    expect(() => reload(s)).toThrow(SaveError);
+    expect(() => reload(s)).toThrow(/현지 활동 업무 상태 오류/);
+  });
+
+  it('실제 1일 활동의 다섯 필드를 고친 진행 업무를 거절한다', () => {
+    const s = plan(openDay(done(config, []), config).state, [start()]).state;
+    expect(reload(s)).toEqual(s);
+    const task = s.tasks[0]!, fee = feeOf(s), oldFeeId = fee.id;
+    // 실제 1일 활동을 전날 시작한 것처럼 다섯 필드를 바꾸되 비용 연결은 보존한다.
+    task.id = task.id.replace('-D2', '-D1');
+    task.startedDay = 1;
+    fee.id = `CULTURE-FEE-${task.id}`;
+    fee.day = 1;
+    s.ledger.postedIds = Object.fromEntries(Object.keys(s.ledger.postedIds).map((id) => [id === oldFeeId ? fee.id : id, true]));
+    expect(() => reload(s)).toThrow(SaveError);
+    expect(() => reload(s)).toThrow(/진행 중 현지 활동 경과일·진행량 오류/);
+  });
+
+  it('합성 2일 활동은 진행량만 과거로 되돌려도 거절한다', () => {
+    const cfg = structuredClone(config);
+    cfg.culture!.activities[0]!.durationDays = 2;
+    const s = done(cfg);
+    expect(reload(s, cfg)).toEqual(s);
+    s.tasks[0]!.progressWorkUnits = 0;
+    expect(() => reload(s, cfg)).toThrow(SaveError);
+    expect(() => reload(s, cfg)).toThrow(/진행 중 현지 활동 경과일·진행량 오류/);
+  });
+
+  it.each(['완료일', '미래 시작', '완료 진행량', '경과일 상한'] as const)('진행 업무의 %s 변조를 거절한다', (field) => {
+    const cfg = structuredClone(config);
+    cfg.culture!.activities[0]!.durationDays = 3;
+    const s = plan(fresh(cfg), [start()], cfg).state, task = s.tasks[0]!;
+    if (field === '완료일') task.completedDay = 1;
+    if (field === '미래 시작') { task.startedDay = 2; feeOf(s).day = 2; }
+    if (field === '완료 진행량') task.progressWorkUnits = 3;
+    if (field === '경과일 상한') task.progressWorkUnits = 2;
+    expect(() => reload(s, cfg)).toThrow(SaveError);
+    expect(() => reload(s, cfg)).toThrow(field === '경과일 상한'
+      ? /진행 중 현지 활동 경과일·진행량 오류/ : /진행 중 현지 활동 날짜·미완료 오류/);
+  });
+
+  it.each(['PENDING_OPEN', 'AWAITING_INPUT', 'ENDED'] as const)('%s 불러오기 하한과 하루 마감 상한을 허용한다', (phase) => {
+    const cfg = structuredClone(config);
+    cfg.culture!.activities[0]!.durationDays = 3;
+    if (phase === 'ENDED') cfg.campaignDays = 1;
+    let s = done(cfg);
+    if (phase === 'AWAITING_INPUT') s = openDay(s, cfg).state;
+    expect(s.phase).toBe(phase);
+    expect(s.tasks[0]!.progressWorkUnits).toBe(s.day - s.tasks[0]!.startedDay!);
+    expect(reload(s, cfg)).toEqual(s);
+    // 실제 마감 검사는 날짜를 올리기 전, 오늘의 진행량을 반영한 시점이다.
+    const duringClose = structuredClone(s);
+    duringClose.day--;
+    duringClose.phase = 'AWAITING_INPUT';
+    expect(duringClose.tasks[0]!.progressWorkUnits).toBe(duringClose.day - duringClose.tasks[0]!.startedDay! + 1);
+    expect(() => checkInvariants(duringClose, cfg)).not.toThrow();
   });
 });
 

@@ -24,11 +24,19 @@ export function cultureProblems(s: GameState, config: ScenarioConfig): string[] 
     const activity = culture.activities.find((a) => a.id === task.subjectId);
     check(!!activity, `${task.id}: 현지 활동 정의 없음`);
     if (!activity) continue;
+    check(task.status === 'RUNNING' || task.status === 'DONE', `${task.id}: 현지 활동 업무 상태 오류`);
     check(task.cityId === activity.cityId && task.requiredWorkUnits === activity.durationDays && task.contractId === null,
       `${task.id}: 현지 활동 업무 정의 불일치`);
     check(task.assignedEmployeeId !== null && task.startedDay !== null && task.startedDay >= 1
       && task.progressWorkUnits >= 0 && task.progressWorkUnits <= task.requiredWorkUnits,
     `${task.id}: 현지 활동 배정·진행 오류`);
+    if (task.status === 'RUNNING') {
+      check(task.completedDay === null && task.startedDay !== null && task.startedDay <= s.day
+        && task.progressWorkUnits < task.requiredWorkUnits, `${task.id}: 진행 중 현지 활동 날짜·미완료 오류`);
+      // 불러오기 때는 경과일만큼, 하루 마감 중에는 오늘 진행한 1일까지 허용한다.
+      check(task.startedDay !== null && s.day - task.startedDay <= task.progressWorkUnits
+        && task.progressWorkUnits <= s.day - task.startedDay + 1, `${task.id}: 진행 중 현지 활동 경과일·진행량 오류`);
+    }
     if (task.status === 'DONE') check(task.completedDay !== null && task.startedDay !== null
       && task.completedDay === task.startedDay + activity.durationDays - 1 && task.completedDay <= s.day
       && task.progressWorkUnits === task.requiredWorkUnits, `${task.id}: 현지 활동 완료일·진행 오류`);

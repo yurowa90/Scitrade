@@ -333,6 +333,19 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
       if (!(s.city_ids as string[]).includes(a.city_id)) throw new Error(`${activityId}: 시나리오에 없는 도시입니다.`);
       const currency = a.money_cost.currency as Currency;
       if (startingCash[currency] === undefined) throw new Error(`${activityId}: 시작 자금에 활동 통화가 없습니다.`);
+      if (currency !== str(cfg, 'reporting_currency')) throw new Error(`${activityId}: 현지 활동비는 급여 통화(KRW)로 내야 합니다.`);
+      const known = ['company_id', 'actor_id', 'contact_id', 'activity_id', 'city_id', 'content_revision'];
+      for (const [template, required, forbidden] of [
+        [a.completion_dedupe_key_template, ['company_id'], ['actor_id', 'contact_id']],
+        [a.actor_experience_dedupe_key_template, ['actor_id'], ['contact_id']],
+        [a.relationship_dedupe_key_template, ['actor_id', 'contact_id'], []],
+      ] as const) {
+        const slots = [...template.matchAll(/\{([^{}]*)\}/g)].map((match) => match[1]!);
+        if (/[{}]/.test(template.replace(/\{[^{}]*\}/g, '')) || slots.some((slot) => !known.includes(slot))
+          || required.some((slot) => !slots.includes(slot)) || forbidden.some((slot) => slots.includes(slot))) {
+          throw new Error(`${activityId}: 현지 활동 키 템플릿 자리 오류 (${template}).`);
+        }
+      }
       for (const contactId of a.contact_ids) findById(contacts, contactId);
       const report = 'report_ko' in a ? a.report_ko : null;
       return { id: a.id, titleKo: a.title_ko, cityId: a.city_id, venueId: a.venue_id,

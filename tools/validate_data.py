@@ -2,7 +2,7 @@
 """Validate bundled data and arithmetic references, not an unimplemented game engine.
 
 Standard-library validator for the JSON Schema keywords used by this bundle:
-type, required, properties, items, enum, minimum, maximum, additionalProperties.
+type, required, properties, items, enum, minimum, maximum, minItems, uniqueItems, additionalProperties.
 The schema files can also be used with a complete Draft 2020-12 validator.
 """
 from pathlib import Path
@@ -11,6 +11,7 @@ import hashlib
 import json
 import sys
 import re
+import unicodedata
 
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS = []
@@ -121,6 +122,11 @@ def shape(value, schema, path):
                 shape(item, schema['properties'][key], f'{path}/{key}')
             elif schema.get('additionalProperties') is False:
                 check(False, f'{path}: unexpected {key}')
+    if isinstance(value, list):
+        if 'minItems' in schema:
+            check(len(value) >= schema['minItems'], f'{path}: minItems')
+        if schema.get('uniqueItems'):
+            check(all(item not in value[:i] for i, item in enumerate(value)), f'{path}: uniqueItems')
     if isinstance(value, list) and 'items' in schema:
         for index, item in enumerate(value):
             shape(item, schema['items'], f'{path}/{index}')
@@ -152,13 +158,16 @@ def sailing_day(route, sailing_id):
     return day
 
 
-def check_culture(tables, cases):
+def check_culture(tables, cases, payroll_currency):
     """활동의 장소·인물·비용·출처 범위와 엔진 인수 명세 연결을 확인한다."""
     scenario = tables['scenarios']['SCENARIO_M2_MULTI_TRADE']
     block = scenario.get('culture')
     check(scenario.get('culture_enabled') is True and isinstance(block, dict), 'M2 문화 활동 블록·활성화 필요')
     ids = block.get('activity_ids', []) if isinstance(block, dict) else []
     check(ids == ['CA01', 'CA02', 'CA03'], 'M2 문화 활동은 CA01~03 순서')
+    for item in tables['scenarios'].values():
+        if 'culture' in item:
+            check(item.get('culture_enabled') is True, item['id'] + ': culture 블록은 culture_enabled 필요')
     known = {'company_id', 'actor_id', 'contact_id', 'activity_id', 'city_id', 'content_revision'}
     for activity in tables['culture_activities'].values():
         aid = activity['id']
@@ -167,9 +176,15 @@ def check_culture(tables, cases):
         check(aid in venue.get('activity_ids', []), aid + ': 장소 역방향 활동 연결 누락')
         for cid in activity.get('contact_ids', []):
             check(aid in tables['contacts'].get(cid, {}).get('activity_ids', []), aid + ': 인물 역방향 활동 연결 누락')
-        for field in ('completion_dedupe_key_template', 'actor_experience_dedupe_key_template', 'relationship_dedupe_key_template'):
+        check(activity.get('money_cost', {}).get('currency') == payroll_currency, aid + ': 현지 활동비는 급여 통화(KRW) 필요')
+        for field, required, forbidden in (
+            ('completion_dedupe_key_template', {'company_id'}, {'actor_id', 'contact_id'}),
+            ('actor_experience_dedupe_key_template', {'actor_id'}, {'contact_id'}),
+            ('relationship_dedupe_key_template', {'actor_id', 'contact_id'}, set()),
+        ):
             template = activity.get(field, '')
             slots = re.findall(r'\{([^{}]*)\}', template)
+            check(required <= set(slots) and not (forbidden & set(slots)), aid + ': ' + field + ' 필수·금지 키 자리 오류')
             residue = re.sub(r'\{[^{}]*\}', '', template)
             check(bool(slots) and set(slots) <= known and not re.search(r'[{}]', residue), aid + ': 알 수 없는 키 자리')
     for aid in ids:
@@ -188,8 +203,9 @@ def check_culture(tables, cases):
             check(isinstance(report.get(field), str) and bool(report[field].strip()), aid + ': report_ko.' + field + ' 필요')
         finding = report.get('finding_ko', '')
         if isinstance(finding, str):
+            finding = unicodedata.normalize('NFC', finding)
             for word in ('부산 사람', '부산 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
-                check(word not in finding, aid + ': finding_ko 일반화 금지어 ' + word)
+                check(re.search(r'\s*'.join(map(re.escape, word.split(' '))), finding) is None, aid + ': finding_ko 일반화 금지어 ' + word)
     case_map = {c['id']: c for c in cases}
     mapping = {'ACT_A': 'CA01', 'CONTACT_A': 'NPC_MARKET', 'CONTACT_B': 'NPC_GUIDE',
                'EMPLOYEE_A': 'EMP01', 'EMPLOYEE_B': 'EMP02', 'CITY_HOME': 'BUSAN', 'CITY_REMOTE': 'SHANGHAI'}
@@ -554,9 +570,6 @@ def main():
         check(activity['duration_days'] >= 1, activity['id'] + ': real activity consumes time')
         check(activity['money_cost']['amount'] >= 0, activity['id'] + ': cost')
         check(activity['eligibility']['actor_must_be_in_city'], activity['id'] + ': location required')
-        check('company_id' in activity['completion_dedupe_key_template'], activity['id'] + ': company duplicate guard')
-        check('actor_id' in activity['actor_experience_dedupe_key_template'], activity['id'] + ': actor duplicate guard')
-        check('contact_id' in activity['relationship_dedupe_key_template'], activity['id'] + ': relation duplicate guard')
         for effect in activity['effects']:
             check(effect['type'] in {'UNLOCK_KNOWLEDGE','UNLOCK_CONTACT_FOLLOWUP'},
                   activity['id'] + ': unexpected blanket buff')
@@ -598,7 +611,7 @@ def main():
 
     acceptance = read('tests/acceptance_cases.json')
     cases = acceptance['cases']
-    check_culture(tables, cases)
+    check_culture(tables, cases, config['reporting_currency'])
     summary = acceptance['review_summary']
     check(summary['case_count'] == len(cases), 'review_summary case_count matches cases')
     counts = {phase: sum(c['phase'] == phase for c in cases) for phase in ('P0', 'P1', 'P2')}

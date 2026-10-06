@@ -737,7 +737,10 @@
             ],
             "properties": {
               "data_basis": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "DESIGN"
+                ]
               },
               "status": {
                 "type": "string"
@@ -749,7 +752,9 @@
                 "type": "array",
                 "items": {
                   "type": "string"
-                }
+                },
+                "minItems": 1,
+                "uniqueItems": true
               }
             },
             "additionalProperties": false

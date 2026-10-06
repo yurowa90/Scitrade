@@ -2,6 +2,7 @@
 import copy
 import json
 import unittest
+import unicodedata
 from pathlib import Path
 import validate_data as validator
 
@@ -52,7 +53,7 @@ class CultureReportsTest(unittest.TestCase):
 
     def errors(self, tables, cases):
         validator.ERRORS.clear()
-        validator.check_culture(tables, cases)
+        validator.check_culture(tables, cases, json.loads((validator.ROOT / 'data/game_config.json').read_text())['config']['reporting_currency'])
         return list(validator.ERRORS)
 
     def test_generalization_finding_rejected(self):
@@ -61,6 +62,66 @@ class CultureReportsTest(unittest.TestCase):
                 tables, cases = self.fixtures()
                 tables['culture_activities']['CA01']['report_ko']['finding_ko'] = word + ' 모두 그렇다.'
                 self.assertTrue(any('일반화 금지어' in e for e in self.errors(tables, cases)))
+
+    def test_generalization_spacing_and_normalization(self):
+        for finding in ('부산사람들은 모두 그렇다.', '부산\t사람들은 모두 그렇다.',
+                        '부산\n  시민들은 모두 그렇다.', unicodedata.normalize('NFD', '부산사람들은 모두 그렇다.')):
+            with self.subTest(finding=finding):
+                tables, cases = self.fixtures()
+                tables['culture_activities']['CA01']['report_ko']['finding_ko'] = finding
+                self.assertTrue(any('일반화 금지어' in e for e in self.errors(tables, cases)))
+
+    def test_korean_doll_is_not_generalization(self):
+        tables, cases = self.fixtures()
+        tables['culture_activities']['CA01']['report_ko']['finding_ko'] = '한국 인형을 들여왔어요'
+        self.assertEqual(self.errors(tables, cases), [])
+
+    def test_key_template_slots(self):
+        for field, required, forbidden in (
+            ('completion_dedupe_key_template', ('company_id',), ('actor_id', 'contact_id')),
+            ('actor_experience_dedupe_key_template', ('actor_id',), ('contact_id',)),
+            ('relationship_dedupe_key_template', ('actor_id', 'contact_id'), ()),
+        ):
+            for slot in required + forbidden:
+                with self.subTest(field=field, slot=slot):
+                    tables, cases = self.fixtures()
+                    activity = tables['culture_activities']['CA01']
+                    if slot in required:
+                        activity[field] = activity[field].replace('{' + slot + '}', slot)
+                    else:
+                        activity[field] += ':{' + slot + '}'
+                    self.assertIn('CA01: ' + field + ' 필수·금지 키 자리 오류', self.errors(tables, cases))
+            # 자리 밖의 글자는 필드가 아니므로 금지하지 않는다.
+            tables, cases = self.fixtures()
+            tables['culture_activities']['CA01'][field] += ':actor_id:contact_id'
+            self.assertEqual(self.errors(tables, cases), [])
+
+    def test_activity_fee_requires_payroll_currency(self):
+        tables, cases = self.fixtures()
+        tables['culture_activities']['CA01']['money_cost']['currency'] = 'USD'
+        self.assertIn('CA01: 현지 활동비는 급여 통화(KRW) 필요', self.errors(tables, cases))
+
+    def test_culture_schema_constraints(self):
+        schema = json.loads((validator.ROOT / 'schemas/scenarios.schema.json').read_text())['properties']['items']['items']['properties']['culture']
+        for field, value, error in (('data_basis', 'OBSERVED', 'enum'),
+                                    ('activity_ids', [], 'minItems'),
+                                    ('activity_ids', ['CA01', 'CA01'], 'uniqueItems')):
+            with self.subTest(field=field, value=value):
+                tables, _ = self.fixtures()
+                block = tables['scenarios']['SCENARIO_M2_MULTI_TRADE']['culture']
+                block[field] = value
+                validator.ERRORS.clear()
+                validator.shape(block, schema, 'culture')
+                self.assertIn('culture/' + field + ': ' + error, validator.ERRORS)
+
+    def test_any_culture_block_requires_enabled(self):
+        for enabled in (False, None):
+            with self.subTest(enabled=enabled):
+                tables, cases = self.fixtures()
+                scenario = tables['scenarios']['SCENARIO_M1_ONE_TRADE']
+                scenario['culture'] = copy.deepcopy(tables['scenarios']['SCENARIO_M2_MULTI_TRADE']['culture'])
+                scenario['culture_enabled'] = enabled
+                self.assertIn(scenario['id'] + ': culture 블록은 culture_enabled 필요', self.errors(tables, cases))
 
     def test_generalization_denial_allowed(self):
         tables, cases = self.fixtures()

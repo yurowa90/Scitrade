@@ -321,6 +321,11 @@
       "sha256": "6744323010df62ba70f6156dd858914451440936ba757f9026eaad6afba0d259"
     },
     {
+      "path": "docs/ai/tasks/TASK-0011-R1-culture-hardening.md",
+      "size_bytes": 7615,
+      "sha256": "88345686f74a8456539543d5249d6f528ad182c1ab40b0b057644efab5ac90ba"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0011-culture-engine.md",
       "size_bytes": 22660,
       "sha256": "cf727eb3cee8f0614edbc54bf23ccdbea7aa1a2c1c6e6a5f5d6ed1b500fafa50"
@@ -382,8 +387,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0011.md",
-      "size_bytes": 13691,
-      "sha256": "0806fb1a43d1859b33b6fc1f1583b13b089ca74d210e21ef36bd7a38e7d039fa"
+      "size_bytes": 28671,
+      "sha256": "aebb914140e569ac312c8303e1756efad5c0f27ed512d4fb3d0695b984fff46f"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0013.md",
@@ -607,8 +612,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 21254,
-      "sha256": "97f07b0669ad00041b86b476dfaf33f7ce3232d6fe7268dec6a0d99e0178cc7c"
+      "size_bytes": 21394,
+      "sha256": "20a206e81d770d478a2c61becf15d054a6feee790ef6d74323ce6f9305607ecb"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -642,8 +647,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 38977,
-      "sha256": "27a33a3b9d6f9e16f8c4403dbf565e41cdad1620e1cf30d90daaf2538c799239"
+      "size_bytes": 39613,
+      "sha256": "3a5c3807f8b80f24393beb34191f966f7fbbf50d4633b65891d9f0e3f3ff07cf"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -692,13 +697,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 4036,
-      "sha256": "c88efdc5e64e1e019b8ac5134c725efead18ac47565ba8c588c04a31f0a81292"
+      "size_bytes": 7860,
+      "sha256": "49e79b0b14c4021c011009819613619127eb79b8eca452e8bc1c859a534136dd"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 45933,
-      "sha256": "92a6b0a17234e1c2e28b4443927c463a6fbe791bd4984c563f7316afc0b7fd9d"
+      "size_bytes": 46694,
+      "sha256": "fdb8485d1c30ce897683541d9741834b129d5b94daf83243b3b6d7c8ac8db56a"
     }
   ]
 }
