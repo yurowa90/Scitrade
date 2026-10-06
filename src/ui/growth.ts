@@ -56,7 +56,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
     <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
     ${training ? trainingQueued
       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
-      : `<p>일반 훈련 중 ${training.progressWorkUnits}/${training.requiredWorkUnits}일</p>`
+      : ''
       : preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
   </div>`;
 }

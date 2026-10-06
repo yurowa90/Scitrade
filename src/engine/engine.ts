@@ -236,11 +236,11 @@ function withPlan(
   const contract = trial.contracts[trial.contracts.length - 1]!;
   if (plan.employeeId) {
     const r = assignTask(trial, config, contract.prepTaskId, plan.employeeId);
-    if (r) return `일괄 확정을 철회했습니다 — 준비 배정 불가: ${r}`;
+    if (r) return `한 번에 확정할 수 없습니다 — 준비 배정 불가: ${r} 견적도 수락하지 않습니다.`;
   }
   if (plan.sailingId) {
     const r = bookSailing(trial, config, contract.id, plan.sailingId);
-    if (r) return `일괄 확정을 철회했습니다 — 운송편 예약 불가: ${r}`;
+    if (r) return `한 번에 확정할 수 없습니다 — 운송편 예약 불가: ${r} 견적도 수락하지 않습니다.`;
   }
   Object.assign(s, trial);
   return null;
@@ -1012,7 +1012,7 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
       receiptIds: [],
     });
     contract.invoiceId = invoiceId;
-    log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}은 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
+    log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}는 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
   }
 }
 

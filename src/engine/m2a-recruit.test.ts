@@ -69,7 +69,7 @@ describe('P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들�
     expect(runningTaskOf(p.state, 'EMP02')!.kind).toBe('SCOUT');
     expect(planCommands(s, config, commands)).toEqual(p.results);
     const atomic = plan(s, [scout(), trade('EMP02')]);
-    expect(atomic.results[1]!.reasonKo).toContain('일괄 확정을 철회');
+    expect(atomic.results[1]!.reasonKo).toContain('한 번에 확정할 수 없습니다 — 준비 배정 불가:');
     expect(atomic.state.contracts).toEqual([]);
     expect(plan(until(1), [scout('DONE')]).results[0]!.reasonKo).toContain('이미 조사');
     checkInvariants(p.state, config);

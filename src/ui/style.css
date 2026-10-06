@@ -60,6 +60,9 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
   border-bottom: 1.5px solid var(--line);
   backdrop-filter: blur(6px);
 }
+.topbar > * { min-width: 0; max-width: 100%; }
+.topbar select { max-width: 100%; }
+.amount-basis { font-size: .7rem; color: var(--navy-soft); }
 .brand { display: flex; flex-direction: column; line-height: 1.1; }
 .logo { font-size: 1.35rem; font-weight: 700; color: var(--mint-deep); }
 .sub { font-size: .75rem; color: var(--navy-soft); }

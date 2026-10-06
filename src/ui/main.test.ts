@@ -17,6 +17,91 @@ const growthNotice = (html:string) => html.match(/<div class="growth-notices"([^
 const crewNote = (html:string) => html.match(/<p class="muted small">((?:레벨·능력은|처리량은 고정값)[\s\S]*?)<\/p>/)?.[1] ?? '';
 const employeeSection = (html:string) => html.split('<section class="employee-detail"')[1]!.split('</section>')[0]!;
 
+describe('TASK-0013 실제 화면 표시', () => {
+  it('수금일 전날·당일과 도착 전후를 표시한다', async () => {
+    const ui = await startUi();
+    ui.click({ action: 'accept', buy: 'OFFER_BUY_02', sell: 'OFFER_SELL_02' });
+    ui.click({ action: 'assign', emp: 'EMP01' });
+    ui.click({ action: 'book', contract: 'CT001', sailing: 'ROUTE02-D002' });
+    for (let day = 1; day < 6; day++) ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('<dt>운송</dt><dd>SH001 · 2일 출항 · 도착 6일 예정</dd>');
+    ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('<dt>운송</dt><dd>SH001 · 2일 출항 · 도착 6일</dd>');
+    for (let day = 7; day < 11; day++) ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('<b>11일</b>');
+    expect(ui.app.innerHTML).toContain('12일 수금 대기');
+    expect(ui.app.innerHTML).toContain('인도는 끝났고 12일에 2,500.00 USD를 받습니다. 그때까지 현금은 들어오지 않습니다.');
+    ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('<b>12일</b>');
+    expect(ui.app.innerHTML).toContain('오늘 수금 예정 — 하루 진행 때 받습니다');
+    expect(ui.app.innerHTML).toContain('인도는 끝났고 오늘 하루 진행 때 2,500.00 USD를 받습니다.');
+    expect(ui.app.innerHTML).not.toContain('12일 수금 대기');
+    ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('CT001 대금 2,500.00 USD 수금. 계약 종결');
+  });
+
+  it('금액 기준 안내는 위쪽 막대에 한 번 나오고 오늘 대기 명령을 금액에 반영하지 않는다', async () => {
+    const ui = await startUi();
+    const header = () => ui.app.innerHTML.match(/<header class="topbar">([\s\S]*?)<\/header>/)![1]!;
+    const original = header();
+    const queue = () => ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
+    const note = '위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.';
+    expect(original).toContain('<small class="amount-basis">금액은 확정 기준</small>');
+    expect(queue()).not.toContain(note);
+    ui.click({ action: 'accept', buy: 'OFFER_BUY_02', sell: 'OFFER_SELL_02' });
+    expect(header()).toBe(original);
+    expect(queue()).toContain(note);
+    expect(ui.app.innerHTML.match(/금액은 확정 기준/g)).toHaveLength(2);
+    const resources = ui.app.innerHTML.split('<section class="panel resources"')[1]!.split('</section>')[0]!;
+    expect(header()).toContain('<b>3,000.00 USD</b>');
+    expect(resources).toContain('<th>현금</th><td>1,000.00 USD</td>');
+    ui.click({ action: 'end-day' });
+    expect(header()).toContain('<b>1,000.00 USD</b>');
+    expect(header()).not.toContain('<b>3,000.00 USD</b>');
+  });
+
+  it('첫 편의 선복 부족은 계약 안내와 한 번에 확정 미리 보기에 나온다', async () => {
+    const ui = await startUi();
+    ui.click({ action: 'accept-fwd', offer: 'OFFER_FWD_01' });
+    ui.click({ action: 'assign', emp: 'EMP01' });
+    ui.click({ action: 'book', contract: 'CT001', sailing: 'ROUTE01-D002' });
+    const preview = ui.app.innerHTML.match(/<p class="reason">(한 번에 확정할 수 없습니다 — 운송편 예약 불가:[\s\S]*?)<\/p>/)![1]!;
+    expect(preview).toContain('견적도 수락하지 않습니다.');
+    expect(preview).not.toContain('철회했습니다');
+    expect(ui.rendered({ action: 'accept-plan', key: 'OFFER_FWD_02' }).disabled).toBe(true);
+    ui.click({ action: 'accept-fwd', offer: 'OFFER_FWD_02' });
+    expect(ui.app.innerHTML).toContain('운송편을 예약하지 않았습니다. 2일 편은 선복이 부족합니다. 실을 수 있는 첫 출항은 9일이고 예약 마감은 8일입니다.');
+  });
+
+  it('발견·의뢰 중 후보는 일급과 설정 일수의 계약금 금액을 보이고 면담에서도 같은 금액이다', async () => {
+    const cfg = structuredClone(config); cfg.recruitment!.signingFeeWageDays = 7;
+    const ui = await startUi(cfg);
+    ui.change({ action: 'recruit-emp', key: 'VEN_PORT' }, 'EMP02');
+    ui.click({ action: 'scout', venue: 'VEN_PORT', emp: 'EMP02' });
+    ui.click({ action: 'end-day' });
+    const candidateParts = () => [
+      ui.app.innerHTML.match(/<article class="card [^"]*"[^>]*data-emp="EMP04"[\s\S]*?<\/article>/)![0]!,
+      ui.app.innerHTML.match(/<article class="recruit-candidate"><h4 id="candidate-h-EMP04"[\s\S]*?<\/article>/)![0]!,
+      ui.app.innerHTML.match(/<tr[^>]*data-emp="EMP04"[\s\S]*?<\/tr>/)![0]!,
+    ];
+    for (const stage of ['발견', '의뢰 진행 중']) {
+      const parts = candidateParts();
+      expect(parts[0]).toContain(stage);
+      for (const part of parts) expect(part).toContain('110,000원');
+      for (const card of parts.slice(0, 2)) {
+        expect(card).toContain('고용하면 계약금 770,000원(일급 110,000원 × 7일)을 한 번 냅니다. 고용 여부는 면담 뒤에 정합니다.');
+      }
+      if (stage === '발견') ui.click({ action: 'recruit-quest', candidate: 'EMP04', emp: 'EMP01' });
+    }
+    ui.click({ action: 'end-day' }); ui.click({ action: 'end-day' });
+    ui.click({ action: 'interview', candidate: 'EMP04' });
+    const interview = candidateParts()[1]!;
+    expect(interview).toContain('<dt>계약금 (일급×7)</dt><dd>770,000원</dd>');
+    expect(interview).toContain('<dt>일급</dt><dd>110,000원</dd>');
+    expect(interview).not.toContain('고용 여부는 면담 뒤에 정합니다.');
+  });
+});
+
 describe('항만 대기 실제 화면 연결',()=>{
   const mapSummary=(html:string)=>html.match(/<h2 id="world-h">세계지도 <small>(.*?)<\/small>/)![1]!;
   const ship=(html:string)=>html.match(/<g class="ship [^"]*"[^>]*><title>(.*?)<\/title>/)![0]!;
@@ -283,19 +368,20 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(growthNotice(ui.app.innerHTML)).toBeNull();
     expect(ui.app.innerHTML).not.toContain('하루 진행 — 경험치·레벨 변화');
   });
-  it('오늘 대기 훈련만 빼기를 안내하고 진행 중 훈련은 일반 글자로 일수를 표시한다',async()=>{
+  it('오늘 대기 훈련만 빼기를 안내하고 진행 중 3일 훈련의 진행 정도는 한 번만 표시한다',async()=>{
     const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
     const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});
     for(const progress of [0,1]) {
       const detail=employeeSection(ui.app.innerHTML);
       expect(detail).toContain(`◆ 교육 중 ${progress}/3일`);
+      expect(detail.match(new RegExp(`${progress}/3일`, 'g'))).toHaveLength(1);
       expect(detail).not.toContain('class="reason"');
       if(progress===0) {
         expect(detail).toContain('<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>');
         expect(ui.app.innerHTML).toContain('aria-label="귀솔 일반 훈련 빼기"');
       } else {
-        expect(detail).toContain('<p>일반 훈련 중 1/3일</p>');
+        expect(detail).not.toContain('<p>일반 훈련 중 1/3일</p>');
         expect(detail).not.toContain('빼려면');
         expect(ui.app.innerHTML).not.toContain('aria-label="귀솔 일반 훈련 빼기"');
       }
