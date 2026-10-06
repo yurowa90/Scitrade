@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 91253,
-      "sha256": "6dc8b999415c1e8c1662c4b3cca2d815c1c5941595b0042c2942d68ed7877d9e"
+      "size_bytes": 93720,
+      "sha256": "9c227f109506007cb9908f685167696105918190d86804738d9d1d45b1edcb47"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 17598,
-      "sha256": "c3039856ab1d8ea0e0a9505d909de35af3fb877c585d26909f9aaa5850fc576c"
+      "size_bytes": 20727,
+      "sha256": "71219d17859db708a27388938ea7ca6a61af26b1203a8845ec305e507f045912"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 4697,
-      "sha256": "cd519370889cc6ae6a0e963bf941e57cbb4b4e1e3161b9fd0a5f3385ffaf5a94"
+      "size_bytes": 5066,
+      "sha256": "6aff4c6753fb1afecc0e69a1d5541abcf0efba7d066da8f04c1453275cf2881c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -334,6 +334,11 @@
       "path": "docs/ai/tasks/TASK-0013-deferred-display-fixes.md",
       "size_bytes": 8967,
       "sha256": "b9501fe19f28bde07021c7dbd75cff921790ac5a0b697573c159b6c427a5f884"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0014-touch-device-readiness.md",
+      "size_bytes": 13385,
+      "sha256": "b6f100eb826c1f0fe4faea3b1ef480c475f9595d7739496536d75ad4399a64bf"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
