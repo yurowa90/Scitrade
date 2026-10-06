@@ -53,7 +53,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
     ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
     <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
-    <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
+    ${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}
     ${training ? trainingQueued
       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
       : ''

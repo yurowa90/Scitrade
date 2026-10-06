@@ -6,7 +6,7 @@ import { runDays, standardDayOneCommands } from '../engine/testkit';
 import { esc } from './html';
 import { startUi } from './main-testkit';
 
-afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();});
+afterEach(()=>{vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks();});
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const readySave = (cfg=config) => serializeSave(openDay(runDays(createGame(cfg),cfg,3,{
   1:[{id:'S',type:'SCOUT_SITE',venueId:'VEN_PORT',employeeId:'EMP02'}],
@@ -167,7 +167,7 @@ describe('A 실제 화면 연결',()=>{
   });
   it.each(['restart','scenario'])('%s 뒤 지난 게임의 flash 알림을 비운다',async(mode)=>{
     const ui=await startUi();ui.click({action:'scout',venue:'VEN_PORT'});
-    expect(ui.app.innerHTML).toContain('<p class="flash info" role="status">오늘 할 일에 넣었습니다.');
+    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info" role="status">오늘 할 일에 넣었습니다.');
     if(mode==='restart')ui.click({action:'restart'});
     else await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
     expect(ui.app.innerHTML).not.toContain('class="flash');
@@ -427,8 +427,9 @@ describe('B 실제 성장 화면 연결',()=>{
   });
 
   it.each([false,true])('꺼진 훈련 버튼 클릭은 아무 일도 하지 않는다 (안쪽 자식: %s)',async(fromChild)=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
-    ui.click({action:'train',emp:'EMP01'},fromChild);
+    const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
+    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    ui.click({action:'train',emp:'EMP01'},fromChild);ui.click({action:'end-day'});
     expect(ui.rendered({action:'train',emp:'EMP01'}).disabled).toBe(true);
     const before=ui.app.innerHTML;
     ui.click({action:'train',emp:'EMP01'},fromChild);
@@ -456,9 +457,14 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('성장 변화는 완료할 때 반영됩니다');
     for(const allowed of [true,false]) {
       const html=ui.app.innerHTML.match(/<div class="growth-detail">[\s\S]*?<\/section>\s*<\/div>/)![0];
-      const button=html.match(/<button[^>]*data-action="train"[^>]*>/)![0];
+      const button=html.match(/<button[^>]*data-action="train"[^>]*>/)?.[0];
+      if (!allowed) {
+        expect(button).toBeUndefined();
+        expect(html).toContain('id="status-train-EMP01" tabindex="-1">일반 훈련 예정');
+      } else {
       expect(button).toContain('data-action="train"');expect(button).toContain('data-emp="EMP01"');
-      expect(button).toContain('aria-label="귀솔 일반 훈련"');expect(button.includes('disabled')).toBe(!allowed);
+      expect(button).toContain('aria-label="귀솔 일반 훈련"');expect(button!.includes('disabled')).toBe(false);
+      }
       for(const b of html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)) {
         const visible=b[2]!.replace(/<[^>]*>/g,'').trim();const label=b[1]!.match(/aria-label="([^"]*)"/)?.[1];
         if(label)expect(label).toContain(visible);
@@ -481,11 +487,12 @@ describe('B 실제 성장 화면 연결',()=>{
     const ui=await startUi(cfg);
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     expect(ui.app.innerHTML).toContain('aria-expanded="true" aria-controls="growth-EMP01"');
+    ui.focus.mockClear();ui.focusIds.length=0;
     ui.focusTrain('EMP01');ui.click({action:'train',emp:'EMP01'});
     expect(ui.focus).toHaveBeenCalledOnce();expect(ui.focusIds).toEqual(['growth-h-EMP01']);
     expect(ui.app.innerHTML).toContain('◆ 교육 중 0/1일');
-    expect(ui.app.innerHTML.match(/<button[^>]*data-action="train"[^>]*>/)![0]).toContain('disabled');
-    expect(ui.app.innerHTML.match(/<button[^>]*data-action="train"[^>]*>/)![0]).toContain('aria-label="귀솔 일반 훈련"');
+    expect(ui.app.innerHTML).not.toContain('data-action="train"');
+    expect(ui.app.innerHTML).toContain('id="status-train-EMP01" tabindex="-1">일반 훈련 예정');
     expect(ui.closestSelectors).toContain('.employee-detail, .recruit-site, .recruit-candidate');
     const detail=ui.app.innerHTML.split('<section class="employee-detail"')[1]!.split('</section>')[0]!;
     expect(detail).not.toContain('훈련 뒤');expect(detail).not.toContain('훈련하면');
@@ -555,5 +562,187 @@ describe('B 실제 성장 화면 연결',()=>{
     ui.click({action:'end-day'});
     const updated=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
     expect([...updated.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−80,000원','−80,000원','0원','9,920,000원']);
+  });
+});
+
+describe('TASK-0014 휴대폰·태블릿 조작', () => {
+  const cosmetics = { action:'accept', buy:'OFFER_BUY_02', sell:'OFFER_SELL_02' };
+  const pendingCount = (html:string) => (html.match(/<ol class="pending">([\s\S]*?)<\/ol>/)?.[1]?.match(/<li\b/g) ?? []).length;
+  it.each(['accept','accept-fwd','accept-plan'])('포인터 %s 뒤 새 계약 제목을 스크롤·초점 대상으로 쓴다', async(action) => {
+    const ui = await startUi();
+    if (action === 'accept-plan') {
+      const initial = openDay(createGame(config),config).state;
+      const unlocked = planState(initial,config,[
+        {id:'A',type:'ACCEPT_FORWARDING',offerId:'OFFER_FWD_01'},
+        {id:'S',type:'ASSIGN_TASK',taskId:'TASK001',employeeId:'EMP02'},
+        {id:'B',type:'BOOK_SAILING',contractId:'CT001',sailingId:'ROUTE01-D002'},
+        {id:'C',type:'CANCEL_CONTRACT',contractId:'CT001'},
+      ]).state;
+      await ui.importText(serializeSave(unlocked));
+    }
+    ui.focus.mockClear();ui.focusIds.length=0;ui.scroll.mockClear();
+    ui.clickNow(action === 'accept' ? cosmetics : action === 'accept-fwd'
+      ? {action,offer:'OFFER_FWD_01'} : {action,key:'OFFER_BUY_02+OFFER_SELL_02'},1);
+    const id = action === 'accept-plan' ? 'contract-h-CT002' : 'contract-h-CT001';
+    expect(ui.scrollIds).toEqual([id]);
+    expect(ui.focusIds).toEqual([id]);
+    expect(ui.focus).toHaveBeenCalledExactlyOnceWith({preventScroll:true});
+    expect(ui.scroll).toHaveBeenCalledExactlyOnceWith({block:'start'});
+    expect(ui.app.innerHTML).toContain(`id="${id}" tabindex="-1"`);
+    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info" role="status">오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.</div>');
+    expect(ui.app.innerHTML).toContain('<p class="flash info">오늘 할 일에 넣었습니다.');
+  });
+  it('배정·예약은 스크롤을 요청하지 않고 같은 칸에 예정 표시와 키보드 초점을 남긴다', async() => {
+    const ui = await startUi();ui.click(cosmetics);
+    ui.scroll.mockClear();ui.focus.mockClear();ui.focusIds.length=0;
+    ui.click({action:'assign',emp:'EMP01'});
+    expect(ui.focusIds).toEqual(['status-assign-TASK001']);
+    expect(ui.doc.activeElement.id).toBe('status-assign-TASK001');
+    expect(ui.app.innerHTML).toContain('min-height:88px;width:260px;max-width:100%');
+    ui.click({action:'book',contract:'CT001',sailing:'ROUTE02-D002'});
+    expect(ui.focusIds.at(-1)).toBe('status-book-CT001');
+    expect(ui.doc.activeElement.id).toBe('status-book-CT001');
+    expect(ui.scroll).not.toHaveBeenCalled();
+    for (const [options] of ui.focus.mock.calls) expect(options).toEqual({preventScroll:true});
+    expect(ui.app.innerHTML).toContain('준비 업무 배정 예정');
+    expect(ui.app.innerHTML).toContain('운송편 예약 예정');
+  });
+  it.each(['scout','recruit-quest','hire','train'])('%s 뒤에도 스크롤 없이 누른 칸에 예정 표시가 남는다', async(action) => {
+    const ui=await startUi();
+    if(action==='recruit-quest') {
+      const discovered=openDay(runDays(createGame(config),config,1,{
+        1:[{id:'S',type:'SCOUT_SITE',venueId:'VEN_PORT',employeeId:'EMP02'}],
+      }).state,config).state;
+      await ui.importText(serializeSave(discovered));
+    } else if(action==='hire') {
+      await ui.importText(readySave());ui.click({action:'interview',candidate:'EMP04'});
+    } else if(action==='train') {
+      ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    }
+    ui.scroll.mockClear();
+    ui.click(action==='scout' ? {action,venue:'VEN_PORT',emp:'EMP01'}
+      : action==='train' ? {action,emp:'EMP01'} : {action,candidate:'EMP04'});
+    expect(ui.scroll).not.toHaveBeenCalled();
+    expect(ui.app.innerHTML).toContain({scout:'현장 조사 예정','recruit-quest':'영입 의뢰 예정',hire:'고용 예정',train:'일반 훈련 예정'}[action]!);
+    expect(ui.doc.activeElement).not.toBeNull();
+  });
+  it('포인터로 사라지는 버튼을 눌러도 오늘 할 일 제목으로 대체하지 않는다', async() => {
+    const ui=await startUi();ui.click(cosmetics);vi.advanceTimersByTime(500);
+    ui.focus.mockClear();ui.focusIds.length=0;
+    ui.clickNow({action:'unqueue',index:'0'},1);
+    expect(ui.focusIds).not.toContain('queue-h');
+    expect(ui.focus).not.toHaveBeenCalled();
+  });
+  it('키보드로 사라진 버튼을 누르면 body 대신 가까운 제목으로 초점을 옮긴다', async() => {
+    const ui=await startUi();ui.click(cosmetics);
+    ui.click({action:'unqueue',index:'0'});
+    expect(ui.doc.activeElement.id).toBe('queue-h');
+    expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
+  });
+  it('대안 제목 가운데가 고정 막대에 가려지면 보이는 하루 진행에 초점을 둔다', async() => {
+    const ui=await startUi();ui.click(cosmetics);
+    ui.bounds['status-assign-TASK001']={top:20,bottom:60,height:40};
+    ui.click({action:'assign',emp:'EMP01'});
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+    expect(ui.scrollIds).toEqual(['contract-h-CT001']);
+  });
+  it('500ms 안의 다른 명령 클릭도 막고 500ms 뒤에는 받는다', async() => {
+    const ui=await startUi();ui.clickNow(cosmetics,1);
+    ui.clickNow({action:'assign',emp:'EMP01'},1);
+    expect(pendingCount(ui.app.innerHTML)).toBe(1);
+    vi.advanceTimersByTime(499);ui.clickNow({action:'assign',emp:'EMP01'},1);
+    expect(pendingCount(ui.app.innerHTML)).toBe(1);
+    vi.advanceTimersByTime(1);ui.clickNow({action:'assign',emp:'EMP01'},1);
+    expect(pendingCount(ui.app.innerHTML)).toBe(2);
+  });
+  it('하루 진행을 두 번 눌러도 하루만 진행하고 차단 시간 뒤에는 다음 날로 간다', async() => {
+    const ui=await startUi();ui.clickNow({action:'end-day'},1);ui.clickNow({action:'end-day'},1);
+    expect(ui.app.innerHTML).toContain('<b>2일</b>');expect(ui.app.innerHTML).not.toContain('<b>3일</b>');
+    vi.advanceTimersByTime(500);ui.clickNow({action:'end-day'},1);
+    expect(ui.app.innerHTML).toContain('<b>3일</b>');
+  });
+  it.each(['restart','scenario','load','import'])('%s 확인을 거절하면 진행과 대기 명령이 유지된다', async(action) => {
+    const ui=await startUi();ui.click({action:'end-day'});
+    ui.click({action:'scout',venue:'VEN_PORT'});
+    const before=ui.app.innerHTML;
+    vi.mocked(confirm).mockReturnValue(false);
+    vi.stubGlobal('localStorage',{getItem:()=>serializeSave(openDay(createGame(config),config).state)});
+    if(action==='scenario')await ui.change({action},'SCENARIO_M1_ONE_TRADE');
+    else if(action==='import')await ui.importText(serializeSave(openDay(createGame(config),config).state));
+    else ui.click({action});
+    expect(confirm).toHaveBeenCalled();
+    expect(ui.app.innerHTML).toBe(before);expect(pendingCount(ui.app.innerHTML)).toBe(1);
+    expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
+  });
+  it('적용 가능한 배정·예약 버튼에는 title이 없고 거절 이유는 버튼 밖에도 있다', async() => {
+    const ui=await startUi();ui.click({action:'accept-fwd',offer:'OFFER_FWD_01'});
+    const buttons=ui.app.innerHTML.match(/<button[^>]*data-action="(?:assign|book)"[^>]*>/g)!;
+    expect(buttons.length).toBeGreaterThan(0);
+    for(const button of buttons)if(!button.includes('disabled'))expect(button).not.toContain('title=');
+    ui.click({action:'book',contract:'CT001',sailing:'ROUTE01-D002'});
+    ui.click({action:'accept-fwd',offer:'OFFER_FWD_02'});
+    const blocked=ui.app.innerHTML.match(/<button[^>]*data-action="book"[^>]*data-sailing="ROUTE01-D002"[^>]*disabled[^>]*>([\s\S]*?)<\/button><p class="reason">([^<]+)<\/p>/);
+    expect(blocked).not.toBeNull();
+    expect(blocked![1]).toContain(blocked![2]!);
+    expect(blocked![2]).toContain('이 출항편의 남은 화물 공간이 부족합니다');
+  });
+  it('카드를 두 번 눌러도 선택이 유지되고 성장 상세 버튼을 화면 안으로 가져온다', async() => {
+    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});
+    ui.click({action:'select-card',emp:'EMP01'});
+    expect(ui.app.innerHTML).toMatch(/<article class="[^"]*is-selected"[^>]*data-action="select-card"[^>]*data-emp="EMP01"/);
+    expect(ui.app.innerHTML).toContain('귀솔 성장 상세');
+    expect(ui.scroll).toHaveBeenCalledTimes(2);
+    expect(ui.doc.activeElement.dataset.action).toBe('detail');
+  });
+  it('문서 제목은 새 시나리오와 불러온 시나리오를 따른다', async() => {
+    const ui=await startUi();expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
+    const m1=loadScenario('SCENARIO_M1_ONE_TRADE');
+    await ui.change({action:'scenario'},m1.id);expect(ui.doc.title).toBe(`Scitrade — ${m1.titleKo}`);
+    await ui.importText(serializeSave(openDay(createGame(config),config).state));
+    expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
+  });
+  it('M1도 견적 수락·배정·예약에서 수금·종결까지 진행한다', async() => {
+    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    ui.click({action:'accept',buy:'OFFER_BUY_01',sell:'OFFER_SELL_01'});
+    ui.click({action:'assign',emp:'EMP01'});
+    ui.click({action:'book',contract:'CT001',sailing:'ROUTE01-D002'});
+    for(let day=1;day<=12;day++)ui.click({action:'end-day'});
+    expect(ui.app.innerHTML).toContain('CT001 대금 1,400.00 USD 수금. 계약 종결');
+    expect(ui.app.innerHTML).toContain('종결된 계약');
+    expect(ui.app.innerHTML).not.toContain('data-action="train"');
+    expect(ui.app.innerHTML).not.toContain('부산 동료 영입');
+  });
+  it('고정되는 상태 막대의 실제 높이를 ResizeObserver로 CSS에 갱신한다', async() => {
+    const ui=await startUi();
+    expect(ui.doc.documentElement.style.setProperty).toHaveBeenLastCalledWith('--topbar-h','100px');
+    ui.resizeStatusbar(140);
+    expect(ui.doc.documentElement.style.setProperty).toHaveBeenLastCalledWith('--topbar-h','140px');
+  });
+  it('한 열 배치 순서·고정 막대 분리·터치 크기·글자 대비 규칙을 유지한다', async() => {
+    const {readFileSync}=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
+    const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
+    expect(css).toContain('grid-template-areas: "trade" "queue" "crew" "resources" "report" "world" "log";');
+    expect(css).toMatch(/\.masthead\s*\{[^}]*display:\s*flex/);
+    expect(css).toMatch(/\.statusbar\s*\{[^}]*position:\s*sticky/);
+    expect(css).toContain('scroll-padding-top: var(--topbar-h)');
+    expect(css).toContain('overscroll-behavior-y: none');
+    expect(css).toContain('color-scheme: only light');
+    expect(css).toContain('touch-action: manipulation');
+    expect(css).toMatch(/@media \(pointer: coarse\)\s*\{[^}]*min-height:\s*44px/);
+    expect(css).toContain('select { font-size: 16px; }');
+    expect(css.match(/button:disabled\s*\{([^}]+)\}/)![1]).not.toContain('opacity');
+    const color=(name:string)=>css.match(new RegExp(`--${name}: (#[0-9a-f]{6});`))![1]!;
+    const luminance=(hex:string)=>[1,3,5].map((i)=>parseInt(hex.slice(i,i+2),16)/255)
+      .map((v)=>v<=.04045 ? v/12.92 : ((v+.055)/1.055)**2.4)
+      .reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i]!,0);
+    for(const background of ['paper','warn-bg']) {
+      const [dark,light]=[luminance(color('warn')),luminance(color(background))].sort((a,b)=>a-b);
+      expect((light!+.05)/(dark!+.05)).toBeGreaterThanOrEqual(4.5);
+    }
+    const ui=await startUi();
+    const masthead=ui.app.innerHTML.split('<div class="masthead">')[1]!.split('<div class="statusbar"')[0]!;
+    expect(masthead).toContain('data-action="restart"');expect(masthead).not.toContain('data-action="end-day"');
+    const bar=ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]!;
+    for(const label of ['거래 현금','사용 가능','운영 현금','다음 수금','금액은 확정 기준','하루 진행 ▶'])expect(bar).toContain(label);
   });
 });
