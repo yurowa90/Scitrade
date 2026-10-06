@@ -29,7 +29,7 @@ function gainsKo(before:Record<string,number>|null, after:Record<string,number>|
     .map((id)=>`${statKo(id)} +${after[id]!-(before[id] ?? 0)}`).join(', ');
 }
 
-export function trainingBlock(state:GameState, config:ScenarioConfig, def:EmployeeDef): string {
+export function trainingBlock(state:GameState, config:ScenarioConfig, def:EmployeeDef, trainingQueued=false): string {
   if (!config.growth) return '';
   const preview=trainingPreview(state,config,def.id);
   const task=runningTaskOf(state,def.id);
@@ -54,11 +54,14 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
     <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
     <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
-    ${training ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>' : preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
+    ${training ? trainingQueued
+      ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
+      : `<p>일반 훈련 중 ${training.progressWorkUnits}/${training.requiredWorkUnits}일</p>`
+      : preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
   </div>`;
 }
 
-export function employeeDetail(state:GameState,config:ScenarioConfig,def:EmployeeDef,expanded:boolean):string {
+export function employeeDetail(state:GameState,config:ScenarioConfig,def:EmployeeDef,expanded:boolean,trainingQueued=false):string {
   if (!config.growth) return '';
   const p=levelProgress(state,config,def.id);
   if(!p) return '';
@@ -68,7 +71,7 @@ export function employeeDetail(state:GameState,config:ScenarioConfig,def:Employe
       <h3 id="growth-h-${esc(def.id)}" tabindex="-1">${esc(def.nameKo)} 성장 기록</h3>
       <p>레벨 ${p.level} · ${esc(xpProgressKo(p))}</p>
       <dl class="growth-stats">${Object.entries(STAT_NAMES_KO).map(([id,name])=>`<div><dt>${name}${def.growth?.primaryStat===id ? ' (주능력)' : def.growth?.secondaryStat===id ? ' (부능력)' : ''}</dt><dd>${p.stats?.[id] ?? '미정'}</dd></div>`).join('')}</dl>
-      ${trainingBlock(state,config,def)}
+      ${trainingBlock(state,config,def,trainingQueued)}
     </section>
   </div>`;
 }
@@ -80,6 +83,10 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
     const old=levelProgress(before,config,def.id), now=levelProgress(after,config,def.id);
     if(!old || !now) return [];
     const messages:string[]=[];
+    const amount=Object.entries(after.xpAwardAmounts)
+      .filter(([key])=>key.startsWith(`${def.id}|`) && !before.xpAwards[key])
+      .reduce((sum,[,xp])=>sum+xp,0);
+    if(amount>0)messages.push(`${def.nameKo} +${amount} 경험치`);
     const snapshot=structuredClone(before);
     let step=old;
     while(step.nextLevelXp !== null && step.nextLevelXp<=now.xp) {
@@ -89,14 +96,10 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
       const gains=gainsKo(previous.stats,step.stats);
       messages.push(`${def.nameKo} 레벨 ${step.level} 달성${gains ? ` (${gains})` : ''}`);
     }
-    const amount=Object.entries(after.xpAwardAmounts)
-      .filter(([key])=>key.startsWith(`${def.id}|`) && !before.xpAwards[key])
-      .reduce((sum,[,xp])=>sum+xp,0);
-    if(amount>0)messages.push(`${def.nameKo} +${amount} 경험치`);
     return messages;
   });
 }
 
-export function growthStatus(messages:string[], day:number|null, announce=true):string {
-  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}><h3 class="small">${day}일 하루 진행 결과</h3>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
+export function growthStatus(messages:string[], day:number, announce=true):string {
+  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}><h3 class="small">${day}일 하루 진행 — 경험치·레벨 변화</h3>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
 }

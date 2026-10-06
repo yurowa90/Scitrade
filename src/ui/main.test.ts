@@ -17,6 +17,46 @@ const growthNotice = (html:string) => html.match(/<div class="growth-notices"([^
 const crewNote = (html:string) => html.match(/<p class="muted small">((?:레벨·능력은|처리량은 고정값)[\s\S]*?)<\/p>/)?.[1] ?? '';
 const employeeSection = (html:string) => html.split('<section class="employee-detail"')[1]!.split('</section>')[0]!;
 
+describe('항만 대기 실제 화면 연결',()=>{
+  const mapSummary=(html:string)=>html.match(/<h2 id="world-h">세계지도 <small>(.*?)<\/small>/)![1]!;
+  const ship=(html:string)=>html.match(/<g class="ship [^"]*"[^>]*><title>(.*?)<\/title>/)![0]!;
+
+  it('M2 6일 화면·지도 요약·선박은 하역 중단 대기를 표시하지 않는다',async()=>{
+    const ui=await startUi();
+    ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});
+    ui.click({action:'assign',emp:'EMP01'});
+    ui.click({action:'book',contract:'CT001',sailing:'ROUTE02-D002'});
+    for(let day=1;day<6;day++)ui.click({action:'end-day'});
+    const html=ui.app.innerHTML;
+    expect(html).toContain('<b>6일</b>');
+    expect(mapSummary(html)).toBe('운항 중 화물 1건');
+    expect(mapSummary(html)).not.toContain('대기');
+    expect(ship(html)).toContain('ROUTE02-D002: SH001');
+    expect(ship(html)).not.toMatch(/waiting|하역 중단/);
+    expect(html).not.toContain('하역 중단');
+    expect(html).toContain('오늘 도착 예정 — 하루 진행 때 하역합니다');
+  });
+
+  it('M1 7·8일에는 화면·지도 요약·선박에 대기를 표시하고 9일에는 해제한다',async()=>{
+    const cfg=loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
+    const ui=await startUi();
+    await ui.importText(serializeSave(openDay(runDays(createGame(cfg),cfg,6,{1:standardDayOneCommands(cfg)}).state,cfg).state));
+    for(const day of [7,8]) {
+      const html=ui.app.innerHTML;
+      expect(html).toContain('<b>'+day+'일</b>');
+      expect(mapSummary(html)).toBe('운항 중 화물 1건 · 대기 1건 (하역 재개를 기다림)');
+      expect(ship(html)).toContain('class="ship waiting"');
+      expect(ship(html)).toContain('하역 중단으로 대기 중');
+      expect(html).toContain(`바다에서 대기 중입니다 (${day-7}일째)`);
+      ui.click({action:'end-day'});
+    }
+    expect(mapSummary(ui.app.innerHTML)).toBe('운항 중 화물 1건');
+    expect(ship(ui.app.innerHTML)).not.toMatch(/waiting|하역 중단/);
+    expect(ui.app.innerHTML).toContain('하역 재개 — 오늘 도착 예정 (대기 2일)');
+    expect(ui.app.innerHTML).not.toContain('바다에서 대기 중입니다');
+  });
+});
+
 describe('A 실제 화면 연결',()=>{
   it('빈 동료 목록 안내는 격자의 모든 열을 차지한다',async()=>{
     const ui=await startUi();ui.click({action:'crew-filter',filter:'busy'});
@@ -187,28 +227,42 @@ describe('A 실제 화면 연결',()=>{
 });
 
 describe('B 실제 성장 화면 연결',()=>{
+  it('쉬는 직원과 조사 중인 직원은 훈련 빼기·진행 안내를 표시하지 않는다',async()=>{
+    const ui=await startUi();
+    ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const noTrainingNotice=()=>{
+      const detail=employeeSection(ui.app.innerHTML);
+      expect(detail).not.toContain('빼려면');
+      expect(detail).not.toContain('일반 훈련 중');
+    };
+    noTrainingNotice();
+    ui.click({action:'scout',venue:'VEN_PORT',emp:'EMP01'});
+    noTrainingNotice();
+    expect(employeeSection(ui.app.innerHTML)).toContain('class="reason"');
+  });
+
   it('같은 성장 알림도 진행 전 날짜로 구분하고 대기 목록 뒤에 표시한다',async()=>{
     const cfg=structuredClone(config);cfg.employees[0]!.growth!.startXp=300;
     const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
-    expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">1일 하루 진행 결과</h3><p>귀솔 +60 경험치</p>');
+    expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">1일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p>');
     expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
     const queue=()=>ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
     expect(queue().indexOf('대기 중인 명령이 없습니다.')).toBeLessThan(queue().indexOf('class="growth-notices"'));
     ui.click({action:'train',emp:'EMP01'});
     expect(queue()).toContain('<ol class="pending">');
-    expect(queue().indexOf('</ol>')).toBeLessThan(queue().indexOf('1일 하루 진행 결과'));
+    expect(queue().indexOf('</ol>')).toBeLessThan(queue().indexOf('1일 하루 진행 — 경험치·레벨 변화'));
     expect(queue().indexOf('</ol>')).toBeLessThan(queue().indexOf('class="growth-notices"'));
     expect(queue().indexOf('class="flash')).toBeLessThan(queue().indexOf('<ol class="pending">'));
     ui.click({action:'end-day'});
-    expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">2일 하루 진행 결과</h3><p>귀솔 +60 경험치</p>');
+    expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p>');
     expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
   });
   it('하루 진행 예외 뒤 이전 성장 알림은 날짜와 함께 남고 다시 읽지 않는다',async()=>{
     const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     const notice=growthNotice(ui.app.innerHTML)![2];
-    expect(notice).toContain('1일 하루 진행 결과');expect(notice).toContain('귀솔 +60 경험치');
+    expect(notice).toContain('1일 하루 진행 — 경험치·레벨 변화');expect(notice).toContain('귀솔 +60 경험치');
     expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
     const engine=await import('../engine/engine');
     vi.spyOn(engine,'commitDay').mockImplementation(()=>{throw new Error('결산 검증 실패');});
@@ -227,9 +281,9 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('경험치 60 / 100');
     expect(ui.app.innerHTML).not.toContain('하루 진행에 실패했습니다');
     expect(growthNotice(ui.app.innerHTML)).toBeNull();
-    expect(ui.app.innerHTML).not.toContain('하루 진행 결과');
+    expect(ui.app.innerHTML).not.toContain('하루 진행 — 경험치·레벨 변화');
   });
-  it('훈련 대기·진행 중 상세는 경고 대신 빼기 안내와 처리량 문장을 표시한다',async()=>{
+  it('오늘 대기 훈련만 빼기를 안내하고 진행 중 훈련은 일반 글자로 일수를 표시한다',async()=>{
     const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
     const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});
@@ -237,7 +291,14 @@ describe('B 실제 성장 화면 연결',()=>{
       const detail=employeeSection(ui.app.innerHTML);
       expect(detail).toContain(`◆ 교육 중 ${progress}/3일`);
       expect(detail).not.toContain('class="reason"');
-      expect(detail).toContain('<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>');
+      if(progress===0) {
+        expect(detail).toContain('<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>');
+        expect(ui.app.innerHTML).toContain('aria-label="귀솔 일반 훈련 빼기"');
+      } else {
+        expect(detail).toContain('<p>일반 훈련 중 1/3일</p>');
+        expect(detail).not.toContain('빼려면');
+        expect(ui.app.innerHTML).not.toContain('aria-label="귀솔 일반 훈련 빼기"');
+      }
       expect(detail).toContain('<p>레벨·능력이 올라도 하루 처리량은 2pt 그대로입니다. 훈련하는 3일 동안 다른 업무를 맡을 수 없습니다.</p>');
       if(progress===0)ui.click({action:'end-day'});
     }
@@ -265,7 +326,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('<b>5일</b>');
     ui.click({action:'select-card',emp:'EMP04'});ui.click({action:'detail',emp:'EMP04'});
     expect(employeeSection(ui.app.innerHTML)).toContain('<p>레벨·능력이 올라도 하루 처리량은 3pt 그대로입니다. 훈련하는 날은 다른 업무를 맡을 수 없습니다.</p>');
-    expect(crewNote(ui.app.innerHTML)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2~3pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000~110,000원.');
+    expect(crewNote(ui.app.innerHTML)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2~3pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000원~110,000원.');
   });
 
   it('조사 중인 직원은 훈련 반영 상태 대신 가정 금액과 엔진 거절 이유를 표시한다',async()=>{
@@ -345,7 +406,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(detail).toContain('◆ 교육 중 0/1일 — 훈련비 50,000원 반영됨. 완료하면 +60 경험치');
     ui.doc.activeElement=null;ui.click({action:'end-day'});
     const status=()=>ui.app.innerHTML.match(/<div class="growth-notices" role="status">([\s\S]*?)<\/div>/)?.[1];
-    expect(status()).toContain('귀솔 레벨 2 달성 (교섭 +2, 협업 +1)');
+    expect(status()).toBe('<h3 class="small">1일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p><p>귀솔 레벨 2 달성 (교섭 +2, 협업 +1)</p>');
     expect(status()!.match(/\+60 경험치/g)).toHaveLength(1);
     expect(status()!.match(/레벨 2 달성/g)).toHaveLength(1);
     const notice=growthNotice(ui.app.innerHTML)![2];
@@ -365,12 +426,12 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toMatch(/role="status"|aria-live/);
     ui.click({action:'train',emp:'EMP02'});ui.click({action:'end-day'});
-    expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 결과</h3><p>물보리 +60 경험치</p>');
+    expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>물보리 +60 경험치</p>');
     expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
     const storage:Record<string,string>={};
     vi.stubGlobal('localStorage',{setItem:(key:string,value:string)=>{storage[key]=value;},getItem:(key:string)=>storage[key]});
     ui.click({action:'save'});expect(status()).toBeUndefined();
-    expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 결과</h3><p>물보리 +60 경험치</p>');
+    expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>물보리 +60 경험치</p>');
     ui.click({action:'load'});expect(status()).toBeUndefined();
     expect(growthNotice(ui.app.innerHTML)).toBeNull();
     expect(ui.app.innerHTML).not.toContain('aria-expanded="true" aria-controls="growth-EMP01"');

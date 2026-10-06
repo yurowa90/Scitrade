@@ -9,7 +9,7 @@ import { runningTaskOf } from '../engine/reservations';
 import { crewEntries, crewEntryCard, crewRow, recruitmentPanel } from './recruitment';
 import { employeeDetail, growthMessages, growthStatus, trainingBlock, xpProgressKo } from './growth';
 import { krwReportRows } from './reports';
-import { crewStatusKo, taskSchedule } from './crew-status';
+import { crewNoteKo, crewStatusKo, taskSchedule } from './crew-status';
 import { FOCUS_FALLBACK_SELECTORS, focusFallbackIds } from './focus';
 
 const config=loadScenario('SCENARIO_M2_MULTI_TRADE');
@@ -19,6 +19,11 @@ const train={id:'TRAIN',type:'START_TRAINING' as const,employeeId:def.id};
 const button=(html:string)=>html.match(/<button[^>]*data-action="train"[^>]*>/)![0]!;
 
 describe('성장 기록과 훈련',()=>{
+  it('USD 일급 범위의 양 끝은 최소 단위를 통화 표시로 바꾼다',()=>{
+    const cfg=structuredClone(config);cfg.payrollCurrency='USD';
+    cfg.employees[0]!.salaryPerDayMinor=1234;cfg.employees[1]!.salaryPerDayMinor=5678;
+    expect(crewNoteKo(cfg)).toContain('일급 12.34 USD~56.78 USD.');
+  });
   it.each([[0,'경험치 0 / 100 · 다음 레벨까지 100'],[99,'경험치 99 / 100 · 다음 레벨까지 1'],[100,'경험치 100 / 300 · 다음 레벨까지 200'],[320,'경험치 320 / 600 · 다음 레벨까지 280'],[4499,'경험치 4499 / 4500 · 다음 레벨까지 1'],[4500,'경험치 4500 · 최대 레벨']] as const)('xp %i 문구', (xp,text)=>{
     const s=initial();s.employees[0]!.xp=xp;
     expect(xpProgressKo(levelProgress(s,config,def.id)!)).toBe(text);
@@ -80,8 +85,8 @@ describe('성장 기록과 훈련',()=>{
     awardXp(after,cfg,d.id,'MULTI-LEVEL','TASK_COMPLETION_XP',spec.setup.award_xp!);
     const html=employeeDetail(after,cfg,d,true),messages=growthMessages(before,after,cfg);
     expect(html).toContain('레벨 3');expect(html).toContain('<dt>교섭 (주능력)</dt><dd>54</dd>');expect(html).toContain('<dt>협업 (부능력)</dt><dd>42</dd>');
-    expect(messages).toEqual(['귀솔 레벨 2 달성 (교섭 +2, 협업 +1)','귀솔 레벨 3 달성 (교섭 +2, 협업 +1)','귀솔 +230 경험치']);
-    const gains=messages.slice(0,2).map((m)=>m.match(/교섭 \+(\d+), 협업 \+(\d+)/)!);
+    expect(messages).toEqual(['귀솔 +230 경험치','귀솔 레벨 2 달성 (교섭 +2, 협업 +1)','귀솔 레벨 3 달성 (교섭 +2, 협업 +1)']);
+    const gains=messages.slice(1,3).map((m)=>m.match(/교섭 \+(\d+), 협업 \+(\d+)/)!);
     expect(gains.reduce((n,m)=>n+Number(m[1]),0)).toBe(54-50);
     expect(gains.reduce((n,m)=>n+Number(m[2]),0)).toBe(42-40);
     expect(growthMessages(after,after,cfg)).toEqual([]);

@@ -4,7 +4,18 @@
 import { cityName, findSailing, listSailings, routeBetween } from './catalog';
 import { employedDefs } from './employees';
 import { formatMoney } from './money';
-import type { Contract, GameState, ScenarioConfig } from './types';
+import type { Contract, GameState, ScenarioConfig, Shipment } from './types';
+
+/** 오늘 하루 진행의 하역 가능 여부를 읽는다. 과거 대기 일수는 현재 제한을 뜻하지 않는다. */
+export function portWaitStatus(s: GameState, config: ScenarioConfig, shipment: Shipment):
+  'AT_SEA' | 'ARRIVING_TODAY' | 'WAITING_RESTRICTION' | 'ARRIVED' {
+  if (shipment.arrivalDay !== null) return 'ARRIVED';
+  if (s.day < shipment.scheduledArrivalDay) return 'AT_SEA';
+  const contract = s.contracts.find((c) => c.id === shipment.contractId);
+  const restricted = config.portRestrictions.some((r) =>
+    r.cityId === contract?.destinationCityId && r.startDay <= s.day && s.day <= r.endDay);
+  return restricted ? 'WAITING_RESTRICTION' : 'ARRIVING_TODAY';
+}
 
 export type BlockerCode =
   | 'TASK_UNASSIGNED'
@@ -50,8 +61,15 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
 
   if (shipment) {
     if (shipment.arrivalDay === null) {
-      if (s.day >= shipment.scheduledArrivalDay) {
+      const status = portWaitStatus(s, config, shipment);
+      if (status === 'WAITING_RESTRICTION') {
         blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${money(late)} 감액됩니다.` });
+        return { nextKo: '하역 재개 대기', blockers };
+      }
+      if (status === 'ARRIVING_TODAY') {
+        return { nextKo: shipment.observedWaitDays > 0
+          ? `하역 재개 — 오늘 도착 예정 (대기 ${shipment.observedWaitDays}일)`
+          : '오늘 도착 예정 — 하루 진행 때 하역합니다', blockers };
       }
       return { nextKo: `운송 중 · ${shipment.scheduledArrivalDay}일 도착 예정`, blockers };
     }

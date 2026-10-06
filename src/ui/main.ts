@@ -12,7 +12,7 @@ import { formatMoney } from '../engine/money';
 import { companyReport, contractReport, forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../engine/reports';
 import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLoad } from '../engine/reservations';
 import { serializeSave } from '../engine/save';
-import { contractProgress } from '../engine/progress';
+import { contractProgress, portWaitStatus } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
@@ -184,7 +184,7 @@ function topbar(): string {
 
 function worldMap(): string {
   const moving = view.shipments.filter((x) => x.arrivalDay === null);
-  const waiting = moving.filter((x) => view.day >= x.scheduledArrivalDay);
+  const waiting = moving.filter((x) => portWaitStatus(view, config, x) === 'WAITING_RESTRICTION');
   const status = moving.length
     ? `운항 중 화물 ${moving.length}건${waiting.length ? ` · 대기 ${waiting.length}건 (하역 재개를 기다림)` : ''}`
     : '운항 중인 화물 없음';
@@ -564,7 +564,7 @@ function crewPanel(): string {
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard) : ''}
+    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
     ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
@@ -614,7 +614,7 @@ function queuePanel(): string {
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
-    ${growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh)}
+    ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh)}
   </section>`;
 }
 
