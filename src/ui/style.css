@@ -280,7 +280,9 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .bar > span { position: absolute; inset: 0 auto 0 0; background: var(--mint-deep); border-radius: 999px; }
 .bar.high > span { background: var(--gold); }
 .bar.full > span { background: var(--warn); }
-.crew-cards { display: grid; gap: .8rem; }
+.crew-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: .8rem; }
+.crew-cards > .card { width: 100%; max-width: 300px; min-width: 0; justify-self: center; }
+.crew-cards > p { grid-column: 1 / -1; }
 
 /* 세계 거점: 이번 시나리오(금빛), 1장 예정(회색), 세계 확장 미리 보기(점선·흐림), 금융 중심(금화), 해협·운하(마름모) */
 .port.planned .port-glow { opacity: .35; }
@@ -379,3 +381,19 @@ table.roster .chip { font-size: .7rem; padding: 0 .4rem; }
 @media (prefers-reduced-motion: reduce) {
   .pixel-sprite { animation: none; background-position-x: 0; }
 }
+
+/* 성장 기록: 본문 글꼴을 유지하고 능력은 각각의 값으로 표시한다. */
+.growth-detail { margin-top: .8rem; }
+.employee-detail { margin-top: .5rem; padding: .7rem; border: 1px solid var(--line); border-radius: 10px; }
+.employee-detail[hidden] { display: none; }
+.employee-detail h3 { font-size: 1rem; }
+.employee-detail p { font-size: .82rem; overflow-wrap: anywhere; }
+.growth-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; font-size: .82rem; }
+.growth-stats dt { color: var(--navy-soft); }
+.growth-stats dd { margin: 0; font-weight: 700; }
+.training { border-top: 1px solid var(--line); margin-top: .7rem; padding-top: .7rem; }
+.training h4 { margin: 0; }
+.growth-notices { border-left: 3px solid var(--mint-deep); padding-left: .6rem; }
+.growth-notices p { margin: .3rem 0; }
+.card-meta { flex-wrap: wrap; }
+.card-bottom { overflow-wrap: anywhere; }

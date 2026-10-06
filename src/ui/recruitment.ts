@@ -7,8 +7,11 @@ import { formatMoney } from '../engine/money';
 import { contractProgress } from '../engine/progress';
 import { fundsPosition, runningTaskOf } from '../engine/reservations';
 import type { CandidateState, Command, CommandResult, EmployeeDef, GameState, ScenarioConfig, Task } from '../engine/types';
-import { roleBadge } from './card';
+import { crewCard, roleBadge } from './card';
 
+import { levelProgress } from '../engine/growth';
+import { crewStatusKo, taskSchedule } from './crew-status';
+export { taskSchedule } from './crew-status';
 import { esc } from './html';
 export const venueTitle = (id: string) => venues.items.find((v) => v.id === id)?.title_ko ?? id;
 export const species = (id: string) => characters.items.find((c) => c.id === id)?.species_ko ?? '';
@@ -49,12 +52,6 @@ export function crewEntries(s: GameState, config: ScenarioConfig, filter: CrewFi
   });
 }
 
-export function taskSchedule(t: Task, config: ScenarioConfig): string {
-  const name = t.kind === 'TRAINING' ? '일반 훈련' : t.kind === 'SCOUT' ? '현장 조사' : t.kind === 'RECRUIT_QUEST' ? '영입 의뢰' : t.kind === 'EXPORT_PREP' ? '수출 준비' : '주선 준비';
-  const subject = t.kind === 'SCOUT' ? venueTitle(t.subjectId ?? '') : t.kind === 'RECRUIT_QUEST' ? config.employees.find((e) => e.id === t.subjectId)?.nameKo ?? t.subjectId : t.contractId ?? t.subjectId;
-  return `${name} 중 — ${subject} ${t.progressWorkUnits}/${t.requiredWorkUnits}${t.kind === 'TRAINING' ? '일' : 'pt'}`;
-}
-
 /** 표시용 산술만 수행하며 비용 지출·허용 판정·상태 저장은 하지 않는다. */
 export function interviewPreview(s: GameState, config: ScenarioConfig, e: EmployeeDef) {
   const blockers = s.contracts.flatMap((c) => contractProgress(s, config, c).blockers);
@@ -81,7 +78,7 @@ export function interviewBlock(s: GameState, config: ScenarioConfig, e: Employee
     <div><dt>지금 원화 사용 가능액</dt><dd>${won(p.availableKrw)}</dd></div></dl>
     <p>지금 인원으로 버티면: 준비 미배정 ${p.unassigned}건 · 출항 불참 위험 ${p.willMiss}건</p>
     <button data-action="hire" data-candidate="${esc(e.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} aria-label="${esc(e.nameKo)} 고용">${esc(e.nameKo)} 고용</button>
-    ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : '<p class="muted small">계약금은 한 번 지급하며, 업무와 급여는 고용 다음 날부터 시작합니다.</p>'}
+    ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}${p.signingFee === 0 && check.reasonKo.startsWith('영입 계약금 자금이 부족합니다.') && fundsPosition(s, config, 'KRW').unpaidObligations > 0 ? ' 미지급 급여가 남아 있어 계약금이 0원이어도 고용할 수 없습니다.' : ''}</p>` : '<p class="muted small">계약금은 한 번 지급하며, 업무와 급여는 고용 다음 날부터 시작합니다.</p>'}
   </div>`;
 }
 
@@ -91,21 +88,21 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
     const employees = employedDefs(s, config);
     const chosen = selections[key] ?? employees.find((e) => check(cmd(e.id)).status === 'APPLIED')?.id ?? employees[0]?.id ?? '';
     const result = check(cmd(chosen));
-    return { chosen, result, html: `<label>담당 직원 <select data-action="recruit-emp" data-key="${esc(key)}" aria-label="${esc(label)} 담당 직원"><option value="" ${!chosen ? 'selected' : ''}>직원 선택</option>${employees.map((e) => `<option value="${esc(e.id)}" ${chosen === e.id ? 'selected' : ''}>${esc(e.nameKo)}${runningTaskOf(s, e.id) ? ' (업무 중)' : ''}</option>`).join('')}</select></label>` };
+    return { chosen, result, html: `<label>담당 직원 <select data-action="recruit-emp" data-key="${esc(key)}" aria-label="${esc(label)} 담당 직원"><option value="" ${!chosen ? 'selected' : ''}>직원 선택</option>${employees.map((e) => `<option value="${esc(e.id)}" ${chosen === e.id ? 'selected' : ''}>${esc(e.nameKo)}${runningTaskOf(s, e.id) ? ` (${esc(crewStatusKo(runningTaskOf(s, e.id)))})` : ''}</option>`).join('')}</select></label>` };
   };
   const sites = config.recruitment.scoutSites.map((site) => {
     const title = venueTitle(site.venueId);
     const scouted = s.recruitment.scoutedVenueIds.includes(site.venueId);
     const task = s.tasks.find((t) => t.kind === 'SCOUT' && t.subjectId === site.venueId && t.status === 'RUNNING');
     const choice = employeeSelect(site.venueId, `${title} 현장 조사`, (employeeId) => ({ id: `PREVIEW-SCOUT-${site.venueId}`, type: 'SCOUT_SITE', venueId: site.venueId, employeeId }));
-    return `<article class="recruit-site"><h4 id="site-h-${esc(site.venueId)}" tabindex="-1">${esc(title)}</h4><p>${scouted ? '조사 완료' : task ? esc(taskSchedule(task, config)) : '미조사'}</p>${choice.html}<button data-action="scout" data-venue="${esc(site.venueId)}" aria-label="${esc(title)} 현장 조사" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>현장 조사(${config.recruitment!.scoutWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}</article>`;
+    return `<article class="recruit-site"><h4 id="site-h-${esc(site.venueId)}" tabindex="-1">${esc(title)}</h4><p>${scouted ? '조사 완료' : task ? esc(taskSchedule(task, config)) : '미조사'}</p>${choice.html}<button data-action="scout" data-venue="${esc(site.venueId)}" aria-label="${esc(title)} 현장 조사(${config.recruitment!.scoutWorkUnits}pt)" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>현장 조사(${config.recruitment!.scoutWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}</article>`;
   });
   const candidates = s.recruitment.candidates.filter((c) => c.stage !== 'UNDISCOVERED').map((c) => {
     const e = config.employees.find((e) => e.id === c.employeeId)!;
     const clue = characters.items.find((x) => x.id === e.id)?.recruitment.story_clue ?? '';
     const choice = employeeSelect(e.id, `${e.nameKo} 영입 의뢰`, (employeeId) => ({ id: `PREVIEW-QUEST-${e.id}`, type: 'START_RECRUIT_QUEST', candidateId: e.id, employeeId }));
     return `<article class="recruit-candidate"><h4 id="candidate-h-${esc(e.id)}" tabindex="-1">${esc(e.nameKo)} · ${esc(species(e.id))} ${roleBadge(e.role)}</h4><p>${esc(clue)}</p><p class="pill">${esc(candidateLabel(s, c, config))}</p>
-      ${c.stage === 'DISCOVERED' ? `${choice.html}<button aria-label="${esc(e.nameKo)} 영입 의뢰" data-action="recruit-quest" data-candidate="${esc(e.id)}" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>영입 의뢰(${config.recruitment!.questWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}` : ''}
+      ${c.stage === 'DISCOVERED' ? `${choice.html}<button aria-label="${esc(e.nameKo)} 영입 의뢰(${config.recruitment!.questWorkUnits}pt)" data-action="recruit-quest" data-candidate="${esc(e.id)}" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>영입 의뢰(${config.recruitment!.questWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}` : ''}
       ${c.stage === 'INTERVIEW_READY' ? `<button aria-label="${esc(e.nameKo)} 면담" aria-expanded="${interviewId === e.id}" aria-controls="interview-${esc(e.id)}" data-action="interview" data-candidate="${esc(e.id)}">${esc(e.nameKo)} 면담</button>${interviewBlock(s, config, e, check({ id: `PREVIEW-HIRE-${e.id}`, type: 'HIRE_CANDIDATE', candidateId: e.id }), interviewId === e.id)}` : ''}</article>`;
   });
   return `<section class="recruitment" aria-labelledby="recruit-h"><h3 id="recruit-h">부산 동료 영입</h3>${sites.join('')}<p class="muted">미발견 후보 ${s.recruitment.candidates.filter((c) => c.stage === 'UNDISCOVERED').length}명</p>${candidates.join('')}</section>`;
@@ -119,5 +116,12 @@ export function candidateCard(e: EmployeeDef, s: GameState, c: CandidateState, s
 export function crewRow(e: EmployeeDef, s: GameState, config: ScenarioConfig, selected: boolean, candidate?: CandidateState, task?: Task): string {
   const loc = s.employees.find((x) => x.id === e.id)?.locationCityId;
   const location = cityName(config, loc ?? null);
-  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-selected="${selected}"><th scope="row"><span class="nm">${esc(e.nameKo)}</span>${roleBadge(e.role)}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `● 업무 중<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
+  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-selected="${selected}"><th scope="row"><span class="nm">${esc(e.nameKo)}</span>${roleBadge(e.role)}${config.growth && !candidate ? `<small>레벨 ${levelProgress(s,config,e.id)?.level ?? 1}</small>` : ''}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `${esc(crewStatusKo(task))}<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
+}
+
+/** 실제 화면과 시험이 같은 카드 선택 경로를 쓴다. */
+export function crewEntryCard(entry: ReturnType<typeof crewEntries>[number], s: GameState, config: ScenarioConfig, selected: boolean): string {
+  const { def, candidate, task } = entry;
+  return candidate ? candidateCard(def, s, candidate, selected, config)
+    : crewCard(def, s, selected, config, task ? taskSchedule(task, config) : undefined);
 }

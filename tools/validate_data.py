@@ -275,7 +275,10 @@ def check_m2a(tables):
           'P0-M2A-03 matches scenario fixture')
     e4 = cases['P0-M2A-04']['expected_numeric']
     wage = tables['employees']['EMP04']['salary_per_day']['amount']
-    check(e4['signing_fee'] == wage * scenario['recruitment']['signing_fee_wage_days']
+    signing_days = (scenario.get('recruitment') or {}).get('signing_fee_wage_days')
+    valid_signing_days = type(signing_days) is int
+    check(valid_signing_days, 'M2a: signing_fee_wage_days는 정수여야 합니다')
+    check(valid_signing_days and e4['signing_fee'] == wage * signing_days
           and e4['daily_wage'] == wage
           and e4['employed_after_discovery'] == len(scenario['employee_ids'])
           and e4['available_from_day'] == e4['hired_day'] + 1,
@@ -539,7 +542,12 @@ def main():
     check_m2a(tables)
     validate_cancellation(tables['scenarios'], tables['routes'])
 
-    cases = read('tests/acceptance_cases.json')['cases']
+    acceptance = read('tests/acceptance_cases.json')
+    cases = acceptance['cases']
+    summary = acceptance['review_summary']
+    check(summary['case_count'] == len(cases), 'review_summary case_count matches cases')
+    counts = {phase: sum(c['phase'] == phase for c in cases) for phase in ('P0', 'P1', 'P2')}
+    check(summary['phase_case_counts'] == counts, 'review_summary phase counts match cases')
     index(cases, 'acceptance cases')
     check(len(cases) == 18, 'expected 18 acceptance specifications')
     # Reference arithmetic only. No simulation engine exists in this package.

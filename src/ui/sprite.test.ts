@@ -61,7 +61,7 @@ describe('동료 스프라이트', () => {
     const { loadScenario } = await import('../content/scenario');
     const { createGame } = await import('../engine/engine');
     const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
-    const html = crewCard(config.employees.find((employee) => employee.id === 'EMP01')!, createGame(config), false);
+    const html = crewCard(config.employees.find((employee) => employee.id === 'EMP01')!, createGame(config), false, config);
     expect(html).toContain('class="card-img pixel-art"');
     expect(html).toContain('width="96" height="128" data-pixel-w="96" data-pixel-h="128"');
     expect(html).not.toContain('그림 미제작');

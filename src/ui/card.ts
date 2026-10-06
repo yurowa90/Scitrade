@@ -2,9 +2,11 @@
 // 구도(상단 이름·속성, 중앙 그림, 하단 레벨·일정)는 docs/ART_DIRECTION.md를 따르며 레퍼런스의 프레임·배지·이름은 쓰지 않는다.
 
 import { isAvailableFromToday } from '../engine/employees';
-import { levelFor } from '../engine/growth';
+import { levelFor, levelProgress } from '../engine/growth';
 import { runningTaskOf } from '../engine/reservations';
-import type { EmployeeDef, GameState, Task } from '../engine/types';
+import type { EmployeeDef, GameState, ScenarioConfig, Task } from '../engine/types';
+import { coreStatsKo } from './growth';
+import { crewStatusKo, taskSchedule } from './crew-status';
 import { esc } from './html';
 import { characterImage } from './assets';
 
@@ -38,16 +40,15 @@ export function attributeChip(attribute: string | null): string {
   return `<span class="chip attr attr-${esc(attribute ?? '')}"><svg viewBox="0 0 24 24" aria-hidden="true">${a.icon}</svg>${a.ko}</span>`;
 }
 
-export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, scheduleKo?: string): string {
+export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, config: ScenarioConfig, scheduleKo?: string): string {
   if (!isAvailableFromToday(state, def.id)) return '';
   const running = runningTaskOf(state, def.id);
-  const schedule = scheduleKo ?? (running
-    ? `${running.contractId ?? running.subjectId} ${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}${running.kind === 'TRAINING' ? '일' : 'pt'}`
-    : '대기 — 배정 가능');
+  const schedule = scheduleKo ?? (running ? taskSchedule(running, config) : '대기 — 배정 가능');
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
-  const level = levelFor(state.employees.find((e) => e.id === def.id)!.xp);
+  const progress = config.growth ? levelProgress(state, config, def.id) : null;
+  const level = progress?.level ?? levelFor(state.employees.find((e) => e.id === def.id)!.xp);
   return `
   <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0"
     aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 ${level}, ${esc(schedule)}">
@@ -56,7 +57,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
       ${attributeChip(def.character.attribute)}
     </header>
     <div class="card-art">
-      <span class="card-tag ${running ? 'busy' : ''}">${running ? '● 업무 중' : '○ 대기'}</span>
+      <span class="card-tag ${running ? 'busy' : ''}">${esc(crewStatusKo(running))}</span>
       ${art
         ? `<img class="card-img pixel-art" src="${esc(art.path)}" width="${art.logicalWidth}" height="${art.logicalHeight}" data-pixel-w="${art.logicalWidth}" data-pixel-h="${art.logicalHeight}" alt="${esc(def.nameKo)} 일러스트" loading="lazy" decoding="async" />`
         : `<div class="card-face" aria-hidden="true">${esc(initial)}</div>
@@ -64,7 +65,8 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
-      <div class="card-meta">${roleBadge(def.role)}<span class="muted">${esc(def.id)}</span><span class="card-level">레벨 ${level} · 강화 +0</span></div>
+      <div class="card-meta">${roleBadge(def.role)}<span class="card-level">레벨 ${level} · 강화 +0</span></div>
+      ${progress ? `<span>${esc(coreStatsKo(def, progress.stats))}</span>` : ''}
       <span class="card-schedule">${esc(schedule)}</span>
     </footer>
   </article>`;

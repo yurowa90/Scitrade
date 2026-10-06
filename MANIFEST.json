@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 65583,
-      "sha256": "8b53370b19d7586eb810b24cf43db5ce682872c15d0cb5d8c199c9b817fce993"
+      "size_bytes": 77388,
+      "sha256": "7ffccd15649b5d48f757932e980137e273a5326d95ce0bece82de3859ba9d6b4"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 10280,
-      "sha256": "e83f99d935842f63d7b883e4dae19926f7895651b06ac102f16856db0a43c724"
+      "size_bytes": 10420,
+      "sha256": "921d1d7ae08bada2901ff076ec580b863c7c6bc434569f3773d5c024214c1e5c"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 29476,
-      "sha256": "6f1d1ce8f67442bcfc2076db415ffd2e633bf7ee0d24972af7fb9ee38323f51d"
+      "size_bytes": 31868,
+      "sha256": "9c97fcfa29a5c6ad1769807d1f02888dcb0bb7616f722eb87580df7838618000"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 10114,
-      "sha256": "17b208bd568e11d60a90f5f6f410eb71c043708fb9c3f71b868eaf43cb01eb87"
+      "size_bytes": 14785,
+      "sha256": "736d7fd6ce02402add36b19b32c237c73812cd477160a56e963dd57a0f4b62f6"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 12429,
-      "sha256": "70dbf4d9bc4d1f4c4a4696dd527bf27f785b33b380a82aab12fc31517a4ee48e"
+      "size_bytes": 12846,
+      "sha256": "ed4610c76e788dd42407ed3697e6ee2ed62ce5ccdbfec9dae4fdf16eec3d02c8"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 2980,
-      "sha256": "d51f696ba4529db3b1e5285ab1eba6b6a226a640e7cebd2daf07b7a27e8a0af1"
+      "size_bytes": 3490,
+      "sha256": "8469ddc0461df198d73273fce10aedeef9ea709e69a65c86c7e6e9031fa4c153"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -266,6 +266,21 @@
       "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
     },
     {
+      "path": "docs/ai/tasks/TASK-0005-R1-growth-ui-fixes.md",
+      "size_bytes": 11915,
+      "sha256": "252aa9d428b4123c1dd6f408c617e0b78caf54f77f395c5214bb7499667a4e38"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0005-R2-growth-ui-test-readiness.md",
+      "size_bytes": 6568,
+      "sha256": "af3546fb493c8ac83cf9d43580d2067953d1c1b6c6e517d62194023f9684b7d6"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0005-R3-notice-context.md",
+      "size_bytes": 5306,
+      "sha256": "f082fdb3a3fb3fe8939652de2afbee1f6034abc415060de5a7e2a39c86bb7e8e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
       "size_bytes": 14526,
       "sha256": "9c8a8f25083a626477952bcda03653b5053626317b9828843378f2f618472294"
@@ -296,6 +311,11 @@
       "sha256": "3c61597d9959ff2f5ee4f4a5a4d281f0c3c1e460d38d661806b596e758a5309b"
     },
     {
+      "path": "docs/ai/tasks/TASK-0009-port-wait-and-freeze-polish.md",
+      "size_bytes": 7474,
+      "sha256": "2dad3d93973df470bbcfaf65e30e9e20db512b7a7a61ea8d1add0496067fee8f"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -321,6 +341,11 @@
       "sha256": "455d3d8ea42e5a28cf1a093db882b9593103316ec4ac18ef9dd4f0a6e58f23de"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0005.md",
+      "size_bytes": 47723,
+      "sha256": "654e21e6893134291632b165eb80ab676fee87a2bf90eeaa6f92936f4f22ddab"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0007.md",
       "size_bytes": 137520,
       "sha256": "96af5d47cd025206142f1692819ee046715e5881d6845cdce4e3ef3360365f67"
@@ -329,6 +354,11 @@
       "path": "docs/ai/tasks/results/TASK-0008.md",
       "size_bytes": 10808,
       "sha256": "8b420f3de9e2dec2de8bdca1a452ab763b55dbceb444e72c1642aae679e52c3b"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0009.md",
+      "size_bytes": 10089,
+      "sha256": "1e2c6c21280e716111620eae12d8811b614a4ddd698c61eb607aaea2c736e74d"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -582,8 +612,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 35893,
-      "sha256": "f0341db62d73ee79f1c112f50e2b7a121bd214f2216780dfa5d5f4170af84cdf"
+      "size_bytes": 35929,
+      "sha256": "1f2419fb71aba76d2ee87670c220319045a1c43ab2bf4c14dc21ef912c59674c"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -597,8 +627,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 1094,
-      "sha256": "23ddf339038d2171d60d686ee839ad253d9902d4f0d55728dfd0ae9cf6bda541"
+      "size_bytes": 1134,
+      "sha256": "19944f91f8dfbcd37c9a1857cdf363af36b9572af9400980838ffe6868d0e09e"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -631,9 +661,14 @@
       "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
     },
     {
+      "path": "tools/test_validate_data.py",
+      "size_bytes": 1978,
+      "sha256": "79d59d49feb96b624729ba9cc1717a9f4081852e85d5d11d8e188960fa550dab"
+    },
+    {
       "path": "tools/validate_data.py",
-      "size_bytes": 41261,
-      "sha256": "8c135fa457aa48ffe2fdc56f2fad5ad8b60dfcfab16fc43497927a67c84c3c7e"
+      "size_bytes": 41817,
+      "sha256": "daa6298056f28a57e11ac05c410832a877a15791dd428d9704388ea76b37e9e1"
     }
   ]
 }

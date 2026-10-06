@@ -55,7 +55,7 @@ describe('P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들�
     expect(employedDefs(s, config)).toHaveLength(spec.employed_after_discovery!);
     expect(plan(s, [trade(), assign('EMP04')]).results[1]!.reasonKo).toContain('고용 중인 직원이 아닙니다');
     expect(wages(s)).toEqual([]);
-    expect(crewCard(config.employees.find((e) => e.id === 'EMP04')!, s, false)).toBe('');
+    expect(crewCard(config.employees.find((e) => e.id === 'EMP04')!, s, false, config)).toBe('');
     checkInvariants(s, config);
   });
 
@@ -165,7 +165,7 @@ describe('P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여',
     expect(isEmployed(p.state, 'EMP04')).toBe(true);
     expect(employedDefs(p.state, config)).toHaveLength(2);
     const def = config.employees.find((e) => e.id === 'EMP04')!;
-    expect(crewCard(def, p.state, false)).toBe('');
+    expect(crewCard(def, p.state, false, config)).toBe('');
     const report = companyReport(p.state, config).payroll;
     expect(report.recruitmentExpense).toBe(spec.signing_fee);
     expect(report.wageExpense).toBe(companyReport(ready, config).payroll.wageExpense);
@@ -174,7 +174,7 @@ describe('P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여',
     const day5 = runDays(ready, config, 4, { 4: [hire(), assign('EMP04')] }).state;
     expect(wages(day5)).toEqual([]);
     expect(employedDefs(day5, config)).toHaveLength(3);
-    expect(crewCard(def, day5, false)).toContain('현돌 직원 카드');
+    expect(crewCard(def, day5, false, config)).toContain('현돌 직원 카드');
     const done = runDays(day5, config, 5, { 5: [assign('EMP04', 'NEXT')] }).state;
     expect(wages(done).map((e) => e.day)).toEqual([spec.available_from_day]);
     expect(wages(done)[0]!.lines[0]!.amount).toBe(spec.daily_wage);

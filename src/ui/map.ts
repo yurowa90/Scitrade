@@ -4,6 +4,7 @@
 
 import { HUB_ROLE_KO, loadMapCities, loadRouteWaypoints, loadSeaGates, type MapCity } from '../content/map';
 import { routeOf } from '../engine/catalog';
+import { portWaitStatus } from '../engine/progress';
 import type { GameState, ScenarioConfig } from '../engine/types';
 import { mapAsset, type MapAsset } from './assets';
 import { inBounds, placeLabel, project, splitAtSeam, type Box } from './projection';
@@ -307,7 +308,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     if (!booking) continue;
     const v = voyages.get(booking.sailingId) ?? { routeId: booking.routeId, shipmentIds: [], departureDay: sh.departureDay, waiting: false, arrived: true };
     v.shipmentIds.push(sh.id);
-    v.waiting ||= sh.arrivalDay === null && state.day >= sh.scheduledArrivalDay;
+    v.waiting ||= portWaitStatus(state, config, sh) === 'WAITING_RESTRICTION';
     v.arrived &&= sh.arrivalDay !== null;
     voyages.set(booking.sailingId, v);
   }

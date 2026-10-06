@@ -127,7 +127,7 @@ describe('CHAR-ACC-02 누적 경험치로 레벨·능력 재계산', () => {
       expect(employee(state).xp).toBe(spec.expected.cumulative_xp);
       expect(levelFor(employee(state).xp)).toBe(spec.expected.level);
       expect(statsFor(def, employee(state).xp)).toEqual({ primary: spec.expected.primary_ability, secondary: spec.expected.secondary_ability });
-      expect(crewCard(def, state, false)).toContain(`레벨 ${spec.expected.level}`);
+      expect(crewCard(def, state, false, cfg)).toContain(`레벨 ${spec.expected.level}`);
       checkInvariants(state, cfg);
     }
     const levelLogs = spec.expected.crossed_thresholds!.map((xp) =>
@@ -194,7 +194,7 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
     const p = planState(s, config, [trade(false), training(), assign()]);
     expect(p.results.map((r) => r.status)).toEqual(['APPLIED', 'APPLIED', 'REJECTED']);
     expect(p.state.tasks.find((t) => t.id === 'TASK001')!.status).toBe('QUEUED');
-    expect(crewCard(config.employees[0]!, p.state, false)).toContain('0/1일');
+    expect(crewCard(config.employees[0]!, p.state, false, config)).toContain('0/1일');
     expect(taskSchedule(runningTaskOf(p.state, 'EMP01')!, config)).toContain('일반 훈련');
     const tomorrow = until(1, config, { 1: [trade(false), training()] });
     expect(planState(openDay(tomorrow, config).state, config, [assign('NEXT')]).results[0]!.status).toBe('APPLIED');

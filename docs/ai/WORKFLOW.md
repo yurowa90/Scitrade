@@ -75,7 +75,7 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
    - 실행 장소는 로컬 작업 브랜치 `codex/<작업 ID>`다.
    - Codex는 변경과 결과 보고서(`docs/ai/tasks/results/<작업 ID>.md`)만 남긴다.
 3. **검수:** Claude가 아래를 확인한다.
-   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·파이썬 시험(그림 도구, 지도 생성). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
+   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·파이썬 시험(그림 도구, 지도 생성, 자료 검사기 회귀 `tools/test_validate_data.py`). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
    - diff 전체를 읽고, 기존 기대값이 바뀌지 않았는지 본다.
    - 지시서의 완료 조건을 하나씩 대조한다.
    - 화면 작업은 Playwright로 클릭해 진행한다.
@@ -115,6 +115,7 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
   - 검증 에이전트는 작업 사본을 하나만 만들고, 끝나기 전에 지운다(`rm -rf`).
   - 브라우저 측정이나 긴 시험 전에 `df -h /`로 남은 공간을 확인한다.
   - 이유: 디스크가 차면 브라우저 렌더러가 멈추고, 코드 결함처럼 보인다. TASK-0007 검수 3차에서 이것을 CSS 문제로 잘못 판단했다(`docs/DECISIONS.md` ‘픽셀 렌더링·픽셀 지도 반영’).
+- **작업 사본에서 git에 쓰지 않는다:** `cp -r`로 복사한 작업 폴더는 원래 저장소의 `.git`을 함께 쓴다. 그래서 사본에서 실행한 `git stash`·`commit`·`reset`·`checkout`은 원래 저장소에 남는다(TASK-0005 1차 검수에서 stash 3개가 남았다). 변형을 되돌릴 때는 원본 파일을 다시 복사한다.
 - **화면 배율 측정:** Playwright의 배율 흉내(`deviceScaleFactor`)를 쓰지 않는다. 실제 장치에 없는 이음매와 흐림이 생긴다. 대신 Chromium을 실제 배율로 띄운다.
   - `chromium.launch({ args: ['--force-device-scale-factor=<배율>', '--window-size=<폭>,1000'] })`
   - `browser.newContext({ viewport: null })`
