@@ -17,10 +17,11 @@
   --shadow: 0 2px 0 rgba(31, 42, 68, 0.06), 0 8px 24px rgba(31, 42, 68, 0.06);
   color-scheme: only light;
   --topbar-h: 0px;
+  --toast-h: 0px;
 }
 
 * { box-sizing: border-box; }
-html { scroll-padding-top: var(--topbar-h); }
+html { scroll-padding-top: var(--topbar-h); scroll-padding-bottom: var(--toast-h); }
 html, body { overscroll-behavior-y: none; }
 body { overflow-anchor: none; }
 body {
@@ -425,9 +426,10 @@ table.roster .chip { font-size: .75rem; padding: 0 .4rem; }
   .statusbar .stat { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 .25rem; }
   .statusbar .stat > span { font-size: 12px; }
   .statusbar .stat b { font-size: .85rem; white-space: nowrap; }
-  .statusbar .day-action { margin-left: 0; position: relative; align-items: stretch; }
-  .statusbar .primary { padding: 18px .35rem 3px; font-size: .85rem; }
-  .statusbar .amount-basis { color: #fff; position: absolute; top: 1px; align-self: center; font-size: 12px; line-height: 16px; white-space: nowrap; pointer-events: none; }
+  /* 확정 기준 표시는 버튼 밖 왼쪽에 둔다. 버튼 안에 있으면 버튼 이름처럼 읽힌다. */
+  .statusbar .day-action { margin-left: 0; flex-direction: row; align-items: center; justify-content: space-between; gap: .35rem; }
+  .statusbar .primary { padding: .35rem .6rem; font-size: .85rem; white-space: nowrap; }
+  .statusbar .amount-basis { font-size: 12px; line-height: 16px; max-width: 4.6em; word-break: keep-all; }
   .layout { padding: .65rem .65rem 2rem; }
 }
 @media (pointer: coarse) {
@@ -451,3 +453,6 @@ table.roster small { font-size: 12px; }
 .statusbar .primary:disabled { background: var(--navy-soft); color: #fff; }
 .training > .pill { display: inline-flex; align-items: center; min-height: 34px; }
 @media (pointer: coarse) { .training > .pill { min-height: 44px; } }
+
+/* 아래쪽 고정 알림이 마지막 내용을 가리지 않게 한다. 좁은 화면의 .layout 아래 여백보다 우선한다. */
+main.layout { padding-bottom: 5.5rem; }

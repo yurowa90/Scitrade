@@ -646,6 +646,48 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
     expect(ui.scrollIds).toEqual(['contract-h-CT001']);
   });
+  it('대안 제목 가운데가 아래쪽 알림에 가려져도 보이는 하루 진행에 초점을 둔다', async() => {
+    const ui=await startUi();ui.click(cosmetics);ui.setToastTop(700);
+    ui.bounds['status-assign-TASK001']={top:720,bottom:760,height:40};
+    ui.click({action:'assign',emp:'EMP01'});
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('배정 뒤 위쪽 내용이 늘면 늘어난 만큼 스크롤해 예정 표시를 누른 높이에 둔다', async() => {
+    const ui=await startUi();ui.click(cosmetics);ui.scrollBy.mockClear();
+    ui.afterRender(()=>{ui.slotTops['assign-TASK001']=230;});
+    ui.click({action:'assign',emp:'EMP01'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
+    // 버튼(위 200)이 칸(위 180)에서 20px 아래에 있었다.
+    expect(ui.app.innerHTML).toContain('justify-content:flex-start;padding-top:20px"><span class="pill" id="status-assign-TASK001"');
+  });
+  it('배정 뒤 위쪽 내용이 줄면 스크롤하지 않는다', async() => {
+    const ui=await startUi();ui.click(cosmetics);ui.scrollBy.mockClear();
+    ui.afterRender(()=>{ui.slotTops['assign-TASK001']=150;});
+    ui.click({action:'assign',emp:'EMP01'});
+    expect(ui.scrollBy).not.toHaveBeenCalled();
+    expect(ui.doc.activeElement.id).toBe('status-assign-TASK001');
+  });
+  it.each([[340,40],[275,-25]])('하루 진행 뒤 읽던 계약 제목이 %ipx로 가면 %ipx 스크롤해 같은 높이에 둔다', async(after,dy) => {
+    const ui=await startUi();ui.click(cosmetics);ui.click({action:'end-day'});
+    ui.bounds['contract-h-CT001']={top:300,bottom:330,height:30};ui.scrollBy.mockClear();
+    ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:after,bottom:after+30,height:30};});
+    ui.click({action:'end-day'});
+    expect(ui.app.innerHTML).toContain('<b>3일</b>');
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,dy);
+  });
+  it('하루 진행 뒤 계약 제목이 그대로면 스크롤하지 않는다', async() => {
+    const ui=await startUi();ui.click(cosmetics);ui.click({action:'end-day'});ui.scrollBy.mockClear();
+    ui.click({action:'end-day'});
+    expect(ui.scrollBy).not.toHaveBeenCalled();
+  });
+  it('알림이 있으면 가리는 높이를 --toast-h로 알리고 없어지면 0px로 되돌린다', async() => {
+    const ui=await startUi();const set=vi.mocked(ui.doc.documentElement.style.setProperty);
+    ui.setToastTop(690);ui.click(cosmetics);
+    expect(set).toHaveBeenCalledWith('--toast-h','118px');
+    set.mockClear();ui.click({action:'end-day'});
+    expect(set).toHaveBeenCalledWith('--toast-h','0px');
+    expect(set).not.toHaveBeenCalledWith('--toast-h','118px');
+  });
   it('500ms 안의 다른 명령 클릭도 막고 500ms 뒤에는 받는다', async() => {
     const ui=await startUi();ui.clickNow(cosmetics,1);
     ui.clickNow({action:'assign',emp:'EMP01'},1);

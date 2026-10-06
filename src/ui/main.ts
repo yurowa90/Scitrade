@@ -45,10 +45,13 @@ let ignoreClicksUntil = 0;
 let activation: { element: HTMLElement; pointer: boolean } | null = null;
 let statusbarObserver: ResizeObserver | undefined;
 const actionSizes = new Map<string, { height: number; width: number }>();
+/** 누른 버튼이 칸 안에서 있던 높이. 예정 표시를 그 자리에 둔다. */
+const actionOffsets = new Map<string, number>();
 
 /** 다시 그려도 배정·예약 자리가 줄어들어 다음 버튼이 움직이지 않게 한다. */
 function queuedStatus(slot: string, text: string): string {
-  return `<div class="sailings queued-slot" style="min-height:${actionSizes.get(slot)?.height ?? 0}px;width:${actionSizes.get(slot)?.width ?? 0}px;max-width:100%"><span class="pill" id="status-${esc(slot)}" tabindex="-1">${text}</span></div>`;
+  const offset = actionOffsets.get(slot);
+  return `<div class="sailings queued-slot" style="min-height:${actionSizes.get(slot)?.height ?? 0}px;width:${actionSizes.get(slot)?.width ?? 0}px;max-width:100%${offset === undefined ? '' : `;justify-content:flex-start;padding-top:${Math.round(offset)}px`}"><span class="pill" id="status-${esc(slot)}" tabindex="-1">${text}</span></div>`;
 }
 
 function measureStatusbar() {
@@ -66,7 +69,8 @@ function focusWithoutScroll(target: HTMLElement | undefined | null) {
   const rect = target.getBoundingClientRect();
   const center = (rect.top + rect.bottom) / 2;
   // 화면 밖 제목 대신 항상 보이는 하루 진행으로 옮긴다. 화면 위치는 유지한다.
-  if (!target.closest('.statusbar') && (center < bar.getBoundingClientRect().bottom || center > window.innerHeight)) {
+  const bandBottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
+  if (!target.closest('.statusbar') && (center < bar.getBoundingClientRect().bottom || center > bandBottom)) {
     const nextDay = app.querySelector<HTMLButtonElement>('[data-action="end-day"]')!;
     target = nextDay.disabled ? document.getElementById('status-h')! : nextDay;
   }
@@ -87,6 +91,7 @@ function resetUi() {
   mapScrollRatio = undefined;
   mapMeasurements.clear();
   actionSizes.clear();
+  actionOffsets.clear();
 }
 
 function newId(type: string): string {
@@ -124,6 +129,9 @@ function queue(cmd: Command) {
     const rect = slot.getBoundingClientRect();
     actionSizes.set(slot.dataset.actionSlot!, { height: rect.height, width: rect.width });
   }
+  const slotEl = activation?.element.closest<HTMLElement>('[data-action-slot]');
+  const anchor = slotEl ? { slot: slotEl.dataset.actionSlot!, top: slotEl.getBoundingClientRect().top } : null;
+  if (anchor && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
   const result = tryCommand(cmd);
   if (result.status !== 'APPLIED') {
     ui.flash = { kind: 'warn', text: result.reasonKo };
@@ -132,7 +140,7 @@ function queue(cmd: Command) {
     ui.flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
   }
   const accepted = result.status === 'APPLIED' && (cmd.type === 'ACCEPT_TRADE' || cmd.type === 'ACCEPT_FORWARDING');
-  render(accepted);
+  render(accepted, accepted ? null : anchor);
   if (accepted) {
     const contract = view.contracts.find((c) => !previousContracts.has(c.id));
     const heading = contract && document.getElementById(`contract-h-${contract.id}`);
@@ -152,6 +160,10 @@ function endDay() {
     return;
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
+  const barBottom = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
+  const card = Array.from(app.querySelectorAll<HTMLElement>('.contract')).find((e) => { const r = e.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; });
+  const head = card?.querySelector<HTMLElement>('h3[id]');
+  const reading = head ? { id: head.id, top: head.getBoundingClientRect().top } : null;
   ui.growthNotices = growthMessages(state, committed.state, config);
   ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
@@ -161,6 +173,8 @@ function endDay() {
     ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` }
     : null;
   render();
+  const again = reading && document.getElementById(reading.id);
+  if (again) { const dy = again.getBoundingClientRect().top - reading.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
   ignoreClicksUntil = Date.now() + 500;
 }
 
@@ -686,7 +700,7 @@ function logPanel(): string {
   </section>`;
 }
 
-function render(skipFocus = false) {
+function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
@@ -711,7 +725,14 @@ function render(skipFocus = false) {
       ${logPanel()}
     </main>
     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</div>` : ''}`;
+  const toastEl = app.querySelector<HTMLElement>('.flash-toast');
+  document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
   measureStatusbar();
+  if (anchor) {
+    const now = document.getElementById(`status-${anchor.slot}`)?.parentElement ?? app.querySelector<HTMLElement>(`[data-action-slot="${anchor.slot}"]`);
+    const dy = now ? now.getBoundingClientRect().top - anchor.top : 0;
+    if (dy >= 1) window.scrollBy(0, dy);
+  }
   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
   ui.growthNoticesFresh = false;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
