@@ -236,11 +236,11 @@ function withPlan(
   const contract = trial.contracts[trial.contracts.length - 1]!;
   if (plan.employeeId) {
     const r = assignTask(trial, config, contract.prepTaskId, plan.employeeId);
-    if (r) return `일괄 확정을 철회했습니다 — 준비 배정 불가: ${r}`;
+    if (r) return `한 번에 확정할 수 없습니다 — 준비 배정 불가: ${r} 견적도 수락하지 않습니다.`;
   }
   if (plan.sailingId) {
     const r = bookSailing(trial, config, contract.id, plan.sailingId);
-    if (r) return `일괄 확정을 철회했습니다 — 운송편 예약 불가: ${r}`;
+    if (r) return `한 번에 확정할 수 없습니다 — 운송편 예약 불가: ${r} 견적도 수락하지 않습니다.`;
   }
   Object.assign(s, trial);
   return null;

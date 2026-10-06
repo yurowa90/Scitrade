@@ -4,6 +4,7 @@
 import { cityName, findSailing, listSailings, routeBetween } from './catalog';
 import { employedDefs } from './employees';
 import { formatMoney } from './money';
+import { spaceShortfall } from './reservations';
 import type { Contract, GameState, ScenarioConfig, Shipment } from './types';
 
 /** 오늘 하루 진행의 하역 가능 여부를 읽는다. 과거 대기 일수는 현재 제한을 뜻하지 않는다. */
@@ -54,7 +55,11 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
   if (c.deliveredDay !== null) {
     const inv = s.invoices.find((i) => i.id === c.invoiceId);
     if (inv && inv.status !== 'PAID') {
-      blockers.push({ code: 'AWAITING_PAYMENT', severity: 'info', messageKo: `인도는 끝났고 ${inv.dueDay}일에 ${money(inv.amountMinor)}을 받습니다. 그때까지 현금은 들어오지 않습니다.` });
+      if (s.day >= inv.dueDay) {
+        blockers.push({ code: 'AWAITING_PAYMENT', severity: 'info', messageKo: `인도는 끝났고 오늘 하루 진행 때 ${money(inv.amountMinor)}를 받습니다.` });
+        return { nextKo: '오늘 수금 예정 — 하루 진행 때 받습니다', blockers };
+      }
+      blockers.push({ code: 'AWAITING_PAYMENT', severity: 'info', messageKo: `인도는 끝났고 ${inv.dueDay}일에 ${money(inv.amountMinor)}를 받습니다. 그때까지 현금은 들어오지 않습니다.` });
     }
     return { nextKo: inv ? `${inv.dueDay}일 수금 대기` : '정산 대기', blockers };
   }
@@ -93,7 +98,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
     // 업무는 하루 마감 때 진행되고, 출항은 같은 날 업무 진행 뒤에 처리한다. 그래서 출항일에 끝나도 실을 수 있다.
     readyDay = rate > 0 ? s.day + Math.ceil(remaining / rate) - 1 : null;
     if (sailing && (readyDay === null || readyDay > sailing.departureDay)) {
-      blockers.push({ code: 'TASK_WILL_MISS_SAILING', severity: 'risk', messageKo: `지금 속도(하루 ${rate}pt)면 준비가 ${readyDay ?? '?'}일에 끝나 ${sailing.departureDay}일 출항을 놓칩니다. 놓치면 운임 중 ${money(lostFee)}을 잃고 다시 예약해야 합니다.` });
+      blockers.push({ code: 'TASK_WILL_MISS_SAILING', severity: 'risk', messageKo: `지금 속도(하루 ${rate}pt)면 준비가 ${readyDay ?? '?'}일에 끝나 ${sailing.departureDay}일 출항을 놓칩니다. 놓치면 운임 중 ${money(lostFee)}를 잃고 다시 예약해야 합니다.` });
     }
   } else if (task?.status === 'DONE') {
     readyDay = task.completedDay;
@@ -105,11 +110,16 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
       blockers.push({ code: 'BOOKED_SAILING_LATE', severity: 'risk', messageKo: `예약한 ${sailing.departureDay}일 편은 ${release}일 인도 예정이라 납기 ${c.deliveryDeadlineDay}일을 ${release - c.deliveryDeadlineDay}일 넘깁니다 (감액 ${money(late)}).` });
     }
   } else if (route) {
-    const next = listSailings(config, route.id, s.day + 1)[0];
+    const sailings = listSailings(config, route.id, s.day + 1);
+    const first = sailings[0];
+    const next = sailings.find((sailing) => spaceShortfall(s, config, sailing, c.goodId, c.quantity) === null);
     if (!next) {
-      blockers.push({ code: 'NO_SAILING_LEFT', severity: 'risk', messageKo: '캠페인 안에 남은 출항편이 없습니다.' });
+      blockers.push({ code: 'NO_SAILING_LEFT', severity: 'risk', messageKo: '캠페인 안에 이 화물을 실을 공간이 남은 출항편이 없습니다.' });
     } else {
-      blockers.push({ code: 'NO_BOOKING', severity: 'warn', messageKo: `운송편을 예약하지 않았습니다. 다음 출항은 ${next.departureDay}일이고 예약 마감은 ${next.departureDay - 1}일입니다.` });
+      const departure = first && first.id !== next.id
+        ? `${first.departureDay}일 편은 선복이 부족합니다. 실을 수 있는 첫 출항은 ${next.departureDay}일`
+        : `다음 출항은 ${next.departureDay}일`;
+      blockers.push({ code: 'NO_BOOKING', severity: 'warn', messageKo: `운송편을 예약하지 않았습니다. ${departure}이고 예약 마감은 ${next.departureDay - 1}일입니다.` });
       const release = next.scheduledArrivalDay + config.terms.customsDays;
       if (release > c.deliveryDeadlineDay) {
         blockers.push({ code: 'NEXT_SAILING_LATE', severity: 'risk', messageKo: `다음 편으로도 ${release}일 인도라 납기 ${c.deliveryDeadlineDay}일을 넘깁니다 (감액 ${money(late)}).` });

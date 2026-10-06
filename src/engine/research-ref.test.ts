@@ -36,12 +36,28 @@ describe('REF-02 일괄 확정: 수락·준비 배정·운송편 예약을 한 �
     const game = openDay(createGame(config), config).state;
     const plan = planCommands(game, config, [cosmetics('A', { employeeId: 'EMP01', sailingId: 'ROUTE01-D002' })]);
     expect(plan[0]!.status).toBe('REJECTED');
-    expect(plan[0]!.reasonKo).toContain('일괄 확정을 철회');
+    expect(plan[0]!.reasonKo).toContain('한 번에 확정할 수 없습니다 — 운송편 예약 불가:');
     const { state } = runDays(createGame(config), config, 1, { 1: [cosmetics('A', { employeeId: 'EMP01', sailingId: 'ROUTE01-D002' })] });
     expect(state.contracts).toHaveLength(0);
     expect(state.offers.find((o) => o.id === 'OFFER_BUY_02')!.status).toBe('OPEN');
     expect(summarize(state.ledger, 'USD').cash).toBe(usd(3000));
     expect(cashReservations(state, config)).toEqual([]);
+  });
+
+  it.each([
+    [{ employeeId: '없는직원' }, '준비 배정 불가'],
+    [{ employeeId: 'EMP01', sailingId: 'ROUTE01-D002' }, '운송편 예약 불가'],
+  ] as const)('미리 보기와 확정 거절 기록은 같은 현재형 이유를 쓴다: %s', (commitPlan, failure) => {
+    const cmd = cosmetics('REJECT', commitPlan);
+    const game = openDay(createGame(config), config).state;
+    const preview = planCommands(game, config, [cmd])[0]!;
+    expect(preview.status).toBe('REJECTED');
+    expect(preview.reasonKo).toMatch(new RegExp(`^한 번에 확정할 수 없습니다 — ${failure}: .+ 견적도 수락하지 않습니다\\.$`));
+    expect(preview.reasonKo).not.toContain('철회했습니다');
+    const committed = runDays(game, config, 1, { 1: [cmd] });
+    expect(committed.results[1]![0]!.reasonKo).toBe(preview.reasonKo);
+    expect(committed.state.processedCommands[cmd.id]!.reasonKo).toBe(preview.reasonKo);
+    expect(committed.state.contracts).toHaveLength(0);
   });
 
   it('직원이 이미 다른 업무 중이면 두 번째 일괄 확정은 철회되고 첫 계약은 그대로다', () => {

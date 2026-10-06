@@ -36,6 +36,10 @@ export function candidateLabel(s: GameState, c: CandidateState, config?: Scenari
   }
 }
 
+const beforeInterview = (c: CandidateState) => c.stage === 'DISCOVERED' || c.stage === 'QUEST_RUNNING';
+const signingFeeRule = (c: CandidateState, config: ScenarioConfig) => beforeInterview(c)
+  ? `<p>고용하려면 계약금(일급 ${config.recruitment?.signingFeeWageDays ?? 0}일분)이 듭니다. 금액은 면담에서 확인합니다.</p>` : '';
+
 export type CrewFilter = 'all' | 'free' | 'busy' | 'candidate';
 
 /** 카드와 운영표가 동일한 목록을 사용한다. 미발견 후보는 모든 필터에서 제외한다. */
@@ -102,6 +106,7 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
     const clue = characters.items.find((x) => x.id === e.id)?.recruitment.story_clue ?? '';
     const choice = employeeSelect(e.id, `${e.nameKo} 영입 의뢰`, (employeeId) => ({ id: `PREVIEW-QUEST-${e.id}`, type: 'START_RECRUIT_QUEST', candidateId: e.id, employeeId }));
     return `<article class="recruit-candidate"><h4 id="candidate-h-${esc(e.id)}" tabindex="-1">${esc(e.nameKo)} · ${esc(species(e.id))} ${roleBadge(e.role)}</h4><p>${esc(clue)}</p><p class="pill">${esc(candidateLabel(s, c, config))}</p>
+      ${signingFeeRule(c, config)}
       ${c.stage === 'DISCOVERED' ? `${choice.html}<button aria-label="${esc(e.nameKo)} 영입 의뢰(${config.recruitment!.questWorkUnits}pt)" data-action="recruit-quest" data-candidate="${esc(e.id)}" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>영입 의뢰(${config.recruitment!.questWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}` : ''}
       ${c.stage === 'INTERVIEW_READY' ? `<button aria-label="${esc(e.nameKo)} 면담" aria-expanded="${interviewId === e.id}" aria-controls="interview-${esc(e.id)}" data-action="interview" data-candidate="${esc(e.id)}">${esc(e.nameKo)} 면담</button>${interviewBlock(s, config, e, check({ id: `PREVIEW-HIRE-${e.id}`, type: 'HIRE_CANDIDATE', candidateId: e.id }), interviewId === e.id)}` : ''}</article>`;
   });
@@ -111,12 +116,12 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
 /** 카드와 운영표 모두 공개된 동료 목록만 전달받는다. */
 export function candidateCard(e: EmployeeDef, s: GameState, c: CandidateState, selected: boolean, config: ScenarioConfig): string {
   const status = esc(candidateLabel(s, c, config));
-  return `<article class="card ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-label="${esc(e.nameKo)} 후보 카드, ${status}"><h3>${esc(e.nameKo)} · ${esc(species(e.id))}</h3>${roleBadge(e.role)}<p>${status}</p><p>하루 ${e.workUnitsPerDay}pt · 일급 ${formatMoney('KRW', e.salaryPerDayMinor)}</p><p class="muted small">그림 미제작</p></article>`;
+  return `<article class="card ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-label="${esc(e.nameKo)} 후보 카드, ${status}"><h3>${esc(e.nameKo)} · ${esc(species(e.id))}</h3>${roleBadge(e.role)}<p>${status}</p><p>하루 ${e.workUnitsPerDay}pt${beforeInterview(c) ? '' : ` · 일급 ${formatMoney('KRW', e.salaryPerDayMinor)}`}</p>${signingFeeRule(c, config)}<p class="muted small">그림 미제작</p></article>`;
 }
 export function crewRow(e: EmployeeDef, s: GameState, config: ScenarioConfig, selected: boolean, candidate?: CandidateState, task?: Task): string {
   const loc = s.employees.find((x) => x.id === e.id)?.locationCityId;
   const location = cityName(config, loc ?? null);
-  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-selected="${selected}"><th scope="row"><span class="nm">${esc(e.nameKo)}</span>${roleBadge(e.role)}${config.growth && !candidate ? `<small>레벨 ${levelProgress(s,config,e.id)?.level ?? 1}</small>` : ''}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `${esc(crewStatusKo(task))}<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
+  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-selected="${selected}"><th scope="row"><span class="nm">${esc(e.nameKo)}</span>${roleBadge(e.role)}${config.growth && !candidate ? `<small>레벨 ${levelProgress(s,config,e.id)?.level ?? 1}</small>` : ''}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `${esc(crewStatusKo(task))}<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${candidate && beforeInterview(candidate) ? '일급은 면담에서 확인' : formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
 }
 
 /** 실제 화면과 시험이 같은 카드 선택 경로를 쓴다. */
