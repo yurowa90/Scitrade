@@ -90,7 +90,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
   const sailing = booking ? findSailing(config, booking.sailingId) : undefined;
   let readyDay: number | null = null;
   if (task?.status === 'QUEUED') {
-    blockers.push({ code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: `준비 업무 ${task.requiredWorkUnits}pt를 맡을 직원이 없습니다. 배정하기 전에는 화물이 출발할 수 없습니다.` });
+    blockers.push({ code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: `준비 업무 ${task.requiredWorkUnits}pt를 아직 아무에게도 배정하지 않았습니다. 배정하기 전에는 화물이 출발할 수 없습니다.` });
   } else if (task?.status === 'RUNNING') {
     const emp = employedDefs(s, config).find((e) => e.id === task.assignedEmployeeId);
     const rate = emp?.workUnitsPerDay ?? 0;

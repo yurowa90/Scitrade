@@ -142,7 +142,7 @@ describe('TASK-0013 수금일과 선복 안내', () => {
 
     config.campaignDays = 15;
     expect(contractProgress(state, config, contract).blockers).toEqual([
-      { code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: '준비 업무 2pt를 맡을 직원이 없습니다. 배정하기 전에는 화물이 출발할 수 없습니다.' },
+      { code: 'TASK_UNASSIGNED', severity: 'warn', messageKo: '준비 업무 2pt를 아직 아무에게도 배정하지 않았습니다. 배정하기 전에는 화물이 출발할 수 없습니다.' },
       { code: 'NO_SAILING_LEFT', severity: 'risk', messageKo: '캠페인 안에 이 화물을 실을 공간이 남은 출항편이 없습니다.' },
     ]);
     state.bookings[0]!.status = 'CANCELLED';

@@ -41,6 +41,41 @@ const MAP_BASE_OUTSIDE_SVG = false;
 let mapScrollRatio: number | undefined;
 let resetMapScroll = true;
 let commandSeq = 0;
+let ignoreClicksUntil = 0;
+let activation: { element: HTMLElement; pointer: boolean } | null = null;
+let statusbarObserver: ResizeObserver | undefined;
+const actionSizes = new Map<string, { height: number; width: number }>();
+/** 누른 버튼이 칸 안에서 있던 높이. 예정 표시를 그 자리에 둔다. */
+const actionOffsets = new Map<string, number>();
+
+/** 다시 그려도 배정·예약 자리가 줄어들어 다음 버튼이 움직이지 않게 한다. */
+function queuedStatus(slot: string, text: string): string {
+  const offset = actionOffsets.get(slot);
+  return `<div class="sailings queued-slot" style="min-height:${actionSizes.get(slot)?.height ?? 0}px;width:${actionSizes.get(slot)?.width ?? 0}px;max-width:100%${offset === undefined ? '' : `;justify-content:flex-start;padding-top:${Math.round(offset)}px`}"><span class="pill" id="status-${esc(slot)}" tabindex="-1">${text}</span></div>`;
+}
+
+function measureStatusbar() {
+  statusbarObserver?.disconnect();
+  const bar = app.querySelector<HTMLElement>('.statusbar')!;
+  const update = () => document.documentElement.style.setProperty('--topbar-h', `${bar.getBoundingClientRect().height}px`);
+  update();
+  statusbarObserver = new ResizeObserver(update);
+  statusbarObserver.observe(bar);
+}
+
+function focusWithoutScroll(target: HTMLElement | undefined | null) {
+  if (!target) return;
+  const bar = app.querySelector<HTMLElement>('.statusbar')!;
+  const rect = target.getBoundingClientRect();
+  const center = (rect.top + rect.bottom) / 2;
+  // 화면 밖 제목 대신 항상 보이는 하루 진행으로 옮긴다. 화면 위치는 유지한다.
+  const bandBottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
+  if (!target.closest('.statusbar') && (center < bar.getBoundingClientRect().bottom || center > bandBottom)) {
+    const nextDay = app.querySelector<HTMLButtonElement>('[data-action="end-day"]')!;
+    target = nextDay.disabled ? document.getElementById('status-h')! : nextDay;
+  }
+  target.focus({ preventScroll: true });
+}
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -55,6 +90,8 @@ function resetUi() {
   resetMapScroll = true;
   mapScrollRatio = undefined;
   mapMeasurements.clear();
+  actionSizes.clear();
+  actionOffsets.clear();
 }
 
 function newId(type: string): string {
@@ -87,6 +124,14 @@ function tryCommand(cmd: Command): CommandResult {
 }
 
 function queue(cmd: Command) {
+  const previousContracts = new Set(view.contracts.map((c) => c.id));
+  for (const slot of app.querySelectorAll<HTMLElement>('[data-action-slot]')) {
+    const rect = slot.getBoundingClientRect();
+    actionSizes.set(slot.dataset.actionSlot!, { height: rect.height, width: rect.width });
+  }
+  const slotEl = activation?.element.closest<HTMLElement>('[data-action-slot]');
+  const anchor = slotEl ? { slot: slotEl.dataset.actionSlot!, top: slotEl.getBoundingClientRect().top } : null;
+  if (anchor && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
   const result = tryCommand(cmd);
   if (result.status !== 'APPLIED') {
     ui.flash = { kind: 'warn', text: result.reasonKo };
@@ -94,7 +139,15 @@ function queue(cmd: Command) {
     ui.pending.push(cmd);
     ui.flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
   }
-  render();
+  const accepted = result.status === 'APPLIED' && (cmd.type === 'ACCEPT_TRADE' || cmd.type === 'ACCEPT_FORWARDING');
+  render(accepted, accepted ? null : anchor);
+  if (accepted) {
+    const contract = view.contracts.find((c) => !previousContracts.has(c.id));
+    const heading = contract && document.getElementById(`contract-h-${contract.id}`);
+    heading?.scrollIntoView({ block: 'start' });
+    heading?.focus({ preventScroll: true });
+  }
+  ignoreClicksUntil = Date.now() + 500;
 }
 
 function endDay() {
@@ -103,9 +156,14 @@ function endDay() {
   if ('errorKo' in committed) {
     ui.flash = { kind: 'warn', text: committed.errorKo! };
     render();
+    ignoreClicksUntil = Date.now() + 500;
     return;
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
+  const barBottom = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
+  const card = Array.from(app.querySelectorAll<HTMLElement>('.contract')).find((e) => { const r = e.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; });
+  const head = card?.querySelector<HTMLElement>('h3[id]');
+  const reading = head ? { id: head.id, top: head.getBoundingClientRect().top } : null;
   ui.growthNotices = growthMessages(state, committed.state, config);
   ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
@@ -115,6 +173,9 @@ function endDay() {
     ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` }
     : null;
   render();
+  const again = reading && document.getElementById(reading.id);
+  if (again) { const dy = again.getBoundingClientRect().top - reading.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
+  ignoreClicksUntil = Date.now() + 500;
 }
 
 // ── 화면 조각 ──
@@ -160,25 +221,29 @@ function topbar(): string {
     state.phase === 'AWAITING_INPUT' ? '의사결정 중 · 시간 정지' : state.phase === 'ENDED' ? '캠페인 종료' : '다음 날 준비';
   return `
   <header class="topbar">
+  <div class="masthead">
     <div class="brand"><span class="logo">Scitrade</span><span class="sub">${esc(config.stage)} 시제품 · 규칙 ${esc(config.rules.rulesVersion)} · DESIGN 가상값</span></div>
     <label class="scenario">시나리오
       <select data-action="scenario">
         ${SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
       </select>
     </label>
-    <div class="day"><b>${Math.min(state.day, config.campaignDays)}일</b> / ${config.campaignDays}<span>${phaseText}</span><small class="amount-basis">금액은 확정 기준</small></div>
-    <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
-    ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
-    <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
-    <div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
     <div class="actions">
-      <button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button>
       <button data-action="save">저장</button>
       <button data-action="load">불러오기</button>
       <button data-action="export">내보내기</button>
       <label class="file-btn">가져오기<input type="file" accept="application/json" data-action="import" hidden /></label>
       <button data-action="restart">처음부터</button>
     </div>
+  </div>
+  <div class="statusbar" id="status-h" tabindex="-1" aria-label="오늘 상태">
+    <div class="day"><div class="date"><b>${Math.min(state.day, config.campaignDays)}일</b> / ${config.campaignDays}</div><span>${phaseText}</span></div>
+    <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
+    ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
+    <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
+    <div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+    <div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
+  </div>
   </header>`;
 }
 
@@ -342,22 +407,24 @@ function contractPanel(c: Contract): string {
   const route = routeBetween(config, c.originCityId, c.destinationCityId);
   const forwarding = c.kind === 'FORWARDING';
 
-  if (active && task?.status === 'QUEUED') {
-    const queued = ui.pending.some((p) => p.type === 'ASSIGN_TASK' && p.taskId === task.id);
+  const queuedAssignment = task && ui.pending.some((p) => p.type === 'ASSIGN_TASK' && p.taskId === task.id);
+  if (active && task && (task.status === 'QUEUED' || queuedAssignment)) {
+    const queued = queuedAssignment;
     if (queued) {
-      actions.push('<span class="pill">준비 업무 배정 예정</span>');
+      actions.push(queuedStatus(`assign-${task.id}`, '준비 업무 배정 예정'));
     } else {
       const buttons = employedDefs(view, config).map((emp) => {
         const check = tryCommand({ id: newId('ASSIGN'), type: 'ASSIGN_TASK', taskId: task.id, employeeId: emp.id });
-        return `<button data-action="assign" data-task="${esc(task.id)}" data-emp="${esc(emp.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">${esc(emp.nameKo)}에게<small>${check.status === 'APPLIED' ? `하루 ${emp.workUnitsPerDay}pt` : esc(busyTask(emp.id) ? `${crewStatusKo(busyTask(emp.id))} — ${taskSchedule(busyTask(emp.id)!, config)}` : check.reasonKo)}</small></button>`;
+        return `<button data-action="assign" data-task="${esc(task.id)}" data-emp="${esc(emp.id)}" ${check.status !== 'APPLIED' ? `disabled title="${esc(check.reasonKo)}"` : ''}>${esc(emp.nameKo)}에게<small>${check.status === 'APPLIED' ? `하루 ${emp.workUnitsPerDay}pt` : esc(busyTask(emp.id) ? `${crewStatusKo(busyTask(emp.id))} — ${taskSchedule(busyTask(emp.id)!, config)}` : check.reasonKo)}</small></button>`;
       });
-      actions.push(`<div class="sailings"><span>${forwarding ? '운송 주선 준비(화물 인수·선적 서류)' : '수출 준비'} ${task.requiredWorkUnits}pt 맡기기</span><div class="row">${buttons.join('')}</div></div>`);
+      actions.push(`<div class="sailings" data-action-slot="assign-${esc(task.id)}"><span>${forwarding ? '운송 주선 준비(화물 인수·선적 서류)' : '수출 준비'} ${task.requiredWorkUnits}pt 맡기기</span><div class="row">${buttons.join('')}</div></div>`);
     }
   }
-  if (active && route && (!booking || booking.status === 'CANCELLED') && !shipment) {
-    const queued = ui.pending.some((p) => p.type === 'BOOK_SAILING' && p.contractId === c.id);
+  const queuedBooking = ui.pending.some((p) => p.type === 'BOOK_SAILING' && p.contractId === c.id);
+  if (active && route && (((!booking || booking.status === 'CANCELLED') && !shipment) || queuedBooking)) {
+    const queued = queuedBooking;
     if (queued) {
-      actions.push('<span class="pill">운송편 예약 예정</span>');
+      actions.push(queuedStatus(`book-${c.id}`, '운송편 예약 예정'));
     } else {
       const options = listSailings(config, route.id, view.day + 1).slice(0, 3).map((s) => {
         const load = sailingLoad(view, config, s);
@@ -365,10 +432,10 @@ function contractPanel(c: Contract): string {
         const cmd: Command = { id: newId('BOOK'), type: 'BOOK_SAILING', contractId: c.id, sailingId: s.id };
         const check = tryCommand(cmd);
         const late = s.scheduledArrivalDay + config.terms.customsDays > c.deliveryDeadlineDay;
-        return `<button data-action="book" data-sailing="${esc(s.id)}" data-contract="${esc(c.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">
-          ${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착 예정${late ? ' ⚠ 납기 초과' : ''}<small>남은 ${fmtM3(load.capacityLiters - load.volumeLiters)} · ${fmtKg(load.capacityGrams - load.massGrams)} / 이 화물 ${fmtM3(need.volumeLiters)} · ${fmtKg(need.massGrams)}${check.status !== 'APPLIED' ? ` — ${esc(check.reasonKo)}` : ''}</small></button>`;
+        return `<button data-action="book" data-sailing="${esc(s.id)}" data-contract="${esc(c.id)}" ${check.status !== 'APPLIED' ? `disabled title="${esc(check.reasonKo)}"` : ''}>
+          ${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착 예정${late ? ' ⚠ 납기 초과' : ''}<small>남은 ${fmtM3(load.capacityLiters - load.volumeLiters)} · ${fmtKg(load.capacityGrams - load.massGrams)} / 이 화물 ${fmtM3(need.volumeLiters)} · ${fmtKg(need.massGrams)}${check.status !== 'APPLIED' ? ` — ${esc(check.reasonKo)}` : ''}</small></button>${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}`;
       });
-      actions.push(`<div class="sailings"><span>운송편 예약 (${esc(route.id)}, 운임 ${usd(route.bookingFeeMinor)} 선지급)</span>${options.join('')}</div>`);
+      actions.push(`<div class="sailings" data-action-slot="book-${esc(c.id)}"><span>운송편 예약 (${esc(route.id)}, 운임 ${usd(route.bookingFeeMinor)} 선지급)</span>${options.join('')}</div>`);
     }
   }
   if (active && booking?.status !== 'DEPARTED' && !shipment) {
@@ -395,7 +462,7 @@ function contractPanel(c: Contract): string {
   ];
   return `
   <div class="contract ${forwarding ? 'forwarding' : ''}">
-    <h3><span class="kind ${forwarding ? 'kind-fwd' : 'kind-trade'}">${forwarding ? '운송 주선' : '직접 무역'}</span> ${esc(c.id)} · ${esc(qtyKo(c.goodId, c.quantity))} ${esc(cityName(config, c.originCityId))} → ${esc(cityName(config, c.destinationCityId))}${state.contracts.some((x) => x.id === c.id) ? '' : ' <span class="pill">오늘 실행 예정</span>'}</h3>
+    <h3 id="contract-h-${esc(c.id)}" tabindex="-1"><span class="kind ${forwarding ? 'kind-fwd' : 'kind-trade'}">${forwarding ? '운송 주선' : '직접 무역'}</span> ${esc(c.id)} · ${esc(qtyKo(c.goodId, c.quantity))} ${esc(cityName(config, c.originCityId))} → ${esc(cityName(config, c.destinationCityId))}${state.contracts.some((x) => x.id === c.id) ? '' : ' <span class="pill">오늘 실행 예정</span>'}</h3>
     ${pipeline(c)}
     ${progressBox(c)}
     <dl class="facts">${facts.map(([k, v]) => `<dt>${esc(k ?? '')}</dt><dd>${esc(v ?? '')}</dd>`).join('')}</dl>
@@ -465,7 +532,7 @@ function tradePanel(): string {
   const anyExpired = view.offers.some((o) => o.status === 'EXPIRED');
   return `
   <section class="panel trade" aria-labelledby="trade-h">
-    <h2 id="trade-h">거래·계약 <small>진행 중 ${active.length}건</small></h2>
+    <h2 id="trade-h" tabindex="-1">거래·계약 <small>진행 중 ${active.length}건</small></h2>
     ${delayPanel()}
     ${offerBoard()}
     ${active.map(contractPanel).join('')}
@@ -557,7 +624,7 @@ function crewPanel(): string {
   const rows = shown.map(({ def, candidate, task }) => crewRow(def, view, config, ui.selectedCard === def.id, candidate, task)).join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
-    <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
+    <h2 id="crew-h" tabindex="-1">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무·교육 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
     <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
@@ -565,7 +632,7 @@ function crewPanel(): string {
       <tbody>${rows}</tbody>
     </table>
     ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
-    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand)}
+    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending, queuedStatus)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
 }
@@ -616,7 +683,7 @@ function queuePanel(): string {
   return `
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
-    ${ui.flash ? `<p class="flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</p>` : ''}
+    ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? '<p class="muted small amount-basis-note">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>' : ''}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
     ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh)}
@@ -633,17 +700,19 @@ function logPanel(): string {
   </section>`;
 }
 
-function render() {
+function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
+  document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
   if (previousMap) mapScrollRatio = readMapScroll(true, previousMap.dataset.measured === 'true', resetMapScroll,
     previousMap.scrollLeft, previousMap.scrollWidth, previousMap.clientWidth, mapScrollRatio);
-  const focused = document.activeElement as HTMLElement | null;
+  const focused = activation?.element ?? document.activeElement as HTMLElement | null;
   // 태그와 모든 대상 속성을 비교한다. 대기열 순번은 삭제 시 바뀌므로 명령 ID를 쓴다.
   const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
   if (focusData) delete focusData.index;
   const tag = focused?.tagName;
-  const blockHeading = focused?.closest(FOCUS_FALLBACK_SELECTORS.join(', '))?.querySelector('h3, h4')?.id;
+  const blockHeading = focused?.closest(FOCUS_FALLBACK_SELECTORS.join(', '))?.querySelector('h3, h4')?.id
+    ?? focused?.closest('.contract, .panel')?.querySelector('h3[id], h2[id]')?.id;
   app.innerHTML = `
     ${topbar()}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
@@ -654,7 +723,16 @@ function render() {
       ${queuePanel()}
       ${reportPanel()}
       ${logPanel()}
-    </main>`;
+    </main>
+    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</div>` : ''}`;
+  const toastEl = app.querySelector<HTMLElement>('.flash-toast');
+  document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
+  measureStatusbar();
+  if (anchor) {
+    const now = document.getElementById(`status-${anchor.slot}`)?.parentElement ?? app.querySelector<HTMLElement>(`[data-action-slot="${anchor.slot}"]`);
+    const dy = now ? now.getBoundingClientRect().top - anchor.top : 0;
+    if (dy >= 1) window.scrollBy(0, dy);
+  }
   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
   ui.growthNoticesFresh = false;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
@@ -683,111 +761,132 @@ function render() {
     positionMap();
     resetMapScroll = false;
   });
-  if (focusData) {
+  if (focusData && !skipFocus) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
       el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));
-    const fallback = focusFallbackIds(focusData, blockHeading).map((id)=>document.getElementById(id)).find(Boolean);
-    (target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback)?.focus();
+    const slot = focusData.action === 'assign' ? `assign-${focusData.task}` : focusData.action === 'book' ? `book-${focusData.contract}` : undefined;
+    const ids = [slot ? `status-${slot}` : undefined, ...focusFallbackIds(focusData, blockHeading)];
+    const fallback = ids.filter((id): id is string => Boolean(id) && !(activation?.pointer && id === 'queue-h'))
+      .map((id) => document.getElementById(id)).find(Boolean);
+    focusWithoutScroll(target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback);
   }
+}
+
+function showGrowthControl() {
+  const control = app.querySelector<HTMLElement>('[data-action="detail"]');
+  control?.scrollIntoView({ block: 'nearest' });
+  control?.focus({ preventScroll: true });
 }
 
 // ── 이벤트 ──
 
 app.addEventListener('click', (ev) => {
   const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
-  if (!el || (el as HTMLButtonElement).disabled) return;
+  if (!el || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
+  activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
-  switch (d.action) {
-    case 'train':
-      return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
-    case 'detail':
-      ui.detailId = ui.detailId === d.emp ? null : d.emp!;
-      return render();
-    case 'scout':
-      return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
-    case 'recruit-quest':
-      return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
-    case 'interview':
-      ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
-      return render();
-    case 'hire':
-      return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
-    case 'end-day':
-      return endDay();
-    case 'accept':
-      return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell! });
-    case 'accept-fwd':
-      return queue({ id: newId('FWD'), type: 'ACCEPT_FORWARDING', offerId: d.offer! });
-    case 'assign':
-      return queue({ id: newId('ASSIGN'), type: 'ASSIGN_TASK', taskId: d.task!, employeeId: d.emp! });
-    case 'book':
-      return queue({ id: newId('BOOK'), type: 'BOOK_SAILING', contractId: d.contract!, sailingId: d.sailing! });
-    case 'cancel':
-      return queue({ id: newId('CANCEL'), type: 'CANCEL_CONTRACT', contractId: d.contract! });
-    case 'keep':
-      return queue({ id: newId('KEEP'), type: 'RESPOND_TO_DELAY', noticeId: d.notice!, shipmentId: d.shipment!, choice: 'KEEP_SHIPMENT_BOOKING' });
-    case 'unqueue':
-      ui.pending.splice(Number(d.index), 1);
-      ui.flash = null;
-      return render();
-    case 'map-mode':
-      mapMode = d.mode === 'world' ? 'world' : 'route';
-      return render();
-    case 'select-card':
-      ui.selectedCard = ui.selectedCard === d.emp ? null : (d.emp ?? null);
-      return render();
-    case 'crew-filter':
-      ui.crewFilter = d.filter === 'free' || d.filter === 'busy' || d.filter === 'candidate' ? d.filter : 'all';
-      return render();
-    case 'accept-plan': {
-      const base = offerCommands[d.key!];
-      if (!base || (base.type !== 'ACCEPT_TRADE' && base.type !== 'ACCEPT_FORWARDING')) return;
-      return queue({ ...base, id: newId('PLAN'), plan: { ...ui.plans[d.key!] } });
-    }
-    case 'restart':
-      startScenario(config.id as ScenarioId);
-      return render();
-    case 'save':
-      try {
-        localStorage.setItem(SAVE_KEY, serializeSave(state));
-        ui.flash = { kind: 'info', text: `${state.day}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.` };
-      } catch {
-        ui.flash = { kind: 'warn', text: '이 브라우저에서는 저장할 수 없습니다. ‘내보내기’로 파일을 받아 두세요.' };
+  try {
+    switch (d.action) {
+      case 'train':
+        return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
+      case 'detail':
+        ui.detailId = ui.detailId === d.emp ? null : d.emp!;
+        return render();
+      case 'scout':
+        return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
+      case 'recruit-quest':
+        return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
+      case 'interview':
+        ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
+        return render();
+      case 'hire':
+        return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
+      case 'end-day':
+        return endDay();
+      case 'accept':
+        return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell! });
+      case 'accept-fwd':
+        return queue({ id: newId('FWD'), type: 'ACCEPT_FORWARDING', offerId: d.offer! });
+      case 'assign':
+        return queue({ id: newId('ASSIGN'), type: 'ASSIGN_TASK', taskId: d.task!, employeeId: d.emp! });
+      case 'book':
+        return queue({ id: newId('BOOK'), type: 'BOOK_SAILING', contractId: d.contract!, sailingId: d.sailing! });
+      case 'cancel':
+        return queue({ id: newId('CANCEL'), type: 'CANCEL_CONTRACT', contractId: d.contract! });
+      case 'keep':
+        return queue({ id: newId('KEEP'), type: 'RESPOND_TO_DELAY', noticeId: d.notice!, shipmentId: d.shipment!, choice: 'KEEP_SHIPMENT_BOOKING' });
+      case 'unqueue':
+        ui.pending.splice(Number(d.index), 1);
+        ui.flash = null;
+        return render();
+      case 'map-mode':
+        mapMode = d.mode === 'world' ? 'world' : 'route';
+        return render();
+      case 'select-card':
+        ui.selectedCard = d.emp ?? null;
+        render();
+        showGrowthControl();
+        return;
+      case 'crew-filter':
+        ui.crewFilter = d.filter === 'free' || d.filter === 'busy' || d.filter === 'candidate' ? d.filter : 'all';
+        return render();
+      case 'accept-plan': {
+        const base = offerCommands[d.key!];
+        if (!base || (base.type !== 'ACCEPT_TRADE' && base.type !== 'ACCEPT_FORWARDING')) return;
+        return queue({ ...base, id: newId('PLAN'), plan: { ...ui.plans[d.key!] } });
       }
-      return render();
-    case 'load': {
-      let text: string | null = null;
-      try {
-        text = localStorage.getItem(SAVE_KEY) ?? localStorage.getItem(LEGACY_SAVE_KEY);
-      } catch {
-        text = null;
+      case 'restart':
+        if (!confirm('처음부터 시작하면 현재 진행과 오늘 할 일이 사라집니다. 다시 시작할까요?')) return;
+        startScenario(config.id as ScenarioId);
+        return render();
+      case 'save':
+        try {
+          localStorage.setItem(SAVE_KEY, serializeSave(state));
+          ui.flash = { kind: 'info', text: `${state.day}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.` };
+        } catch {
+          ui.flash = { kind: 'warn', text: '이 브라우저에서는 저장할 수 없습니다. ‘내보내기’로 파일을 받아 두세요.' };
+        }
+        return render();
+      case 'load': {
+        let text: string | null = null;
+        try {
+          text = localStorage.getItem(SAVE_KEY) ?? localStorage.getItem(LEGACY_SAVE_KEY);
+        } catch {
+          text = null;
+        }
+        if (text && !confirm('불러오면 현재 진행과 오늘 할 일이 사라집니다. 저장된 상태를 불러올까요?')) return;
+        return text ? loadText(text) : ((ui.flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
       }
-      return text ? loadText(text) : ((ui.flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
+      case 'export': {
+        const blob = new Blob([serializeSave(state)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `scitrade-${config.id}-day${state.day}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        return;
+      }
     }
-    case 'export': {
-      const blob = new Blob([serializeSave(state)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `scitrade-${config.id}-day${state.day}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      return;
-    }
-  }
+  } finally { activation = null; }
 });
 
 app.addEventListener('keydown', (ev) => {
   const el = ev.target as HTMLElement;
   if (el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
     ev.preventDefault();
-    ui.selectedCard = ui.selectedCard === el.dataset.emp ? null : (el.dataset.emp ?? null);
+    ui.selectedCard = el.dataset.emp ?? null;
     render();
+    showGrowthControl();
   }
 });
 
 app.addEventListener('change', async (ev) => {
   const el = ev.target as HTMLInputElement | HTMLSelectElement;
   if (el.dataset.action === 'scenario') {
+    if (!confirm('시나리오를 바꾸면 현재 진행과 오늘 할 일이 사라집니다. 바꿀까요?')) {
+      el.value = config.id;
+      return;
+    }
     startScenario(el.value as ScenarioId);
     render();
   } else if (el.dataset.action === 'recruit-emp') {
@@ -803,6 +902,7 @@ app.addEventListener('change', async (ev) => {
     ui.touchedPlans.add(key);
     render();
   } else if (el.dataset.action === 'import' && el instanceof HTMLInputElement && el.files?.[0]) {
+    if (!confirm('가져오면 현재 진행과 오늘 할 일이 사라집니다. 파일을 불러올까요?')) { el.value = ''; return; }
     loadText(await el.files[0].text());
   }
 });

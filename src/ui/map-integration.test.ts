@@ -7,6 +7,8 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); resize.callback =
 
 async function start(outsideRegion = false) {
   vi.resetModules();
+  vi.stubGlobal('confirm',()=>true);
+  vi.stubGlobal('ResizeObserver',class { observe() {} disconnect() {} });
   if (outsideRegion) {
     const content = await import('../content/map');
     vi.spyOn(content,'loadRouteWaypoints').mockReturnValue([{lon:0,lat:40}]);
@@ -21,11 +23,12 @@ async function start(outsideRegion = false) {
       frame = {dataset:{},innerHTML:value,scrollLeft:0,scrollWidth:2000,clientWidth:930,querySelector:()=>({dataset:{mapCenter:'.5'}})};
     },
     addEventListener: (name: string, callback: typeof listeners[string]) => { listeners[name] = callback; },
-    querySelector: (selector: string) => selector === '[data-map-frame]' || (selector === '.map-frame.is-world' && html.includes('class="map-frame is-world"')) ? frame : null,
+    querySelectorAll:()=>[],
+    querySelector: (selector: string) => selector === '.statusbar' ? {getBoundingClientRect:()=>({height:80})} : selector === '[data-map-frame]' || (selector === '.map-frame.is-world' && html.includes('class="map-frame is-world"')) ? frame : null,
   };
-  vi.stubGlobal('document',{querySelector:()=>app,activeElement:null});
+  vi.stubGlobal('document',{querySelector:()=>app,activeElement:null,getElementById:()=>null,documentElement:{style:{setProperty:()=>undefined}}});
   await import('./main');
-  const click = (dataset: Record<string,string>) => listeners.click!({target:{closest:()=>({dataset})}});
+  const click = (dataset: Record<string,string>) => listeners.click!({target:{closest:()=>({dataset,closest:()=>null})}});
   return {app, frame:()=>frame!, click,
     importText: async (text: string) => {
       class Input { dataset = {action:'import'}; files = [{text:async()=>text}]; }
