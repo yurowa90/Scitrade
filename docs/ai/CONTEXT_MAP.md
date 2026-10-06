@@ -15,6 +15,7 @@
 | 2026-10-05 플레이·개발·그래픽 연구 | [연구 인계](../../references/playthrough_research_2026-10-05/HANDOFF.md), [전체 자료](../../references/playthrough_research_2026-10-05/README.md), [제안별 적용표](../RESEARCH_APPLICATION.md) | 통합 JSON의 영상26개·관찰134개·제안14개, 공식 화면17개. 적용 코드: `src/engine/progress.ts`, `src/engine/research-ref.test.ts` |
 | 원작·영상 참고 | ../../references/REFERENCE_REVIEW.md | dk4_reference, guild3_reference, user_character_clip |
 | M2a 사용성 시험 | [시험 계획 초안](../USABILITY_TEST_M2A.md) | 과제 T1~T4, 관찰지, 판정 기준, 윤리·개인정보 |
+| 그림·지도(픽셀아트) | [픽셀 규격](../art/PIXEL_SPEC.md), [제작 절차](../art/PROMPTS.md), [제작 목록](../art/ASSET_BACKLOG.md), ../ART_DIRECTION.md 맨 위 절 | `src/assets/palette.json`, `src/assets/manifest.json`, `scripts/build_map.py`(+`test_build_map.py`), `tools/art/*`, `src/ui/pixel.ts`·`map.ts` |
 | Codex 작업 지시·검수 | [작업 지시서 목록](tasks/README.md), [공통 머리말](tasks/CODEX_PREAMBLE.md), WORKFLOW.md ‘역할 분담’ | `tools/ai/codex_task.sh`(실행), `tools/ai/review_checks.sh`(검수 자동 검사), `docs/ai/tasks/results/`(결과 보고) |
 
 표의 데이터 이름은 저장소 루트 `data/<이름>.json`, 레퍼런스 이름은 `references/<이름>.json`이다. tests 경로는 저장소 루트 기준이다.

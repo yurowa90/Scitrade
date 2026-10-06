@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행 작업: TASK-0004·0008 반영(개발 브랜치), TASK-0007 반영(픽셀 렌더링. `card.ts`·`main.ts`·`style.css`가 겹치므로 그 뒤에 시작한다)
+- 선행 작업: TASK-0004·0008·0007 반영(개발 브랜치, 2026-10-06). TASK-0007의 픽셀 렌더링이 `card.ts`(카드 그림 줄)·`main.ts`(지도 연결)·`style.css`를 바꿨으므로 그 위에서 작업한다.
 - 결정 근거:
   - `docs/DECISIONS.md`의 다음 절: ‘M2a-2 동료 영입 구현의 세부 결정’, ‘M2a-3 경험치·레벨·일반 훈련 구현의 세부 결정’, ‘취소 정산 결함 수정과 저장 무결성’.
   - Claude 범위 조사. 영입 검수에서 미뤄 둔 11건이 현재 코드에 남아 있는지 재현으로 확인했고, 성장 화면에 필요한 것을 정리했다.
@@ -24,13 +24,14 @@
 ## 먼저 읽을 파일
 
 - `src/ui/main.ts`, `src/ui/recruitment.ts`, `src/ui/card.ts`, `src/ui/recruitment.test.ts`, `src/ui/html.ts`, `src/ui/style.css`.
+- `src/ui/map-integration.test.ts`(실제 `main` 모듈을 가짜 `document`로 불러와 시험하는 틀), `src/ui/pixel.test.ts`.
 - `src/engine/tasks.ts`, `growth.ts`(`levelProgress`, `statsFor`), `previews.ts`, `reports.ts`, `reservations.ts`(`fundsPosition`, `trainingAvailableMinor`), `save.ts`.
 - `tests/character_acceptance_cases.json`의 CHAR-ACC-01·02·08.
 - `docs/UI_SPEC.md`, `docs/CHARACTERS_AND_ORGANIZATION.md`의 교육·능력 부분, `docs/ART_DIRECTION.md` 맨 위 절(픽셀아트, 본문 글자 유지).
 
 ## 테스트할 수 있게 만드는 원칙
 
-`main.ts`는 불러오는 순간 DOM을 건드려 vitest로 시험할 수 없다. DOM 테스트 라이브러리는 설치하지 않는다. 그래서 다음을 지킨다.
+`main.ts`는 불러오는 순간 DOM을 건드린다. DOM 테스트 라이브러리는 설치하지 않는다. `src/ui/map-integration.test.ts`가 가짜 `document`와 `./pixel` 흉내로 실제 `main`을 불러와 시험하는 틀을 이미 갖고 있다. 이 틀은 `innerHTML`·`addEventListener`·`querySelector`만 흉내 내므로, 새 DOM 호출(예: 초점 복원)을 넣으면 그 흉내에 메서드를 더해야 한다. 그래도 다음을 지킨다.
 - 새 판단과 HTML 생성은 **순수 모듈**에 둔다. `main.ts`는 연결만 한다.
 - 예: `src/ui/session.ts`, `src/ui/growth.ts`, `src/ui/reports.ts`, `src/ui/trade.ts`. 모듈 이름은 자유다.
 - 데이터에서 온 문자열은 넣는 자리에서 모두 `esc()`한다. 텍스트 자리와 속성 자리 모두다.
@@ -42,22 +43,23 @@
    - 비울 것: 대기 명령, 알림, 선택 카드, 필터, 열린 면담, 영입 담당 선택, 계획 선택(`plans`·`touchedPlans`), 그리고 B에서 생길 열린 상세·훈련 선택.
    - 지금 `loadText`는 `plans`·`touchedPlans`·`selectedCard`를 비우지 않아, 불러온 뒤 지난 선택이 엔진 기본값을 덮는다.
    - 불러오기 실패 때는 지금 게임을 그대로 둔다.
+   - 지도 상태(측정 기억 `mapMeasurements.clear()`, `resetMapScroll = true`, `mapScrollRatio = undefined`)도 처음부터·시나리오 전환·불러오기·가져오기 모두에서 같은 초기화 경로로 비운다. `src/ui/map-integration.test.ts`의 ‘시나리오 전환’과 ‘저장을 불러오면…’ 시험이 그대로 통과해야 한다. 가져오기(파일) 경로에도 같은 시험을 더한다.
 2. **불러오기 순수 함수 `loadSaveText(text)`:**
    - 결과는 `{ config, state } | { errorKo }`. 시나리오 확인, `deserializeSave`(설정과 규칙 판본 전달), `openDay`를 한다.
    - 손상 저장은 한국어 메시지로 거절한다(TASK-0004·0008의 SaveError 메시지).
    - **하루 진행 보호:** ‘하루 진행’의 `commitDay` 예외를 잡아 알림으로 보여 주고, 게임 상태를 유지한다.
 3. **이스케이프 전수:** `main.ts`에서 상태·자료에서 온 문자열을 모두 `esc()`한다. 지금 빠진 곳은 다음과 같다.
-   - 보고자 줄(293·312행 부근), 배정 버튼의 직원 이름과 속성(341행 부근).
+   - 견적판의 보고자 줄(‘의 보고’ 문구, 직접 무역·운송 주선 두 곳), 준비 업무 배정 버튼(`data-action="assign"`)의 직원 이름과 속성.
    - 계약 번호, 도시 이름, 수량 문구.
-   - 알림의 제목·본문·근거(439~441행 부근).
+   - 알림의 제목·본문·근거(`n.titleKo` 등 공지 카드).
    - 시험: 위험 문자열(`공통<&"'문자>`, `<img src=x onerror=alert(1)>`)을 이름·알림 본문·계약 번호에 넣은 저장을 렌더링한다. 원문이 그대로 나오지 않고 이스케이프된 형태가 나와야 한다.
 4. **내부 ID 대신 이름:**
-   - 계약 담당 표시 ‘귀솔 (EMP01)’에서 ID를 뺀다(379행 부근).
+   - 계약 담당 표시 ‘귀솔 (EMP01)’에서 ID를 뺀다(`['담당', …employeeName(c.ownerEmployeeId)…]` 줄).
    - 카드의 직원 ID 표시(`card.ts`)는 화면에서 빼고 접근 이름에도 넣지 않는다.
    - 노선·출항편·계약 번호는 플레이어에게 보이는 값으로 남긴다.
    - 업무 대상 문구는 `taskSubjectKo`를 쓴다(카드 일정, 운영표, 자원 패널, 계획 선택지, 배정 버튼 보조 문구).
 5. **취소 안내 금액:**
-   - 지금 `main.ts` 368행은 고정 환급(150 USD)을 보여 준다. ROUTE02 예약은 실제로 130 USD를 환급한다.
+   - 지금 `main.ts`의 ‘취소하면:’ 줄은 고정 환급(150 USD)을 보여 준다. ROUTE02 예약은 실제로 130 USD를 환급한다.
    - 그 계약의 `CANCEL_CONTRACT`를 `planState`로 미리 계획해, 엔진이 만든 정산 항목의 환급·취소비를 보여 준다. 화면이 따로 계산하지 않는다.
    - 시험: ROUTE01 150/50, ROUTE02 130/50.
 6. **원화 보고서 행:**
@@ -87,7 +89,7 @@
 10. **검사기·자료:**
     - `tests/acceptance_cases.json`의 `review_summary`를 실제 값(18건, P0 13·P1 4·P2 1)으로 고친다.
     - `tools/validate_data.py`가 개수를 대조하게 한다.
-    - 시나리오 검사에서 영입 블록 키가 빠져도 예외 없이 `check()` 실패로 보고하는지 확인한다(217행 부근 KeyError가 남아 있으면 고친다).
+    - 시나리오 검사에서 영입 블록 키가 빠져도 예외 없이 `check()` 실패로 보고하는지 확인한다(시나리오 검산의 `scenario['recruitment']['signing_fee_wage_days']`처럼 키를 바로 읽는 곳에서 KeyError가 나면 고친다).
 11. **문구:** 직원 패널 각주의 ‘레벨은 이후 단계에서 켭니다’를 고친다.
     - 새 문구: ‘레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 Npt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다.’
     - 이 문장은 함수(`crewNoteKo(config)`)로 만들어 시험한다.
@@ -153,6 +155,8 @@
 - `data/**`의 값.
 - `docs/STATUS.md`·`docs/DECISIONS.md`·`docs/ai/tasks/README.md`·`docs/art/*.md`.
 - 지도·픽셀 렌더링 코드(`map.ts`·`pixel.ts`·`sprite.ts`). 다만 카드 그림 줄과 충돌하지 않게 둔다.
+- `main.ts`의 지도 연결부(측정 기억 `mapMeasurements`, `applyPixelScale` 콜백, 지도 스크롤 저장·복원)의 동작.
+- `src/ui/map-integration.test.ts`·`src/ui/pixel.test.ts`의 단언을 약하게 바꾸지 않는다. 가짜 DOM에 메서드를 더하는 것은 허용한다.
 - 움직임 효과, 새 패키지.
 
 ## 결과 보고

@@ -75,7 +75,7 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
    - 실행 장소는 로컬 작업 브랜치 `codex/<작업 ID>`다.
    - Codex는 변경과 결과 보고서(`docs/ai/tasks/results/<작업 ID>.md`)만 남긴다.
 3. **검수:** Claude가 아래를 확인한다.
-   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드.
+   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·파이썬 시험(그림 도구, 지도 생성). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
    - diff 전체를 읽고, 기존 기대값이 바뀌지 않았는지 본다.
    - 지시서의 완료 조건을 하나씩 대조한다.
    - 화면 작업은 Playwright로 클릭해 진행한다.
@@ -109,4 +109,14 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
 - **스냅숏 커밋:** Codex가 끝나면 로컬 작업 브랜치에 ‘검수 전 스냅숏’으로 커밋한 뒤 검수한다. 실행 중에는 커밋하지 않는다.
 - **프로세스 종료:** `pkill -f`는 쓰지 않는다. 그 패턴이 자기 셸 명령 줄과도 맞아 셸까지 끝낼 수 있다. `pgrep`으로 PID를 확인한 뒤 `kill`한다.
 - **조사 결과의 지위:** Sol의 조사 결과를 독립 검증해 보니 맞는 값 하나를 틀렸다고 판정한 것이 있었다(TASK-0003, 산투스). 그래서 조사 결과는 교차 검증 없이 데이터에 넣지 않는다.
+
+**운영 기록 (2026-10-06 추가, TASK-0004·0007 검수에서 정한 것):**
+- **디스크:**
+  - 검증 에이전트는 작업 사본을 하나만 만들고, 끝나기 전에 지운다(`rm -rf`).
+  - 브라우저 측정이나 긴 시험 전에 `df -h /`로 남은 공간을 확인한다.
+  - 이유: 디스크가 차면 브라우저 렌더러가 멈추고, 코드 결함처럼 보인다. TASK-0007 검수 3차에서 이것을 CSS 문제로 잘못 판단했다(`docs/DECISIONS.md` ‘픽셀 렌더링·픽셀 지도 반영’).
+- **화면 배율 측정:** Playwright의 배율 흉내(`deviceScaleFactor`)를 쓰지 않는다. 실제 장치에 없는 이음매와 흐림이 생긴다. 대신 Chromium을 실제 배율로 띄운다.
+  - `chromium.launch({ args: ['--force-device-scale-factor=<배율>', '--window-size=<폭>,1000'] })`
+  - `browser.newContext({ viewport: null })`
+- **`MANIFEST.json`:** 스냅숏 커밋 전에 `git checkout MANIFEST.json`으로 되돌리지 않는다. 자료 해시가 실제 파일과 어긋난다. 항상 `python3 tools/build_package.py --manifest-only`로 다시 만든다(TASK-0004-R1 스냅숏에서 생긴 실수).
 

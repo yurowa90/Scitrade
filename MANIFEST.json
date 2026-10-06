@@ -152,8 +152,8 @@
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 12243,
-      "sha256": "06efcc86791a82ccc6e685f7506967d58f4a6f75b31896da3f92912c95164523"
+      "size_bytes": 12801,
+      "sha256": "9769d2cabe173c550d7810821af5cf1a6ae98354875ddad0940f11b52315b3df"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 58307,
-      "sha256": "9bf5d4a4c40a378ae350f9d8d96b2ab5aa0ce0c932b68386dd847872a6dd52a1"
+      "size_bytes": 65583,
+      "sha256": "8b53370b19d7586eb810b24cf43db5ce682872c15d0cb5d8c199c9b817fce993"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 26356,
-      "sha256": "03df568f640ce2737c897463fd7f4a55482316903e4998057db9f240cf78cb32"
+      "size_bytes": 29476,
+      "sha256": "6f1d1ce8f67442bcfc2076db415ffd2e633bf7ee0d24972af7fb9ee38323f51d"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 9792,
-      "sha256": "5891baed105cefb35b065ba713b2a20abdae658c76c40d9565afdd780c983f59"
+      "size_bytes": 10114,
+      "sha256": "17b208bd568e11d60a90f5f6f410eb71c043708fb9c3f71b868eaf43cb01eb87"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 3231,
-      "sha256": "64e52babfdfd60e235aa7a633a8453571b06aa6db55a1210fc5510b4a0258efb"
+      "size_bytes": 3561,
+      "sha256": "c221ed24558068d177e08337cace71852252b79871861cdc0e15f18df45712b6"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 11095,
-      "sha256": "9450f616343c9c2c0506d5df228651476ee2f1f1312d45496eee48689a4462a3"
+      "size_bytes": 12429,
+      "sha256": "70dbf4d9bc4d1f4c4a4696dd527bf27f785b33b380a82aab12fc31517a4ee48e"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 2857,
-      "sha256": "8d3b28f8ef326a61248902571ea9c1fe20e3bea4ce522de791accb20d924a2e5"
+      "size_bytes": 2980,
+      "sha256": "d51f696ba4529db3b1e5285ab1eba6b6a226a640e7cebd2daf07b7a27e8a0af1"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -267,8 +267,23 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
-      "size_bytes": 13078,
-      "sha256": "42fb3d9582b423b606ca255a43c93e30e77571115c617e2ab0144c6871c67e5c"
+      "size_bytes": 14526,
+      "sha256": "9c8a8f25083a626477952bcda03653b5053626317b9828843378f2f618472294"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0007-R1-pixel-map-fixes.md",
+      "size_bytes": 14828,
+      "sha256": "7dab320a76718b1cfeb17ce6142b1a67ce9d661703843aeb6512195633a03bbd"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0007-R2-pixel-map-polish.md",
+      "size_bytes": 12566,
+      "sha256": "836ed7149d36571932ebe0440d40034d4c6351d2533b6264518861d2106fde50"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0007-R3-map-water-and-colour.md",
+      "size_bytes": 10117,
+      "sha256": "cc8075431e6fb926ad749510bf7b2d3a38deef414f02d8791fdad821f5bae037"
     },
     {
       "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
@@ -306,24 +321,39 @@
       "sha256": "455d3d8ea42e5a28cf1a093db882b9593103316ec4ac18ef9dd4f0a6e58f23de"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0007.md",
+      "size_bytes": 137520,
+      "sha256": "96af5d47cd025206142f1692819ee046715e5881d6845cdce4e3ef3360365f67"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0008.md",
       "size_bytes": 10808,
       "sha256": "8b420f3de9e2dec2de8bdca1a452ab763b55dbceb444e72c1642aae679e52c3b"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 8496,
-      "sha256": "2c140c69e19cfb5795138aacc009b16d5cf3d654d13fb8b657f4d31863853b9a"
+      "size_bytes": 8922,
+      "sha256": "3a39f07b9bb89599539518159ecc4bf77b7e767761269020697e206c3ed37387"
     },
     {
       "path": "docs/art/PIXEL_SPEC.md",
-      "size_bytes": 8600,
-      "sha256": "47d7d6d9f5f0680cc44b1d5061a55a6bf5311b01c751d8178139f79ae174288a"
+      "size_bytes": 16298,
+      "sha256": "526a9de91296132ba8bf8d5b66f050e0b21c6b514f9eebacdee465302aef298c"
     },
     {
       "path": "docs/art/PROMPTS.md",
-      "size_bytes": 19506,
-      "sha256": "60eef332fd1625d0716810ccc1e5960aecac89fd2c4c6e315e61f2e2ec79bded"
+      "size_bytes": 19639,
+      "sha256": "9f7a8411dd5901275f814dfdf18ec90c50d13e7eb509bae4d36fa81b90b5f034"
+    },
+    {
+      "path": "docs/art/palette/scitrade-32.gpl",
+      "size_bytes": 664,
+      "sha256": "6a8beb8277671b04bc48b9794818a64fa7077afef0ec33db437b259e27a4bc1e"
+    },
+    {
+      "path": "docs/art/palette/scitrade-32.hex",
+      "size_bytes": 256,
+      "sha256": "af37b41a6f3269b7d25900ab82686e6cc85e1468aea1b1d8a960bf81e6bfa02b"
     },
     {
       "path": "references/REFERENCE_REVIEW.md",
@@ -567,8 +597,33 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 827,
-      "sha256": "65394bd55d70a48c8e581d9b120b25b38737f5472addf18c5e644b0189ea05bd"
+      "size_bytes": 1094,
+      "sha256": "23ddf339038d2171d60d686ee839ad253d9902d4f0d55728dfd0ae9cf6bda541"
+    },
+    {
+      "path": "tools/art/check_pixel_asset.py",
+      "size_bytes": 3902,
+      "sha256": "ff75034e965a5b32121af60ae9346f997620c7be16f68232e1d04c39b8ffb53b"
+    },
+    {
+      "path": "tools/art/palette.py",
+      "size_bytes": 4313,
+      "sha256": "eccbdef9c80cbb7a0fa562d3003d5f420315806599b101206ae67ed80c1de639"
+    },
+    {
+      "path": "tools/art/pixelize.py",
+      "size_bytes": 5305,
+      "sha256": "373274430bab5c0c8addcdc17d393716c37e6a9a56753164a367e5cd5568b9c5"
+    },
+    {
+      "path": "tools/art/png_format.py",
+      "size_bytes": 3756,
+      "sha256": "37c732eed4234dbcba48d0492cc65c66906c168a4eb2b6d17f454fcba6ed33bf"
+    },
+    {
+      "path": "tools/art/test_pixel_tools.py",
+      "size_bytes": 23371,
+      "sha256": "7945d4745be5adb343f51bc0dd53aec246fd7c02e046a3e764cae5461d6e2e7c"
     },
     {
       "path": "tools/build_package.py",
