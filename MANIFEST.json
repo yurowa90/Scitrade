@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 4189,
-      "sha256": "f70aa73a885a60129ce2565ef1e91d77c7a719e1c012afd41452e030ea739641"
+      "size_bytes": 4498,
+      "sha256": "bba9da2a8d3cf12eb0ebca926d0bcf6b08a062cbc4630ce1432c6b19fec7e7fc"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -319,6 +319,11 @@
       "path": "docs/ai/tasks/TASK-0010-save-v5-foundation.md",
       "size_bytes": 16081,
       "sha256": "6744323010df62ba70f6156dd858914451440936ba757f9026eaad6afba0d259"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0013-deferred-display-fixes.md",
+      "size_bytes": 8967,
+      "sha256": "b9501fe19f28bde07021c7dbd75cff921790ac5a0b697573c159b6c427a5f884"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
