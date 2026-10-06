@@ -379,3 +379,19 @@ table.roster .chip { font-size: .7rem; padding: 0 .4rem; }
 @media (prefers-reduced-motion: reduce) {
   .pixel-sprite { animation: none; background-position-x: 0; }
 }
+
+/* 성장 기록: 본문 글꼴을 유지하고 능력은 각각의 값으로 표시한다. */
+.growth-detail { margin-top: .8rem; }
+.employee-detail { margin-top: .5rem; padding: .7rem; border: 1px solid var(--line); border-radius: 10px; }
+.employee-detail[hidden] { display: none; }
+.employee-detail h3 { font-size: 1rem; }
+.employee-detail p { font-size: .82rem; overflow-wrap: anywhere; }
+.growth-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; font-size: .82rem; }
+.growth-stats dt { color: var(--navy-soft); }
+.growth-stats dd { margin: 0; font-weight: 700; }
+.training { border-top: 1px solid var(--line); margin-top: .7rem; padding-top: .7rem; }
+.training h4 { margin: 0; }
+.growth-notices { border-left: 3px solid var(--mint-deep); padding-left: .6rem; }
+.growth-notices p { margin: .3rem 0; }
+.card-meta { flex-wrap: wrap; }
+.card-bottom { overflow-wrap: anywhere; }

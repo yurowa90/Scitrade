@@ -7,15 +7,22 @@ import { esc } from './html';
 import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
-import { cityName, commitDay, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
+import { cityName, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { companyReport, contractReport, forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../engine/reports';
 import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLoad } from '../engine/reservations';
-import { SaveError, deserializeSave, serializeSave } from '../engine/save';
+import { serializeSave } from '../engine/save';
 import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
-import { crewCard, taskName } from './card';
-import { batchUnlocked, candidateCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
+import { taskName } from './card';
+import { batchUnlocked, crewEntryCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
+import { initialUiState, loadSaveText, advanceDay } from './session';
+import { cancellationPreviewKo } from './trade';
+import { krwReportRows, KRW_REPORT_NOTE_KO } from './reports';
+import { crewNoteKo, crewStatusKo } from './crew-status';
+import { taskSubjectKo } from '../engine/tasks';
+import { employeeDetail, growthMessages, growthStatus } from './growth';
+import { FOCUS_FALLBACK_SELECTORS, focusFallbackIds } from './focus';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, mapPresentation, readMapScroll, mapScrollPosition, mapRedrawDecision, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
@@ -27,17 +34,7 @@ let config: ScenarioConfig;
 let state: GameState;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
-let pending: Command[] = [];
-let flash: { kind: 'info' | 'warn'; text: string } | null = null;
-let selectedCard: string | null = null;
-/** 동료 카드와 운영표가 함께 쓰는 필터 (REF-05). */
-let crewFilter: 'all' | 'free' | 'busy' | 'candidate' = 'all';
-/** 견적별 ‘한 번에 확정’ 계획 (REF-02). 키는 견적 쌍 또는 운송 주선 견적 ID. */
-const plans: Record<string, CommitPlan> = {};
-/** 플레이어가 직접 고친 계획. 고치지 않은 계획은 매번 현재 상태(바쁜 직원·남은 편)로 기본값을 다시 고른다. */
-const touchedPlans = new Set<string>();
-const recruitSelections: Record<string, string> = {};
-let interviewId: string | null = null;
+let { pending, flash, selectedCard, crewFilter, plans, touchedPlans, recruitSelections, interviewId, detailId, growthNotices } = initialUiState();
 let mapMode: MapMode = 'route';
 const mapMeasurements = new MapMeasurementMemory();
 const MAP_BASE_OUTSIDE_SVG = false;
@@ -48,19 +45,16 @@ let commandSeq = 0;
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
 function startScenario(id: ScenarioId) {
+  config = loadScenario(id);
+  state = openDay(createGame(config), config).state;
+  resetUi();
+}
+
+function resetUi() {
+  ({ pending, flash, selectedCard, crewFilter, plans, touchedPlans, recruitSelections, interviewId, detailId, growthNotices } = initialUiState());
   resetMapScroll = true;
   mapScrollRatio = undefined;
   mapMeasurements.clear();
-  config = loadScenario(id);
-  state = openDay(createGame(config), config).state;
-  pending = [];
-  flash = null;
-  selectedCard = null;
-  crewFilter = 'all';
-  interviewId = null;
-  for (const key of Object.keys(recruitSelections)) delete recruitSelections[key];
-  for (const k of Object.keys(plans)) delete plans[k];
-  touchedPlans.clear();
 }
 
 function newId(type: string): string {
@@ -105,9 +99,15 @@ function queue(cmd: Command) {
 
 function endDay() {
   if (state.phase !== 'AWAITING_INPUT') return;
-  const committed = commitDay(state, config, pending);
+  const committed = advanceDay(state, config, pending);
+  if ('errorKo' in committed) {
+    flash = { kind: 'warn', text: committed.errorKo! };
+    render();
+    return;
+  }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
-  state = committed.state.phase === 'ENDED' ? committed.state : openDay(committed.state, config).state;
+  growthNotices = growthMessages(state, committed.state, config);
+  state = committed.state;
   pending = [];
   flash = rejected.length
     ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` }
@@ -142,7 +142,7 @@ function pipeline(c: Contract): string {
   if (c.status === 'CANCELLED') {
     return c.kind === 'FORWARDING'
       ? `<p class="pill warn">계약 취소됨 (${c.cancelledDay}일) — 고객 화물은 화주에게 돌려줌</p>`
-      : `<p class="pill warn">계약 취소됨 (${c.cancelledDay}일) — 상품은 회사 재고로 ${cityName(config, c.originCityId)}에 남음</p>`;
+      : `<p class="pill warn">계약 취소됨 (${c.cancelledDay}일) — 상품은 회사 재고로 ${esc(cityName(config, c.originCityId))}에 남음</p>`;
   }
   const current = stageOf(c);
   return `<ol class="pipeline">${STAGES[c.kind].map(
@@ -158,7 +158,7 @@ function topbar(): string {
     state.phase === 'AWAITING_INPUT' ? '의사결정 중 · 시간 정지' : state.phase === 'ENDED' ? '캠페인 종료' : '다음 날 준비';
   return `
   <header class="topbar">
-    <div class="brand"><span class="logo">Scitrade</span><span class="sub">${config.stage} 시제품 · 규칙 ${config.rules.rulesVersion} · DESIGN 가상값</span></div>
+    <div class="brand"><span class="logo">Scitrade</span><span class="sub">${esc(config.stage)} 시제품 · 규칙 ${esc(config.rules.rulesVersion)} · DESIGN 가상값</span></div>
     <label class="scenario">시나리오
       <select data-action="scenario">
         ${SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
@@ -201,7 +201,7 @@ function worldMap(): string {
     <div data-map-frame ${mapPresentation(config, mapMode).attributes} class="map-frame ${mapPresentation(config, mapMode).world ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG })}</div>
     ${mapPresentation(config, mapMode).hint}
     ${mapLegend()}
-    <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
+    <p class="muted small">${esc(routeText)}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
 }
 
@@ -218,13 +218,13 @@ function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[]
     ? `수락하려면 사용 가능 자금 ${usd(q.cashNeed)}이(가) 필요합니다 (매입·운임·관세를 미리 묶음).`
     : `수락하면 매입 대금 ${usd(q.purchase)}을(를) 지금 현금으로 냅니다.`;
   const actionAttr = cmd.type === 'ACCEPT_TRADE'
-    ? `data-action="accept" data-buy="${cmd.buyOfferId}" data-sell="${cmd.sellOfferId}"`
-    : cmd.type === 'ACCEPT_FORWARDING' ? `data-action="accept-fwd" data-offer="${cmd.offerId}"` : '';
+    ? `data-action="accept" data-buy="${esc(cmd.buyOfferId)}" data-sell="${esc(cmd.sellOfferId)}"`
+    : cmd.type === 'ACCEPT_FORWARDING' ? `data-action="accept-fwd" data-offer="${esc(cmd.offerId)}"` : '';
   return `
     <table class="money">${rows}<tr class="total"><th>예상 기여이익 (급여 전)</th><td>${usd(q.contributionBeforePayroll)}</td></tr></table>
-    <ul class="quote-facts"><li>${sailing}</li><li>${need}</li>${extra.map((x) => `<li>${x}</li>`).join('')}</ul>
+    <ul class="quote-facts"><li>${sailing}</li><li>${need}</li>${extra.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     <details><summary>현금 일정 미리 보기 — 이익과 현금은 다른 날 움직입니다</summary>
-      <ul class="schedule">${q.schedule.map((x) => `<li><span>${x.day}일</span>${x.labelKo}<b>${x.amount === 0 ? '현금 변화 없음' : (x.amount > 0 ? '+' : '−') + usd(Math.abs(x.amount))}</b></li>`).join('')}</ul>
+      <ul class="schedule">${q.schedule.map((x) => `<li><span>${x.day}일</span>${esc(x.labelKo)}<b>${x.amount === 0 ? '현금 변화 없음' : (x.amount > 0 ? '+' : '−') + usd(Math.abs(x.amount))}</b></li>`).join('')}</ul>
       <p class="muted">지연·취소가 없다는 가정의 계산이며 결과를 보장하지 않습니다.</p>
     </details>
     <p class="muted small">견적 유효: ${validUntil}일까지 · 모든 수치는 개발용 가상값(DESIGN)</p>
@@ -254,20 +254,20 @@ function planner(cmd: Command, q: QuotePreview, key: string, originCityId: strin
   const empOptions = local
     .map((e) => {
       const t = busyTask(e.id);
-      return `<option value="${esc(e.id)}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${esc(e.nameKo)} · 하루 ${e.workUnitsPerDay}pt${t ? ` (${esc(taskSchedule(t, config))})` : ''}</option>`;
+      return `<option value="${esc(e.id)}" ${plan.employeeId === e.id ? 'selected' : ''} ${t ? 'disabled' : ''}>${esc(e.nameKo)} · 하루 ${e.workUnitsPerDay}pt${t ? ` (${esc(crewStatusKo(t))} · ${esc(taskSchedule(t, config))})` : ''}</option>`;
     })
     .join('');
   const sailOptions = sailings
     .map((s) => {
       const late = s.scheduledArrivalDay + config.terms.customsDays > q.deliveryDeadlineDay;
-      return `<option value="${s.id}" ${plan.sailingId === s.id ? 'selected' : ''}>${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착${late ? ' (납기 초과)' : ''}</option>`;
+      return `<option value="${esc(s.id)}" ${plan.sailingId === s.id ? 'selected' : ''}>${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착${late ? ' (납기 초과)' : ''}</option>`;
     })
     .join('');
   return `
     <div class="planner" role="group" aria-label="한 번에 확정">
-      <label>준비 담당 <select data-action="plan-emp" data-key="${key}"><option value="">나중에 배정</option>${empOptions}</select></label>
-      <label>운송편 <select data-action="plan-sailing" data-key="${key}"><option value="">나중에 예약</option>${sailOptions}</select></label>
-      <button class="primary" data-action="accept-plan" data-key="${key}" ${check.status !== 'APPLIED' ? 'disabled' : ''}>수락·배정·예약 한 번에</button>
+      <label>준비 담당 <select data-action="plan-emp" data-key="${esc(key)}"><option value="">나중에 배정</option>${empOptions}</select></label>
+      <label>운송편 <select data-action="plan-sailing" data-key="${esc(key)}"><option value="">나중에 예약</option>${sailOptions}</select></label>
+      <button class="primary" data-action="accept-plan" data-key="${esc(key)}" ${check.status !== 'APPLIED' ? 'disabled' : ''}>수락·배정·예약 한 번에</button>
       <p class="muted small">셋 중 하나라도 실행할 수 없으면 수락까지 모두 취소하고 아무것도 바꾸지 않습니다.</p>
       ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}
     </div>`;
@@ -289,17 +289,17 @@ function offerBoard(): string {
     const deadline = config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay;
     const due = config.terms.paymentDueDay ?? sell.paymentDueDay;
     const rows = `
-      <tr><th>매입 (${buy.quantity}${unitKo(g)} × ${usd(buy.unitPriceMinor)})</th><td>−${usd(q.purchase)}</td></tr>
+      <tr><th>매입 (${buy.quantity}${esc(unitKo(g))} × ${usd(buy.unitPriceMinor)})</th><td>−${usd(q.purchase)}</td></tr>
       <tr><th>운임 (선지급)</th><td>−${usd(q.freight)}</td></tr>
       <tr><th>관세 (가상 세율 ${config.terms.dutyRateBasisPoints / 100}% · 상품 송장 기준)</th><td>−${usd(q.duty)}</td></tr>
-      <tr><th>판매 (${sell.quantity}${unitKo(g)} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
+      <tr><th>판매 (${sell.quantity}${esc(unitKo(g))} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
     const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id };
     offerCommands[`${buy.id}+${sell.id}`] = cmd;
     const space = cargoSpace(config, buy.goodId, buy.quantity);
     cards.push(`
     <article class="offer">
-      <h3><span class="kind kind-trade">직접 무역</span> ${qtyKo(buy.goodId, buy.quantity)} · ${cityName(config, buy.cityId)} → ${cityName(config, sell.cityId)}</h3>
-      <p class="report-line">📋 <b>${by?.nameKo ?? '직원'}의 보고</b> — “${cityName(config, buy.cityId)} 공급자가 ${g.nameKo} ${buy.quantity}${unitKo(g)}을(를) 내놨고, ${cityName(config, sell.cityId)} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 대금은 ${due}일에 받습니다.”</p>
+      <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, buy.quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
+      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${buy.quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 대금은 ${due}일에 받습니다.”</p>
       ${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
@@ -317,8 +317,8 @@ function offerBoard(): string {
     offerCommands[offer.id] = cmd;
     cards.push(`
     <article class="offer forwarding">
-      <h3><span class="kind kind-fwd">운송 주선</span> 고객 화물 ${qtyKo(offer.goodId, offer.quantity)} · ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)}</h3>
-      <p class="report-line">📋 <b>${by?.nameKo ?? '직원'}의 보고</b> — “${partyKo(offer.counterpartyId)}가 ${qtyKo(offer.goodId, offer.quantity)}을(를) ${cityName(config, offer.destinationCityId)}까지 보내 달라고 합니다. 화물은 고객 것이고, 우리는 운송을 주선해 서비스 대금을 받습니다. 납기 ${offer.deliveryDeadlineDay}일, 대금은 ${offer.paymentDueDay}일.”</p>
+      <h3><span class="kind kind-fwd">운송 주선</span> 고객 화물 ${esc(qtyKo(offer.goodId, offer.quantity))} · ${esc(cityName(config, offer.cityId))} → ${esc(cityName(config, offer.destinationCityId))}</h3>
+      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(partyKo(offer.counterpartyId))}가 ${esc(qtyKo(offer.goodId, offer.quantity))}을(를) ${esc(cityName(config, offer.destinationCityId))}까지 보내 달라고 합니다. 화물은 고객 것이고, 우리는 운송을 주선해 서비스 대금을 받습니다. 납기 ${offer.deliveryDeadlineDay}일, 대금은 ${offer.paymentDueDay}일.”</p>
       ${quoteBlock(q, rows, cmd, [
         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}은 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
@@ -347,7 +347,7 @@ function contractPanel(c: Contract): string {
     } else {
       const buttons = employedDefs(view, config).map((emp) => {
         const check = tryCommand({ id: newId('ASSIGN'), type: 'ASSIGN_TASK', taskId: task.id, employeeId: emp.id });
-        return `<button data-action="assign" data-task="${task.id}" data-emp="${emp.id}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">${emp.nameKo}에게<small>${check.status === 'APPLIED' ? `하루 ${emp.workUnitsPerDay}pt` : '다른 업무 중'}</small></button>`;
+        return `<button data-action="assign" data-task="${esc(task.id)}" data-emp="${esc(emp.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">${esc(emp.nameKo)}에게<small>${check.status === 'APPLIED' ? `하루 ${emp.workUnitsPerDay}pt` : esc(busyTask(emp.id) ? `${crewStatusKo(busyTask(emp.id))} — ${taskSchedule(busyTask(emp.id)!, config)}` : check.reasonKo)}</small></button>`;
       });
       actions.push(`<div class="sailings"><span>${forwarding ? '운송 주선 준비(화물 인수·선적 서류)' : '수출 준비'} ${task.requiredWorkUnits}pt 맡기기</span><div class="row">${buttons.join('')}</div></div>`);
     }
@@ -363,18 +363,18 @@ function contractPanel(c: Contract): string {
         const cmd: Command = { id: newId('BOOK'), type: 'BOOK_SAILING', contractId: c.id, sailingId: s.id };
         const check = tryCommand(cmd);
         const late = s.scheduledArrivalDay + config.terms.customsDays > c.deliveryDeadlineDay;
-        return `<button data-action="book" data-sailing="${s.id}" data-contract="${c.id}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">
+        return `<button data-action="book" data-sailing="${esc(s.id)}" data-contract="${esc(c.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} title="${esc(check.reasonKo)}">
           ${s.departureDay}일 출항 → ${s.scheduledArrivalDay}일 도착 예정${late ? ' ⚠ 납기 초과' : ''}<small>남은 ${fmtM3(load.capacityLiters - load.volumeLiters)} · ${fmtKg(load.capacityGrams - load.massGrams)} / 이 화물 ${fmtM3(need.volumeLiters)} · ${fmtKg(need.massGrams)}${check.status !== 'APPLIED' ? ` — ${esc(check.reasonKo)}` : ''}</small></button>`;
       });
-      actions.push(`<div class="sailings"><span>운송편 예약 (${route.id}, 운임 ${usd(route.bookingFeeMinor)} 선지급)</span>${options.join('')}</div>`);
+      actions.push(`<div class="sailings"><span>운송편 예약 (${esc(route.id)}, 운임 ${usd(route.bookingFeeMinor)} 선지급)</span>${options.join('')}</div>`);
     }
   }
   if (active && booking?.status !== 'DEPARTED' && !shipment) {
     const queued = pending.some((p) => p.type === 'CANCEL_CONTRACT' && p.contractId === c.id);
     if (!queued) {
       const t = config.terms;
-      actions.push(`<button class="danger" data-action="cancel" data-contract="${c.id}">출항 전 취소</button>
-        <p class="muted small">취소하면: ${booking?.status === 'BOOKED' ? `운임 ${usd(t.preDepartureFreightRefundMinor)} 환급·취소비 ${usd(t.preDepartureCancellationFeeMinor)}, ` : ''}고객 보상 ${usd(t.customerCancellationCompensationMinor)}, ${forwarding ? '고객 화물은 화주에게 돌려줍니다.' : '공급자 반품 없음 → 산 상품은 재고로 남습니다.'}</p>`);
+      actions.push(`<button class="danger" data-action="cancel" data-contract="${esc(c.id)}">출항 전 취소</button>
+        <p class="muted small">취소하면: ${esc(cancellationPreviewKo(view, config, c.id))}고객 보상 ${usd(t.customerCancellationCompensationMinor)}, ${forwarding ? '고객 화물은 화주에게 돌려줍니다.' : '공급자 반품 없음 → 산 상품은 재고로 남습니다.'}</p>`);
     } else actions.push('<span class="pill warn">출항 전 취소 예정</span>');
   }
 
@@ -385,7 +385,7 @@ function contractPanel(c: Contract): string {
       : `${qtyKo(lot.goodId, lot.quantity)} · ${cityName(config, lot.locationCityId)} · 장부가액 ${usd(lot.status === 'DELIVERED' ? 0 : lot.carryingAmountMinor)}`;
   const facts = [
     ['종류', forwarding ? `운송 주선 — ${partyKo(c.customerId)}의 화물` : `직접 무역 — ${partyKo(c.supplierId)} → ${partyKo(c.customerId)}`],
-    ['담당', c.ownerEmployeeId ? `${employeeName(c.ownerEmployeeId)} (${c.ownerEmployeeId})` : '미배정'],
+    ['담당', c.ownerEmployeeId ? employeeName(c.ownerEmployeeId) : '미배정'],
     ['화물', cargo],
     ['운송', shipment ? `${shipment.id} · ${shipment.departureDay}일 출항 · 도착 ${shipment.arrivalDay ?? `${shipment.scheduledArrivalDay}일 예정`}${shipment.observedWaitDays ? ` (항만 대기 ${shipment.observedWaitDays}일)` : ''}` : booking?.status === 'BOOKED' ? `${booking.sailingId} 예약됨` : '미예약'],
     ['납기', `${c.deliveryDeadlineDay}일 ${c.deliveredDay !== null ? (c.lateDays > 0 ? `→ ${c.deliveredDay}일 인도 (${c.lateDays}일 지연, 감액 ${usd(c.priceReductionMinor)})` : `→ ${c.deliveredDay}일 인도 (납기 내)`) : ''}`],
@@ -393,13 +393,13 @@ function contractPanel(c: Contract): string {
   ];
   return `
   <div class="contract ${forwarding ? 'forwarding' : ''}">
-    <h3><span class="kind ${forwarding ? 'kind-fwd' : 'kind-trade'}">${forwarding ? '운송 주선' : '직접 무역'}</span> ${c.id} · ${qtyKo(c.goodId, c.quantity)} ${cityName(config, c.originCityId)} → ${cityName(config, c.destinationCityId)}${state.contracts.some((x) => x.id === c.id) ? '' : ' <span class="pill">오늘 실행 예정</span>'}</h3>
+    <h3><span class="kind ${forwarding ? 'kind-fwd' : 'kind-trade'}">${forwarding ? '운송 주선' : '직접 무역'}</span> ${esc(c.id)} · ${esc(qtyKo(c.goodId, c.quantity))} ${esc(cityName(config, c.originCityId))} → ${esc(cityName(config, c.destinationCityId))}${state.contracts.some((x) => x.id === c.id) ? '' : ' <span class="pill">오늘 실행 예정</span>'}</h3>
     ${pipeline(c)}
     ${progressBox(c)}
-    <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <dl class="facts">${facts.map(([k, v]) => `<dt>${esc(k ?? '')}</dt><dd>${esc(v ?? '')}</dd>`).join('')}</dl>
     <div class="actions-row">${actions.join('')}</div>
     <details><summary>이 계약의 돈 흐름 (${entries.length}건)</summary>
-      <ul class="entries">${entries.map((e) => `<li><span>${e.day}일</span>${esc(e.reason)}<b>${e.lines.map((l) => `${accountKo(l.account)} ${l.amount > 0 ? '+' : '−'}${usd(Math.abs(l.amount))}`).join(' · ')}</b></li>`).join('')}</ul>
+      <ul class="entries">${entries.map((e) => `<li><span>${e.day}일</span>${esc(e.reason)}<b>${e.lines.map((l) => `${esc(accountKo(l.account))} ${l.amount > 0 ? '+' : '−'}${usd(Math.abs(l.amount))}`).join(' · ')}</b></li>`).join('')}</ul>
     </details>
   </div>`;
 }
@@ -423,7 +423,7 @@ function closedContracts(): string {
   <details class="closed"><summary>종결된 계약 ${closed.length}건</summary>
     <ul class="entries">${closed.map((c) => {
       const r = contractReport(view, c);
-      return `<li><span>${c.id}</span>${c.kind === 'FORWARDING' ? '운송 주선' : '직접 무역'} · ${qtyKo(c.goodId, c.quantity)} ${cityName(config, c.originCityId)} → ${cityName(config, c.destinationCityId)} · ${c.status === 'CANCELLED' ? '취소' : `${c.completedDay}일 수금`}<b>기여이익 ${r.contribution < 0 ? '−' : ''}${usd(Math.abs(r.contribution))}</b></li>`;
+      return `<li><span>${esc(c.id)}</span>${c.kind === 'FORWARDING' ? '운송 주선' : '직접 무역'} · ${esc(qtyKo(c.goodId, c.quantity))} ${esc(cityName(config, c.originCityId))} → ${esc(cityName(config, c.destinationCityId))} · ${c.status === 'CANCELLED' ? '취소' : `${c.completedDay}일 수금`}<b>기여이익 ${r.contribution < 0 ? '−' : ''}${usd(Math.abs(r.contribution))}</b></li>`;
     }).join('')}</ul>
   </details>`;
 }
@@ -445,12 +445,12 @@ function delayPanel(): string {
     const queued = decision && pending.some((p) => p.type === 'RESPOND_TO_DELAY' && p.noticeId === n.id);
     return `
     <div class="notice">
-      <h3>⚠ ${n.titleKo} <small>${n.day}일 공지</small></h3>
-      <p>${n.bodyKo}</p>
-      <p class="muted small">근거: ${n.evidenceKo}</p>
+      <h3>⚠ ${esc(n.titleKo)} <small>${n.day}일 공지</small></h3>
+      <p>${esc(n.bodyKo)}</p>
+      <p class="muted small">근거: ${esc(n.evidenceKo)}</p>
       ${decision ? (queued ? '<span class="pill">현재 예약으로 대기 — 결정 예정</span>' : `
       <div class="choices">
-        <button data-action="keep" data-notice="${n.id}" data-shipment="${decision.shipmentId}">현재 예약으로 대기<small>예약은 유지, 하역 재개까지 일정이 밀림. 납기를 넘기면 계약 조건대로 ${usd(config.terms.lateDeliveryPriceReductionMinor)} 감액</small></button>
+        <button data-action="keep" data-notice="${esc(n.id)}" data-shipment="${esc(decision.shipmentId)}">현재 예약으로 대기<small>예약은 유지, 하역 재개까지 일정이 밀림. 납기를 넘기면 계약 조건대로 ${usd(config.terms.lateDeliveryPriceReductionMinor)} 감액</small></button>
         <button disabled>대체편 예약<small>대체 노선 선택은 M3 사건 시스템에서 구현합니다</small></button>
         <button disabled>고객과 납기 협상<small>계약 변경 협상은 M3 사건 시스템에서 구현합니다</small></button>
       </div>`) : '<p class="pill">대응 결정 완료: 현재 예약으로 대기</p>'}
@@ -481,16 +481,16 @@ function resourcePanel(): string {
   };
   const crew = employedDefs(view, config).map((e) => {
     const t = runningTaskOf(view, e.id);
-    return `<li><b>${esc(e.nameKo)}</b> ${t ? `업무 중 — ${esc(taskSchedule(t, config))}` : '<span class="ok">대기 — 배정 가능</span>'}<small>${cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null)} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
+    return `<li><b>${esc(e.nameKo)}</b> ${t ? `${esc(crewStatusKo(t))} — ${esc(taskSchedule(t, config))}` : '<span class="ok">대기 — 배정 가능</span>'}<small>${esc(cityName(config, view.employees.find((x) => x.id === e.id)?.locationCityId ?? null))} · 하루 ${e.workUnitsPerDay}pt</small></li>`;
   });
   const sailings = config.routes.flatMap((r) => listSailings(config, r.id, view.day).slice(0, 2)).sort((a, b) => a.departureDay - b.departureDay || a.id.localeCompare(b.id));
   const space = sailings.map((s) => {
     const load = sailingLoad(view, config, s);
     const on = view.bookings.filter((b) => b.sailingId === s.id && b.status !== 'CANCELLED').map((b) => b.contractId);
-    return `<li><b>${s.id}</b> ${s.departureDay}일 출항 ${cityName(config, config.routes.find((r) => r.id === s.routeId)?.fromCityId ?? null)}→${cityName(config, config.routes.find((r) => r.id === s.routeId)?.toCityId ?? null)}
+    return `<li><b>${esc(s.id)}</b> ${s.departureDay}일 출항 ${esc(cityName(config, config.routes.find((r) => r.id === s.routeId)?.fromCityId ?? null))}→${esc(cityName(config, config.routes.find((r) => r.id === s.routeId)?.toCityId ?? null))}
       <div class="meter">부피 ${bar(load.volumeLiters, load.capacityLiters)} ${fmtM3(load.volumeLiters)} / ${fmtM3(load.capacityLiters)}</div>
       <div class="meter">무게 ${bar(load.massGrams, load.capacityGrams)} ${fmtKg(load.massGrams)} / ${fmtKg(load.capacityGrams)}</div>
-      <small>${on.length ? `실을 계약: ${on.join(', ')}` : '예약 없음'}</small></li>`;
+      <small>${on.length ? `실을 계약: ${esc(on.join(', '))}` : '예약 없음'}</small></li>`;
   });
   return `
   <section class="panel resources" aria-labelledby="res-h">
@@ -502,7 +502,7 @@ function resourcePanel(): string {
       ${f.unpaidObligations ? `<tr><th>미지급</th><td>−${usd(f.unpaidObligations)}</td></tr>` : ''}
       <tr class="total"><th>사용 가능</th><td class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</td></tr>
     </table>
-    ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${r.contractId} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : '<p class="muted small">묶인 돈이 없습니다.</p>'}
+    ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${esc(r.contractId)} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : '<p class="muted small">묶인 돈이 없습니다.</p>'}
     <p class="muted small">${committedRule() ? '규칙 M2a: 새 계약·운임은 사용 가능 자금으로만 판단합니다.' : '규칙 M1: 새 계약은 지금 현금만 확인합니다. 예약은 참고 표시입니다.'}</p>
     <h3>직원 시간</h3>
     <ul class="crew-time">${crew.join('')}</ul>
@@ -514,7 +514,6 @@ function resourcePanel(): string {
 function reportPanel(): string {
   const r = companyReport(state, config);
   const t = r.trade;
-  const p = r.payroll;
   const f = fundsPosition(state, config, config.tradeCurrency);
   const fwdOn = config.rules.forwardingEnabled;
   const why: string[] = [];
@@ -529,7 +528,7 @@ function reportPanel(): string {
   if (committedRule() && f.reserved > 0) why.push(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. 체결한 계약이 낼 운임·관세를 미리 묶어 두었기 때문입니다.`);
   if (!why.length) why.push('지금은 현금과 장부가 같은 이야기를 하고 있습니다. 거래를 진행하며 차이가 생기는 순간을 확인해 보세요.');
   const neg = (minor: number, fmt: (m: number) => string) => (minor === 0 ? fmt(0) : '−' + fmt(minor));
-  const row = (k: string, v: string, cls = '') => `<tr class="${cls}"><th>${k}</th><td>${v}</td></tr>`;
+  const row = (k: string, v: string, cls = '') => `<tr class="${esc(cls)}"><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   return `
   <section class="panel report" aria-labelledby="report-h">
     <h2 id="report-h">경영 보고</h2>
@@ -540,11 +539,11 @@ function reportPanel(): string {
         ${fwdOn ? `<tr><td colspan="2" class="muted small">맡은 고객 화물 ${r.customerCargoUnits}개 — 회사 자산이 아니라 표에 넣지 않습니다.</td></tr>` : ''}
       </table>
       <table class="money"><caption>운영 장부 · KRW</caption>
-        ${row('현금', krw(p.cash))}${row('누적 급여', neg(p.wageExpense, krw))}${row('미지급 급여', krw(p.accountsPayable))}
-        <tr><td colspan="2" class="muted small">급여는 원화로 매일 지급하며 USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.</td></tr>
+        ${krwReportRows(r, config)}
+        <tr><td colspan="2" class="muted small">${esc(KRW_REPORT_NOTE_KO)}</td></tr>
       </table>
     </div>
-    <div class="why"><h3>현금과 이익이 다른 이유</h3><ul>${why.map((w) => `<li>${w}</li>`).join('')}</ul></div>
+    <div class="why"><h3>현금과 이익이 다른 이유</h3><ul>${why.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>
   </section>`;
 }
 
@@ -559,15 +558,14 @@ function crewPanel(): string {
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
-    <div class="crew-cards">${shown.map(({ def: e, candidate: c, task }) => {
-      return c ? candidateCard(e, view, c, selectedCard === e.id, config) : crewCard(e, view, selectedCard === e.id, task ? taskSchedule(task, config) : undefined);
-    }).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    ${selectedCard && employedDefs(view,config).some((e)=>e.id===selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===selectedCard)!,detailId===selectedCard) : ''}
     ${recruitmentPanel(view, config, recruitSelections, interviewId, tryCommand)}
-    <p class="muted small">처리량은 고정값(LEGACY_FIXED, 하루 ${e0?.workUnitsPerDay ?? 0}pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다. 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
+    <p class="muted small">${esc(crewNoteKo(config))} 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
   </aside>`;
 }
 
@@ -597,7 +595,7 @@ function commandLabel(c: Command): string {
       return `${employeeName(c.candidateId)} 고용`;
     case 'ASSIGN_TASK': {
       const t = view.tasks.find((x) => x.id === c.taskId);
-      return `${t ? `${t.contractId ?? t.subjectId} ${taskName(t.kind)}` : c.taskId} → ${employeeName(c.employeeId)}`;
+      return `${t ? `${taskSubjectKo(config, t) ?? ''} ${taskName(t.kind)}` : c.taskId} → ${employeeName(c.employeeId)}`;
     }
     case 'BOOK_SAILING':
       return `${c.contractId} 운송편 예약 (${c.sailingId})`;
@@ -614,6 +612,7 @@ function queuePanel(): string {
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
     ${flash ? `<p class="flash ${flash.kind}" role="status">${esc(flash.text)}</p>` : ''}
+    ${growthStatus(growthNotices)}
     ${pending.length ? `<ol class="pending">${pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
   </section>`;
 }
@@ -638,7 +637,7 @@ function render() {
   const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
   if (focusData) delete focusData.index;
   const tag = focused?.tagName;
-  const blockHeading = focused?.closest('.recruit-site, .recruit-candidate')?.querySelector('h4')?.id;
+  const blockHeading = focused?.closest(FOCUS_FALLBACK_SELECTORS.join(', '))?.querySelector('h3, h4')?.id;
   app.innerHTML = `
     ${topbar()}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
@@ -650,6 +649,8 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
+  // 상태 알림은 새 완료 때 한 번만 삽입한다. 이후 읽기는 엔진 기록에서 할 수 있다.
+  growthNotices = [];
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
   frame.dataset.viewportKey = mapRedrawDecision(config, mapMode, mapMeasurements.get(mapMode)).key;
   const positionMap = () => {
@@ -679,7 +680,7 @@ function render() {
   if (focusData) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
       el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));
-    const fallback = blockHeading ? document.getElementById(blockHeading) : document.getElementById('queue-h');
+    const fallback = focusFallbackIds(focusData, blockHeading).map((id)=>document.getElementById(id)).find(Boolean);
     (target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback)?.focus();
   }
 }
@@ -691,6 +692,11 @@ app.addEventListener('click', (ev) => {
   if (!el || (el as HTMLButtonElement).disabled) return;
   const d = el.dataset;
   switch (d.action) {
+    case 'train':
+      return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
+    case 'detail':
+      detailId = detailId === d.emp ? null : d.emp!;
+      return render();
     case 'scout':
       return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
     case 'recruit-quest':
@@ -796,23 +802,14 @@ app.addEventListener('change', async (ev) => {
 });
 
 function loadText(text: string) {
-  try {
-    const peek = JSON.parse(text) as { scenarioId?: string };
-    if (!peek.scenarioId || !(SCENARIO_IDS as readonly string[]).includes(peek.scenarioId)) throw new SaveError('이 시제품의 시나리오 저장이 아닙니다.');
-    const cfg = loadScenario(peek.scenarioId as ScenarioId);
-    const loaded = deserializeSave(text, { dataVersion: cfg.dataVersion, rulesVersion: cfg.rules.rulesVersion });
-    resetMapScroll = true;
-    mapScrollRatio = undefined;
-    mapMeasurements.clear();
-    config = cfg;
-    state = openDay(loaded, config).state;
-    interviewId = null;
-    for (const key of Object.keys(recruitSelections)) delete recruitSelections[key];
-    crewFilter = 'all';
-    pending = [];
-    flash = { kind: 'info', text: `${cfg.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
-  } catch (err) {
-    flash = { kind: 'warn', text: err instanceof Error ? err.message : '불러오기에 실패했습니다.' };
+  const loaded = loadSaveText(text);
+  if ('errorKo' in loaded) {
+    flash = { kind: 'warn', text: loaded.errorKo };
+  } else {
+    config = loaded.config;
+    state = loaded.state;
+    resetUi();
+    flash = { kind: 'info', text: `${config.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
   }
   render();
 }

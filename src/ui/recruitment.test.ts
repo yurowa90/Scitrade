@@ -7,7 +7,7 @@ import { createGame, openDay, planCommands, planState } from '../engine/engine';
 import { employedDefs } from '../engine/employees';
 import { runDays } from '../engine/testkit';
 import type { Command, GameState } from '../engine/types';
-import { batchUnlocked, candidateCard, crewRow, candidateLabel, crewEntries, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
+import { batchUnlocked, crewEntryCard, candidateCard, crewRow, candidateLabel, crewEntries, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
 import { crewCard } from './card';
 
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
@@ -115,7 +115,7 @@ describe('영입 화면의 엔진 연결', () => {
 
 // HTML 전체를 검사하므로 속성·접근 이름에서 새는 정보도 잡는다.
 const crewHtml = (s: GameState) => crewEntries(s, config, 'all').map(({ def, candidate, task }) =>
-  (candidate ? candidateCard(def, s, candidate, false, config) : crewCard(def, s, false, task ? taskSchedule(task, config) : undefined)) +
+  crewEntryCard({ def, candidate, task }, s, config, false) +
   crewRow(def, s, config, false, candidate, task)).join('');
 const actionButton = (html: string, action: string, target: string) => {
   const buttons = html.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) ?? [];
@@ -261,6 +261,7 @@ describe('재작업: 설정·HTML 이스케이프', () => {
       expect(candidateCard(entry.def, s, entry.candidate!, false, custom)).not.toContain(unsafe);
       const busy = planState(initial(), config, [scout]).state;
       busy.tasks[0]!.subjectId = unsafe;
+      custom.recruitment!.scoutSites.push({ ...custom.recruitment!.scoutSites[0]!, venueId: unsafe, titleKo: unsafe });
       const worker = crewEntries(busy, custom, 'busy')[0]!;
       for (const rendered of [crewRow(worker.def, busy, custom, false, undefined, worker.task), crewCard(worker.def, busy, false, taskSchedule(worker.task!, custom))]) {
         expect(rendered).not.toContain(unsafe);
@@ -271,5 +272,54 @@ describe('재작업: 설정·HTML 이스케이프', () => {
       character.recruitment.story_clue = original.clue;
       venue.title_ko = original.title;
     }
+  });
+});
+
+describe('TASK-0005 접근 이름과 면담 값', () => {
+  it('모든 버튼의 접근 이름은 보이는 글자를 포함하고 모든 영역 참조는 실제 id를 가리킨다', () => {
+    for (const s of [initial(), openDay(runDays(createGame(config), config, 1, {1:[scout]}).state,config).state, ready()]) {
+      const html = panel(s, hired.id);
+      for (const b of html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)) {
+        const visible = b[2]!.replace(/<[^>]*>/g,'').trim();
+        const label = b[1]!.match(/aria-label="([^"]*)"/)?.[1];
+        expect(label).toBeDefined(); expect(label).toContain(visible);
+      }
+      const ids = new Set([...html.matchAll(/\bid="([^"]*)"/g)].map((m)=>m[1]));
+      for (const ref of html.matchAll(/aria-(?:labelledby|controls)="([^"]*)"/g)) {
+        for (const id of ref[1]!.split(' ')) expect(ids.has(id), id).toBe(true);
+      }
+    }
+  });
+  it('후보 단계 네 가지와 근무 시작 뒤 직원 카드 접근 이름을 같은 선택 함수로 만든다', () => {
+    const s = ready();
+    const candidate = s.recruitment.candidates.find((c)=>c.employeeId===hired.id)!;
+    for (const [stage,label] of [['DISCOVERED','발견'],['QUEST_RUNNING','의뢰 진행 중 0/3pt'],['INTERVIEW_READY','면담 가능'],['HIRED','고용됨']] as const) {
+      const c = {...candidate,stage,questTaskId:null};
+      const html = crewEntryCard({def:hired,candidate:c,task:undefined},s,config,false);
+      expect(html).toContain(`aria-label="현돌 후보 카드, ${label}"`);
+    }
+  });
+  it('허용 고용은 켜지고 이유 문단이 없으며 면담 dt/dd를 정확히 짝짓는다', () => {
+    const s = openDay(runDays(createGame(config),config,4,{1:[steps[0]!,scout],2:[quest]}).state,config).state;
+    const result = check(s)({id:'H5',type:'HIRE_CANDIDATE',candidateId:hired.id});
+    expect(result.status).toBe('APPLIED');
+    const html = interviewBlock(s,config,hired,result);
+    expect(actionButton(html,'hire',hired.id)).not.toContain('disabled');
+    expect(html).not.toContain('class="reason"');
+    expect(Object.fromEntries([...html.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/g)].map((m)=>[m[1],m[2]]))).toEqual({
+      '계약금 (일급×5)':'550,000원', '일급':'110,000원', '남은 기간 급여 (6~90일)':'9,350,000원',
+      '하루 처리량':'3pt', '지금 원화 사용 가능액':'9,360,000원',
+    });
+    expect(html).toContain('<h4 id="interview-h-EMP04">');
+  });
+  it('0원 계약금 거절에는 엔진 이유를 유지하며 미지급 원인을 덧붙인다', () => {
+    const cfg = structuredClone(config); cfg.recruitment!.signingFeeWageDays = 0;
+    const s = ready();
+    s.ledger.entries.push({...s.ledger.entries[0]!,id:'UNPAID',currency:'KRW',lines:[{account:'WAGE_EXPENSE',amount:20_000_000},{account:'ACCOUNTS_PAYABLE',amount:-20_000_000}]});
+    s.obligations.push({id:'UNPAID',currency:'KRW',amountMinor:20_000_000,reasonKo:'미지급 급여',incurredDay:1,paidDay:null});
+    const result = planCommands(s,cfg,[{id:'H0',type:'HIRE_CANDIDATE',candidateId:hired.id}])[0]!;
+    expect(result.status).toBe('REJECTED');
+    const html=interviewBlock(s,cfg,hired,result);
+    expect(html).toContain(esc(result.reasonKo));expect(html).toContain('미지급 급여가 남아 있어');
   });
 });

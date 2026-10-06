@@ -321,6 +321,11 @@
       "sha256": "455d3d8ea42e5a28cf1a093db882b9593103316ec4ac18ef9dd4f0a6e58f23de"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0005.md",
+      "size_bytes": 9968,
+      "sha256": "22fca8c367e74a4e0526b4cc5c9a24e607d533fd7796e0e6414bca0e8e4ba4ef"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0007.md",
       "size_bytes": 137520,
       "sha256": "96af5d47cd025206142f1692819ee046715e5881d6845cdce4e3ef3360365f67"
@@ -582,8 +587,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 35893,
-      "sha256": "f0341db62d73ee79f1c112f50e2b7a121bd214f2216780dfa5d5f4170af84cdf"
+      "size_bytes": 35894,
+      "sha256": "02a4c466ac525837e0876bffe6f29e0521cef5036c1b22d4c08f7786062bf1cf"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -631,9 +636,14 @@
       "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
     },
     {
+      "path": "tools/test_validate_task5.py",
+      "size_bytes": 1401,
+      "sha256": "593c930b9230f816de69f4e17c5eaf2d670f46cef857ebe8eb45b7bfd05e1418"
+    },
+    {
       "path": "tools/validate_data.py",
-      "size_bytes": 41261,
-      "sha256": "8c135fa457aa48ffe2fdc56f2fad5ad8b60dfcfab16fc43497927a67c84c3c7e"
+      "size_bytes": 41629,
+      "sha256": "863f48bf551191a8be7bbb2e6b527e7f18191a45287411a79a1c8727d946557d"
     }
   ]
 }

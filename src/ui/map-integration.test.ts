@@ -27,6 +27,11 @@ async function start(outsideRegion = false) {
   await import('./main');
   const click = (dataset: Record<string,string>) => listeners.click!({target:{closest:()=>({dataset})}});
   return {app, frame:()=>frame!, click,
+    importText: async (text: string) => {
+      class Input { dataset = {action:'import'}; files = [{text:async()=>text}]; }
+      vi.stubGlobal('HTMLInputElement', Input);
+      await listeners.change!({target:new Input()});
+    },
     changeScenario: () => listeners.change!({target:{dataset:{action:'scenario'},value:'SCENARIO_M2_MULTI_TRADE'}}),
     measure: (width: number, dpr: number) => resize.callback!(frame! as unknown as HTMLElement,width,dpr),
   };
@@ -68,6 +73,22 @@ describe('main.ts 지도 연결', () => {
     const fallback = map.worldMapViewport(config,'route',{availableWidth:620,dpr:1});
     expect(ui.app.innerHTML).toContain(`width="${fallback.cssWidth}" height="${fallback.cssHeight}"`);
     expect(ui.frame().dataset.measured).toBeUndefined();
+  });
+  it('파일을 가져와도 측정 기억과 세계지도 스크롤을 초기화한다', async () => {
+    const ui = await start();
+    const map = await import('./map');
+    const { loadScenario } = await import('../content/scenario');
+    const { createGame, openDay } = await import('../engine/engine');
+    const { serializeSave } = await import('../engine/save');
+    const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
+    ui.click({action:'map-mode',mode:'world'});
+    ui.measure(543,1.25); ui.frame().scrollLeft = 321;
+    await ui.importText(serializeSave(openDay(createGame(config),config).state));
+    const fallback = map.worldMapViewport(config,'world',{availableWidth:620,dpr:1});
+    expect(ui.app.innerHTML).toContain(`width="${fallback.cssWidth}" height="${fallback.cssHeight}"`);
+    expect(ui.frame().dataset.measured).toBeUndefined();
+    ui.measure(930,1);
+    expect(ui.frame().scrollLeft).toBe(535);
   });
   it('측정 전 스크롤은 버리고 측정 후 비율은 다시 그리기에 복원한다', async () => {
     const ui = await start();
