@@ -69,7 +69,7 @@ describe('TASK-0013 실제 화면 표시', () => {
     expect(ui.app.innerHTML).toContain('운송편을 예약하지 않았습니다. 2일 편은 선복이 부족합니다. 실을 수 있는 첫 출항은 9일이고 예약 마감은 8일입니다.');
   });
 
-  it('발견·의뢰 중 후보는 설정의 계약금 규칙만 보이고 면담에는 금액이 나온다', async () => {
+  it('발견·의뢰 중 후보는 일급과 설정 일수의 계약금 금액을 보이고 면담에서도 같은 금액이다', async () => {
     const cfg = structuredClone(config); cfg.recruitment!.signingFeeWageDays = 7;
     const ui = await startUi(cfg);
     ui.change({ action: 'recruit-emp', key: 'VEN_PORT' }, 'EMP02');
@@ -83,9 +83,9 @@ describe('TASK-0013 실제 화면 표시', () => {
     for (const stage of ['발견', '의뢰 진행 중']) {
       const parts = candidateParts();
       expect(parts[0]).toContain(stage);
-      for (const part of parts) expect(part).not.toMatch(/[\d,]+원/);
+      for (const part of parts) expect(part).toContain('110,000원');
       for (const card of parts.slice(0, 2)) {
-        expect(card).toContain('고용하려면 계약금(일급 7일분)이 듭니다. 금액은 면담에서 확인합니다.');
+        expect(card).toContain('고용하면 계약금 770,000원(일급 110,000원 × 7일)을 한 번 냅니다. 고용 여부는 면담 뒤에 정합니다.');
       }
       if (stage === '발견') ui.click({ action: 'recruit-quest', candidate: 'EMP04', emp: 'EMP01' });
     }
@@ -94,7 +94,7 @@ describe('TASK-0013 실제 화면 표시', () => {
     const interview = candidateParts()[1]!;
     expect(interview).toContain('<dt>계약금 (일급×7)</dt><dd>770,000원</dd>');
     expect(interview).toContain('<dt>일급</dt><dd>110,000원</dd>');
-    expect(interview).not.toContain('금액은 면담에서 확인합니다.');
+    expect(interview).not.toContain('고용 여부는 면담 뒤에 정합니다.');
   });
 });
 

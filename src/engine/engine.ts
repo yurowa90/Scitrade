@@ -1012,7 +1012,7 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
       receiptIds: [],
     });
     contract.invoiceId = invoiceId;
-    log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}은 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
+    log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}는 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
   }
 }
 
