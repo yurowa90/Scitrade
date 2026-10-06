@@ -2,6 +2,8 @@
 import { levelProgress } from '../engine/growth';
 import { formatMoney } from '../engine/money';
 import { payrollRunwayDay, trainingPreview } from '../engine/previews';
+import { runningTaskOf } from '../engine/reservations';
+import { crewStatusKo } from './crew-status';
 import type { EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { esc } from './html';
 
@@ -30,6 +32,8 @@ function gainsKo(before:Record<string,number>|null, after:Record<string,number>|
 export function trainingBlock(state:GameState, config:ScenarioConfig, def:EmployeeDef): string {
   if (!config.growth) return '';
   const preview=trainingPreview(state,config,def.id);
+  const task=runningTaskOf(state,def.id);
+  const training=task?.kind === 'TRAINING' ? task : undefined;
   const current=levelProgress(state,config,def.id);
   const gains=gainsKo(current?.stats ?? null,preview.statsAfter);
   // 경험치 문구도 같은 엔진 함수에서 받는다. 완료 예상 사본은 저장하지 않는다.
@@ -45,9 +49,9 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
   return `<div class="training"><h4>일반 훈련</h4>
     <p>훈련비 ${money(preview.fee.minor)} · 기간 ${preview.durationDays}일 · 완료 시 +${preview.xpGain} 경험치</p>
     <p>급여는 훈련비와 별도로 평소대로 지급합니다.</p>
-    <p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>
+    ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
-    <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))} → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}</p>
+    ${training ? '' : `<p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))} → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}</p>`}
     <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
     ${preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
   </div>`;
@@ -79,8 +83,9 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
     let step=old;
     while(step.nextLevelXp !== null && step.nextLevelXp<=now.xp) {
       snapshot.employees.find((e)=>e.id===def.id)!.xp=step.nextLevelXp;
+      const previous=step;
       step=levelProgress(snapshot,config,def.id)!;
-      const gains=gainsKo(old.stats,step.stats);
+      const gains=gainsKo(previous.stats,step.stats);
       messages.push(`${def.nameKo} 레벨 ${step.level} 달성${gains ? ` (${gains})` : ''}`);
     }
     const amount=Object.entries(after.xpAwardAmounts)

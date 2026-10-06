@@ -9,6 +9,7 @@ import { runDays } from '../engine/testkit';
 import type { Command, GameState } from '../engine/types';
 import { batchUnlocked, crewEntryCard, candidateCard, crewRow, candidateLabel, crewEntries, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
 import { crewCard } from './card';
+import { crewNoteKo } from './crew-status';
 
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const initial = () => openDay(createGame(config), config).state;
@@ -69,7 +70,7 @@ describe('영입 화면의 엔진 연결', () => {
     expect(panel(today)).toContain('고용됨 — 5일부터 근무');
     const tomorrow = openDay(runDays(s, config, 4, { 4: [cmd] }).state, config).state;
     expect(employedDefs(tomorrow, config)).toContain(hired);
-    expect(crewCard(hired, tomorrow, false)).toContain('대기 — 배정 가능');
+    expect(crewCard(hired, tomorrow, false, config)).toContain('대기 — 배정 가능');
   });
   it('카드·운영표 필터는 발견 후보만 포함하고 대기·업무 중에는 근무 직원을 보여 준다', () => {
     expect(crewEntries(initial(), config, 'all')).toHaveLength(2);
@@ -81,7 +82,7 @@ describe('영입 화면의 엔진 연결', () => {
     const busy = planState(initial(), config, [scout]).state;
     expect(crewEntries(busy, config, 'busy').map((x) => x.def.id)).toEqual(['EMP02']);
     const entry = crewEntries(busy, config, 'busy')[0]!;
-    expect(crewCard(entry.def, busy, false, taskSchedule(entry.task!, config))).toContain('현장 조사 중 — 항만 물류단지 0/1pt');
+    expect(crewCard(entry.def, busy, false, config, taskSchedule(entry.task!, config))).toContain('현장 조사 중 — 항만 물류단지 0/1pt');
   });
   it('현돌의 5일 면담 비용과 남은 급여를 표시한다', () => {
     const s = openDay(runDays(ready(), config, 4).state, config).state;
@@ -263,7 +264,7 @@ describe('재작업: 설정·HTML 이스케이프', () => {
       busy.tasks[0]!.subjectId = unsafe;
       custom.recruitment!.scoutSites.push({ ...custom.recruitment!.scoutSites[0]!, venueId: unsafe, titleKo: unsafe });
       const worker = crewEntries(busy, custom, 'busy')[0]!;
-      for (const rendered of [crewRow(worker.def, busy, custom, false, undefined, worker.task), crewCard(worker.def, busy, false, taskSchedule(worker.task!, custom))]) {
+      for (const rendered of [crewRow(worker.def, busy, custom, false, undefined, worker.task), crewCard(worker.def, busy, false, custom, taskSchedule(worker.task!, custom))]) {
         expect(rendered).not.toContain(unsafe);
         expect(rendered).toContain(esc(unsafe));
       }
@@ -291,13 +292,20 @@ describe('TASK-0005 접근 이름과 면담 값', () => {
     }
   });
   it('후보 단계 네 가지와 근무 시작 뒤 직원 카드 접근 이름을 같은 선택 함수로 만든다', () => {
-    const s = ready();
-    const candidate = s.recruitment.candidates.find((c)=>c.employeeId===hired.id)!;
-    for (const [stage,label] of [['DISCOVERED','발견'],['QUEST_RUNNING','의뢰 진행 중 0/3pt'],['INTERVIEW_READY','면담 가능'],['HIRED','고용됨']] as const) {
-      const c = {...candidate,stage,questTaskId:null};
-      const html = crewEntryCard({def:hired,candidate:c,task:undefined},s,config,false);
-      expect(html).toContain(`aria-label="현돌 후보 카드, ${label}"`);
+    const discovered=openDay(runDays(createGame(config),config,1,{1:[scout]}).state,config).state;
+    const running=openDay(runDays(discovered,config,2,{2:[quest]}).state,config).state;
+    const interviewing=openDay(runDays(running,config,3).state,config).state;
+    const hiredState=planState(interviewing,config,[{id:'H4',type:'HIRE_CANDIDATE',candidateId:hired.id}]).state;
+    for(const [s,label] of [[discovered,'발견'],[running,'의뢰 진행 중 2/3pt'],[interviewing,'면담 가능'],[hiredState,'고용됨 — 5일부터 근무']] as const) {
+      const entry=crewEntries(s,config,'all').find((e)=>e.def.id===hired.id)!;
+      expect(crewEntryCard(entry,s,config,false)).toContain(`aria-label="현돌 후보 카드, ${label}"`);
     }
+    const day5=openDay(runDays(hiredState,config,4).state,config).state;
+    const entry=crewEntries(day5,config,'all').find((e)=>e.def.id===hired.id)!;
+    const html=crewEntryCard(entry,day5,config,false);
+    expect(html).toContain('aria-label="현돌 직원 카드, 운영, 레벨 1, 대기 — 배정 가능"');
+    expect(html).not.toContain('현돌 후보 카드');
+    expect(crewNoteKo(config,day5)).toContain('하루 2~3pt');
   });
   it('허용 고용은 켜지고 이유 문단이 없으며 면담 dt/dd를 정확히 짝짓는다', () => {
     const s = openDay(runDays(createGame(config),config,4,{1:[steps[0]!,scout],2:[quest]}).state,config).state;

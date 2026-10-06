@@ -266,6 +266,11 @@
       "sha256": "8893eb0670914ba3f22c31604bab5d3e41a06b319d7774d830c5f6015a9666c8"
     },
     {
+      "path": "docs/ai/tasks/TASK-0005-R1-growth-ui-fixes.md",
+      "size_bytes": 11915,
+      "sha256": "252aa9d428b4123c1dd6f408c617e0b78caf54f77f395c5214bb7499667a4e38"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
       "size_bytes": 14526,
       "sha256": "9c8a8f25083a626477952bcda03653b5053626317b9828843378f2f618472294"
@@ -322,8 +327,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0005.md",
-      "size_bytes": 9968,
-      "sha256": "22fca8c367e74a4e0526b4cc5c9a24e607d533fd7796e0e6414bca0e8e4ba4ef"
+      "size_bytes": 23864,
+      "sha256": "70bb12cc87f312bd778b95cee192c14381c00cfe509192d2056898304de82697"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0007.md",
@@ -587,8 +592,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 35894,
-      "sha256": "02a4c466ac525837e0876bffe6f29e0521cef5036c1b22d4c08f7786062bf1cf"
+      "size_bytes": 35929,
+      "sha256": "1f2419fb71aba76d2ee87670c220319045a1c43ab2bf4c14dc21ef912c59674c"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -602,8 +607,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 1094,
-      "sha256": "23ddf339038d2171d60d686ee839ad253d9902d4f0d55728dfd0ae9cf6bda541"
+      "size_bytes": 1134,
+      "sha256": "19944f91f8dfbcd37c9a1857cdf363af36b9572af9400980838ffe6868d0e09e"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -636,14 +641,14 @@
       "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
     },
     {
-      "path": "tools/test_validate_task5.py",
-      "size_bytes": 1401,
-      "sha256": "593c930b9230f816de69f4e17c5eaf2d670f46cef857ebe8eb45b7bfd05e1418"
+      "path": "tools/test_validate_data.py",
+      "size_bytes": 1844,
+      "sha256": "d1771896ae44f849a74237aa5d6f8b51648b7976df69660710460236affdedda"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 41629,
-      "sha256": "863f48bf551191a8be7bbb2e6b527e7f18191a45287411a79a1c8727d946557d"
+      "size_bytes": 41817,
+      "sha256": "daa6298056f28a57e11ac05c410832a877a15791dd428d9704388ea76b37e9e1"
     }
   ]
 }

@@ -885,6 +885,6 @@
       "P0 완료에 P1·P2 기능을 강요하지 않음"
     ],
     "engine_test_pass_claim": false,
-    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 18."
+    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18."
   }
 }

@@ -123,5 +123,5 @@ export function crewRow(e: EmployeeDef, s: GameState, config: ScenarioConfig, se
 export function crewEntryCard(entry: ReturnType<typeof crewEntries>[number], s: GameState, config: ScenarioConfig, selected: boolean): string {
   const { def, candidate, task } = entry;
   return candidate ? candidateCard(def, s, candidate, selected, config)
-    : crewCard(def, s, selected, task ? taskSchedule(task, config) : undefined, config);
+    : crewCard(def, s, selected, config, task ? taskSchedule(task, config) : undefined);
 }

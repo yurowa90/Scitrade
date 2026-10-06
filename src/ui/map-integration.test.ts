@@ -83,12 +83,28 @@ describe('main.ts 지도 연결', () => {
     const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
     ui.click({action:'map-mode',mode:'world'});
     ui.measure(543,1.25); ui.frame().scrollLeft = 321;
+    ui.click({action:'select-card',emp:'EMP01'});
+    expect(ui.frame().scrollLeft).toBeCloseTo(321,10);
     await ui.importText(serializeSave(openDay(createGame(config),config).state));
     const fallback = map.worldMapViewport(config,'world',{availableWidth:620,dpr:1});
     expect(ui.app.innerHTML).toContain(`width="${fallback.cssWidth}" height="${fallback.cssHeight}"`);
     expect(ui.frame().dataset.measured).toBeUndefined();
     ui.measure(930,1);
     expect(ui.frame().scrollLeft).toBe(535);
+  });
+  it.each(['load','scenario'])('%s도 다시 그리기에 기억한 세계지도 비율을 초기화한다',async(mode)=>{
+    const ui=await start();
+    const {loadScenario}=await import('../content/scenario');
+    const {createGame,openDay}=await import('../engine/engine');
+    const {serializeSave}=await import('../engine/save');
+    const config=loadScenario('SCENARIO_M2_MULTI_TRADE');
+    vi.stubGlobal('localStorage',{getItem:()=>serializeSave(openDay(createGame(config),config).state)});
+    ui.click({action:'map-mode',mode:'world'});ui.measure(930,1);
+    ui.frame().scrollLeft=321;ui.click({action:'select-card',emp:'EMP01'});
+    expect(ui.frame().scrollLeft).toBeCloseTo(321,10);
+    if(mode==='load')ui.click({action:'load'});else ui.changeScenario();
+    expect(ui.frame().dataset.measured).toBeUndefined();
+    ui.measure(930,1);expect(ui.frame().scrollLeft).toBe(535);
   });
   it('측정 전 스크롤은 버리고 측정 후 비율은 다시 그리기에 복원한다', async () => {
     const ui = await start();

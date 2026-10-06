@@ -40,21 +40,18 @@ export function attributeChip(attribute: string | null): string {
   return `<span class="chip attr attr-${esc(attribute ?? '')}"><svg viewBox="0 0 24 24" aria-hidden="true">${a.icon}</svg>${a.ko}</span>`;
 }
 
-export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, scheduleKo?: string, config?: ScenarioConfig): string {
+export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, config: ScenarioConfig, scheduleKo?: string): string {
   if (!isAvailableFromToday(state, def.id)) return '';
   const running = runningTaskOf(state, def.id);
-  const schedule = scheduleKo ?? (running && config ? taskSchedule(running, config) : running
-    ? `${taskName(running.kind)} 중 ${running.progressWorkUnits}/${running.requiredWorkUnits}${running.kind === 'TRAINING' ? '일' : 'pt'}`
-    : '대기 — 배정 가능');
+  const schedule = scheduleKo ?? (running ? taskSchedule(running, config) : '대기 — 배정 가능');
   const initial = def.nameKo.slice(0, 1);
   const roleKo = ROLE_KO[def.role] ?? def.role;
   const art = characterImage(def.id, 'card');
-  const progress = config?.growth ? levelProgress(state, config, def.id) : null;
-  const showGrowth = config ? Boolean(config.growth) : true;
+  const progress = config.growth ? levelProgress(state, config, def.id) : null;
   const level = progress?.level ?? levelFor(state.employees.find((e) => e.id === def.id)!.xp);
   return `
   <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0"
-    aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, ${showGrowth ? `레벨 ${level}, ` : ''}${esc(schedule)}">
+    aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 ${level}, ${esc(schedule)}">
     <header class="card-top">
       <span class="card-name">${esc(def.nameKo)}</span>
       ${attributeChip(def.character.attribute)}
@@ -68,7 +65,7 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
       <span class="card-placeholder">그림 미제작 · 교체 가능한 자리표시자</span>`}
     </div>
     <footer class="card-bottom">
-      <div class="card-meta">${roleBadge(def.role)}${showGrowth ? `<span class="card-level">레벨 ${level} · 강화 +0</span>` : ''}</div>
+      <div class="card-meta">${roleBadge(def.role)}<span class="card-level">레벨 ${level} · 강화 +0</span></div>
       ${progress ? `<span>${esc(coreStatsKo(def, progress.stats))}</span>` : ''}
       <span class="card-schedule">${esc(schedule)}</span>
     </footer>

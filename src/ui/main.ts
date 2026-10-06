@@ -18,7 +18,7 @@ import { taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
 import { initialUiState, loadSaveText, advanceDay } from './session';
 import { cancellationPreviewKo } from './trade';
-import { krwReportRows, KRW_REPORT_NOTE_KO } from './reports';
+import { krwReportRows, krwReportNoteKo } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
 import { taskSubjectKo } from '../engine/tasks';
 import { employeeDetail, growthMessages, growthStatus } from './growth';
@@ -34,7 +34,7 @@ let config: ScenarioConfig;
 let state: GameState;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
-let { pending, flash, selectedCard, crewFilter, plans, touchedPlans, recruitSelections, interviewId, detailId, growthNotices } = initialUiState();
+let ui = initialUiState();
 let mapMode: MapMode = 'route';
 const mapMeasurements = new MapMeasurementMemory();
 const MAP_BASE_OUTSIDE_SVG = false;
@@ -51,7 +51,7 @@ function startScenario(id: ScenarioId) {
 }
 
 function resetUi() {
-  ({ pending, flash, selectedCard, crewFilter, plans, touchedPlans, recruitSelections, interviewId, detailId, growthNotices } = initialUiState());
+  ui = initialUiState();
   resetMapScroll = true;
   mapScrollRatio = undefined;
   mapMeasurements.clear();
@@ -83,33 +83,33 @@ const employeeName = (id: string | null) => config.employees.find((e) => e.id ==
 
 /** 대기열 뒤에 후보 명령을 붙였을 때의 검증 결과. 상태는 바꾸지 않는다. */
 function tryCommand(cmd: Command): CommandResult {
-  return planCommands(state, config, [...pending, cmd]).at(-1)!;
+  return planCommands(state, config, [...ui.pending, cmd]).at(-1)!;
 }
 
 function queue(cmd: Command) {
   const result = tryCommand(cmd);
   if (result.status !== 'APPLIED') {
-    flash = { kind: 'warn', text: result.reasonKo };
+    ui.flash = { kind: 'warn', text: result.reasonKo };
   } else {
-    pending.push(cmd);
-    flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
+    ui.pending.push(cmd);
+    ui.flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
   }
   render();
 }
 
 function endDay() {
   if (state.phase !== 'AWAITING_INPUT') return;
-  const committed = advanceDay(state, config, pending);
+  const committed = advanceDay(state, config, ui.pending);
   if ('errorKo' in committed) {
-    flash = { kind: 'warn', text: committed.errorKo! };
+    ui.flash = { kind: 'warn', text: committed.errorKo! };
     render();
     return;
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
-  growthNotices = growthMessages(state, committed.state, config);
+  ui.growthNotices = growthMessages(state, committed.state, config);
   state = committed.state;
-  pending = [];
-  flash = rejected.length
+  ui.pending = [];
+  ui.flash = rejected.length
     ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` }
     : null;
   render();
@@ -247,8 +247,8 @@ function planner(cmd: Command, q: QuotePreview, key: string, originCityId: strin
     employeeId: local.find((e) => !busyTask(e.id))?.id,
     sailingId: (sailings.find((s) => s.scheduledArrivalDay + config.terms.customsDays <= q.deliveryDeadlineDay) ?? sailings[0])?.id,
   };
-  const plan = touchedPlans.has(key) ? (plans[key] ?? defaults) : defaults;
-  plans[key] = plan;
+  const plan = ui.touchedPlans.has(key) ? (ui.plans[key] ?? defaults) : defaults;
+  ui.plans[key] = plan;
   const planned: Command = { ...cmd, id: newId('PLAN'), plan };
   const check = tryCommand(planned);
   const empOptions = local
@@ -341,7 +341,7 @@ function contractPanel(c: Contract): string {
   const forwarding = c.kind === 'FORWARDING';
 
   if (active && task?.status === 'QUEUED') {
-    const queued = pending.some((p) => p.type === 'ASSIGN_TASK' && p.taskId === task.id);
+    const queued = ui.pending.some((p) => p.type === 'ASSIGN_TASK' && p.taskId === task.id);
     if (queued) {
       actions.push('<span class="pill">준비 업무 배정 예정</span>');
     } else {
@@ -353,7 +353,7 @@ function contractPanel(c: Contract): string {
     }
   }
   if (active && route && (!booking || booking.status === 'CANCELLED') && !shipment) {
-    const queued = pending.some((p) => p.type === 'BOOK_SAILING' && p.contractId === c.id);
+    const queued = ui.pending.some((p) => p.type === 'BOOK_SAILING' && p.contractId === c.id);
     if (queued) {
       actions.push('<span class="pill">운송편 예약 예정</span>');
     } else {
@@ -370,7 +370,7 @@ function contractPanel(c: Contract): string {
     }
   }
   if (active && booking?.status !== 'DEPARTED' && !shipment) {
-    const queued = pending.some((p) => p.type === 'CANCEL_CONTRACT' && p.contractId === c.id);
+    const queued = ui.pending.some((p) => p.type === 'CANCEL_CONTRACT' && p.contractId === c.id);
     if (!queued) {
       const t = config.terms;
       actions.push(`<button class="danger" data-action="cancel" data-contract="${esc(c.id)}">출항 전 취소</button>
@@ -442,7 +442,7 @@ function delayPanel(): string {
   if (!notices.length) return '';
   return notices.map((n) => {
     const decision = open.find((d) => d.noticeId === n.id);
-    const queued = decision && pending.some((p) => p.type === 'RESPOND_TO_DELAY' && p.noticeId === n.id);
+    const queued = decision && ui.pending.some((p) => p.type === 'RESPOND_TO_DELAY' && p.noticeId === n.id);
     return `
     <div class="notice">
       <h3>⚠ ${esc(n.titleKo)} <small>${n.day}일 공지</small></h3>
@@ -540,7 +540,7 @@ function reportPanel(): string {
       </table>
       <table class="money"><caption>운영 장부 · KRW</caption>
         ${krwReportRows(r, config)}
-        <tr><td colspan="2" class="muted small">${esc(KRW_REPORT_NOTE_KO)}</td></tr>
+        <tr><td colspan="2" class="muted small">${esc(krwReportNoteKo(config))}</td></tr>
       </table>
     </div>
     <div class="why"><h3>현금과 이익이 다른 이유</h3><ul>${why.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>
@@ -549,23 +549,23 @@ function reportPanel(): string {
 
 function crewPanel(): string {
   const e0 = employedDefs(view, config)[0];
-  const shown = crewEntries(view, config, crewFilter);
-  const filterBtn = (f: typeof crewFilter, label: string) =>
-    `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${crewFilter === f}">${label}</button>`;
+  const shown = crewEntries(view, config, ui.crewFilter);
+  const filterBtn = (f: typeof ui.crewFilter, label: string) =>
+    `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${ui.crewFilter === f}">${label}</button>`;
   // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
-  const rows = shown.map(({ def, candidate, task }) => crewRow(def, view, config, selectedCard === def.id, candidate, task)).join('');
+  const rows = shown.map(({ def, candidate, task }) => crewRow(def, view, config, ui.selectedCard === def.id, candidate, task)).join('');
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
-    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
-    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+    <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무·교육 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
+    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    ${selectedCard && employedDefs(view,config).some((e)=>e.id===selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===selectedCard)!,detailId===selectedCard) : ''}
-    ${recruitmentPanel(view, config, recruitSelections, interviewId, tryCommand)}
-    <p class="muted small">${esc(crewNoteKo(config))} 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
+    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard) : ''}
+    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand)}
+    <p class="muted small">${esc(crewNoteKo(config, view))} 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
   </aside>`;
 }
 
@@ -607,13 +607,13 @@ function commandLabel(c: Command): string {
 }
 
 function queuePanel(): string {
-  const plan = planCommands(state, config, pending);
+  const plan = planCommands(state, config, ui.pending);
   return `
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
-    ${flash ? `<p class="flash ${flash.kind}" role="status">${esc(flash.text)}</p>` : ''}
-    ${growthStatus(growthNotices)}
-    ${pending.length ? `<ol class="pending">${pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
+    ${ui.flash ? `<p class="flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</p>` : ''}
+    ${growthStatus(ui.growthNotices)}
+    ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
   </section>`;
 }
 
@@ -628,7 +628,7 @@ function logPanel(): string {
 }
 
 function render() {
-  view = planState(state, config, pending).state;
+  view = planState(state, config, ui.pending).state;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
   if (previousMap) mapScrollRatio = readMapScroll(true, previousMap.dataset.measured === 'true', resetMapScroll,
     previousMap.scrollLeft, previousMap.scrollWidth, previousMap.clientWidth, mapScrollRatio);
@@ -650,7 +650,7 @@ function render() {
       ${logPanel()}
     </main>`;
   // 상태 알림은 새 완료 때 한 번만 삽입한다. 이후 읽기는 엔진 기록에서 할 수 있다.
-  growthNotices = [];
+  ui.growthNotices = [];
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
   frame.dataset.viewportKey = mapRedrawDecision(config, mapMode, mapMeasurements.get(mapMode)).key;
   const positionMap = () => {
@@ -695,14 +695,14 @@ app.addEventListener('click', (ev) => {
     case 'train':
       return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
     case 'detail':
-      detailId = detailId === d.emp ? null : d.emp!;
+      ui.detailId = ui.detailId === d.emp ? null : d.emp!;
       return render();
     case 'scout':
       return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
     case 'recruit-quest':
       return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
     case 'interview':
-      interviewId = interviewId === d.candidate ? null : d.candidate!;
+      ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
       return render();
     case 'hire':
       return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
@@ -721,22 +721,22 @@ app.addEventListener('click', (ev) => {
     case 'keep':
       return queue({ id: newId('KEEP'), type: 'RESPOND_TO_DELAY', noticeId: d.notice!, shipmentId: d.shipment!, choice: 'KEEP_SHIPMENT_BOOKING' });
     case 'unqueue':
-      pending.splice(Number(d.index), 1);
-      flash = null;
+      ui.pending.splice(Number(d.index), 1);
+      ui.flash = null;
       return render();
     case 'map-mode':
       mapMode = d.mode === 'world' ? 'world' : 'route';
       return render();
     case 'select-card':
-      selectedCard = selectedCard === d.emp ? null : (d.emp ?? null);
+      ui.selectedCard = ui.selectedCard === d.emp ? null : (d.emp ?? null);
       return render();
     case 'crew-filter':
-      crewFilter = d.filter === 'free' || d.filter === 'busy' || d.filter === 'candidate' ? d.filter : 'all';
+      ui.crewFilter = d.filter === 'free' || d.filter === 'busy' || d.filter === 'candidate' ? d.filter : 'all';
       return render();
     case 'accept-plan': {
       const base = offerCommands[d.key!];
       if (!base || (base.type !== 'ACCEPT_TRADE' && base.type !== 'ACCEPT_FORWARDING')) return;
-      return queue({ ...base, id: newId('PLAN'), plan: { ...plans[d.key!] } });
+      return queue({ ...base, id: newId('PLAN'), plan: { ...ui.plans[d.key!] } });
     }
     case 'restart':
       startScenario(config.id as ScenarioId);
@@ -744,9 +744,9 @@ app.addEventListener('click', (ev) => {
     case 'save':
       try {
         localStorage.setItem(SAVE_KEY, serializeSave(state));
-        flash = { kind: 'info', text: `${state.day}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.` };
+        ui.flash = { kind: 'info', text: `${state.day}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.` };
       } catch {
-        flash = { kind: 'warn', text: '이 브라우저에서는 저장할 수 없습니다. ‘내보내기’로 파일을 받아 두세요.' };
+        ui.flash = { kind: 'warn', text: '이 브라우저에서는 저장할 수 없습니다. ‘내보내기’로 파일을 받아 두세요.' };
       }
       return render();
     case 'load': {
@@ -756,7 +756,7 @@ app.addEventListener('click', (ev) => {
       } catch {
         text = null;
       }
-      return text ? loadText(text) : ((flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
+      return text ? loadText(text) : ((ui.flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
     }
     case 'export': {
       const blob = new Blob([serializeSave(state)], { type: 'application/json' });
@@ -774,7 +774,7 @@ app.addEventListener('keydown', (ev) => {
   const el = ev.target as HTMLElement;
   if (el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
     ev.preventDefault();
-    selectedCard = selectedCard === el.dataset.emp ? null : (el.dataset.emp ?? null);
+    ui.selectedCard = ui.selectedCard === el.dataset.emp ? null : (el.dataset.emp ?? null);
     render();
   }
 });
@@ -785,16 +785,16 @@ app.addEventListener('change', async (ev) => {
     startScenario(el.value as ScenarioId);
     render();
   } else if (el.dataset.action === 'recruit-emp') {
-    recruitSelections[el.dataset.key!] = el.value;
+    ui.recruitSelections[el.dataset.key!] = el.value;
     render();
   } else if (el.dataset.action === 'plan-emp' || el.dataset.action === 'plan-sailing') {
     const key = el.dataset.key!;
-    const plan = { ...(plans[key] ?? {}) };
+    const plan = { ...(ui.plans[key] ?? {}) };
     const value = el.value || undefined;
     if (el.dataset.action === 'plan-emp') plan.employeeId = value;
     else plan.sailingId = value;
-    plans[key] = plan;
-    touchedPlans.add(key);
+    ui.plans[key] = plan;
+    ui.touchedPlans.add(key);
     render();
   } else if (el.dataset.action === 'import' && el instanceof HTMLInputElement && el.files?.[0]) {
     loadText(await el.files[0].text());
@@ -804,12 +804,12 @@ app.addEventListener('change', async (ev) => {
 function loadText(text: string) {
   const loaded = loadSaveText(text);
   if ('errorKo' in loaded) {
-    flash = { kind: 'warn', text: loaded.errorKo };
+    ui.flash = { kind: 'warn', text: loaded.errorKo };
   } else {
     config = loaded.config;
     state = loaded.state;
     resetUi();
-    flash = { kind: 'info', text: `${config.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
+    ui.flash = { kind: 'info', text: `${config.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
   }
   render();
 }

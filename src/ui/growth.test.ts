@@ -3,7 +3,7 @@ import acceptance from '../../tests/character_acceptance_cases.json';
 import { loadScenario } from '../content/scenario';
 import { createGame, openDay, commitDay, planState } from '../engine/engine';
 import { levelProgress, awardXp } from '../engine/growth';
-import { trainingPreview, payrollRunwayDay } from '../engine/previews';
+import { trainingPreview } from '../engine/previews';
 import { companyReport } from '../engine/reports';
 import { runningTaskOf } from '../engine/reservations';
 import { crewEntries, crewEntryCard, crewRow, recruitmentPanel } from './recruitment';
@@ -44,7 +44,10 @@ describe('성장 기록과 훈련',()=>{
     expect(html).toContain('급여는 훈련비와 별도로');
     expect(html).toContain('훈련에 쓸 수 있는 원화: 지금 10,000,000원 → 훈련 뒤 9,950,000원');
     expect(html).toContain('완료하면 레벨 2 (교섭 +2, 협업 +1)');
-    expect(html).toContain(`지금 ${payrollRunwayDay(s,config)}일까지 → 훈련하면 ${payrollRunwayDay(s,config,p.fee.minor)}일까지`);
+    const cfg=structuredClone(config);cfg.startingCash.KRW=500_000;
+    const low=openDay(createGame(cfg),cfg).state;
+    expect(trainingBlock(low,cfg,cfg.employees[0]!)).toContain('지금 3일까지 → 훈련하면 2일까지');
+    expect(html).toContain('성장 변화는 완료할 때 반영됩니다');
     s.employees[0]!.xp=0;expect(trainingBlock(s,config,def)).toContain('레벨 변화 없음 — 다음 레벨까지 40');
   });
   it.each(['busy','funds','unemployed'])('%s 거절 이유와 비활성 버튼은 엔진 판정과 같다',(kind)=>{
@@ -72,7 +75,10 @@ describe('성장 기록과 훈련',()=>{
     awardXp(after,cfg,d.id,'MULTI-LEVEL','TASK_COMPLETION_XP',spec.setup.award_xp!);
     const html=employeeDetail(after,cfg,d,true),messages=growthMessages(before,after,cfg);
     expect(html).toContain('레벨 3');expect(html).toContain('<dt>교섭 (주능력)</dt><dd>54</dd>');expect(html).toContain('<dt>협업 (부능력)</dt><dd>42</dd>');
-    expect(messages).toEqual(['귀솔 레벨 2 달성 (교섭 +2, 협업 +1)','귀솔 레벨 3 달성 (교섭 +4, 협업 +2)','귀솔 +230 경험치']);
+    expect(messages).toEqual(['귀솔 레벨 2 달성 (교섭 +2, 협업 +1)','귀솔 레벨 3 달성 (교섭 +2, 협업 +1)','귀솔 +230 경험치']);
+    const gains=messages.slice(0,2).map((m)=>m.match(/교섭 \+(\d+), 협업 \+(\d+)/)!);
+    expect(gains.reduce((n,m)=>n+Number(m[1]),0)).toBe(54-50);
+    expect(gains.reduce((n,m)=>n+Number(m[2]),0)).toBe(42-40);
     expect(growthMessages(after,after,cfg)).toEqual([]);
   });
   it('CHAR-ACC-08은 훈련비·급여 행을 분리하고 완료 +60을 한 번 알린다',()=>{
@@ -94,7 +100,7 @@ describe('성장 기록과 훈련',()=>{
   });
   it('훈련 초점 대안은 직원 상세 제목을 우선하고 연결용 선택자 목록을 고정한다',()=>{
     expect(FOCUS_FALLBACK_SELECTORS).toEqual(['.employee-detail','.recruit-site','.recruit-candidate']);
-    expect(focusFallbackIds({action:'train',emp:'EMP01'},'growth-h-EMP01')[0]).toBe('growth-h-EMP01');
+    expect(focusFallbackIds({action:'train',emp:'EMP01'})[0]).toBe('growth-h-EMP01');
     expect(focusFallbackIds({action:'scout'},'site-h-VEN_PORT')).toEqual(['site-h-VEN_PORT','queue-h']);
   });
 });
