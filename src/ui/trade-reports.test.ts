@@ -21,7 +21,7 @@ describe('취소 안내와 원화 보고', () => {
   });
   it('성장과 M1 각주는 실제 직원 처리량과 범위를 표시한다', () => {
     const m1=loadScenario('SCENARIO_M1_ONE_TRADE');
-    expect(crewNoteKo(m1)).toBe('처리량은 고정값(LEGACY_FIXED, 하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다.');
+    expect(crewNoteKo(m1)).toBe('처리량은 고정값(LEGACY_FIXED, 하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다. 일급 80,000원.');
     for(const cfg of [config,m1]) {
       expect(crewNoteKo(cfg)).not.toContain('하루 Npt');
       expect(crewNoteKo(cfg)).toContain('하루 2pt');
@@ -42,6 +42,6 @@ describe('취소 안내와 원화 보고', () => {
     expect([...html.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−640,000원','−550,000원','−50,000원','−1,240,000원','0원','8,760,000원']);
     expect(p.cash).toBe(p.openingEquity+p.profit+p.accountsPayable);
     expect(KRW_REPORT_NOTE_KO).toContain('계약금·훈련비는 한 번 내는 원화 비용');
-    expect(crewNoteKo(config)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다.');
+    expect(crewNoteKo(config)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000원.');
   });
 });

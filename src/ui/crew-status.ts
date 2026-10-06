@@ -1,4 +1,5 @@
 import { employedDefs } from '../engine/employees';
+import { formatMoney } from '../engine/money';
 import { taskSubjectKo } from '../engine/tasks';
 import type { GameState, ScenarioConfig, Task } from '../engine/types';
 
@@ -15,9 +16,15 @@ export function crewNoteKo(config: ScenarioConfig, state?: GameState): string {
   if (!units.length) units.push(0);
   const min = Math.min(...units), max = Math.max(...units);
   const daily = `하루 ${min === max ? min : `${min}~${max}`}pt`;
-  return config.growth
+  const salaries = employees.map((e) => e.salaryPerDayMinor);
+  if (!salaries.length) salaries.push(0);
+  const minSalary = Math.min(...salaries), maxSalary = Math.max(...salaries);
+  const salary = minSalary === maxSalary ? formatMoney(config.payrollCurrency, minSalary)
+    : `${minSalary.toLocaleString('ko-KR')}~${formatMoney(config.payrollCurrency, maxSalary)}`;
+  const note = config.growth
     ? `레벨·능력은 성장 기록으로 보여 주며 아직 처리량(${daily})에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다.`
     : `처리량은 고정값(LEGACY_FIXED, ${daily})만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다.`;
+  return `${note} 일급 ${salary}.`;
 }
 
 /** 모든 직원 표시가 같은 글자와 기호로 근무·교육을 구분한다. */

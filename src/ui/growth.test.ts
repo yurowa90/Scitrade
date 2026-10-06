@@ -57,7 +57,7 @@ describe('성장 기록과 훈련',()=>{
   });
   it.each(['busy','funds','unemployed'])('%s 거절 이유와 비활성 버튼은 엔진 판정과 같다',(kind)=>{
     let s=initial();let id=def.id;
-    if(kind==='busy')s=planState(s,config,[train]).state;
+    if(kind==='busy')s=planState(s,config,[{id:'SCOUT',type:'SCOUT_SITE',venueId:'VEN_PORT',employeeId:def.id}]).state;
     if(kind==='funds')s.ledger.entries.push({...s.ledger.entries[0]!,id:'DRAIN',currency:'KRW',lines:[{account:'CASH',amount:-10_000_000},{account:'WAGE_EXPENSE',amount:10_000_000}]});
     if(kind==='unemployed')id='EMP04';
     const e=config.employees.find((e)=>e.id===id)!,p=trainingPreview(s,config,id),html=trainingBlock(s,config,e);
@@ -94,7 +94,7 @@ describe('성장 기록과 훈련',()=>{
     const before=openDay(createGame(cfg),cfg).state,after=commitDay(before,cfg,[train]).state;
     const report=krwReportRows(companyReport(after,cfg),cfg);
     expect(report).toContain('<th>훈련비</th><td>−20,000원</td>');expect(report).toContain('<th>급여</th><td>−10,000원</td>');expect(report).toContain('<th>현금</th><td>470,000원</td>');
-    const status=growthStatus(growthMessages(before,after,cfg));expect(status).toContain('role="status"');expect(status.match(/\+60 경험치/g)).toHaveLength(1);
+    const status=growthStatus(growthMessages(before,after,cfg),before.day);expect(status).toContain('role="status"');expect(status.match(/\+60 경험치/g)).toHaveLength(1);
     expect(growthMessages(after,after,cfg)).toEqual([]);
   });
   it('M1은 상세·훈련·경험치를 표시하지 않는다',()=>{

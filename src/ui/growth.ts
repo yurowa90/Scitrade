@@ -54,7 +54,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
     <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
     <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
-    ${preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
+    ${training ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>' : preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
   </div>`;
 }
 
@@ -97,6 +97,6 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
   });
 }
 
-export function growthStatus(messages:string[], announce=true):string {
-  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
+export function growthStatus(messages:string[], day:number|null, announce=true):string {
+  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}><h3 class="small">${day}일 하루 진행 결과</h3>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
 }

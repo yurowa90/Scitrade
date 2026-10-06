@@ -11,7 +11,7 @@ export function initialUiState() {
     selectedCard: null as string | null, crewFilter: 'all' as CrewFilter,
     interviewId: null as string | null, recruitSelections: {} as Record<string, string>,
     plans: {} as Record<string, CommitPlan>, touchedPlans: new Set<string>(),
-    detailId: null as string | null, growthNotices: [] as string[], growthNoticesFresh: false,
+    detailId: null as string | null, growthNotices: [] as string[], growthNoticesDay: null as number | null, growthNoticesFresh: false,
   };
 }
 

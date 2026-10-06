@@ -107,6 +107,7 @@ function endDay() {
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
   ui.growthNotices = growthMessages(state, committed.state, config);
+  ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
   state = committed.state;
   ui.pending = [];
@@ -612,8 +613,8 @@ function queuePanel(): string {
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</p>` : ''}
-    ${growthStatus(ui.growthNotices, ui.growthNoticesFresh)}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
+    ${growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh)}
   </section>`;
 }
 

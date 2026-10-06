@@ -276,6 +276,11 @@
       "sha256": "af3546fb493c8ac83cf9d43580d2067953d1c1b6c6e517d62194023f9684b7d6"
     },
     {
+      "path": "docs/ai/tasks/TASK-0005-R3-notice-context.md",
+      "size_bytes": 5306,
+      "sha256": "f082fdb3a3fb3fe8939652de2afbee1f6034abc415060de5a7e2a39c86bb7e8e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
       "size_bytes": 14526,
       "sha256": "9c8a8f25083a626477952bcda03653b5053626317b9828843378f2f618472294"
@@ -332,8 +337,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0005.md",
-      "size_bytes": 34228,
-      "sha256": "8fd9577b2e86aa3122a468192dbd8ed990acc90f7f8e4206de6cda5b99d7bc89"
+      "size_bytes": 45765,
+      "sha256": "3e58f11d827df33a31d6eb507ca58930a7cf52252298cf010497386a0f9bc199"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0007.md",
