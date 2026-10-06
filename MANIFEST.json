@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 89689,
-      "sha256": "8ee567b4f1a0ca98b5344483a68e4503b03ec8f765561753b98d0bd2bd9ac97d"
+      "size_bytes": 91253,
+      "sha256": "6dc8b999415c1e8c1662c4b3cca2d815c1c5941595b0042c2942d68ed7877d9e"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 35101,
-      "sha256": "95dface0f9ad0af05188e9e267908235d3b3ffb615d6b17479c21c6fb44a0dee"
+      "size_bytes": 35806,
+      "sha256": "060681ee096305777775ce156ef4245cc83204549b7335bb6736cbdb3e3fb2ff"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 16944,
-      "sha256": "de6a8d73dc2cbf781b137e74466c2b138b8b1b6dc7e36625c672fb9341660827"
+      "size_bytes": 17598,
+      "sha256": "c3039856ab1d8ea0e0a9505d909de35af3fb877c585d26909f9aaa5850fc576c"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 12846,
-      "sha256": "ed4610c76e788dd42407ed3697e6ee2ed62ce5ccdbfec9dae4fdf16eec3d02c8"
+      "size_bytes": 14702,
+      "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",

@@ -121,3 +121,22 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
   - `browser.newContext({ viewport: null })`
 - **`MANIFEST.json`:** 스냅숏 커밋 전에 `git checkout MANIFEST.json`으로 되돌리지 않는다. 자료 해시가 실제 파일과 어긋난다. 항상 `python3 tools/build_package.py --manifest-only`로 다시 만든다(TASK-0004-R1 스냅숏에서 생긴 실수).
 
+
+## 시험 빌드 정적 배포 (Netlify, 2026-10-06 사용자 결정)
+
+- **사이트:** `scitrade-usability-test` (사용자 Netlify 팀 `yurowa90`). 주소 https://scitrade-usability-test.netlify.app
+- **올리는 것:** 시험 빌드의 `dist`만 올린다. 원본 저장소·문서·자료는 올리지 않는다.
+  1. 그 커밋을 별도 작업 트리에서 빌드한다(`git worktree add --detach … <커밋>`, `node_modules`는 `cp -r`, `npm run build`).
+  2. `dist`를 배포 전용 폴더로 복사하고 다음을 더한다.
+     - `netlify.toml`(`[build] publish = "." command = ""`).
+     - `_headers`(`X-Robots-Tag: noindex, nofollow`).
+     - `robots.txt`(`Disallow: /`).
+     - `version.txt`(빌드 커밋).
+  3. Netlify 커넥터의 `deploy-site`가 돌려주는 `npx @netlify/mcp … --proxy-path …` 명령을 **그 폴더 안에서** 실행한다.
+     - 이 환경에서는 `NODE_USE_ENV_PROXY=1`을 앞에 붙여야 한다. 붙이지 않으면 Node의 내장 fetch가 에이전트 프록시를 거치지 않아 403이 난다.
+- **배포 뒤 확인:**
+  - `curl`로 `version.txt`·자산·`x-robots-tag`를 확인한다.
+  - Playwright로 휴대폰·태블릿 에뮬레이션에서 연다. Chromium은 에이전트 프록시 CA를 바로 신뢰하지 않으므로, TLS 검증을 끄지 말고 `--ignore-certificate-errors-spki-list=<프록시 CA의 SPKI sha256>`로 그 CA 하나만 신뢰시킨다.
+- **Netlify가 덧붙이는 것:** 무료 사이트의 HTML에 안내 주석과 `/.netlify/scripts/hud` 스크립트를 넣는다. 이 스크립트가 오른쪽 아래에 ‘Powered by Netlify’ 배지(고정 iframe 216×92px)를 띄운다.
+  - 배지 안의 ‘Hide this badge’로 숨기면 기기마다 기억된다(브라우저 저장소).
+  - 사용성 시험 전에 기기마다 숨긴다(`docs/USABILITY_TEST_M2A.md` 8절).
