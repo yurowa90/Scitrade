@@ -216,6 +216,11 @@
       "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
     },
     {
+      "path": "docs/ai/design/TASK-0012-scene-brief.md",
+      "size_bytes": 5385,
+      "sha256": "92d66441b58474c89e7bbef53d1395c9326d130b2c72c56420ff8a49a04c40a9"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
