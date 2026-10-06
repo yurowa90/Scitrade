@@ -2,7 +2,8 @@
 import { cultureKey, cultureKeys } from './culture';
 import type { GameState, ScenarioConfig } from './types';
 
-export function cultureProblems(s: GameState, config: ScenarioConfig): string[] {
+/** closing: 하루 마감 중 검사(오늘 진행한 1일이 이미 더해진 상태). 불러오기는 false. */
+export function cultureProblems(s: GameState, config: ScenarioConfig, closing = false): string[] {
   const problems: string[] = [];
   const tasks = s.tasks.filter((t) => t.kind === 'CULTURE');
   const expenses = s.ledger.entries.filter((e) => e.lines.some((l) => l.account === 'CULTURE_EXPENSE'));
@@ -33,9 +34,9 @@ export function cultureProblems(s: GameState, config: ScenarioConfig): string[] 
     if (task.status === 'RUNNING') {
       check(task.completedDay === null && task.startedDay !== null && task.startedDay <= s.day
         && task.progressWorkUnits < task.requiredWorkUnits, `${task.id}: 진행 중 현지 활동 날짜·미완료 오류`);
-      // 불러오기 때는 경과일만큼, 하루 마감 중에는 오늘 진행한 1일까지 허용한다.
-      check(task.startedDay !== null && s.day - task.startedDay <= task.progressWorkUnits
-        && task.progressWorkUnits <= s.day - task.startedDay + 1, `${task.id}: 진행 중 현지 활동 경과일·진행량 오류`);
+      // 진행 중 업무는 하루에 정확히 1일씩 진행한다. 불러오기 때는 경과일과 같고, 하루 마감 중에는 오늘 1일이 더해져 있다.
+      check(task.startedDay !== null && task.progressWorkUnits === s.day - task.startedDay + (closing ? 1 : 0),
+        `${task.id}: 진행 중 현지 활동 경과일·진행량 오류`);
     }
     if (task.status === 'DONE') check(task.completedDay !== null && task.startedDay !== null
       && task.completedDay === task.startedDay + activity.durationDays - 1 && task.completedDay <= s.day

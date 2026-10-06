@@ -113,6 +113,14 @@ describe('자료·키·기존 판본', () => {
     } finally { a[field] = before; }
   });
 
+  it.each(['{foo}', '{city_id', '{{company_id}}'])('로더는 깨진 키 템플릿 %s를 거절한다', (bad) => {
+    const a = activities.items[0]!, before = a.completion_dedupe_key_template;
+    try {
+      a.completion_dedupe_key_template = `${before}:${bad}`;
+      expect(() => loadScenario('SCENARIO_M2_MULTI_TRADE')).toThrow(/키 템플릿 자리 오류/);
+    } finally { a.completion_dedupe_key_template = before; }
+  });
+
   it('키는 여섯 자리만 채우며 모르는 자리·값 누락·깨진 괄호는 거절한다', () => {
     expect(cultureKey('{company_id}:{actor_id}:{contact_id}:{activity_id}:{city_id}:{content_revision}', {
       company_id: 'C', actor_id: 'E', contact_id: 'N', activity_id: 'A', city_id: 'B', content_revision: '1',
@@ -507,6 +515,27 @@ const mutations: SaveMutation[] = [
     s.culture.experiences[0]!.verifiedDay++;
     s.culture.relationEvents[0]!.day++;
   }, /현지 활동 완료일·진행 오류/],
+  ['X2b 실제 업무를 가리키는 다른 담당자', (s) => {
+    s.culture.experiences.push({ ...s.culture.experiences[0]!, employeeId: 'EMP02',
+      key: cultureKeys(config, config.culture!.activities[0]!, 'EMP02').actorExperience });
+  }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['X9 다른 활동의 업무를 가리키는 경험', (s) => {
+    const ca02 = config.culture!.activities.find((a) => a.id === 'CA02')!;
+    s.culture.experiences.push({ ...s.culture.experiences[0]!, activityId: 'CA02', topicId: ca02.topic.id,
+      key: cultureKeys(config, ca02, 'EMP01').actorExperience });
+  }, /기록과 완료 업무·담당자·날짜 불일치/],
+  ['X10 정의 없는 활동의 보고서', (s) => {
+    s.culture.reports.push({ ...s.culture.reports[0]!, activityId: 'CA99', key: 'FORGED-CA99' });
+  }, /기록의 현지 활동 정의 없음/],
+  ['X13 담당자 없는 진행 업무', (s) => { s.tasks[0]!.assignedEmployeeId = null; }, /현지 활동 배정·진행 오류/,
+    () => plan(fresh(), [start()]).state],
+  ['X14 미래에 끝난 업무', (s) => {
+    const next = s.day + 1, task = s.tasks[0]!;
+    task.startedDay = next; task.completedDay = next;
+    feeOf(s).day = next;
+    s.culture.reports[0]!.day = next; s.culture.experiences[0]!.verifiedDay = next; s.culture.relationEvents[0]!.day = next;
+  }, /현지 활동 완료일·진행 오류/],
+  ['X15 계약에 묶인 활동비', (s) => { feeOf(s).contractId = 'CT001'; }, /현지 활동비 통화·금액·계정 오류/],
   ['내용 판본', (s) => {
     const r = s.culture.reports[0]!;
     r.contentRevision = '2';
@@ -575,7 +604,7 @@ describe('진행 중 문화 업무 저장', () => {
     expect(() => reload(s, cfg)).toThrow(/진행 중 현지 활동 경과일·진행량 오류/);
   });
 
-  it.each(['완료일', '미래 시작', '완료 진행량', '경과일 상한'] as const)('진행 업무의 %s 변조를 거절한다', (field) => {
+  it.each(['완료일', '미래 시작', '완료 진행량', '경과일 상한', '경과일 +1'] as const)('진행 업무의 %s 변조를 거절한다', (field) => {
     const cfg = structuredClone(config);
     cfg.culture!.activities[0]!.durationDays = 3;
     const s = plan(fresh(cfg), [start()], cfg).state, task = s.tasks[0]!;
@@ -583,8 +612,10 @@ describe('진행 중 문화 업무 저장', () => {
     if (field === '미래 시작') { task.startedDay = 2; feeOf(s).day = 2; }
     if (field === '완료 진행량') task.progressWorkUnits = 3;
     if (field === '경과일 상한') task.progressWorkUnits = 2;
+    // 하루 마감 중에만 맞는 값(경과일 + 1)은 불러오기에서 거절한다.
+    if (field === '경과일 +1') task.progressWorkUnits = 1;
     expect(() => reload(s, cfg)).toThrow(SaveError);
-    expect(() => reload(s, cfg)).toThrow(field === '경과일 상한'
+    expect(() => reload(s, cfg)).toThrow(field === '경과일 상한' || field === '경과일 +1'
       ? /진행 중 현지 활동 경과일·진행량 오류/ : /진행 중 현지 활동 날짜·미완료 오류/);
   });
 
@@ -602,7 +633,8 @@ describe('진행 중 문화 업무 저장', () => {
     duringClose.day--;
     duringClose.phase = 'AWAITING_INPUT';
     expect(duringClose.tasks[0]!.progressWorkUnits).toBe(duringClose.day - duringClose.tasks[0]!.startedDay! + 1);
-    expect(() => checkInvariants(duringClose, cfg)).not.toThrow();
+    expect(() => checkInvariants(duringClose, cfg, { closing: true })).not.toThrow();
+    expect(() => reload(duringClose, cfg)).toThrow(/진행 중 현지 활동 경과일·진행량 오류/);
   });
 });
 
@@ -674,3 +706,17 @@ describe('완료 근거·배정 순서 추가 경계', () => {
     }
   });
 });
+
+describe('완료 기록 조사의 예외 입력', () => {
+  it.each(['끝 공백', '빈 이름', '인물 없음'] as const)('CA02 인물 이름이 %s이어도 완료한다', (kind) => {
+    const cfg = structuredClone(config);
+    const guide = cfg.culture!.contacts.find((c) => c.id === 'NPC_GUIDE')!;
+    if (kind === '끝 공백') guide.nameKo = `${guide.nameKo} `;
+    if (kind === '빈 이름') guide.nameKo = '';
+    if (kind === '인물 없음') cfg.culture!.activities.find((a) => a.id === 'CA02')!.contactIds = [];
+    const s = commitDay(fresh(cfg), cfg, [start('CA02')]).state;
+    expect(s.tasks[0]!.status).toBe('DONE');
+    if (kind === '끝 공백') expect(s.log.map((l) => l.textKo).join('\n')).toContain('하람과 함께한 활동');
+  });
+});
+

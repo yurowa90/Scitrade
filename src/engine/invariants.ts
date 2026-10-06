@@ -11,8 +11,8 @@ import type { GameState, ScenarioConfig } from './types';
 
 export class InvariantError extends Error {}
 
-export function checkInvariants(s: GameState, config: ScenarioConfig): void {
-  const problems = cultureProblems(s, config);
+export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { closing?: boolean } = {}): void {
+  const problems = cultureProblems(s, config, opts.closing ?? false);
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
   if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');

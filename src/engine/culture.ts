@@ -51,8 +51,8 @@ export function recordCultureCompletion(s: GameState, config: ScenarioConfig, ta
   }
   const name = config.employees.find((e) => e.id === employeeId)!.nameKo;
   // 현재 P0 인물 제목은 ‘역할 이름’ 형태다. 로그에서는 마지막 이름만 쓴다.
-  const contacts = activity.contactIds.map((id) => config.culture!.contacts.find((c) => c.id === id)!.nameKo.split(' ').at(-1)!);
-  const lastCode = contacts.at(-1)!.at(-1)!.charCodeAt(0);
+  const contacts = activity.contactIds.map((id) => config.culture!.contacts.find((c) => c.id === id)!.nameKo.trim().split(/\s+/).at(-1)!);
+  const lastCode = contacts.at(-1)?.at(-1)?.charCodeAt(0) ?? 0;
   const particle = lastCode >= 0xAC00 && lastCode <= 0xD7A3 && (lastCode - 0xAC00) % 28 !== 0 ? '과' : '와';
   s.log.push({ day: s.day, textKo: `${name}: ${activity.titleKo} 완료 — 회사 기록 ${newReport ? '새로 1건' : '이미 있음'} · 직접 경험 · ${contacts.join('·')}${particle} 함께한 활동` });
   if (config.growth) awardXp(s, config, employeeId, `CULTURE-FIRST-${activity.id}`, 'CULTURE_FIRST_XP', config.growth.taskCompletionXp);

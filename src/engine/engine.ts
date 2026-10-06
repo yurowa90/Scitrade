@@ -830,7 +830,7 @@ export function commitDay(
     }
   }
   // 8. 불변 조건 검사·마감
-  checkInvariants(s, config);
+  checkInvariants(s, config, { closing: true });
   s.closedDays.push(day);
   s.day = day + 1;
   s.phase = s.day > config.campaignDays ? 'ENDED' : 'PENDING_OPEN';
