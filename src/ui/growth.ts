@@ -66,7 +66,7 @@ export function employeeDetail(state:GameState,config:ScenarioConfig,def:Employe
   const p=levelProgress(state,config,def.id);
   if(!p) return '';
   return `<div class="growth-detail">
-    <button data-action="detail" data-emp="${esc(def.id)}" aria-expanded="${expanded}" aria-controls="growth-${esc(def.id)}">${esc(def.nameKo)} 성장 상세</button>
+    <button data-action="detail" data-emp="${esc(def.id)}" aria-expanded="${expanded}" aria-controls="growth-${esc(def.id)}">${esc(def.nameKo)} 성장·훈련 상세</button>
     <section class="employee-detail" id="growth-${esc(def.id)}" role="region" aria-labelledby="growth-h-${esc(def.id)}" ${expanded ? '' : 'hidden'}>
       <h3 id="growth-h-${esc(def.id)}" tabindex="-1">${esc(def.nameKo)} 성장 기록</h3>
       <p>레벨 ${p.level} · ${esc(xpProgressKo(p))}</p>

@@ -281,6 +281,10 @@ function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[]
   const sailing = q.departureDay !== null
     ? `다음 출항 ${q.departureDay}일 → ${q.arrivalDay}일 도착 예정 (납기 ${q.deliveryDeadlineDay}일)${q.lateOnNextSailing ? ' ⚠ 납기 초과 — 감액 반영' : ''}`
     : '남은 출항편 없음';
+  // 견적의 대금일은 계약 조건이다. 인도가 늦으면 실제로 받는 날도 늦어진다.
+  const receipt = q.departureDay !== null
+    ? `<li>대금은 ${q.receiptDay}일에 받을 예정${q.receiptDay > q.paymentDueDay ? ` (인도가 계약상 대금일 ${q.paymentDueDay}일보다 늦기 때문)` : ''}</li>`
+    : '';
   const need = committedRule()
     ? `수락하려면 사용 가능 자금 ${usd(q.cashNeed)}가 필요합니다 (매입·운임·관세를 미리 묶음).`
     : `수락하면 매입 대금 ${usd(q.purchase)}를 지금 현금으로 냅니다.`;
@@ -289,7 +293,7 @@ function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[]
     : cmd.type === 'ACCEPT_FORWARDING' ? `data-action="accept-fwd" data-offer="${esc(cmd.offerId)}"` : '';
   return `
     <table class="money">${rows}<tr class="total"><th>예상 기여이익 (급여 전)</th><td>${usd(q.contributionBeforePayroll)}</td></tr></table>
-    <ul class="quote-facts"><li>${sailing}</li><li>${need}</li>${extra.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    <ul class="quote-facts"><li>${sailing}</li>${receipt}<li>${need}</li>${extra.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     <details><summary>현금 일정 미리 보기 — 이익과 현금은 다른 날 움직입니다</summary>
       <ul class="schedule">${q.schedule.map((x) => `<li><span>${x.day}일</span>${esc(x.labelKo)}<b>${x.amount === 0 ? '현금 변화 없음' : (x.amount > 0 ? '+' : '−') + usd(Math.abs(x.amount))}</b></li>`).join('')}</ul>
       <p class="muted">지연·취소가 없다는 가정의 계산이며 결과를 보장하지 않습니다.</p>
@@ -366,7 +370,7 @@ function offerBoard(): string {
     cards.push(`
     <article class="offer">
       <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, buy.quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
-      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${buy.quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 대금은 ${due}일에 받습니다.”</p>
+      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${buy.quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
       ${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
@@ -385,7 +389,7 @@ function offerBoard(): string {
     cards.push(`
     <article class="offer forwarding">
       <h3><span class="kind kind-fwd">운송 주선</span> 고객 화물 ${esc(qtyKo(offer.goodId, offer.quantity))} · ${esc(cityName(config, offer.cityId))} → ${esc(cityName(config, offer.destinationCityId))}</h3>
-      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(partyKo(offer.counterpartyId))}가 ${esc(qtyKo(offer.goodId, offer.quantity))}을(를) ${esc(cityName(config, offer.destinationCityId))}까지 보내 달라고 합니다. 화물은 고객 것이고, 우리는 운송을 주선해 서비스 대금을 받습니다. 납기 ${offer.deliveryDeadlineDay}일, 대금은 ${offer.paymentDueDay}일.”</p>
+      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(partyKo(offer.counterpartyId))}가 ${esc(qtyKo(offer.goodId, offer.quantity))}을(를) ${esc(cityName(config, offer.destinationCityId))}까지 보내 달라고 합니다. 화물은 고객 것이고, 우리는 운송을 주선해 서비스 대금을 받습니다. 납기 ${offer.deliveryDeadlineDay}일, 계약상 대금일은 ${offer.paymentDueDay}일입니다.”</p>
       ${quoteBlock(q, rows, cmd, [
         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}는 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
@@ -566,10 +570,10 @@ function resourcePanel(): string {
     <h2 id="res-h">자원 예약 <small>오늘 할 일까지 반영 · 같은 돈·사람·공간을 두 번 쓰지 않습니다</small></h2>
     <h3>자금 (USD)</h3>
     <table class="money">
-      <tr><th>현금</th><td>${usd(f.cash)}</td></tr>
+      <tr><th>현금 (오늘 할 일 실행 뒤)</th><td>${usd(f.cash)}</td></tr>
       <tr><th>체결 계약의 남은 지출 예약</th><td>−${usd(f.reserved)}</td></tr>
       ${f.unpaidObligations ? `<tr><th>미지급</th><td>−${usd(f.unpaidObligations)}</td></tr>` : ''}
-      <tr class="total"><th>사용 가능</th><td class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</td></tr>
+      <tr class="total"><th>사용 가능 (오늘 할 일 실행 뒤)</th><td class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</td></tr>
     </table>
     ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${esc(r.contractId)} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : '<p class="muted small">묶인 돈이 없습니다.</p>'}
     <p class="muted small">${committedRule() ? '규칙 M2a: 새 계약·운임은 사용 가능 자금으로만 판단합니다.' : '규칙 M1: 새 계약은 지금 현금만 확인합니다. 예약은 참고 표시입니다.'}</p>

@@ -54,7 +54,9 @@ describe('TASK-0013 실제 화면 표시', () => {
     expect(ui.app.innerHTML.match(/금액은 확정 기준/g)).toHaveLength(2);
     const resources = ui.app.innerHTML.split('<section class="panel resources"')[1]!.split('</section>')[0]!;
     expect(header()).toContain('<b>3,000.00 USD</b>');
-    expect(resources).toContain('<th>현금</th><td>1,000.00 USD</td>');
+    // 위쪽 막대(확정)와 이름으로도 구분한다.
+    expect(resources).toContain('<th>현금 (오늘 할 일 실행 뒤)</th><td>1,000.00 USD</td>');
+    expect(resources).toContain('<th>사용 가능 (오늘 할 일 실행 뒤)</th>');
     ui.click({ action: 'end-day' });
     expect(header()).toContain('<b>1,000.00 USD</b>');
     expect(header()).not.toContain('<b>3,000.00 USD</b>');
@@ -732,7 +734,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});
     ui.click({action:'select-card',emp:'EMP01'});
     expect(ui.app.innerHTML).toMatch(/<article class="[^"]*is-selected"[^>]*data-action="select-card"[^>]*data-emp="EMP01"/);
-    expect(ui.app.innerHTML).toContain('귀솔 성장 상세');
+    expect(ui.app.innerHTML).toContain('귀솔 성장·훈련 상세');
     expect(ui.scroll).toHaveBeenCalledTimes(2);
     expect(ui.doc.activeElement.dataset.action).toBe('detail');
   });
@@ -760,17 +762,27 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     ui.resizeStatusbar(140);
     expect(ui.doc.documentElement.style.setProperty).toHaveBeenLastCalledWith('--topbar-h','140px');
   });
-  it('한 열 배치 순서·고정 막대 분리·터치 크기·글자 대비 규칙을 유지한다', async() => {
+  it('가로 세 열(거래 먼저)·한 열 배치 순서·고정 막대 분리·터치 크기·글자 대비 규칙을 유지한다', async() => {
     const {readFileSync}=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
     const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
     expect(css).toContain('grid-template-areas: "trade" "queue" "crew" "resources" "report" "world" "log";');
+    // 1001px 이상 가로 기기는 모두 거래가 맨 위인 세 열 배치다.
+    expect(css).toMatch(/\.layout \{[^}]*grid-template-areas:\s*"trade trade crew"\s*"trade trade resources"\s*"trade trade queue"\s*"world report log";/);
+    expect(css).toContain('@media (max-width: 1000px) {\n  .layout, .layout.map-wide');
+    expect(css).not.toContain('max-width: 1100px');
+    expect(css).toMatch(/\.layout\.map-wide\s*\{[^}]*"trade trade crew"\s*"trade trade resources"\s*"trade trade queue"\s*"world world world"\s*"report report log";/);
+    expect(css).toMatch(/@media \(any-pointer: coarse\)\s*\{\s*\.training > \.pill\s*\{\s*min-height:\s*44px/);
+    expect(css).toMatch(/\.books\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*12rem\),\s*1fr\)\)/);
+    expect(css).toMatch(/\.resources table\.money td\s*\{[^}]*white-space:\s*nowrap/);
+    expect(css).not.toMatch(/(^|\n)table\.money td\s*\{[^}]*nowrap/);
     expect(css).toMatch(/\.masthead\s*\{[^}]*display:\s*flex/);
     expect(css).toMatch(/\.statusbar\s*\{[^}]*position:\s*sticky/);
     expect(css).toContain('scroll-padding-top: var(--topbar-h)');
     expect(css).toContain('overscroll-behavior-y: none');
     expect(css).toContain('color-scheme: only light');
     expect(css).toContain('touch-action: manipulation');
-    expect(css).toMatch(/@media \(pointer: coarse\)\s*\{[^}]*min-height:\s*44px/);
+    expect(css).toMatch(/@media \(any-pointer: coarse\)\s*\{[^}]*min-height:\s*44px/);
+    expect(css).not.toMatch(/@media \(pointer: coarse\)/);
     expect(css).toContain('select { font-size: 16px; }');
     expect(css.match(/button:disabled\s*\{([^}]+)\}/)![1]).not.toContain('opacity');
     const color=(name:string)=>css.match(new RegExp(`--${name}: (#[0-9a-f]{6});`))![1]!;
@@ -786,5 +798,21 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(masthead).toContain('data-action="restart"');expect(masthead).not.toContain('data-action="end-day"');
     const bar=ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]!;
     for(const label of ['거래 현금','사용 가능','운영 현금','다음 수금','금액은 확정 기준','하루 진행 ▶'])expect(bar).toContain(label);
+  });
+});
+
+describe('3판 표시 수정 (Codex 사용성 점검 2026-10-07)', () => {
+  it('견적의 대금일은 계약 조건으로 적고, 인도가 늦으면 실제로 받는 날을 따로 알린다', async () => {
+    const ui = await startUi();
+    // 1일 화장품: 계약상 대금일 12일이 인도보다 늦으므로 그대로 받는다.
+    expect(ui.app.innerHTML).toContain('계약상 대금일은 12일입니다.');
+    expect(ui.app.innerHTML).toContain('<li>대금은 12일에 받을 예정</li>');
+    ui.click({ action: 'end-day' }); ui.click({ action: 'end-day' });
+    expect(ui.app.innerHTML).toContain('<b>3일</b>');
+    // 3일 가구 주선: 다음 편이 14일에 도착하므로 계약상 대금일 10일에는 받을 수 없다.
+    const fwd = ui.app.innerHTML.split('가구 화주가')[1]!.split('</article>')[0]!;
+    expect(fwd).toContain('계약상 대금일은 10일입니다.');
+    expect(fwd).toContain('대금은 14일에 받을 예정 (인도가 계약상 대금일 10일보다 늦기 때문)');
+    expect(ui.app.innerHTML).not.toContain('대금은 10일.');
   });
 });

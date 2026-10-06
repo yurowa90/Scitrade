@@ -31,7 +31,8 @@ export function candidateLabel(s: GameState, c: CandidateState, config?: Scenari
     case 'INTERVIEW_READY': return '면담 가능';
     case 'HIRED': {
       const e = s.employees.find((e) => e.id === c.employeeId);
-      return `고용됨${e && e.availableFromDay > s.day ? ` — ${e.availableFromDay}일부터 근무` : ''}`;
+      // 고용은 하루 진행 때 확정되고 다음 날부터 근무한다. 근무 시작일이 아직 오지 않았다면 오늘 할 일에 들어 있는 상태다.
+      return e && e.availableFromDay > s.day ? `고용 예정 — ${e.availableFromDay}일부터 근무` : '고용됨';
     }
   }
 }

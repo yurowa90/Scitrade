@@ -88,12 +88,12 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
   gap: 1rem;
   padding: 1rem 1.2rem 2rem;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
+  /* 가로 기기(1001px 이상)는 모두 이 배치를 쓴다. 거래를 맨 위에 두어 첫 화면에 견적이 보이게 한다. */
   grid-template-areas:
-    "world report crew"
     "trade trade crew"
     "trade trade resources"
     "trade trade queue"
-    "trade trade log";
+    "world report log";
   align-items: start;
 }
 .layout > * { min-width: 0; }
@@ -108,7 +108,7 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
     "world world world"
     "report report log";
 }
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
   .layout, .layout.map-wide { grid-template-columns: 1fr; grid-template-areas: "trade" "queue" "crew" "resources" "report" "world" "log"; }
   .actions { margin-left: 0; }
 }
@@ -124,6 +124,8 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
 table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 table.money th { text-align: left; font-weight: 400; padding: .25rem 0; color: var(--navy-soft); }
 table.money td { text-align: right; padding: .25rem 0; }
+/* 좁은 ‘자원 예약’ 칸의 금액은 숫자와 단위를 한 줄에 둔다. 이름 쪽이 줄을 바꾼다. */
+.resources table.money td { white-space: nowrap; }
 table.money tr.total th, table.money tr.total td { font-weight: 700; color: var(--navy); border-top: 1.5px solid var(--line); }
 table.money caption { text-align: left; font-weight: 700; padding-bottom: .3rem; }
 details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
@@ -150,7 +152,8 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .5rem; }
 
 /* 보고 */
-.books { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* 좁은 경영 보고 칸(1001~1280px)에서는 두 장부를 위아래로 둬 금액이 숫자 중간에서 끊기지 않게 한다. */
+.books { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1rem; }
 @media (max-width: 640px) { .books { grid-template-columns: 1fr; } }
 .why { margin-top: .8rem; background: var(--sky); border-radius: 10px; padding: .6rem .9rem; }
 .why ul { margin: 0; padding-left: 1.1rem; }
@@ -432,7 +435,7 @@ table.roster .chip { font-size: .75rem; padding: 0 .4rem; }
   .statusbar .amount-basis { font-size: 12px; line-height: 16px; max-width: 4.6em; word-break: keep-all; }
   .layout { padding: .65rem .65rem 2rem; }
 }
-@media (pointer: coarse) {
+@media (any-pointer: coarse) {
   button, select, summary, .file-btn { min-height: 44px; }
   select { font-size: 16px; }
   .file-btn { display: inline-flex; align-items: center; }
@@ -452,7 +455,7 @@ table.roster small { font-size: 12px; }
 
 .statusbar .primary:disabled { background: var(--navy-soft); color: #fff; }
 .training > .pill { display: inline-flex; align-items: center; min-height: 34px; }
-@media (pointer: coarse) { .training > .pill { min-height: 44px; } }
+@media (any-pointer: coarse) { .training > .pill { min-height: 44px; } }
 
 /* 아래쪽 고정 알림이 마지막 내용을 가리지 않게 한다. 좁은 화면의 .layout 아래 여백보다 우선한다. */
 main.layout { padding-bottom: 5.5rem; }
