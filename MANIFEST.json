@@ -271,6 +271,11 @@
       "sha256": "252aa9d428b4123c1dd6f408c617e0b78caf54f77f395c5214bb7499667a4e38"
     },
     {
+      "path": "docs/ai/tasks/TASK-0005-R2-growth-ui-test-readiness.md",
+      "size_bytes": 6568,
+      "sha256": "af3546fb493c8ac83cf9d43580d2067953d1c1b6c6e517d62194023f9684b7d6"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0005-growth-ui-and-cleanup.md",
       "size_bytes": 14526,
       "sha256": "9c8a8f25083a626477952bcda03653b5053626317b9828843378f2f618472294"
@@ -327,8 +332,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0005.md",
-      "size_bytes": 23864,
-      "sha256": "70bb12cc87f312bd778b95cee192c14381c00cfe509192d2056898304de82697"
+      "size_bytes": 34228,
+      "sha256": "8fd9577b2e86aa3122a468192dbd8ed990acc90f7f8e4206de6cda5b99d7bc89"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0007.md",
@@ -642,8 +647,8 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 1844,
-      "sha256": "d1771896ae44f849a74237aa5d6f8b51648b7976df69660710460236affdedda"
+      "size_bytes": 1978,
+      "sha256": "79d59d49feb96b624729ba9cc1717a9f4081852e85d5d11d8e188960fa550dab"
     },
     {
       "path": "tools/validate_data.py",

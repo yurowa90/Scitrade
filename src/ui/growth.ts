@@ -48,10 +48,11 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
   const money=(amount:number)=>esc(formatMoney(preview.fee.currency,amount));
   return `<div class="training"><h4>일반 훈련</h4>
     <p>훈련비 ${money(preview.fee.minor)} · 기간 ${preview.durationDays}일 · 완료 시 +${preview.xpGain} 경험치</p>
+    <p>레벨·능력이 올라도 하루 처리량은 ${def.workUnitsPerDay}pt 그대로입니다. ${preview.durationDays === 1 ? '훈련하는 날은' : `훈련하는 ${preview.durationDays}일 동안`} 다른 업무를 맡을 수 없습니다.</p>
     <p>급여는 훈련비와 별도로 평소대로 지급합니다.</p>
     ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
-    ${training ? '' : `<p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))} → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}</p>`}
+    <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
     <button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>
     ${preview.reasonKo ? `<p class="reason">${esc(preview.reasonKo)}</p>` : ''}
   </div>`;
@@ -96,6 +97,6 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
   });
 }
 
-export function growthStatus(messages:string[]):string {
-  return messages.length ? `<div class="growth-notices" role="status">${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
+export function growthStatus(messages:string[], announce=true):string {
+  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
 }

@@ -28,18 +28,19 @@ export async function startUi(config?: ScenarioConfig) {
   const elements = () => [...html.matchAll(/<(button|article|tr|select)\b([^>]*\bdata-action="[^"]*"[^>]*)>/g)].map((match) => {
     const attrs = Object.fromEntries([...match[2]!.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, unescape(m[2]!)]));
     const dataset = Object.fromEntries(Object.entries(attrs).filter(([key])=>key.startsWith('data-')).map(([key,value])=>[key.slice(5).replace(/-([a-z])/g,(_m,c:string)=>c.toUpperCase()),value]));
-    return Object.assign(match[1] === 'button' ? new Button() : {}, {
+    const element = Object.assign(match[1] === 'button' ? new Button() : {}, {
       dataset, tagName:match[1]!.toUpperCase(), disabled:/\sdisabled(?:\s|$)/.test(match[2]!), focus:()=>focus(),
       closest:(selector:string)=>{
         closestSelectors.push(selector);
         const selectors=selector.split(',').map((s)=>s.trim());
-        if(selectors.includes('[data-action]')) return {dataset,disabled:/\sdisabled(?:\s|$)/.test(match[2]!)};
+        if(selectors.includes('[data-action]')) return element;
         const section=dataset.action === 'train' || dataset.action === 'detail' ? '.employee-detail'
           : dataset.action === 'scout' ? '.recruit-site' : '.recruit-candidate';
         const id=section === '.employee-detail' ? `growth-h-${dataset.emp}` : section === '.recruit-site' ? `site-h-${dataset.venue}` : `candidate-h-${dataset.candidate}`;
         return selectors.includes(section) && html.includes(`id="${id}"`) ? {querySelector:()=>({id})} : null;
       },
     });
+    return element;
   });
   const rendered = (dataset:Record<string,string>) => {
     const element=elements().find((e)=>Object.entries(dataset).every(([key,value])=>e.dataset[key]===value));
@@ -55,7 +56,10 @@ export async function startUi(config?: ScenarioConfig) {
   vi.stubGlobal('document',doc);
   await import('./main');
   return { app, doc, focus, focusIds, closestSelectors, rendered, frame:()=>frame,
-    click:(dataset:Record<string,string>)=>listeners.click!({target:rendered(dataset)}),
+    click:(dataset:Record<string,string>,fromChild=false)=>{
+      const element=rendered(dataset);
+      return listeners.click!({target:fromChild ? {closest:(selector:string)=>element.closest(selector)} : element});
+    },
     change:(dataset:Record<string,string>,value:string)=>listeners.change!({target:{...rendered(dataset),value}}),
     importText:async(text:string)=>{const input=new Input(); input.files=[{text:async()=>text}]; await listeners.change!({target:input});},
     focusTrain:(emp:string)=>{ doc.activeElement=rendered({action:'train',emp}); },

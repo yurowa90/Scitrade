@@ -9,7 +9,7 @@ import { runDays } from '../engine/testkit';
 import type { Command, GameState } from '../engine/types';
 import { batchUnlocked, crewEntryCard, candidateCard, crewRow, candidateLabel, crewEntries, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
 import { crewCard } from './card';
-import { crewNoteKo } from './crew-status';
+import { crewNoteKo, taskSchedule as engineTaskSchedule } from './crew-status';
 
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const initial = () => openDay(createGame(config), config).state;
@@ -47,6 +47,20 @@ describe('한 번에 확정 화면 공개', () => {
 });
 
 describe('영입 화면의 엔진 연결', () => {
+  it('1일 직원 각주는 미고용 3pt 후보를 처리량 범위에 포함하지 않는다', () => {
+    expect(config.employees.find((e)=>e.id===hired.id)!.workUnitsPerDay).toBe(3);
+    expect(crewNoteKo(config,initial())).toContain('하루 2pt');
+    expect(crewNoteKo(config,initial())).not.toContain('2~3pt');
+  });
+  it.each(['SCOUT','TRAINING'] as const)('%s 카드 일정의 대체 경로는 taskSchedule을 전달한 경로와 같다', (kind) => {
+    const command:Command=kind==='SCOUT' ? scout : {id:'T',type:'START_TRAINING',employeeId:'EMP02'};
+    const s=planState(initial(),config,[command]).state;
+    const def=config.employees.find((e)=>e.id==='EMP02')!;
+    const task=s.tasks.find((t)=>t.assignedEmployeeId===def.id)!;
+    const schedule=engineTaskSchedule(task,config);
+    expect(schedule).toBe(kind==='SCOUT' ? '현장 조사 중 — 항만 물류단지 0/1pt' : '일반 훈련 중 — 0/1일');
+    expect(crewCard(def,s,false,config)).toBe(crewCard(def,s,false,config,schedule));
+  });
   it('미발견 후보는 수만 보이고 이름·종·단서를 숨긴다', () => {
     const html = panel(initial());
     expect(html).toContain('미발견 후보 4명');

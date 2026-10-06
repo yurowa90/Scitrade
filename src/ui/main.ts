@@ -107,6 +107,7 @@ function endDay() {
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
   ui.growthNotices = growthMessages(state, committed.state, config);
+  ui.growthNoticesFresh = true;
   state = committed.state;
   ui.pending = [];
   ui.flash = rejected.length
@@ -548,7 +549,6 @@ function reportPanel(): string {
 }
 
 function crewPanel(): string {
-  const e0 = employedDefs(view, config)[0];
   const shown = crewEntries(view, config, ui.crewFilter);
   const filterBtn = (f: typeof ui.crewFilter, label: string) =>
     `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${ui.crewFilter === f}">${label}</button>`;
@@ -565,7 +565,7 @@ function crewPanel(): string {
     </table>
     ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard) : ''}
     ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand)}
-    <p class="muted small">${esc(crewNoteKo(config, view))} 일급 ${krw(e0?.salaryPerDayMinor ?? 0)}.</p>
+    <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
 }
 
@@ -612,7 +612,7 @@ function queuePanel(): string {
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</p>` : ''}
-    ${growthStatus(ui.growthNotices)}
+    ${growthStatus(ui.growthNotices, ui.growthNoticesFresh)}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
   </section>`;
 }
@@ -649,8 +649,8 @@ function render() {
       ${reportPanel()}
       ${logPanel()}
     </main>`;
-  // 상태 알림은 새 완료 때 한 번만 삽입한다. 이후 읽기는 엔진 기록에서 할 수 있다.
-  ui.growthNotices = [];
+  // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
+  ui.growthNoticesFresh = false;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
   frame.dataset.viewportKey = mapRedrawDecision(config, mapMode, mapMeasurements.get(mapMode)).key;
   const positionMap = () => {

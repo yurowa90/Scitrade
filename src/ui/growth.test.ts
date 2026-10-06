@@ -50,6 +50,11 @@ describe('성장 기록과 훈련',()=>{
     expect(html).toContain('성장 변화는 완료할 때 반영됩니다');
     s.employees[0]!.xp=0;expect(trainingBlock(s,config,def)).toContain('레벨 변화 없음 — 다음 레벨까지 40');
   });
+  it('여러 날 훈련의 업무 공백 안내는 미리 보기의 기간을 쓴다',()=>{
+    const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
+    const s=openDay(createGame(cfg),cfg).state;
+    expect(trainingBlock(s,cfg,cfg.employees[0]!)).toContain('<p>레벨·능력이 올라도 하루 처리량은 2pt 그대로입니다. 훈련하는 3일 동안 다른 업무를 맡을 수 없습니다.</p>');
+  });
   it.each(['busy','funds','unemployed'])('%s 거절 이유와 비활성 버튼은 엔진 판정과 같다',(kind)=>{
     let s=initial();let id=def.id;
     if(kind==='busy')s=planState(s,config,[train]).state;

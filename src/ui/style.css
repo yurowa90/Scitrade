@@ -282,6 +282,7 @@ details summary { cursor: pointer; color: var(--sky-deep); margin: .5rem 0; }
 .bar.full > span { background: var(--warn); }
 .crew-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: .8rem; }
 .crew-cards > .card { width: 100%; max-width: 300px; min-width: 0; justify-self: center; }
+.crew-cards > p { grid-column: 1 / -1; }
 
 /* 세계 거점: 이번 시나리오(금빛), 1장 예정(회색), 세계 확장 미리 보기(점선·흐림), 금융 중심(금화), 해협·운하(마름모) */
 .port.planned .port-glow { opacity: .35; }

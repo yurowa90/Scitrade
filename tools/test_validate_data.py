@@ -14,12 +14,14 @@ class RecruitmentKeysTest(unittest.TestCase):
                   for name in names}
         return tables
 
-    def test_null_signing_fee_reports_failure(self):
-        tables = self.tables()
-        tables['scenarios']['SCENARIO_M2_MULTI_TRADE']['recruitment']['signing_fee_wage_days'] = None
-        validator.ERRORS.clear()
-        validator.check_m2a(tables)
-        self.assertTrue(any('signing_fee_wage_days' in error for error in validator.ERRORS))
+    def test_non_integer_signing_fee_reports_failure(self):
+        for value in (None, "5", 5.0):
+            with self.subTest(value=value):
+                tables = self.tables()
+                tables['scenarios']['SCENARIO_M2_MULTI_TRADE']['recruitment']['signing_fee_wage_days'] = value
+                validator.ERRORS.clear()
+                validator.check_m2a(tables)
+                self.assertIn('M2a: signing_fee_wage_days는 정수여야 합니다', validator.ERRORS)
 
     def test_missing_recruitment_keys_report_failures(self):
         tables = self.tables()
