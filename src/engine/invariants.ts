@@ -1,5 +1,6 @@
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
 
+import { cultureProblems } from './culture-invariants';
 import { findSailing, routeOf } from './catalog';
 import { completionReward } from './growth';
 import { isEmployed } from './employees';
@@ -11,10 +12,7 @@ import type { GameState, ScenarioConfig } from './types';
 export class InvariantError extends Error {}
 
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
-  const problems: string[] = [];
-  if (config.culture === null && (s.culture.reports.length || s.culture.experiences.length || s.culture.relationEvents.length)) {
-    problems.push('state.culture: 현지 활동이 꺼진 시나리오에는 기록이 없어야 합니다');
-  }
+  const problems = cultureProblems(s, config);
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
   if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');
@@ -144,7 +142,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
     const emp = s.employees.find((e) => e.id === employeeId);
     const def = config.employees.find((e) => e.id === employeeId);
     if (s.xpAwards[key] !== true || !Number.isSafeInteger(amount) || amount! <= 0
-      || !eventId || extra !== undefined || !['TASK_COMPLETION_XP', 'TRAINING_XP'].includes(rewardKind ?? '')
+      || !eventId || extra !== undefined || !['TASK_COMPLETION_XP', 'TRAINING_XP', 'CULTURE_FIRST_XP'].includes(rewardKind ?? '')
       || !config.growth || !def?.growth || emp?.employmentStatus !== 'employed') {
       problems.push(`${key}: 경험치 지급 기록 오류`);
     }

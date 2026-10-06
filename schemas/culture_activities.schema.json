@@ -210,6 +210,30 @@
           },
           "venue_id": {
             "type": "string"
+          },
+          "report_ko": {
+            "type": "object",
+            "required": [
+              "finding_ko",
+              "scope_ko",
+              "not_claimed_ko",
+              "open_question_ko"
+            ],
+            "properties": {
+              "finding_ko": {
+                "type": "string"
+              },
+              "scope_ko": {
+                "type": "string"
+              },
+              "not_claimed_ko": {
+                "type": "string"
+              },
+              "open_question_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": true

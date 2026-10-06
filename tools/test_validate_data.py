@@ -41,5 +41,42 @@ class RecruitmentKeysTest(unittest.TestCase):
                 self.assertTrue(any(key in error for error in validator.ERRORS))
 
 
+class CultureReportsTest(unittest.TestCase):
+    def fixtures(self):
+        root = Path(__file__).resolve().parents[1]
+        names = ('scenarios', 'culture_activities', 'contacts', 'venues')
+        tables = {name: {item['id']: item for item in json.loads((root / 'data' / f'{name}.json').read_text())['items']}
+                  for name in names}
+        cases = json.loads((root / 'tests/acceptance_cases.json').read_text())['cases']
+        return tables, cases
+
+    def errors(self, tables, cases):
+        validator.ERRORS.clear()
+        validator.check_culture(tables, cases)
+        return list(validator.ERRORS)
+
+    def test_generalization_finding_rejected(self):
+        for word in ('부산 사람', '부산 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
+            with self.subTest(word=word):
+                tables, cases = self.fixtures()
+                tables['culture_activities']['CA01']['report_ko']['finding_ko'] = word + ' 모두 그렇다.'
+                self.assertTrue(any('일반화 금지어' in e for e in self.errors(tables, cases)))
+
+    def test_generalization_denial_allowed(self):
+        tables, cases = self.fixtures()
+        tables['culture_activities']['CA01']['report_ko']['not_claimed_ko'] = '부산 사람·부산 시민·한국인·한국 사람·한국 소비자·국민·상인들은 모두 그렇다는 뜻이 아니다.'
+        self.assertEqual(self.errors(tables, cases), [])
+
+    def test_missing_report_rejected(self):
+        tables, cases = self.fixtures()
+        del tables['culture_activities']['CA01']['report_ko']
+        self.assertEqual(sum('report_ko.' in e for e in self.errors(tables, cases)), 4)
+        for key in ('finding_ko', 'scope_ko', 'not_claimed_ko', 'open_question_ko'):
+            with self.subTest(key=key):
+                tables, cases = self.fixtures()
+                tables['culture_activities']['CA01']['report_ko'][key] = '  '
+                self.assertTrue(any('report_ko.' + key in e for e in self.errors(tables, cases)))
+
+
 if __name__ == '__main__':
     unittest.main()

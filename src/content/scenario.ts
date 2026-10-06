@@ -10,6 +10,8 @@ import employees from '../../data/employees.json';
 import characters from '../../data/characters.json';
 import characterRules from '../../data/character_rules.json';
 import world from '../../data/world.json';
+import cultureActivities from '../../data/culture_activities.json';
+import contacts from '../../data/contacts.json';
 import venues from '../../data/venues.json';
 import packageStatus from '../../PACKAGE_STATUS.json';
 
@@ -17,6 +19,7 @@ import { rateToBasisPoints, toMinor, type Currency } from '../engine/money';
 import {
   SUPPORTED_RULES_VERSIONS,
   type CityDef,
+  type CultureConfig,
   type EmployeeDef,
   type GoodDef,
   type OfferDef,
@@ -321,6 +324,37 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     })),
   } : null;
 
+  const rawCulture = s.culture as { activity_ids: string[] } | undefined;
+  const culture: CultureConfig | null = rawCulture ? {
+    companyId: str(cfg, 'active_company_id'),
+    activities: rawCulture.activity_ids.map((activityId) => {
+      const a = cultureActivities.items.find((item) => item.id === activityId);
+      if (!a || a.stage !== 'P0') throw new Error(`${activityId}: P0 현지 활동이 아닙니다.`);
+      if (!(s.city_ids as string[]).includes(a.city_id)) throw new Error(`${activityId}: 시나리오에 없는 도시입니다.`);
+      const currency = a.money_cost.currency as Currency;
+      if (startingCash[currency] === undefined) throw new Error(`${activityId}: 시작 자금에 활동 통화가 없습니다.`);
+      for (const contactId of a.contact_ids) findById(contacts, contactId);
+      const report = 'report_ko' in a ? a.report_ko : null;
+      return { id: a.id, titleKo: a.title_ko, cityId: a.city_id, venueId: a.venue_id,
+        contactIds: [...a.contact_ids], durationDays: a.duration_days, currency,
+        costMinor: toMinor(currency, a.money_cost.amount),
+        topic: { id: a.knowledge_topic.id, titleKo: a.knowledge_topic.title_ko, contentRevision: a.knowledge_topic.content_revision },
+        observationsKo: [...a.observations_ko],
+        reportKo: report ? { findingKo: report.finding_ko, scopeKo: report.scope_ko,
+          notClaimedKo: report.not_claimed_ko, openQuestionKo: report.open_question_ko } : null,
+        keyTemplates: { companyReport: a.completion_dedupe_key_template,
+          actorExperience: a.actor_experience_dedupe_key_template, relationship: a.relationship_dedupe_key_template } };
+    }),
+    contacts: [],
+  } : null;
+  if (culture) {
+    culture.contacts = [...new Set(culture.activities.flatMap((a) => a.contactIds))].map((contactId) => {
+      const c = findById(contacts, contactId);
+      return { id: contactId, nameKo: str(c, 'title_ko'), roleKo: str(c, 'role_ko'),
+        informationScopeKo: str(c, 'information_scope_ko') };
+    });
+  }
+
   return {
     id,
     titleKo: (s.title_ko as string | undefined) ?? TITLES[id as M1ScenarioId] ?? id,
@@ -339,7 +373,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     offers,
     employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map((employeeId) => toEmployee(employeeId, growthEnabled)),
     recruitment,
-    culture: null,
+    culture,
     growth: growthEnabled ? {
       taskCompletionXp: characterRules.task_completion_xp,
       ordinaryTraining: {

@@ -2,11 +2,12 @@
 import rules from '../../data/character_rules.json';
 import { EngineError, type EmployeeDef, type GameState, type ScenarioConfig, type Task } from './types';
 
-export type XpRewardKind = 'TASK_COMPLETION_XP' | 'TRAINING_XP';
+export type XpRewardKind = 'TASK_COMPLETION_XP' | 'TRAINING_XP' | 'CULTURE_FIRST_XP';
 
 /** 일반 업무 완료 보상의 종류와 양을 한 곳에서 정한다. */
 export function completionReward(kind: Task['kind'], config: ScenarioConfig): { rewardKind: XpRewardKind; amount: number } | null {
   switch (kind) {
+    case 'CULTURE': return null;
     case 'TRAINING': return config.growth
       ? { rewardKind: 'TRAINING_XP', amount: config.growth.ordinaryTraining.xpOnCompletion } : null;
     case 'EXPORT_PREP':
@@ -50,6 +51,13 @@ export function awardXp(
     if (!task || task.status !== 'DONE' || task.assignedEmployeeId !== employeeId) return false;
     const reward = completionReward(task.kind, config);
     if (!reward || rewardKind !== reward.rewardKind || amount !== reward.amount) return false;
+  }
+  if (completionEventId.startsWith('CULTURE-FIRST-') || rewardKind === 'CULTURE_FIRST_XP') {
+    const activityId = completionEventId.slice('CULTURE-FIRST-'.length);
+    if (completionEventId !== `CULTURE-FIRST-${activityId}` || rewardKind !== 'CULTURE_FIRST_XP'
+      || amount !== config.growth.taskCompletionXp || !config.culture?.activities.some((a) => a.id === activityId)
+      || !s.tasks.some((t) => t.kind === 'CULTURE' && t.subjectId === activityId && t.status === 'DONE'
+        && t.assignedEmployeeId === employeeId)) return false;
   }
   const key = `${employeeId}|${completionEventId}|${rewardKind}`;
   if (s.xpAwards[key]) return false;

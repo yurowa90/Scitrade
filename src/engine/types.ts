@@ -284,13 +284,13 @@ export interface Shipment {
 
 export interface Task {
   id: string;
-  /** 계약 준비·현장 조사·영입 의뢰·훈련이 같은 직원 시간 예약을 쓴다. */
-  kind: 'EXPORT_PREP' | 'FORWARDING_PREP' | 'SCOUT' | 'RECRUIT_QUEST' | 'TRAINING';
+  /** 계약 준비·현장 조사·영입 의뢰·훈련·현지 활동이 같은 직원 시간 예약을 쓴다. */
+  kind: 'EXPORT_PREP' | 'FORWARDING_PREP' | 'SCOUT' | 'RECRUIT_QUEST' | 'TRAINING' | 'CULTURE';
   contractId: string | null;
-  /** 조사 장소 ID·의뢰 후보 ID·훈련 직원 ID. 계약 준비는 null. */
+  /** 조사 장소 ID·의뢰 후보 ID·훈련 직원 ID·현지 활동 ID. 계약 준비는 null. */
   subjectId: string | null;
   cityId: string;
-  /** TRAINING은 업무 포인트 대신 일수를 담고 하루에 1씩 진행한다. */
+  /** TRAINING·CULTURE는 업무 포인트 대신 일수를 담고 하루에 1씩 진행한다. */
   requiredWorkUnits: number;
   progressWorkUnits: number;
   status: TaskStatus;
@@ -492,6 +492,7 @@ export interface CommitPlan {
 }
 
 export type Command =
+  | { id: string; type: 'START_CULTURE_ACTIVITY'; activityId: string; employeeId: string }
   | { id: string; type: 'START_TRAINING'; employeeId: string }
   | { id: string; type: 'SCOUT_SITE'; venueId: string; employeeId: string }
   | { id: string; type: 'START_RECRUIT_QUEST'; candidateId: string; employeeId: string }

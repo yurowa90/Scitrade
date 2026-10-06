@@ -19,7 +19,8 @@ export type Account =
   | 'CANCELLATION_EXPENSE'
   | 'WAGE_EXPENSE'
   | 'RECRUITMENT_EXPENSE'
-  | 'TRAINING_EXPENSE';
+  | 'TRAINING_EXPENSE'
+  | 'CULTURE_EXPENSE';
 
 type AccountKind = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
 
@@ -40,6 +41,7 @@ export const ACCOUNT_KIND: Record<Account, AccountKind> = {
   WAGE_EXPENSE: 'expense',
   RECRUITMENT_EXPENSE: 'expense',
   TRAINING_EXPENSE: 'expense',
+  CULTURE_EXPENSE: 'expense',
 };
 
 /** amount > 0 은 차변, amount < 0 은 대변. */
@@ -139,6 +141,7 @@ export interface BookSummary {
   wageExpense: number;
   recruitmentExpense: number;
   trainingExpense: number;
+  cultureExpense: number;
   profit: number;
   openingEquity: number;
 }
@@ -158,6 +161,7 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
   const wageExpense = b('WAGE_EXPENSE');
   const recruitmentExpense = b('RECRUITMENT_EXPENSE');
   const trainingExpense = b('TRAINING_EXPENSE');
+  const cultureExpense = b('CULTURE_EXPENSE');
   return {
     currency,
     cash,
@@ -175,7 +179,8 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
     wageExpense,
     recruitmentExpense,
     trainingExpense,
-    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense,
+    cultureExpense,
+    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense,
     openingEquity: b('OPENING_EQUITY'),
   };
 }

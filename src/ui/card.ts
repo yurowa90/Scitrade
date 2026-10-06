@@ -74,5 +74,5 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
 
 /** 계약에 속하지 않는 조사·의뢰도 기존 업무 설명에 표시한다. */
 export function taskName(kind: Task['kind']): string {
-  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', TRAINING: '일반 훈련' }[kind];
+  return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', CULTURE: '현지 활동', TRAINING: '일반 훈련' }[kind];
 }

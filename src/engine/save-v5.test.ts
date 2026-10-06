@@ -7,7 +7,7 @@ import { awardTaskCompletion } from './growth';
 import { deserializeSave, SaveError, serializeSave } from './save';
 import { checkSaveShape } from './save-shape';
 import { runDays } from './testkit';
-import type { CultureState } from './types';
+import type { CultureState, ScenarioConfig } from './types';
 
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const emptyCulture: CultureState = { reports: [], experiences: [], relationEvents: [] };
@@ -22,9 +22,10 @@ const records: CultureState = {
 };
 const load = (file: unknown) => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
 const freshFile = () => JSON.parse(serializeSave(createGame(config)));
-function reject(file: unknown, path: string) {
-  expect(() => load(file)).toThrow(SaveError);
-  expect(() => load(file)).toThrow(path);
+function reject(file: unknown, path: string, cfg?: ScenarioConfig) {
+  const read = () => cfg ? deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg }) : load(file);
+  expect(read).toThrow(SaveError);
+  expect(read).toThrow(path);
 }
 
 describe('실제 판본 4 저장 보존', () => {
@@ -84,14 +85,15 @@ describe('실제 판본 4 저장 보존', () => {
 });
 
 describe('판본 5와 이전 판본 읽기', () => {
-  it.each(SCENARIO_IDS)('%s의 culture 설정·초깃값은 비어 있고 판본 5로 왕복한다', id => {
-    const cfg = loadScenario(id);
+  it.each(SCENARIO_IDS)('%s의 culture 비활성 설정·초깃값은 비어 있고 판본 5로 왕복한다', id => {
+    // M2 활성화 뒤에도 선행 작업의 비활성 저장 계약은 별도 설정으로 검증한다.
+    const cfg = { ...loadScenario(id), culture: null };
     expect(cfg.culture).toBeNull();
     const s = createGame(cfg);
     expect(s.culture).toEqual(emptyCulture);
     const text = serializeSave(s);
     expect(JSON.parse(text).formatVersion).toBe(5);
-    expect(deserializeSave(text, { dataVersion: cfg.dataVersion })).toEqual(s);
+    expect(deserializeSave(text, { dataVersion: cfg.dataVersion, config: cfg })).toEqual(s);
   });
 
   it('진행한 상태의 판본 5 왕복도 전체 깊은 비교로 같다', () => {
@@ -162,7 +164,7 @@ describe('culture 모양·불변 조건', () => {
       const file = freshFile();
       file.state.culture[group] = structuredClone(records[group]);
       expect(() => checkSaveShape(file.state)).not.toThrow();
-      reject(file, 'state.culture: 현지 활동이 꺼진 시나리오에는 기록이 없어야 합니다');
+      reject(file, 'state.culture: 현지 활동이 꺼진 시나리오에는 기록이 없어야 합니다', { ...config, culture: null });
     });
   }
 
