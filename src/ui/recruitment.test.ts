@@ -81,7 +81,8 @@ describe('영입 화면의 엔진 연결', () => {
     expect(panel(s, hired.id)).toContain('현돌 고용');
     const cmd: Command = { id: 'H', type: 'HIRE_CANDIDATE', candidateId: hired.id };
     const today = planState(s, config, [cmd]).state;
-    expect(panel(today)).toContain('고용됨 — 5일부터 근무');
+    expect(panel(today)).toContain('고용 예정 — 5일부터 근무');
+    expect(panel(today)).not.toContain('고용됨');
     const tomorrow = openDay(runDays(s, config, 4, { 4: [cmd] }).state, config).state;
     expect(employedDefs(tomorrow, config)).toContain(hired);
     expect(crewCard(hired, tomorrow, false, config)).toContain('대기 — 배정 가능');
@@ -310,7 +311,7 @@ describe('TASK-0005 접근 이름과 면담 값', () => {
     const running=openDay(runDays(discovered,config,2,{2:[quest]}).state,config).state;
     const interviewing=openDay(runDays(running,config,3).state,config).state;
     const hiredState=planState(interviewing,config,[{id:'H4',type:'HIRE_CANDIDATE',candidateId:hired.id}]).state;
-    for(const [s,label] of [[discovered,'발견'],[running,'의뢰 진행 중 2/3pt'],[interviewing,'면담 가능'],[hiredState,'고용됨 — 5일부터 근무']] as const) {
+    for(const [s,label] of [[discovered,'발견'],[running,'의뢰 진행 중 2/3pt'],[interviewing,'면담 가능'],[hiredState,'고용 예정 — 5일부터 근무']] as const) {
       const entry=crewEntries(s,config,'all').find((e)=>e.def.id===hired.id)!;
       expect(crewEntryCard(entry,s,config,false)).toContain(`aria-label="현돌 후보 카드, ${label}"`);
     }

@@ -71,6 +71,10 @@ export interface QuotePreview {
   deliveryDeadlineDay: number;
   /** 다음 출항편으로 보내면 납기를 넘기는가. */
   lateOnNextSailing: boolean;
+  /** 계약서의 대금일. */
+  paymentDueDay: number;
+  /** 다음 출항편으로 보낼 때 실제로 받는 날. 인도 전에는 받지 않으므로 계약상 대금일보다 늦을 수 있다. */
+  receiptDay: number;
   schedule: { day: number; labelKo: string; amount: number }[];
 }
 
@@ -117,6 +121,8 @@ function preview(
     arrivalDay: arrival,
     deliveryDeadlineDay: deadline,
     lateOnNextSailing: late,
+    paymentDueDay,
+    receiptDay: due,
     schedule,
   };
 }
