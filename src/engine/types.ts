@@ -4,6 +4,8 @@ import type { Ledger } from './ledger';
 import type { Currency } from './money';
 import type { RngState } from './rng';
 
+export class EngineError extends Error {}
+
 export const ENGINE_VERSION = '0.2.0';
 /**
  * 엔진이 아는 경제 규칙 판본. 판본은 시나리오가 정하고(data/scenarios.json의 engine_rules) 저장 파일에 남는다.
@@ -156,6 +158,7 @@ export interface ScenarioConfig {
   /** 시작 직원과 영입 후보의 정의. 고용 여부는 GameState.employees만 판단한다. */
   employees: EmployeeDef[];
   recruitment: RecruitmentDef | null;
+  culture: CultureConfig | null;
   growth: {
     taskCompletionXp: number;
     ordinaryTraining: { durationDays: number; feeMinor: number; currency: Currency; xpOnCompletion: number };
@@ -312,6 +315,78 @@ export interface RecruitmentDef {
   scoutSites: { venueId: string; titleKo: string; cityId: string; candidateEmployeeIds: string[] }[];
 }
 
+export interface CultureConfig {
+  companyId: string;
+  activities: CultureActivityDef[];
+  contacts: CultureContactDef[];
+}
+
+export interface CultureActivityDef {
+  id: string;
+  titleKo: string;
+  cityId: string;
+  venueId: string;
+  contactIds: string[];
+  durationDays: number;
+  currency: Currency;
+  costMinor: number;
+  topic: { id: string; titleKo: string; contentRevision: string };
+  observationsKo: string[];
+  reportKo: { findingKo: string; scopeKo: string; notClaimedKo: string; openQuestionKo: string } | null;
+  keyTemplates: { companyReport: string; actorExperience: string; relationship: string };
+}
+
+export interface CultureContactDef {
+  id: string;
+  nameKo: string;
+  roleKo: string;
+  informationScopeKo: string;
+}
+
+export interface CultureState {
+  reports: CultureReport[];
+  experiences: CultureExperience[];
+  relationEvents: CultureRelationEvent[];
+}
+
+export interface CultureReport {
+  key: string;
+  activityId: string;
+  topicId: string;
+  cityId: string;
+  sourceContactIds: string[];
+  reporterEmployeeId: string;
+  taskId: string;
+  day: number;
+  contentRevision: string;
+  status: 'UNVERIFIED';
+}
+
+/** character_rules.json의 evidence_fields와 같은 경험 근거를 보존한다. */
+export interface CultureExperience {
+  key: string;
+  employeeId: string;
+  activityId: string;
+  topicId: string;
+  cityId: string;
+  countryCode: string;
+  contentRevision: string;
+  completedTaskId: string;
+  verifiedDay: number;
+}
+
+export interface CultureRelationEvent {
+  key: string;
+  employeeId: string;
+  contactId: string;
+  activityId: string;
+  cityId: string;
+  contentRevision: string;
+  taskId: string;
+  day: number;
+  kind: 'SHARED_ACTIVITY';
+}
+
 export interface CandidateState {
   employeeId: string;
   stage: 'UNDISCOVERED' | 'DISCOVERED' | 'QUEST_RUNNING' | 'INTERVIEW_READY' | 'HIRED';
@@ -391,6 +466,7 @@ export interface GameState {
   tasks: Task[];
   employees: EmployeeState[];
   recruitment: { candidates: CandidateState[]; scoutedVenueIds: string[] };
+  culture: CultureState;
   invoices: Invoice[];
   obligations: Obligation[];
   notices: Notice[];

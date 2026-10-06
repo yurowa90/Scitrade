@@ -308,15 +308,18 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     checkInvariants(s, config);
   });
 
-  it.each([1, 2, 3])('판본 %i의 누락 필드를 복원하고 성장 활성 판본 2·3에서 소급 보상하지 않는다', (version) => {
+  it.each([1, 2, 3, 4])('판본 %i의 누락 필드를 복원하고 성장 활성 판본 2·3에서 소급 보상하지 않는다', (version) => {
     const cfg = version === 1 ? loadScenario('SCENARIO_M1_ONE_TRADE') : fixtureConfig();
     if (cfg.employees[0]!.growth) cfg.employees[0]!.growth.startXp = 90;
     const s = until(2, { ...cfg, growth: null }, { 1: [trade()] });
     const file = JSON.parse(serializeSave(s));
     file.formatVersion = version;
-    delete file.state.xpAwards;
-    delete file.state.xpAwardAmounts;
-    for (const e of file.state.employees) delete e.xp;
+    delete file.state.culture;
+    if (version <= 3) {
+      delete file.state.xpAwards;
+      delete file.state.xpAwardAmounts;
+      for (const e of file.state.employees) delete e.xp;
+    }
     if (version <= 2) {
       delete file.state.recruitment;
       for (const e of file.state.employees) delete e.availableFromDay;
@@ -327,8 +330,8 @@ describe('기준 경로·판본 이관·불변 조건', () => {
       for (const l of file.state.cargoLots) delete l.ownerPartyId;
     }
     const restored = deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg });
-    expect(SAVE_FORMAT_VERSION).toBe(4);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(4);
+    expect(SAVE_FORMAT_VERSION).toBe(5);
+    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(5);
     expect(restored).toEqual(s);
     expect(employee(restored).xp).toBe(cfg.employees[0]!.growth?.startXp ?? 0);
     expect(restored.xpAwards).toEqual({});
@@ -473,11 +476,12 @@ describe('재작업 1 회귀 방어', () => {
     expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
   });
 
-  it.each([1, 2, 3])('판본 %i 이관 결과에도 모양·불변 조건 검사를 한다', (version) => {
+  it.each([1, 2, 3, 4])('판본 %i 이관 결과에도 모양·불변 조건 검사를 한다', (version) => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     for (const reason of ['shape', 'invariant']) {
-      const file = oldSave(cfg);
+      const file = version === 4 ? JSON.parse(serializeSave(createGame(cfg))) : oldSave(cfg);
       file.formatVersion = version;
+      delete file.state.culture;
       if (reason === 'shape') file.state.obligations = null;
       else file.state.ledger.entries[0].lines[0].amount++;
       expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);

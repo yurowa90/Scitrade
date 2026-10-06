@@ -1,12 +1,12 @@
 import { employedDefs } from '../engine/employees';
 import { formatMoney } from '../engine/money';
-import { taskSubjectKo } from '../engine/tasks';
-import type { GameState, ScenarioConfig, Task } from '../engine/types';
+import { isDayBasedTask, taskSubjectKo } from '../engine/tasks';
+import { EngineError, type GameState, type ScenarioConfig, type Task } from '../engine/types';
 
 export function taskSchedule(t: Task, config: ScenarioConfig): string {
   const name = { TRAINING: '일반 훈련', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비' }[t.kind];
   const subject = taskSubjectKo(config, t);
-  return `${name} 중 — ${subject ? `${subject} ` : ''}${t.progressWorkUnits}/${t.requiredWorkUnits}${t.kind === 'TRAINING' ? '일' : 'pt'}`;
+  return `${name} 중 — ${subject ? `${subject} ` : ''}${t.progressWorkUnits}/${t.requiredWorkUnits}${isDayBasedTask(t.kind) ? '일' : 'pt'}`;
 }
 
 export function crewNoteKo(config: ScenarioConfig, state?: GameState): string {
@@ -30,5 +30,15 @@ export function crewNoteKo(config: ScenarioConfig, state?: GameState): string {
 /** 모든 직원 표시가 같은 글자와 기호로 근무·교육을 구분한다. */
 export function crewStatusKo(task?: Task): string {
   if (!task) return '○ 대기';
-  return task.kind === 'TRAINING' ? `◆ 교육 중 ${task.progressWorkUnits}/${task.requiredWorkUnits}일` : '● 업무 중';
+  switch (task.kind) {
+    case 'TRAINING': return `◆ 교육 중 ${task.progressWorkUnits}/${task.requiredWorkUnits}일`;
+    case 'EXPORT_PREP':
+    case 'FORWARDING_PREP':
+    case 'SCOUT':
+    case 'RECRUIT_QUEST': return '● 업무 중';
+    default: {
+      const unknown: never = task.kind;
+      throw new EngineError(`알 수 없는 업무 종류입니다 (${unknown}).`);
+    }
+  }
 }

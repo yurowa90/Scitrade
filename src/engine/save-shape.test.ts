@@ -5,7 +5,7 @@ import { ACCOUNT_KIND, type Account } from './ledger';
 import { MINOR_PER_MAJOR, type Currency } from './money';
 import { checkSaveShape, SAVE_ENUMS } from './save-shape';
 import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task,
-  EmployeeState, CandidateState, Invoice, Notice, DelayDecision, CommandRecord } from './types';
+  CultureReport, CultureRelationEvent, EmployeeState, CandidateState, Invoice, Notice, DelayDecision, CommandRecord } from './types';
 
 it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정은 실행 시점 상수를 공유한다', () => {
   type EnumTypes = {
@@ -15,6 +15,7 @@ it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정�
     taskStatus: Task['status']; employmentStatus: EmployeeState['employmentStatus']; candidateStage: CandidateState['stage'];
     invoiceStatus: Invoice['status']; noticeKind: Notice['kind']; delayChoice: NonNullable<DelayDecision['choice']>;
     commandStatus: CommandRecord['status'];
+    cultureReportStatus: CultureReport['status']; cultureRelationKind: CultureRelationEvent['kind'];
   };
   expectTypeOf<{ [K in keyof typeof SAVE_ENUMS]: keyof typeof SAVE_ENUMS[K] }>().toEqualTypeOf<EnumTypes>();
   expect(SAVE_ENUMS.currency).toBe(MINOR_PER_MAJOR);
@@ -23,6 +24,8 @@ it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정�
   // 불변 조건과 분리해 모든 열거값의 저장 모양 허용·거절을 직접 확인한다.
   const base = createGame(loadScenario('SCENARIO_M2_MULTI_TRADE'));
   const targets = {
+    cultureReportStatus: ['culture', 'reports', 0, 'status'],
+    cultureRelationKind: ['culture', 'relationEvents', 0, 'kind'],
     currency: ['ledger', 'entries', 0, 'currency'], account: ['ledger', 'entries', 0, 'lines', 0, 'account'],
     phase: ['phase'], offerStatus: ['offers', 0, 'status'],
     contractKind: ['contracts', 0, 'kind'], contractStatus: ['contracts', 0, 'status'],
@@ -32,6 +35,10 @@ it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정�
     invoiceStatus: ['invoices', 0, 'status'], noticeKind: ['notices', 0, 'kind'],
     delayChoice: ['delayDecisions', 0, 'choice'], commandStatus: ['processedCommands', 'TEST', 'status'],
   } satisfies Record<keyof EnumTypes, (string | number)[]>;
+  base.culture.reports.push({ key: '', activityId: '', topicId: '', cityId: '', sourceContactIds: [],
+    reporterEmployeeId: '', taskId: '', day: 1, contentRevision: '1', status: 'UNVERIFIED' });
+  base.culture.relationEvents.push({ key: '', employeeId: '', contactId: '', activityId: '', cityId: '',
+    contentRevision: '1', taskId: '', day: 1, kind: 'SHARED_ACTIVITY' });
   base.contracts.push({ id: 'CT', kind: 'DIRECT_TRADE', status: 'ACTIVE', buyOfferId: null, sellOfferId: null,
     serviceOfferId: null, supplierId: null, customerId: '', goodId: '', quantity: 1, purchaseAmountMinor: 0,
     saleAmountMinor: 0, currency: 'KRW', originCityId: '', destinationCityId: '', deliveryDeadlineDay: 1,

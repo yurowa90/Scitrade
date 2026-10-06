@@ -1,11 +1,13 @@
-// 저장은 외부 입력이다. 이관한 판본 4의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
+// 저장은 외부 입력이다. 이관한 판본 5의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
 import { ACCOUNT_KIND } from './ledger';
 import { MINOR_PER_MAJOR } from './money';
 import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task,
-  EmployeeState, CandidateState, Invoice, Notice, DelayDecision, CommandRecord } from './types';
+  CultureReport, CultureRelationEvent, EmployeeState, CandidateState, Invoice, Notice, DelayDecision, CommandRecord } from './types';
 
 // 실행 시점 상수가 없는 열거형도 전수 목록을 요구해 타입에 값이 늘면 컴파일에서 확인한다.
 export const SAVE_ENUMS = {
+  cultureReportStatus: { UNVERIFIED: true } satisfies Record<CultureReport['status'], true>,
+  cultureRelationKind: { SHARED_ACTIVITY: true } satisfies Record<CultureRelationEvent['kind'], true>,
   currency: MINOR_PER_MAJOR,
   account: ACCOUNT_KIND,
   phase: { PENDING_OPEN: true, AWAITING_INPUT: true, ENDED: true } satisfies Record<DayPhase, true>,
@@ -83,6 +85,14 @@ const stateShape = obj({
   recruitment: obj({ candidates: array(obj({ employeeId: str,
     stage: enumShape('candidateStage'),
     discoveredDay: ni, questTaskId: ns, interviewReadyDay: ni, hiredDay: ni })), scoutedVenueIds: strings }),
+  culture: obj({
+    reports: array(obj({ key: str, activityId: str, topicId: str, cityId: str, sourceContactIds: strings,
+      reporterEmployeeId: str, taskId: str, day: int, contentRevision: str, status: enumShape('cultureReportStatus') })),
+    experiences: array(obj({ key: str, employeeId: str, activityId: str, topicId: str, cityId: str,
+      countryCode: str, contentRevision: str, completedTaskId: str, verifiedDay: int })),
+    relationEvents: array(obj({ key: str, employeeId: str, contactId: str, activityId: str, cityId: str,
+      contentRevision: str, taskId: str, day: int, kind: enumShape('cultureRelationKind') })),
+  }),
   invoices: array(obj({ id: str, contractId: str, currency, amountMinor: int, issuedDay: int, dueDay: int,
     status: enumShape('invoiceStatus'), receiptIds: strings })),
   obligations: array(obj({ id: str, currency, amountMinor: int, reasonKo: str, incurredDay: int, paidDay: ni })),

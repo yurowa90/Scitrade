@@ -339,6 +339,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     offers,
     employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map((employeeId) => toEmployee(employeeId, growthEnabled)),
     recruitment,
+    culture: null,
     growth: growthEnabled ? {
       taskCompletionXp: characterRules.task_completion_xp,
       ordinaryTraining: {

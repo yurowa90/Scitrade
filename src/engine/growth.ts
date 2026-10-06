@@ -1,8 +1,25 @@
 // 누적 경험치만 상태에 저장한다. 레벨·능력은 원값에서 매번 계산한다.
 import rules from '../../data/character_rules.json';
-import type { EmployeeDef, GameState, ScenarioConfig, Task } from './types';
+import { EngineError, type EmployeeDef, type GameState, type ScenarioConfig, type Task } from './types';
 
 export type XpRewardKind = 'TASK_COMPLETION_XP' | 'TRAINING_XP';
+
+/** 일반 업무 완료 보상의 종류와 양을 한 곳에서 정한다. */
+export function completionReward(kind: Task['kind'], config: ScenarioConfig): { rewardKind: XpRewardKind; amount: number } | null {
+  switch (kind) {
+    case 'TRAINING': return config.growth
+      ? { rewardKind: 'TRAINING_XP', amount: config.growth.ordinaryTraining.xpOnCompletion } : null;
+    case 'EXPORT_PREP':
+    case 'FORWARDING_PREP':
+    case 'SCOUT':
+    case 'RECRUIT_QUEST': return config.growth
+      ? { rewardKind: 'TASK_COMPLETION_XP', amount: config.growth.taskCompletionXp } : null;
+    default: {
+      const unknown: never = kind;
+      throw new EngineError(`알 수 없는 업무 종류입니다 (${unknown}).`);
+    }
+  }
+}
 
 export function levelFor(xp: number): number {
   return rules.xp_thresholds.reduce((level, threshold) =>
@@ -31,9 +48,8 @@ export function awardXp(
   if (completionEventId.startsWith('TASK-DONE-')) {
     const task = s.tasks.find((t) => `TASK-DONE-${t.id}` === completionEventId);
     if (!task || task.status !== 'DONE' || task.assignedEmployeeId !== employeeId) return false;
-    const training = task.kind === 'TRAINING';
-    if (rewardKind !== (training ? 'TRAINING_XP' : 'TASK_COMPLETION_XP')
-      || amount !== (training ? config.growth.ordinaryTraining.xpOnCompletion : config.growth.taskCompletionXp)) return false;
+    const reward = completionReward(task.kind, config);
+    if (!reward || rewardKind !== reward.rewardKind || amount !== reward.amount) return false;
   }
   const key = `${employeeId}|${completionEventId}|${rewardKind}`;
   if (s.xpAwards[key]) return false;
@@ -53,10 +69,9 @@ export function awardXp(
 /** 완료한 실제 업무만 보상한다. 훈련은 일반 완료 보상과 배타적이다. */
 export function awardTaskCompletion(s: GameState, config: ScenarioConfig, task: Task): boolean {
   if (!config.growth || !s.tasks.includes(task) || task.status !== 'DONE' || !task.assignedEmployeeId) return false;
-  const training = task.kind === 'TRAINING';
-  return awardXp(s, config, task.assignedEmployeeId, `TASK-DONE-${task.id}`,
-    training ? 'TRAINING_XP' : 'TASK_COMPLETION_XP',
-    training ? config.growth.ordinaryTraining.xpOnCompletion : config.growth.taskCompletionXp);
+  const reward = completionReward(task.kind, config);
+  return reward !== null && awardXp(s, config, task.assignedEmployeeId, `TASK-DONE-${task.id}`,
+    reward.rewardKind, reward.amount);
 }
 
 /** 최대 레벨에는 다음 문턱이 없다. 상태에 없는 직원 ID는 null을 반환한다. */

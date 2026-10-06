@@ -18,10 +18,11 @@ import {
 } from './catalog';
 import { balance, emptyLedger, post, type LedgerLine } from './ledger';
 import { formatMoney, type Currency } from './money';
-import { trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
+import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
   ENGINE_VERSION,
+  EngineError,
   type Booking,
   type Command,
   type CommandResult,
@@ -37,11 +38,11 @@ import {
 import { isEmployed, isAvailableFromToday } from './employees';
 import { checkInvariants } from './invariants';
 import { awardTaskCompletion } from './growth';
-import { taskSubjectKo } from './tasks';
+import { isDayBasedTask, taskSubjectKo } from './tasks';
 
 export { cargoSpace, cityName, findSailing, listSailings, type Sailing } from './catalog';
 
-export class EngineError extends Error {}
+export { EngineError } from './types';
 
 const clone = <T>(value: T): T => structuredClone(value);
 const pad = (n: number, width = 3) => String(n).padStart(width, '0');
@@ -94,6 +95,7 @@ export function createGame(config: ScenarioConfig): GameState {
       })),
       scoutedVenueIds: [],
     },
+    culture: { reports: [], experiences: [], relationEvents: [] },
     invoices: [],
     obligations: [],
     notices: [],
@@ -497,11 +499,22 @@ function assignTaskObject(s: GameState, config: ScenarioConfig, task: Task, empl
   }
   const def = config.employees.find((e) => e.id === employeeId)!;
   const label = [taskSubjectKo(config, task), taskLabel(task.kind)].filter(Boolean).join(' ');
-  if (task.kind === 'TRAINING') {
-    const fee = config.growth!.ordinaryTraining;
-    log(s, `${def.nameKo} ${label} 시작 (${task.requiredWorkUnits}일, 훈련비 ${formatMoney(fee.currency, fee.feeMinor)})`);
-  } else {
-    log(s, `${def.nameKo}에게 ${label} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+  switch (task.kind) {
+    case 'TRAINING': {
+      const fee = config.growth!.ordinaryTraining;
+      log(s, `${def.nameKo} ${label} 시작 (${task.requiredWorkUnits}일, 훈련비 ${formatMoney(fee.currency, fee.feeMinor)})`);
+      break;
+    }
+    case 'EXPORT_PREP':
+    case 'FORWARDING_PREP':
+    case 'SCOUT':
+    case 'RECRUIT_QUEST':
+      log(s, `${def.nameKo}에게 ${label} 업무 배정 (${task.requiredWorkUnits} 업무 포인트)`);
+      break;
+    default: {
+      const unknown: never = task.kind;
+      throw new EngineError(`알 수 없는 업무 종류입니다 (${unknown}).`);
+    }
   }
   return null;
 }
@@ -599,8 +612,7 @@ function hireCandidate(s: GameState, config: ScenarioConfig, candidateId: string
   if (!candidate || !emp || !def) return '영입 후보를 찾을 수 없습니다.';
   if (candidate.stage !== 'INTERVIEW_READY' || isEmployed(s, candidateId)) return '면담 가능한 후보만 고용할 수 있습니다.';
   const fee = config.recruitment!.signingFeeWageDays * def.salaryPerDayMinor;
-  const funds = fundsPosition(s, config, def.salaryCurrency);
-  const available = funds.cash - funds.unpaidObligations;
+  const available = cashLessUnpaidMinor(s, config, def.salaryCurrency);
   if (available < fee) return `영입 계약금 자금이 부족합니다. 필요 ${formatMoney(def.salaryCurrency, fee)}, 사용 가능 ${formatMoney(def.salaryCurrency, available)}.`;
   if (fee > 0) postOrThrow(s, {
     id: `SIGNING-${candidateId}`, currency: def.salaryCurrency, reason: `${def.nameKo} 영입 계약금`,
@@ -792,31 +804,44 @@ function progressTasks(s: GameState, config: ScenarioConfig) {
     if (task.status !== 'RUNNING' || !task.assignedEmployeeId || !isAvailableFromToday(s, task.assignedEmployeeId)) continue;
     const def = config.employees.find((e) => e.id === task.assignedEmployeeId);
     if (!def) continue;
-    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + (task.kind === 'TRAINING' ? 1 : def.workUnitsPerDay));
+    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + (isDayBasedTask(task.kind) ? 1 : def.workUnitsPerDay));
     if (task.progressWorkUnits >= task.requiredWorkUnits) {
       task.status = 'DONE';
       task.completedDay = s.day;
-      if (task.kind === 'TRAINING') {
-        log(s, `${def.nameKo}: 일반 훈련 완료`);
-      } else if (task.kind === 'SCOUT') {
-        const site = config.recruitment!.scoutSites.find((x) => x.venueId === task.subjectId)!;
-        for (const c of s.recruitment.candidates) {
-          if (c.stage !== 'UNDISCOVERED' || !site.candidateEmployeeIds.includes(c.employeeId)) continue;
-          c.stage = 'DISCOVERED';
-          c.discoveredDay = s.day;
-          log(s, `${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 발견: 영입 의뢰 가능`);
+      switch (task.kind) {
+        case 'TRAINING':
+          log(s, `${def.nameKo}: 일반 훈련 완료`);
+          break;
+        case 'SCOUT': {
+          const site = config.recruitment!.scoutSites.find((x) => x.venueId === task.subjectId)!;
+          for (const c of s.recruitment.candidates) {
+            if (c.stage !== 'UNDISCOVERED' || !site.candidateEmployeeIds.includes(c.employeeId)) continue;
+            c.stage = 'DISCOVERED';
+            c.discoveredDay = s.day;
+            log(s, `${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 발견: 영입 의뢰 가능`);
+          }
+          s.recruitment.scoutedVenueIds.push(site.venueId);
+          log(s, `${def.nameKo}: ${taskSubjectKo(config, task)} 현장 조사 완료`);
+          break;
         }
-        s.recruitment.scoutedVenueIds.push(site.venueId);
-        log(s, `${def.nameKo}: ${taskSubjectKo(config, task)} 현장 조사 완료`);
-      } else if (task.kind === 'RECRUIT_QUEST') {
-        const c = s.recruitment.candidates.find((x) => x.employeeId === task.subjectId)!;
-        c.stage = 'INTERVIEW_READY';
-        c.interviewReadyDay = s.day;
-        log(s, `${def.nameKo}: ${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 영입 의뢰 완료 → 면담 가능`);
-      } else {
-        const lot = s.cargoLots.find((l) => task.contractId !== null && l.contractId === task.contractId);
-        if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
-        log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
+        case 'RECRUIT_QUEST': {
+          const c = s.recruitment.candidates.find((x) => x.employeeId === task.subjectId)!;
+          c.stage = 'INTERVIEW_READY';
+          c.interviewReadyDay = s.day;
+          log(s, `${def.nameKo}: ${config.employees.find((e) => e.id === c.employeeId)!.nameKo} 영입 의뢰 완료 → 면담 가능`);
+          break;
+        }
+        case 'EXPORT_PREP':
+        case 'FORWARDING_PREP': {
+          const lot = s.cargoLots.find((l) => task.contractId !== null && l.contractId === task.contractId);
+          if (lot && lot.status === 'PREPARING') lot.status = 'AWAITING_DEPARTURE';
+          log(s, `${def.nameKo}: ${task.contractId} ${taskLabel(task.kind)} 완료 → 출발 대기`);
+          break;
+        }
+        default: {
+          const unknown: never = task.kind;
+          throw new EngineError(`알 수 없는 업무 종류입니다 (${unknown}).`);
+        }
       }
       awardTaskCompletion(s, config, task);
     }

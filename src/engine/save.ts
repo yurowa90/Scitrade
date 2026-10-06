@@ -14,8 +14,9 @@ export const SAVE_FORMAT = 'scitrade-save';
  * 2: M2a (운송 주선 계약 `serviceOfferId`, 화물 소유자 `ownerPartyId` 추가).
  * 3: 영입 후보 상태·근무 시작일·업무 대상 추가.
  * 4: 직원 누적 경험치·보상 중복 방지 키·지급액 추가.
+ * 5: 현지 활동 기록(culture) 추가.
  */
-export const SAVE_FORMAT_VERSION = 4;
+export const SAVE_FORMAT_VERSION = 5;
 
 export interface SaveFile {
   format: typeof SAVE_FORMAT;
@@ -78,6 +79,13 @@ export function migrateV3toV4(state: GameState, config: ScenarioConfig): GameSta
   return s;
 }
 
+/** 판본 4 → 5: 기존 진행·보상은 그대로 두고 현지 활동 기록을 비운다. */
+export function migrateV4toV5(state: GameState): GameState {
+  const s = structuredClone(state);
+  s.culture = { reports: [], experiences: [], relationEvents: [] };
+  return s;
+}
+
 export function deserializeSave(text: string, expected: { dataVersion: string; rulesVersion?: string; config?: ScenarioConfig }): GameState {
   let file: SaveFile;
   try {
@@ -86,7 +94,7 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     throw new SaveError('저장 파일을 읽을 수 없습니다 (JSON 형식 오류).');
   }
   if (file?.format !== SAVE_FORMAT) throw new SaveError('Scitrade 저장 파일이 아닙니다.');
-  if (![1, 2, 3, SAVE_FORMAT_VERSION].includes(file.formatVersion)) {
+  if (![1, 2, 3, 4, SAVE_FORMAT_VERSION].includes(file.formatVersion)) {
     throw new SaveError(`지원하지 않는 저장 형식 판본입니다 (${file.formatVersion}).`);
   }
   const known = (SUPPORTED_RULES_VERSIONS as readonly string[]).includes(file.rulesVersion);
@@ -105,9 +113,11 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
     }
     const config = expected.config ?? loadScenario(file.scenarioId as ScenarioId);
     if (config.id !== file.scenarioId) throw new SaveError('이관 설정과 저장 시나리오가 다릅니다.');
-    const v2 = file.formatVersion === 1 ? migrateV1toV2(file.state) : file.state;
-    const v3 = file.formatVersion <= 2 ? migrateV2toV3(v2) : v2;
-    const state = file.formatVersion < SAVE_FORMAT_VERSION ? migrateV3toV4(v3, config) : file.state;
+    const fv = file.formatVersion;
+    const v2 = fv === 1 ? migrateV1toV2(file.state) : file.state;
+    const v3 = fv <= 2 ? migrateV2toV3(v2) : v2;
+    const v4 = fv <= 3 ? migrateV3toV4(v3, config) : v3;
+    const state = fv <= 4 ? migrateV4toV5(v4) : v4;
     checkSaveShape(state);
     if (state.meta.scenarioId !== file.scenarioId || state.meta.rulesVersion !== file.rulesVersion
       || state.meta.dataVersion !== file.dataVersion || config.rules.rulesVersion !== file.rulesVersion

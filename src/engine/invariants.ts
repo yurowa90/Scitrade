@@ -1,6 +1,7 @@
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
 
 import { findSailing, routeOf } from './catalog';
+import { completionReward } from './growth';
 import { isEmployed } from './employees';
 import { balance } from './ledger';
 import type { Currency } from './money';
@@ -11,6 +12,9 @@ export class InvariantError extends Error {}
 
 export function checkInvariants(s: GameState, config: ScenarioConfig): void {
   const problems: string[] = [];
+  if (config.culture === null && (s.culture.reports.length || s.culture.experiences.length || s.culture.relationEvents.length)) {
+    problems.push('state.culture: 현지 활동이 꺼진 시나리오에는 기록이 없어야 합니다');
+  }
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
   if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');
@@ -148,7 +152,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig): void {
       const task = s.tasks.find((t) => `TASK-DONE-${t.id}` === eventId);
       if (!task || task.status !== 'DONE' || task.assignedEmployeeId !== employeeId) {
         problems.push(`${key}: 미완료·ABORTED 업무에는 경험치 기록이 없어야 합니다`);
-      } else if (rewardKind !== (task.kind === 'TRAINING' ? 'TRAINING_XP' : 'TASK_COMPLETION_XP')) {
+      } else if (rewardKind !== completionReward(task.kind, config)?.rewardKind) {
         problems.push(`${key}: 업무 종류와 경험치 보상 종류가 다릅니다`);
       }
     }

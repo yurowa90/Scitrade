@@ -29,13 +29,16 @@ function recruited(day: number) {
 }
 
 describe('이관 결과와 저장 모양 경로', () => {
-  it.each([1, 2, 3])('판본 %i 이관 뒤 offers[0] 모양 손상을 경로로 거절한다', (version) => {
+  it.each([1, 2, 3, 4])('판본 %i 이관 뒤 offers[0] 모양 손상을 경로로 거절한다', (version) => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     const file = JSON.parse(serializeSave(createGame(cfg)));
     file.formatVersion = version;
-    delete file.state.xpAwards;
-    delete file.state.xpAwardAmounts;
-    for (const e of file.state.employees) delete e.xp;
+    delete file.state.culture;
+    if (version <= 3) {
+      delete file.state.xpAwards;
+      delete file.state.xpAwardAmounts;
+      for (const e of file.state.employees) delete e.xp;
+    }
     if (version <= 2) {
       delete file.state.recruitment;
       for (const e of file.state.employees) delete e.availableFromDay;

@@ -69,6 +69,11 @@ export function fundsPosition(
 
 /** 일반 훈련은 기존 규칙대로 현금에서 미지급 의무만 뺀다. 계약 자금 예약은 차감하지 않는다. */
 export function trainingAvailableMinor(s: GameState, config: ScenarioConfig, currency: Currency): number {
+  return cashLessUnpaidMinor(s, config, currency);
+}
+
+/** 훈련·고용의 공통 자금 기준: 현금 − 미지급 의무. */
+export function cashLessUnpaidMinor(s: GameState, config: ScenarioConfig, currency: Currency): number {
   const funds = fundsPosition(s, config, currency);
   return funds.cash - funds.unpaidObligations;
 }
