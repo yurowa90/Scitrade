@@ -13,10 +13,12 @@ from PIL import Image, ImageFilter
 
 try:
     from .palette import ROOT, export_palette, load_palette, nearest_color, nearest_indices, palette_rgb, rgb_to_lab
+    from .png_format import png_errors
     from .pixelize import despeckle_pixels, pixelize
     from .check_pixel_asset import check_asset, slot_spec
 except ImportError:
     from palette import ROOT, export_palette, load_palette, nearest_color, nearest_indices, palette_rgb, rgb_to_lab
+    from png_format import png_errors
     from pixelize import despeckle_pixels, pixelize
     from check_pixel_asset import check_asset, slot_spec
 
@@ -278,7 +280,6 @@ class PixelToolsTests(unittest.TestCase):
         self.assertTrue(any(e.startswith('색 프로필:') for e in check_asset(path,(4,4))))
 
     def test_four_bit_palette_png_is_valid(self):
-        from tools.art.png_format import png_errors
         path=self.directory/'four-bit.png'
         image=Image.new('P',(4,4))
         image.putpalette(self.colors[:16].reshape(-1).tolist())
@@ -290,6 +291,67 @@ class PixelToolsTests(unittest.TestCase):
         with Image.open(path) as source:
             self.assertEqual(pixelize(source,(4,4),self.palette).size,(4,4))
 
+    def test_color_coordinate_and_signal_chunks(self):
+        import struct
+        from PIL.PngImagePlugin import PngInfo
+        path=self.directory/'color.png'
+        for kind,valid,invalid in [
+            (b'cHRM',struct.pack('>8I',31270,32900,64000,33000,30000,60000,15000,6000),struct.pack('>8I',34570,35850,64000,33000,30000,60000,15000,6000)),
+            (b'cICP',bytes((1,13,0,1)),bytes((9,16,0,1))),
+        ]:
+            for data,accepted in [(valid,True),(invalid,False)]:
+                info=PngInfo();info.add(kind,data)
+                Image.new('RGB',(1,1),tuple(self.colors[0])).save(path,pnginfo=info)
+                self.assertEqual(bool(png_errors(path)),not accepted)
+                self.assertEqual(bool(check_asset(path,(1,1))),not accepted)
+        for kind in (b'mDCv',b'cLLi'):
+            Image.new('RGB',(1,1),tuple(self.colors[0])).save(path)
+            import zlib
+            payload=b'\0'*24
+            chunk=struct.pack('>I',len(payload))+kind+payload+struct.pack('>I',zlib.crc32(kind+payload))
+            data=path.read_bytes();path.write_bytes(data[:-12]+chunk+data[-12:])
+            self.assertTrue(any('HDR' in e for e in png_errors(path)))
+
+    def test_srgb_profile_after_idat_and_old_pillow_fallback(self):
+        import struct
+        from PIL import ImageCms
+        from unittest.mock import patch
+        path=self.directory/'late-srgb.png'
+        srgb=ImageCms.ImageCmsProfile(ImageCms.createProfile('sRGB')).tobytes()
+        Image.new('RGB',(2,2),tuple(self.colors[4])).save(path,icc_profile=srgb)
+        data=path.read_bytes();offset=8;chunks=[]
+        while offset<len(data):
+            length=struct.unpack('>I',data[offset:offset+4])[0]
+            chunks.append(data[offset:offset+length+12]);offset+=length+12
+        iccp=next(c for c in chunks if c[4:8]==b'iCCP')
+        path.write_bytes(data[:8]+b''.join([c for c in chunks if c[4:8] not in (b'iCCP',b'IEND')]+[iccp,chunks[-1]]))
+        self.assertEqual(png_errors(path),[])
+        self.assertEqual(check_asset(path,(2,2)),[])
+        original_hasattr=hasattr
+        original_getdata=Image.Image.getdata
+        with patch(png_errors.__module__+'.hasattr',side_effect=lambda obj,name: False if name=='get_flattened_data' else original_hasattr(obj,name),create=True), patch.object(Image.Image,'getdata',autospec=True,side_effect=original_getdata) as fallback:
+            self.assertEqual(png_errors(path),[])
+            self.assertEqual(fallback.call_count,2)
+
+    def test_low_bit_palette_and_grayscale_formats(self):
+        import struct,zlib,io
+        def chunk(kind,data):
+            return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data))
+        for depth in (1,2):
+            path=self.directory/f'palette-{depth}.png'
+            image=Image.new('P',(4,4));image.putpalette(self.colors[:2**depth].reshape(-1).tolist())
+            image.save(path,bits=depth)
+            self.assertEqual(path.read_bytes()[24],depth)
+            self.assertEqual(png_errors(path),[])
+            self.assertEqual(check_asset(path,(4,4)),[])
+            with Image.open(path) as source:self.assertEqual(pixelize(source,(4,4),self.palette).size,(4,4))
+        for depth in (1,2,4):
+            header=struct.pack('>IIBBBBB',1,1,depth,0,0,0,0)
+            raw=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',header)+chunk(b'IDAT',zlib.compress(b'\0\0'))+chunk(b'IEND',b'')
+            path=self.directory/f'gray-{depth}.png';path.write_bytes(raw)
+            self.assertEqual(png_errors(path),[])
+            with Image.open(io.BytesIO(raw)) as source:self.assertEqual(pixelize(source,(1,1),self.palette).size,(1,1))
+
     def test_pixelize_function_rejects_sixteen_bit_rgb_png(self):
         import struct,zlib,io
         def chunk(kind,data):
@@ -300,6 +362,18 @@ class PixelToolsTests(unittest.TestCase):
             self.assertEqual(source.mode,'RGB')
             with self.assertRaisesRegex(ValueError,'비트 깊이:'):
                 pixelize(source,(1,1),self.palette)
+        from unittest.mock import patch
+        path=self.directory/'sixteen.png';path.write_bytes(raw)
+        with Image.open(path) as source:
+            source.filename=str(self.directory/'gone.png')
+            with patch('builtins.open',side_effect=AssertionError('디스크 재읽기')):
+                with self.assertRaisesRegex(ValueError,'비트 깊이:'):
+                    pixelize(source,(1,1),self.palette)
+        with Image.open(io.BytesIO(raw)) as source:
+            source.load()
+            # 디코더 정보가 사라진 RGB는 경로 함수에 검사를 맡긴다.
+            with patch('builtins.open',side_effect=AssertionError('디스크 재읽기')):
+                self.assertEqual(pixelize(source,(1,1),self.palette).size,(1,1))
 
 
 if __name__ == '__main__':

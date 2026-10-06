@@ -71,17 +71,21 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·4칸 미만 내륙 물 정리(통로 기준점 물 제외)·지역별 연결 검사·끊긴 곳만 최소 육지 4-연결 통로(최대 6칸)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region east-asia --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·지역별 연결 검사·끊긴 곳만 육지 칸 수→원본 육지 비율 합→길이 순 4-연결 통로(최대 6칸, 새 바다 관문 거리 1픽셀 이하)·통로 뒤 Natural Earth 호수별 7×7 표본 면적 1.5칸 미만 정리(바다 연결 물 및 명시된 타이호 보존)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-blue-marble.jpg",
-            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01"
+            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01",
+            "version": "three-globe master 예제 사본 (수집 2026-10-05, 커밋 판본 미기록)",
+            "content_pin_ko": "master URL은 바뀔 수 있으며 sha256이 사용한 파일 내용을 고정한다."
           },
           {
             "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
-            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
+            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12",
+            "version": "three-globe master 예제 사본 (수집 2026-10-05, 커밋 판본 미기록)",
+            "content_pin_ko": "master URL은 바뀔 수 있으며 sha256이 사용한 파일 내용을 고정한다."
           },
           {
             "name": "Natural Earth 1:10m land",
@@ -107,13 +111,14 @@
           "Pillow": "12.3.0",
           "numpy": "2.4.6"
         },
-        "output_sha256": "196d84fb1bc7570b3a6837f3d84854335508ecdc0a36f69feda905e63ea9c968"
+        "output_sha256": "f0da307e11b296cd5b1cddcaf5ceef462ea659fe3fede744978c5f3dea7ba337"
       },
       "pixel_grid": {
         "logical_width": 546,
         "logical_height": 615,
         "units_per_pixel": 2
-      }
+      },
+      "regenerated_on": "2026-10-06"
     },
     {
       "id": "MAP_WORLD",
@@ -133,17 +138,21 @@
       "provenance": {
         "method": "processed_public_domain_imagery",
         "ai_generated": false,
-        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·4칸 미만 내륙 물 정리(통로 기준점 물 제외)·지역별 연결 검사·끊긴 곳만 최소 육지 4-연결 통로(최대 6칸)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
+        "processing": "python3 scripts/build_map.py --source-dir <원본 폴더> --region world --style pixel (Natural Earth 7×7 부분 칸 중심 짝-홀 표본·육지 면적 50%·다각형별 구멍·지역별 연결 검사·끊긴 곳만 육지 칸 수→원본 육지 비율 합→길이 순 4-연결 통로(최대 6칸, 새 바다 관문 거리 1픽셀 이하)·통로 뒤 Natural Earth 호수별 7×7 표본 면적 1.5칸 미만 정리(바다 연결 물 및 명시된 타이호 보존)·위성 색 BOX 및 높이 BILINEAR 정렬·눈 우선 지형 분류·분류 및 음영 최빈값·해안 거리별 바다·팔레트·teal-4 육지 쪽 해안선·무손실 PNG)",
         "sources": [
           {
             "name": "NASA Blue Marble 합성 영상 (vasturiano/three-globe 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-blue-marble.jpg",
-            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01"
+            "sha256": "228deba2e4b600146bdcb6cfa359b8ead6aacc2b1c13550a29cd82824cfa1c01",
+            "version": "three-globe master 예제 사본 (수집 2026-10-05, 커밋 판본 미기록)",
+            "content_pin_ko": "master URL은 바뀔 수 있으며 sha256이 사용한 파일 내용을 고정한다."
           },
           {
             "name": "지형 높이 회색조 지도 (같은 저장소 예제 사본)",
             "url": "https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/earth-topology.png",
-            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12"
+            "sha256": "839b12da2e4dd346b256cebae72e10c479a102c8980a22084c41275e4b9a0e12",
+            "version": "three-globe master 예제 사본 (수집 2026-10-05, 커밋 판본 미기록)",
+            "content_pin_ko": "master URL은 바뀔 수 있으며 sha256이 사용한 파일 내용을 고정한다."
           },
           {
             "name": "Natural Earth 1:50m land",
@@ -163,19 +172,20 @@
         "license_ko": "NASA 영상은 일반적으로 미국 저작권 보호 대상이 아니며 출처 표시를 권장한다. 이 파일은 제3자 저장소 사본이므로 공개 배포 전 NASA 원본과 대조해야 한다. Natural Earth 육지·호수 데이터는 공공 도메인으로 자유롭게 사용할 수 있다.",
         "attribution": "위성 지형 색: NASA Blue Marble; 육지·호수: Natural Earth (public domain)",
         "verification_status": "NASA 원본 서버 대조 미실시 (작업 환경에서 접속 차단)",
-        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 육지 변경 통로: BAB_EL_MANDEB 1칸, SUEZ_CANAL 6칸, PANAMA_CANAL 1칸, GIBRALTAR 1칸, BOSPORUS 1칸, DARDANELLES 3칸. 전체·지역 바다 연결, 도시 해안 거리 경고: 없음. 상하이 시가지 기준점은 50% 규칙을 유지하기 위해 세계지도에서만 121.4°E 31.2°N을 쓴다. 오키나와 본섬은 0.5° 칸의 절반 미만이라 세계 기준점에서 제외한다.",
+        "known_issues_ko": "거점·선박·항로·나침반은 임시 벡터 표시다. 육지 변경 통로: BAB_EL_MANDEB 1칸, SUEZ_CANAL 6칸, PANAMA_CANAL 1칸, GIBRALTAR 1칸, BOSPORUS 1칸, DARDANELLES 3칸. 전체·지역 바다 연결, 도시 해안 거리 경고: 없음. 상하이 시가지 기준점은 50% 규칙을 유지하기 위해 세계지도에서만 121.4°E 31.2°N을 쓴다. 오키나와 본섬은 0.5° 칸의 절반 미만이라 세계 기준점에서 제외한다. 세계 타이호는 표본 면적 0.878칸으로 정리 기준 미만이지만 지시서 보존 목록을 우선해 남긴다.",
         "palette": "scitrade-32 (DRAFT_2026-10-05)",
         "versions": {
           "Pillow": "12.3.0",
           "numpy": "2.4.6"
         },
-        "output_sha256": "eccf0800276fd6951f64241a6df2959f08bbb6ef307f40475ebb486097b37bfd"
+        "output_sha256": "ff253cb7675f01fd43982aac40f6fe99fe8edf2fdee92dd1f23d5471c54c8d90"
       },
       "pixel_grid": {
         "logical_width": 720,
         "logical_height": 244,
         "units_per_pixel": 5
-      }
+      },
+      "regenerated_on": "2026-10-06"
     }
   ]
 }

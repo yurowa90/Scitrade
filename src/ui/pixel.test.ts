@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { integerScale, fitPixelBox, applyPixelScale } from './pixel';
 import { mapAsset } from './assets';
-import { renderWorldMap, snapViewBox, planMapViewport, MapMeasurementMemory, worldMapViewport, mapViewportKey } from './map';
+import { renderWorldMap, snapViewBox, planMapViewport, MapMeasurementMemory, worldMapViewport, mapViewportKey, mapLabelScale, mapPresentation, mapRedrawDecision, readMapScroll, mapScrollPosition } from './map';
 import { loadScenario } from '../content/scenario';
 import { createGame } from '../engine/engine';
 
@@ -173,8 +173,7 @@ describe('픽셀 크기 감시 연결', () => {
       getComputedStyle: () => ({width:'543px',boxSizing:'content-box'}),
       matchMedia: () => ({addEventListener:vi.fn(),removeEventListener:vi.fn()}),
     });
-    const base = {style:{transform:'',width:'500px'},getBoundingClientRect:()=>({left:10.25,top:20.25})};
-    const frame = {querySelector:()=>base};
+    const frame = {};
     const nestedSvg = {closest:()=>frame,style:{width:'100%',height:'100%'}};
     const root = {querySelectorAll:(selector:string)=>selector==='[data-map-frame]'?[frame]:[nestedSvg],style:{setProperty:vi.fn()}};
     const redraw = vi.fn();
@@ -201,14 +200,14 @@ describe('틀을 채우는 지도 보기 영역', () => {
   it.each(DPR)('dpr %s에서 가로와 세로 여백이 들어가는 최대 정수 배율과 폭을 고른다', (dpr) => {
     for (const width of [278, 543, 1024, 1440]) {
       const plan = planMapViewport(map, 2, route, width, dpr, 'route');
-      const L = Math.floor(width * dpr / plan.n);
+      const L = Math.min(map.w / 2, Math.floor(width * dpr / plan.n));
       expect(plan.n).toBeGreaterThan(1);
       expect(plan.n).toBeLessThanOrEqual(Math.max(1, Math.floor(3 * dpr)));
       expect(plan.cssWidth).toBe(plan.n * L / dpr);
       expect(plan.vb.w).toBe(L * 2);
       expect(plan.vb.h).toBe(Math.round(L * 10 / 16) * 2);
       expect(width - plan.cssWidth).toBeGreaterThanOrEqual(0);
-      expect(width - plan.cssWidth).toBeLessThan(plan.n / dpr);
+      if (L < map.w / 2) expect(width - plan.cssWidth).toBeLessThan(plan.n / dpr);
       expect(plan.vb.x).toBeLessThanOrEqual(route.x - 24);
       expect(plan.vb.y).toBeLessThanOrEqual(route.y - 24);
       expect(plan.vb.x + plan.vb.w).toBeGreaterThanOrEqual(route.x + route.w + 24);
@@ -272,7 +271,7 @@ describe('지도 재그리기 계약', () => {
   it('높이가 제한하는 경우의 최대 n은 전수 검색과 같다', () => {
     const box = { x: 500, y: 500, w: 10, h: 80 };
     // 필요 높이 64, 폭 102이면 round(102 × 10/16)=64라 3배가 가능하다.
-    for (const width of [306, 510, 714, 1000]) for (const dpr of DPR) {
+    for (const width of [120, 121, 153, 180, 203, 204, 205, 255, 260, 306, 510, 714, 1000]) for (const dpr of DPR) {
       const cap = Math.max(1, Math.floor(3*dpr));
       let best = 1;
       for (let n = 1; n <= cap; n++) {
@@ -299,7 +298,7 @@ describe('지도 재그리기 계약', () => {
     expect(svg).toContain(`style="width: ${plan.cssWidth}px; height: ${plan.cssHeight}px;"`);
     expect(svg).toContain('preserveAspectRatio="none"');
     expect(svg).toContain(`viewBox="${plan.vb.x.toFixed(1)} ${plan.vb.y.toFixed(1)} ${plan.vb.w.toFixed(1)} ${plan.vb.h.toFixed(1)}"`);
-    const k = plan.vb.w/620*(mode === 'world' ? .45 : 1);
+    const k = plan.vb.w/620*Math.min(946,options.availableWidth)/plan.cssWidth*(mode === 'world' ? .45 : 1);
     expect(html).toContain(`font-size="${15*k}"`);
     expect(html).toContain(`scale(${k})`);
   });
@@ -313,5 +312,60 @@ describe('지도 재그리기 계약', () => {
     expect(html).toContain(`left: ${-vb.x/vb.w*100}%; top: ${-vb.y/vb.h*100}%; width: ${1092/vb.w*100}%; height: ${1230/vb.h*100}%;`);
     expect(mapViewportKey(plan,1.25)).toBe(`${plan.n}:${vb.w}:${vb.h}:${vb.x}:${vb.y}:1.25`);
     expect(mapViewportKey(plan,1.5)).not.toBe(mapViewportKey(plan,1.25));
+  });
+});
+
+
+describe('넓은 틀과 지도 연결 판단', () => {
+  const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
+  it.each(DPR)('dpr %s의 넓은 경로 틀은 지도 안에서 자른다', (dpr) => {
+    for (const width of [1600,2200,4000]) {
+      const plan = worldMapViewport(config,'route',{availableWidth:width,dpr});
+      expect(plan.vb.x).toBeGreaterThanOrEqual(0);
+      expect(plan.vb.y).toBeGreaterThanOrEqual(0);
+      expect(plan.vb.x+plan.vb.w).toBeLessThanOrEqual(1092);
+      expect(plan.vb.y+plan.vb.h).toBeLessThanOrEqual(1230);
+      expect(plan.cssWidth).toBeLessThanOrEqual(width);
+    }
+  });
+  it.each(['route','world'] as const)('%s의 이름표·휘장은 946px보다 커지지 않는다', (mode) => {
+    for (const dpr of DPR) {
+      const small = worldMapViewport(config,mode,{availableWidth:946,dpr});
+      const large = worldMapViewport(config,mode,{availableWidth:1600,dpr});
+      const screenSize = (plan: typeof small, width: number) => mapLabelScale(plan,mode === 'world',width)*plan.cssWidth/plan.vb.w;
+      expect(screenSize(large,1600)).toBeCloseTo(screenSize(small,946),10);
+    }
+  });
+  it('처음 측정된 크기를 계획에 쓰고 같은 키이면 다시 그리지 않는다', () => {
+    const measurement = {availableWidth:543,dpr:1.25};
+    const first = mapRedrawDecision(config,'route',measurement);
+    expect(first).toEqual({key:`${mapViewportKey(worldMapViewport(config,'route',measurement),1.25)}:543`,redraw:true});
+    expect(mapRedrawDecision(config,'route',measurement,first.key).redraw).toBe(false);
+    const world = mapRedrawDecision(config,'world',{availableWidth:930,dpr:1});
+    expect(mapRedrawDecision(config,'world',{availableWidth:940,dpr:1},world.key).redraw).toBe(true);
+  });
+  it('측정한 세계지도에서만 비율을 읽고 시나리오 초기화 동안 읽지 않는다', () => {
+    expect(readMapScroll(true,true,false,300,1000,400)).toBe(.5);
+    for (const [world,measured,reset] of [[false,true,false],[true,false,false],[true,true,true]]) {
+      expect(readMapScroll(world!,measured!,reset!,300,1000,400,.2)).toBe(.2);
+    }
+    expect(mapScrollPosition(true,.5,.3,1000,400)).toBe(300);
+    expect(mapScrollPosition(true,undefined,.3,1000,400)).toBe(100);
+    expect(mapScrollPosition(false,.5,.3,1000,400)).toBeUndefined();
+    const memory = new MapMeasurementMemory();
+    memory.remember('route',543,1.25);memory.remember('world',930,3);memory.clear();
+    expect(memory.has('route')).toBe(false);expect(memory.has('world')).toBe(false);
+  });
+  it('경로 보기에서 세계 자산이 선택되어도 접근성·안내·스크롤을 제공한다', async () => {
+    const content = await import('../content/map');
+    const spy = vi.spyOn(content,'loadRouteWaypoints').mockReturnValue([{lon:0,lat:40}]);
+    const currentMap = await import('./map');
+    const presentation = currentMap.mapPresentation(config,'route');
+    expect(presentation.world).toBe(true);
+    expect(presentation.attributes).toContain('tabindex="0" role="region"');
+    expect(presentation.attributes).toContain('aria-label="세계지도');
+    expect(presentation.hint).toContain('화살표 키');
+    expect(currentMap.worldMapViewport(config,'route',{availableWidth:930,dpr:1}).vb.w).toBe(3600);
+    spy.mockRestore();
   });
 });

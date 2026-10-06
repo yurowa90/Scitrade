@@ -34,8 +34,8 @@ export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: nu
   // round(L × 10 / 16) ≥ requiredH를 만족하는 최소 정수 L.
   const minimumL = Math.max(requiredW, Math.ceil((requiredH - 0.5) * 16 / 10));
   const n = Math.min(cap, Math.max(1, Math.floor(availableWidth * dpr / minimumL)));
-  const logicalW = Math.max(1, Math.floor(availableWidth * dpr / n));
-  const logicalH = Math.max(1, Math.round(logicalW * 10 / 16));
+  const logicalW = Math.min(Math.floor(map.w / unitsPerPixel), Math.max(1, Math.floor(availableWidth * dpr / n)));
+  const logicalH = Math.min(Math.floor(map.h / unitsPerPixel), Math.max(1, Math.round(logicalW * 10 / 16)));
   const w = logicalW * unitsPerPixel, h = logicalH * unitsPerPixel;
   const x = Math.max(0, Math.min(Math.floor((left + right - logicalW) / 2) * unitsPerPixel, Math.max(0, map.w - w)));
   const y = Math.max(0, Math.min(Math.floor((top + bottom - logicalH) / 2) * unitsPerPixel, Math.max(0, map.h - h)));
@@ -146,7 +146,38 @@ export class MapMeasurementMemory {
   private values: Partial<Record<MapMode, MapMeasurement>> = {};
   get(mode: MapMode): MapMeasurement { return this.values[mode] ?? { availableWidth: 620, dpr: 1 }; }
   has(mode: MapMode): boolean { return this.values[mode] !== undefined; }
+  clear(): void { this.values = {}; }
   remember(mode: MapMode, availableWidth: number, dpr: number): void { this.values[mode] = { availableWidth, dpr }; }
+}
+
+/** 실제 선택된 지도에 맞춰 접근성·안내·스크롤을 함께 결정한다. */
+export function mapPresentation(config: ScenarioConfig, mode: MapMode) {
+  const world = chooseMap(config, mode) === WORLD_MAP;
+  return { world, attributes: world ? 'tabindex="0" role="region" aria-label="세계지도 — 좌우로 움직여 볼 수 있음"' : '',
+    hint: world ? '<p class="muted small">세계지도는 좌우로 움직여 볼 수 있습니다. 지도를 선택하고 화살표 키를 눌러 보세요.</p>' : '' };
+}
+
+export function mapLabelScale(plan: MapViewport, world: boolean, availableWidth = plan.cssWidth): number {
+  return plan.vb.w / 620 * Math.min(946, availableWidth) / plan.cssWidth * (world ? 0.45 : 1);
+}
+
+/** 측정한 세계지도에서만 스크롤 비율을 읽는다. */
+export function readMapScroll(world: boolean, measured: boolean, reset: boolean,
+  scrollLeft: number, scrollWidth: number, clientWidth: number, remembered?: number): number | undefined {
+  const range = scrollWidth - clientWidth;
+  return world && measured && !reset && range > 0 ? scrollLeft / range : remembered;
+}
+
+export function mapScrollPosition(world: boolean, ratio: number | undefined, center: number,
+  scrollWidth: number, clientWidth: number): number | undefined {
+  return world ? ratio === undefined ? center * scrollWidth - clientWidth / 2
+    : ratio * Math.max(0, scrollWidth - clientWidth) : undefined;
+}
+
+/** 첫 그리기도 전달된 측정값으로 계획하며 같은 보기 영역이면 DOM을 재생성하지 않는다. */
+export function mapRedrawDecision(config: ScenarioConfig, mode: MapMode, measurement: MapMeasurement, previousKey?: string) {
+  const key = `${mapViewportKey(worldMapViewport(config, mode, measurement), measurement.dpr)}:${Math.min(946, measurement.availableWidth)}`;
+  return { key, redraw: key !== previousKey };
 }
 
 export function mapViewportKey(plan: MapViewport, dpr: number): string {
@@ -181,7 +212,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const plan = worldMapViewport(config, mode, { availableWidth: options.availableWidth ?? 620, dpr: options.dpr ?? 1 });
   const vb = plan.vb;
   // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
-  const k = (vb.w / 620) * (world ? 0.45 : 1);
+  const k = mapLabelScale(plan, world, options.availableWidth ?? 620);
 
   // 경위선: 확대 지도 5°, 세계지도 30° 간격.
   const b = map.bounds;

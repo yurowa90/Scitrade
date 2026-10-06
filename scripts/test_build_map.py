@@ -6,12 +6,23 @@ import numpy as np
 
 from build_map import (ROOT, LOWLAND, FOREST, DRY, MOUNTAIN, SNOW, REGIONS, PIXEL_SIZES,
                        classify_terrain, smooth_classes, isolated_ratio, coastline,
-                       carve_gate_passages, geo_pixel, paint_palette, sea_distance)
+                       carve_gate_passages, geo_pixel, paint_palette, sea_distance, minimum_land_path,
+                       remove_small_inland_water, pixel_distances, PASSAGE_MARKERS)
 import sys
 sys.path.insert(0, str(ROOT))
 from tools.art.palette import load_palette, palette_rgb
 from PIL import Image
 import json
+
+
+WORLD_LAKES = {
+    'Lake Balkhash': (74.5,46.1), 'Lago Titicaca': (-69.4,-15.8),
+    'Lago de Nicaragua': (-85.4,11.6), 'Issyk-Kul': (77.4,42.4), 'Qinghai Hu': (100.2,36.9),
+    'Tai Hu': (120.15,31.2), 'Lake Superior': (-87.5,47.5), 'Lake Michigan': (-87.0,44.0),
+    'Lake Huron': (-82.4,44.8), 'Lake Erie': (-81.2,42.2), 'Lake Ontario': (-77.9,43.7),
+}
+EAST_ASIA_LAKES = {'Tai Hu': (120.15,31.2), 'Poyang Hu': (116.3,29.1),
+                   'Dongting Hu': (112.9,29.3), 'Tonlé Sap': (104.0,12.9)}
 
 
 class BuildMapTests(unittest.TestCase):
@@ -21,14 +32,14 @@ class BuildMapTests(unittest.TestCase):
         bounds = {'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
         land = np.zeros((80,60),dtype=bool); land[30:35,:] = True
         with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}):
-            carved, opened, _ = carve_gate_passages(land, [], bounds)
+            carved, opened, _ = carve_gate_passages(land, [{'id':'SUEZ_CANAL','geo_position':{'lon':32,'lat':30.5}}], bounds)
             self.assertEqual(opened[0]['changed_cells'],5)
             self.assertEqual(opened[0]['source_land_cells'],5)
             self.assertEqual(np.count_nonzero(land & ~carved),5)
             self.assertEqual(len(set(component_labels(carved)[~carved])),1)
             land[35:38] = True
             with self.assertRaisesRegex(ValueError,'상한'):
-                carve_gate_passages(land,[],bounds)
+                carve_gate_passages(land,[{'id':'SUEZ_CANAL','geo_position':{'lon':32,'lat':29.5}}],bounds)
 
     def test_connected_water_does_not_carve_or_request_path(self):
         from unittest.mock import patch
@@ -36,7 +47,7 @@ class BuildMapTests(unittest.TestCase):
         bounds = {'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
         land = np.zeros((80,60),dtype=bool);land[30:35,10:50] = True
         with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}), patch('build_map.minimum_land_path') as path:
-            carved,opened,_ = carve_gate_passages(land,[],bounds)
+            carved,opened,_ = carve_gate_passages(land,[{'id':'SUEZ_CANAL','geo_position':{'lon':32,'lat':29.5}}],bounds)
             np.testing.assert_array_equal(carved,land)
             path.assert_not_called()
             self.assertTrue(opened[0]['already_connected'])
@@ -50,12 +61,40 @@ class BuildMapTests(unittest.TestCase):
         with patch('build_map.PASSAGES', {'SUEZ_CANAL': PASSAGES['SUEZ_CANAL']}):
             self.assertTrue(all(c['connected'] for c in sea_connections(land,bounds)))
             self.assertFalse(passage_connections(land,bounds)[0]['connected'])
-            carved,opened,_ = carve_gate_passages(land,[],bounds)
+            carved,opened,_ = carve_gate_passages(land,[{'id':'SUEZ_CANAL','geo_position':{'lon':32,'lat':29.5}}],bounds)
             self.assertEqual(opened[0]['changed_cells'],4)
             self.assertTrue(passage_connections(carved,bounds)[0]['connected'])
             bad = land.copy();bad[16,24] = True
             with self.assertRaisesRegex(ValueError,'기준점은 물'):
                 carve_gate_passages(bad,[],bounds)
+
+    def test_path_cost_prefers_land_count_then_source_fraction_then_length(self):
+        # 더 먼 1칸 통로가 가까운 2칸 통로보다 먼저다.
+        land=np.zeros((7,9),dtype=bool);land[:,4:6]=True;land[0,5]=False
+        path=minimum_land_path(land,(1,3),(7,3))
+        self.assertEqual(sum(land[y,x] for x,y in path),1)
+        # 같은 육지 칸 수라면 길이보다 원본 물 비율을 먼저 비교한다.
+        land[:,5]=False
+        fractions=land.astype(float);fractions[0,4]=.51;fractions[3,4]=.9
+        path=minimum_land_path(land,(1,3),(7,3),fractions)
+        self.assertIn((4,0),path);self.assertNotIn((4,3),path)
+
+    def test_gate_distance_failure_rejects_carving(self):
+        from unittest.mock import patch
+        from build_map import PASSAGES
+        bounds={'lon_min':30,'lon_max':36,'lat_min':26,'lat_max':34}
+        land=np.zeros((80,60),dtype=bool);land[30:35,:]=True
+        with patch('build_map.PASSAGES',{'SUEZ_CANAL':PASSAGES['SUEZ_CANAL']}):
+            with self.assertRaisesRegex(ValueError,'관문 거리'):
+                carve_gate_passages(land,[{'id':'SUEZ_CANAL','geo_position':{'lon':35,'lat':33}}],bounds)
+
+    def test_terrain_color_sets_are_disjoint(self):
+        from build_map import TERRAIN_RAMPS
+        groups=[set(TERRAIN_RAMPS[k]) for k in (MOUNTAIN,SNOW,DRY)]
+        groups.append({f'{r}-{i}' for r in ('sea','teal') for i in range(1,5)} | {'ink-1','ink-2','ink-3'})
+        for i,left in enumerate(groups):
+            for right in groups[i+1:]: self.assertTrue(left.isdisjoint(right),(left,right))
+        self.assertEqual(set(TERRAIN_RAMPS[SNOW]),{'light-3','light-4'})
 
     def test_mode_remove_isolated_pixels(self):
         land = np.ones((5, 5), dtype=bool)
@@ -219,6 +258,22 @@ class BuildMapTests(unittest.TestCase):
                         self.assertTrue(passage['already_connected'],passage)
                         self.assertEqual(passage['source_land_cells'],0)
                     self.assertLessEqual(passage['changed_cells'],6)
+                self.assertEqual(meta['ocean_cells_before_cleanup'],meta['ocean_cells_after_cleanup'])
+                checks = {l['name']: l for l in meta['lake_checks']}
+                expected = EAST_ASIA_LAKES if region == 'east-asia' else WORLD_LAKES
+                sea = {tuple(c) for c in palette_rgb(load_palette())[4:7]}
+                pixels = np.asarray(Image.open(Path(directory)/f'{region}.png'))
+                for name,(lon,lat) in expected.items():
+                    self.assertGreaterEqual(checks[name]['after_cells'],1,name)
+                    self.assertGreaterEqual(checks[name]['after_cells'],checks[name]['before_cells']/2,name)
+                    x,y = geo_pixel({'lon':lon,'lat':lat},REGIONS[region]['bounds'],PIXEL_SIZES[region])
+                    nearby = pixels[max(0,y-2):y+3,max(0,x-2):x+3]
+                    self.assertTrue(any(tuple(c) in sea for c in nearby.reshape(-1,3)),name)
+                markers = {**PASSAGE_MARKERS, **{g['id']: g['geo_position'] for g in json.loads((ROOT/'data/world.json').read_text())['sea_gates']}}
+                for passage in meta['gates_opened']:
+                    if passage['changed_cells']:
+                        self.assertLessEqual(min(pixel_distances(passage['changed_pixels'],markers[passage['id']],REGIONS[region]['bounds'],PIXEL_SIZES[region])),1,passage)
+                        self.assertLessEqual(passage['gate_distance_px'],1)
                 meta2=build_pixel(args,source_hashes(args),Path(directory))
                 self.assertEqual(meta['output_sha256'],meta2['output_sha256'])
 
@@ -259,10 +314,13 @@ class BuildMapTests(unittest.TestCase):
 
     def test_small_inland_water_and_color_isolation(self):
         from build_map import remove_small_inland_water, color_isolated_ratio
-        land=np.ones((8,8),dtype=bool);land[0,0]=False;land[3,3]=False;land[5:7,5:7]=False
-        clean=remove_small_inland_water(land)
-        self.assertTrue(clean[3,3]);self.assertFalse(clean[0,0]);self.assertFalse(clean[5,5])
-        self.assertFalse(remove_small_inland_water(land,protected=[(3,3)])[3,3])
+        land=np.ones((8,8),dtype=bool)
+        land[0:4,1]=False; land[3,2]=False; land[3,4]=False; land[5:7,5:7]=False
+        lakes=[{'name':None,'area_cells':.8,'indices':[3*8+2,3*8+4]}, {'name':None,'area_cells':2,'indices':[5*8+5,5*8+6,6*8+5,6*8+6]}]
+        clean=remove_small_inland_water(land,lakes)
+        self.assertTrue(clean[3,4]);self.assertFalse(clean[3,2]);self.assertFalse(clean[5,5])
+        # 원본이 1.5칸이면 화면에 한 칸만 잡혀도 남긴다.
+        self.assertFalse(remove_small_inland_water(land,[{'name':None,'area_cells':1.5,'indices':[3*8+4]}])[3,4])
         out=np.zeros((5,5,3),dtype=np.uint8);out[2,2]=255;out[1,1]=255
         four=((-1,0),(1,0),(0,-1),(0,1))
         eight=[(dy,dx) for dy in (-1,0,1) for dx in (-1,0,1) if dy or dx]

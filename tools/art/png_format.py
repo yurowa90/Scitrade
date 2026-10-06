@@ -30,6 +30,12 @@ def png_errors(path):
     if b'gAMA' in chunks and (len(chunks[b'gAMA']) != 4 or
                               abs(struct.unpack('>I', chunks[b'gAMA'])[0] / 100000 - .45455) > .000011):
         errors.append('감마: sRGB 감마(0.45455)만 허용합니다.')
+    if b'cHRM' in chunks and chunks[b'cHRM'] != struct.pack('>8I', 31270,32900,64000,33000,30000,60000,15000,6000):
+        errors.append('색 좌표: sRGB/D65가 아닌 cHRM은 허용하지 않습니다.')
+    if b'cICP' in chunks and chunks[b'cICP'] != bytes((1,13,0,1)):
+        errors.append('색 공간: sRGB가 아닌 cICP는 허용하지 않습니다.')
+    if b'mDCv' in chunks or b'cLLi' in chunks:
+        errors.append('색 공간: HDR 색 청크는 허용하지 않습니다.')
     if b'iCCP' in chunks:
         # 프로필 이름만 믿지 않고 표본 색이 sRGB와 같은지 변환으로 확인한다.
         try:

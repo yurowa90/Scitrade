@@ -16,7 +16,7 @@ import { contractProgress } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { crewCard, taskName } from './card';
 import { batchUnlocked, candidateCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
-import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, worldMapViewport, mapViewportKey, type MapMode } from './map';
+import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, mapPresentation, readMapScroll, mapScrollPosition, mapRedrawDecision, type MapMode } from './map';
 
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
@@ -50,6 +50,7 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 function startScenario(id: ScenarioId) {
   resetMapScroll = true;
   mapScrollRatio = undefined;
+  mapMeasurements.clear();
   config = loadScenario(id);
   state = openDay(createGame(config), config).state;
   pending = [];
@@ -197,8 +198,8 @@ function worldMap(): string {
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
       </div>
     </div>
-    <div data-map-frame ${mapMode === 'world' ? 'tabindex="0" role="region" aria-label="세계지도 — 좌우로 움직여 볼 수 있음"' : ''} class="map-frame ${mapMode === 'world' ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG })}</div>
-    ${mapMode === 'world' ? '<p class="muted small">세계지도는 좌우로 움직여 볼 수 있습니다. 지도를 선택하고 화살표 키를 눌러 보세요.</p>' : ''}
+    <div data-map-frame ${mapPresentation(config, mapMode).attributes} class="map-frame ${mapPresentation(config, mapMode).world ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG })}</div>
+    ${mapPresentation(config, mapMode).hint}
     ${mapLegend()}
     <p class="muted small">${routeText}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
@@ -628,10 +629,8 @@ function logPanel(): string {
 function render() {
   view = planState(state, config, pending).state;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
-  if (!resetMapScroll && previousMap?.dataset.measured === 'true') {
-    const range = previousMap.scrollWidth - previousMap.clientWidth;
-    if (range > 0) mapScrollRatio = previousMap.scrollLeft / range;
-  }
+  if (previousMap) mapScrollRatio = readMapScroll(true, previousMap.dataset.measured === 'true', resetMapScroll,
+    previousMap.scrollLeft, previousMap.scrollWidth, previousMap.clientWidth, mapScrollRatio);
   const focused = document.activeElement as HTMLElement | null;
   // 태그와 모든 대상 속성을 비교한다. 대기열 순번은 삭제 시 바뀌므로 명령 ID를 쓴다.
   const focusData = focused?.dataset.action ? { ...focused.dataset } : null;
@@ -640,7 +639,7 @@ function render() {
   const blockHeading = focused?.closest('.recruit-site, .recruit-candidate')?.querySelector('h4')?.id;
   app.innerHTML = `
     ${topbar()}
-    <main class="layout ${mapMode === 'world' ? 'map-wide' : ''}">
+    <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
       ${worldMap()}
       ${crewPanel()}
       ${tradePanel()}
@@ -650,13 +649,11 @@ function render() {
       ${logPanel()}
     </main>`;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
-  frame.dataset.viewportKey = mapViewportKey(worldMapViewport(config, mapMode, mapMeasurements.get(mapMode)), mapMeasurements.get(mapMode).dpr);
+  frame.dataset.viewportKey = mapRedrawDecision(config, mapMode, mapMeasurements.get(mapMode)).key;
   const positionMap = () => {
-    if (mapMode !== 'world') return;
     const center = Number(frame.querySelector<HTMLElement>('[data-map-center]')?.dataset.mapCenter ?? 0.5);
-    frame.scrollLeft = mapScrollRatio === undefined
-      ? center * frame.scrollWidth - frame.clientWidth / 2
-      : mapScrollRatio * Math.max(0, frame.scrollWidth - frame.clientWidth);
+    const left = mapScrollPosition(mapPresentation(config, mapMode).world, mapScrollRatio, center, frame.scrollWidth, frame.clientWidth);
+    if (left !== undefined) frame.scrollLeft = left;
   };
   if (mapMeasurements.has(mapMode)) {
     frame.dataset.measured = 'true';
@@ -664,15 +661,14 @@ function render() {
     resetMapScroll = false;
   }
   applyPixelScale(app, (frame, width, dpr) => {
-    const key = mapViewportKey(worldMapViewport(config, mapMode, { availableWidth: width, dpr }), dpr);
-    if (!resetMapScroll && frame.dataset.measured === 'true') {
-      const range = frame.scrollWidth - frame.clientWidth;
-      if (range > 0) mapScrollRatio = frame.scrollLeft / range;
-    }
+    const measurement = { availableWidth: width, dpr };
+    const decision = mapRedrawDecision(config, mapMode, measurement, frame.dataset.viewportKey);
+    mapScrollRatio = readMapScroll(mapPresentation(config, mapMode).world, frame.dataset.measured === 'true', resetMapScroll,
+      frame.scrollLeft, frame.scrollWidth, frame.clientWidth, mapScrollRatio);
     mapMeasurements.remember(mapMode, width, dpr);
-    if (frame.dataset.viewportKey !== key) {
-      frame.innerHTML = renderWorldMap(view, config, mapMode, { availableWidth: width, dpr, baseOutsideSvg: MAP_BASE_OUTSIDE_SVG });
-      frame.dataset.viewportKey = key;
+    if (decision.redraw) {
+      frame.innerHTML = renderWorldMap(view, config, mapMode, { ...measurement, baseOutsideSvg: MAP_BASE_OUTSIDE_SVG });
+      frame.dataset.viewportKey = decision.key;
     }
     frame.dataset.measured = 'true';
     positionMap();
@@ -805,6 +801,7 @@ function loadText(text: string) {
     const loaded = deserializeSave(text, { dataVersion: cfg.dataVersion, rulesVersion: cfg.rules.rulesVersion });
     resetMapScroll = true;
     mapScrollRatio = undefined;
+    mapMeasurements.clear();
     config = cfg;
     state = openDay(loaded, config).state;
     interviewId = null;

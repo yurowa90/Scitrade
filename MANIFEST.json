@@ -261,6 +261,11 @@
       "sha256": "836ed7149d36571932ebe0440d40034d4c6351d2533b6264518861d2106fde50"
     },
     {
+      "path": "docs/ai/tasks/TASK-0007-R3-map-water-and-colour.md",
+      "size_bytes": 10117,
+      "sha256": "cc8075431e6fb926ad749510bf7b2d3a38deef414f02d8791fdad821f5bae037"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0007-pixel-rendering.md",
       "size_bytes": 17204,
       "sha256": "9c77e260a8a12b125e10f3cee908049262d2a8857f384522f225ecae2bd9c44e"
@@ -287,8 +292,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0007.md",
-      "size_bytes": 75695,
-      "sha256": "11543da6f8a5a17ddce63c57df9b444df970575a8435cc4dc13309e50ca531b2"
+      "size_bytes": 129943,
+      "sha256": "87add554cdb6229dca3730207084bde623dd94e3a578b1e4658ee75dcb213d02"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -572,18 +577,18 @@
     },
     {
       "path": "tools/art/pixelize.py",
-      "size_bytes": 5389,
-      "sha256": "4c26177ce1a504e2224d573141dbec92e51f2d4afe998b9c83d1cf54c6b1acfe"
+      "size_bytes": 5305,
+      "sha256": "373274430bab5c0c8addcdc17d393716c37e6a9a56753164a367e5cd5568b9c5"
     },
     {
       "path": "tools/art/png_format.py",
-      "size_bytes": 2504,
-      "sha256": "901487fa83660c6815991368cc3b40de45dcb596a1d43a3b9be65de6a02e0e25"
+      "size_bytes": 2994,
+      "sha256": "b900311162dd7808b417f622777996bb035cee0dbb2f4b4208842f4246863e86"
     },
     {
       "path": "tools/art/test_pixel_tools.py",
-      "size_bytes": 17049,
-      "sha256": "67a7619967c4c48b9c205d61db659fa1a854bdddd9b051d5e631925d671099e1"
+      "size_bytes": 21492,
+      "sha256": "f3693750044dd8ac245d67d3c2163829c1d6b94839542b4172d27d05391663a4"
     },
     {
       "path": "tools/build_package.py",
