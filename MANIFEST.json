@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 86139,
-      "sha256": "d93795fa2e1e4366fee90428c15f4accd65e996805b59ed08cf00fa515841d28"
+      "size_bytes": 86330,
+      "sha256": "6197a59cb15a979bbe81e3d1043c14b207b98c0847c770577ba8bcf0ddfae869"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 4498,
-      "sha256": "bba9da2a8d3cf12eb0ebca926d0bcf6b08a062cbc4630ce1432c6b19fec7e7fc"
+      "size_bytes": 4584,
+      "sha256": "c78a566b96027326de9d026093b7027d71c5af2000578bfcea114d68e8976f54"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -319,6 +319,11 @@
       "path": "docs/ai/tasks/TASK-0010-save-v5-foundation.md",
       "size_bytes": 16081,
       "sha256": "6744323010df62ba70f6156dd858914451440936ba757f9026eaad6afba0d259"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0011-culture-engine.md",
+      "size_bytes": 20265,
+      "sha256": "89714e875d344fd391c53d4f779cb9eb66016f98febd1e5b39410c62ef4a89a3"
     },
     {
       "path": "docs/ai/tasks/TASK-0013-deferred-display-fixes.md",
