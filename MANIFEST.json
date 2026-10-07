@@ -27,8 +27,8 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 12746,
-      "sha256": "b1a7a3762c613159a53d8a81258c3e2f2ce5bc31f3485ce0032c36040e2b02f4"
+      "size_bytes": 13001,
+      "sha256": "a9839a395f695045f492c28104992a45169f916a3d8874839a3071fdc49e5c64"
     },
     {
       "path": "START_HERE.md",
@@ -161,6 +161,11 @@
       "sha256": "f1a1e0ffd5370c79c5924f8c75d1658b65f46f434e3ed8531521177472e75841"
     },
     {
+      "path": "docs/CLASSIC_GAME_INSIGHTS.md",
+      "size_bytes": 15301,
+      "sha256": "b7eebe0609f2e8985639db99a730cda67a81a62f221d384e3f43c12f43f90af9"
+    },
+    {
       "path": "docs/DECISIONS.md",
       "size_bytes": 104053,
       "sha256": "543bd482edc37cc74654c468150a30334d9297fd08aa8dbae9a3e85ab72cfa44"
@@ -177,13 +182,13 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 10950,
-      "sha256": "3c45a24a9d9f3e1c9064a655cfe52547d779242ec7b943a40bd3bb573535b31c"
+      "size_bytes": 12939,
+      "sha256": "97cfd9036dbedd70119d35af1aa3cda11c0e81872edf42e95743466269233389"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
-      "size_bytes": 9226,
-      "sha256": "4e1547afe65d42c835b1818f2a6821a213c6488328539ebdbbec6830c369a905"
+      "size_bytes": 9752,
+      "sha256": "8aebf9af263c5ad6c6989d722cc9c0712745d362e1555c09a6decdd7c3306a88"
     },
     {
       "path": "docs/STATUS.md",
@@ -206,9 +211,14 @@
       "sha256": "8ea72adf66be353756a4e3b7d286fb93957f5a99105f9da1ceae9fad890e1d76"
     },
     {
+      "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
+      "size_bytes": 10613,
+      "sha256": "c9b0dd2b1add15361bc3bfe0b1d73507bd76d19eca41119b19f85db64ac60257"
+    },
+    {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 3561,
-      "sha256": "c221ed24558068d177e08337cace71852252b79871861cdc0e15f18df45712b6"
+      "size_bytes": 3900,
+      "sha256": "3daff0716174e25fdcc2f1218b8d9bb52b21ff8aec7ec607418fbc8cba78fb77"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -349,6 +359,11 @@
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/tasks/results/CLASSIC-INSIGHTS-2026-10-08.md",
+      "size_bytes": 4659,
+      "sha256": "339c838d6ab373d8b6c25f496f801ef7841545a8159ed4e7fb078957e311be59"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
