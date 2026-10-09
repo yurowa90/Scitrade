@@ -47,7 +47,7 @@ async function main() {
       fs.writeFileSync(out, text);
       for (const run of runs) {
         const expectations = expect.results.filter(e => e.profile === run.profile);
-        console.log(`${run.profile}: ${JSON.stringify(run.values)} 기대 ${expectations.every(e => e.ok) ? '통과' : '실패'}, 실행 ${run.status}, 글꼴 ${run.fonts_ok ? '통과' : '실패'}${run.error ? ` | ${run.error.split('\n')[0]}` : ''}`);
+        console.log(`${run.profile}: ${JSON.stringify(run.values)} 기대 ${expectations.length === 0 ? '없음' : expectations.every(e => e.ok) ? '통과' : '실패'}, 실행 ${run.status}, 글꼴 ${run.fonts_ok ? '통과' : '실패'}${run.error ? ` | ${run.error.split('\n')[0]}` : ''}`);
       }
     } else process.stdout.write(text);
     return ok ? 0 : 1;

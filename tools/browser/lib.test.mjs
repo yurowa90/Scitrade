@@ -28,17 +28,23 @@ test('묶음 시나리오 검증', () => {
 });
 test('잘못된 단계와 기대를 거절한다', () => {
   const base = loadScenario(scenarioFile('smoke'));
+  // 기대(expect)를 비워 smoke의 기대가 덧붙는 오류를 내지 않게 하고, 경우마다 자기 오류 문구를 확인한다(Claude 검수).
   const cases = [
-    { steps: [{ do: 'unknown' }] }, { steps: [{ do: 'tap' }] },
-    { steps: [{ do: 'measure', what: 'overflow-x' }] },
-    { steps: [{ do: 'measure', name: 'v', what: 'moved', ref: 'unknown' }] },
-    { expect: [{ value: 'unknown', min: 0, max: 1 }] },
-    { expect: [{ value: 'overflow_x_day1', min: 2, max: 1 }] },
-    { steps: [{ do: 'measure', name: 'v', what: 'unknown' }] },
-    { profiles: ['unknown'] },
-    { steps: [{ do: 'remember', name: 'v', selector: '#test' }, { do: 'measure', name: 'v', what: 'overflow-x' }] },
+    [{ steps: [{ do: 'unknown' }] }, '모르는 동작'],
+    [{ steps: [{ do: 'tap' }] }, '선택자가 필요합니다'],
+    [{ steps: [{ do: 'measure', what: 'overflow-x' }] }, 'name이 필요합니다'],
+    [{ steps: [{ do: 'measure', name: 'v', what: 'moved', ref: 'unknown' }] }, '정의되지 않은 ref'],
+    [{ expect: [{ value: 'unknown', min: 0, max: 1 }] }, '기대 값이 정의되지 않았습니다'],
+    [{ steps: [{ do: 'measure', name: 'overflow_x_day1', what: 'overflow-x' }], expect: [{ value: 'overflow_x_day1', min: 2, max: 1 }] }, '기대 범위가 올바르지 않습니다'],
+    [{ steps: [{ do: 'measure', name: 'v', what: 'unknown', selector: '#x' }] }, '모르는 측정'],
+    [{ profiles: ['unknown'] }, '모르는 프로필'],
+    [{ steps: [{ do: 'remember', name: 'v', selector: '#test' }, { do: 'measure', name: 'v', what: 'overflow-x' }] }, 'name이 중복됩니다'],
   ];
-  for (const change of cases) assert.ok(validateScenario({ ...base, ...change }).length > 0);
+  assert.deepEqual(validateScenario({ ...base, expect: [], steps: [{ do: 'measure', name: 'ok1', what: 'overflow-x' }] }), []);
+  for (const [change, message] of cases) {
+    const errors = validateScenario({ ...base, expect: [], ...change });
+    assert.ok(errors.some(e => e.includes(message)), `${message}: ${JSON.stringify(errors)}`);
+  }
 });
 test('정적 경로의 상위 이동을 막는다', () => {
   const root = path.join(os.tmpdir(), 'static-path-test');

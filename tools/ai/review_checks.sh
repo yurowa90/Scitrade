@@ -38,7 +38,7 @@ run python3 tools/validate_data.py
 run npm run --silent typecheck
 run npx vitest run
 run npm run --silent build
-# 지도 원본 재생성 시험은 원본 폴더가 있을 때만 돈다.
+# 그림 도구와 지도 생성 시험. 지도 원본 재생성 시험은 원본 폴더(SCITRADE_MAP_SOURCES, 없으면 저장소 옆 map/)가 있을 때만 돈다.
 run python3 tools/art/test_pixel_tools.py
 run python3 -m unittest discover -s scripts -p 'test_*.py'
 run python3 tools/test_validate_data.py

@@ -21,6 +21,10 @@ if [[ -e "$output" ]]; then
   if [[ -n "$(find "$output" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then echo '출력 폴더가 비어 있지 않습니다. 지우지 않습니다'; exit 2; fi
 fi
 state="$(git status --porcelain=v1 --untracked-files=normal)"
+# public/ 아래의 무시된 파일(.env.local, .DS_Store 등)도 Vite가 그대로 복사하므로 깨끗하지 않은 트리로 본다(Claude 검수).
+ignored_public="$(git ls-files --others --ignored --exclude-standard -- public)"
+if [[ -n "$ignored_public" ]]; then state="${state:+$state
+}$(printf '%s\n' "$ignored_public" | sed 's/^/!! /')"; fi
 tree=clean
 if [[ -n "$state" ]]; then
   if ! "$dirty_allowed"; then printf '%s\n' "$state" | sed -n '1,20p'; echo '작업 트리가 깨끗하지 않습니다. 커밋한 뒤 다시 실행하세요'; exit 3; fi
