@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 112567,
-      "sha256": "84139ea9731282131c6e045a77a5aca0fc1f73c4828ac846e7bef6fc303e0be9"
+      "size_bytes": 118699,
+      "sha256": "6d72b8492359f7d9c99b82e74cdc215ca6de11d741cd5597b258323cbd8f7981"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,13 +182,13 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 12939,
-      "sha256": "97cfd9036dbedd70119d35af1aa3cda11c0e81872edf42e95743466269233389"
+      "size_bytes": 14228,
+      "sha256": "3a424fec48601fa721f6f4a348899096da8f0815010a1d359a5d20c5fb9e46af"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
-      "size_bytes": 9752,
-      "sha256": "8aebf9af263c5ad6c6989d722cc9c0712745d362e1555c09a6decdd7c3306a88"
+      "size_bytes": 15856,
+      "sha256": "572db7dc8352221573235cf8941b8353f5fbcf45702e993e06d13c6f4bba418f"
     },
     {
       "path": "docs/STATUS.md",
@@ -387,8 +387,8 @@
     },
     {
       "path": "docs/ai/tasks/results/CLASSIC-INSIGHTS-2026-10-08.md",
-      "size_bytes": 6832,
-      "sha256": "b92c5a1051e89348efba276350add72875187d41c55832688d8735cbe42295f1"
+      "size_bytes": 7571,
+      "sha256": "edeadf4b752b420404db8aeb495533a926464c2e6f407aadf25796480ee45d54"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
