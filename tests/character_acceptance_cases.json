@@ -169,19 +169,19 @@
       "setup": {
         "employee_id": "CHAR-FIXTURE-01",
         "department": "운영사업부",
-        "permanent_team": "물류팀",
+        "permanent_team": "물류운영팀",
         "project_slot_limit": 3,
         "interval_convention": "start_day 포함, end_day 제외",
         "existing_active_reservations": []
       },
       "actions": [
         "직원을 프로젝트 A에 편성하고 실제 업무를 [2, 5)일에 예약한다.",
-        "상설 부서와 물류팀 소속을 유지한 상태에서 프로젝트 B의 [3, 4)일 업무 예약을 요청한다.",
+        "상설 부서와 물류운영팀 소속을 유지한 상태에서 프로젝트 B의 [3, 4)일 업무 예약을 요청한다.",
         "프로젝트 C의 [5, 6)일 업무 예약을 요청한다."
       ],
       "expected": {
         "department": "운영사업부",
-        "permanent_team": "물류팀",
+        "permanent_team": "물류운영팀",
         "project_a_reservation": "ACCEPTED",
         "project_b_overlapping_reservation": "REJECTED_WITHOUT_STATE_MUTATION",
         "project_c_nonoverlapping_reservation": "ACCEPTED",
