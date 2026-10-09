@@ -1,6 +1,10 @@
 // 테스트와 화면 자동 진행에서 함께 쓰는 실행 도우미.
 
-import { commitDay, openDay } from './engine';
+import { commitDay, openDay, planCommands, planState } from './engine';
+import { listSailings, offerOf, routeBetween } from './catalog';
+import { isAvailableFromToday } from './employees';
+import { runningTaskOf } from './reservations';
+import { tradePairs } from './reports';
 import type { Command, CommandResult, GameState, ScenarioConfig } from './types';
 
 export type DayScript = Record<number, Command[]>;
@@ -36,4 +40,39 @@ export function standardDayOneCommands(config: ScenarioConfig): Command[] {
     { id: 'CMD-ASSIGN', type: 'ASSIGN_TASK', taskId: 'TASK001', employeeId: employee.id },
     { id: 'CMD-BOOK', type: 'BOOK_SAILING', contractId: 'CT001', sailingId: `${route.id}-D002` },
   ];
+}
+
+/**
+ * 견적·도시 ID를 모르는 첫날 정책. 직접 무역 쌍 → 운송 주선 견적 순으로 시도한다.
+ * 앞 명령을 반영한 상태에서 첫 근무 직원과 첫 출항편을 함께 확정한다(REF-02).
+ * 거절된 후보는 다른 직원으로 재시도하지 않는다. 입력 상태는 바꾸지 않는다.
+ */
+export function acceptAllFeasible(state: GameState, config: ScenarioConfig, idPrefix = 'AUTO'): Command[] {
+  const selected: Command[] = [];
+  const candidates = [
+    ...tradePairs(config).map((pair) => ({
+      from: offerOf(config, pair.buyOfferId)!.cityId, to: offerOf(config, pair.sellOfferId)!.cityId,
+      command: { type: 'ACCEPT_TRADE' as const, ...pair },
+    })),
+    ...config.offers.filter((o) => o.kind === 'forwarding').map((o) => ({
+      from: o.cityId, to: o.destinationCityId, command: { type: 'ACCEPT_FORWARDING' as const, offerId: o.id },
+    })),
+  ];
+  for (const candidate of candidates) {
+    const planned = planState(state, config, selected).state;
+    const employee = config.employees.find((e) => isAvailableFromToday(planned, e.id)
+      && planned.employees.find((p) => p.id === e.id)?.locationCityId === candidate.from && !runningTaskOf(planned, e.id));
+    const route = candidate.to && routeBetween(config, candidate.from, candidate.to);
+    const sailing = route && listSailings(config, route.id, state.day + 1)[0];
+    if (!employee || !sailing) continue;
+    const command: Command = { ...candidate.command, id: `${idPrefix}-D${state.day}-${selected.length + 1}`,
+      plan: { employeeId: employee.id, sailingId: sailing.id } };
+    if (planCommands(state, config, [...selected, command]).at(-1)?.status === 'APPLIED') selected.push(command);
+  }
+  return selected;
+}
+
+/** 현재 날짜부터 캠페인 마지막 날까지 마감한다. */
+export function runToCampaignEnd(state: GameState, config: ScenarioConfig, script: DayScript = {}): ReturnType<typeof runDays> {
+  return runDays(state, config, config.campaignDays, script);
 }

@@ -1,8 +1,10 @@
 // 상태에서 계산하는 보고 값. 별도의 현금·이익을 저장하지 않는다.
 
-import { dutyEstimate, listSailings, offerOf, routeBetween } from './catalog';
+import { dutyEstimate, listSailings, offerOf, routeBetween, routeOf } from './catalog';
 import { contractAmount, summarize, type BookSummary } from './ledger';
-import type { Contract, GameState, ScenarioConfig } from './types';
+import { cashReservations, spaceShortfall } from './reservations';
+import type { Currency } from './money';
+import type { Contract, ContractKind, GameState, ScenarioConfig } from './types';
 
 export interface ContractReport {
   contract: Contract;
@@ -169,4 +171,182 @@ export function tradePairs(config: ScenarioConfig): { buyOfferId: string; sellOf
     }
   }
   return pairs;
+}
+
+export interface DeliveryFilter {
+  currency?: Currency;
+  kind?: ContractKind;
+  /** 고객 또는 공급자 ID와 일치하는 계약. */
+  partyId?: string;
+}
+
+export interface OnTimeDelivery {
+  delivered: number;
+  onTime: number;
+  late: number;
+  /** 정시 건수 × 10000 ÷ 인도 건수의 내림. 인도 실적이 없으면 null. */
+  rateBasisPoints: number | null;
+  /** 분모에서 제외하는 납기 경과 미인도 계약. */
+  pastDeadlineUndelivered: number;
+}
+
+export function onTimeDeliveryRate(s: GameState, filter: DeliveryFilter = {}): OnTimeDelivery {
+  let onTime = 0;
+  let late = 0;
+  let pastDeadlineUndelivered = 0;
+  for (const c of s.contracts) {
+    if (c.status === 'CANCELLED'
+      || (filter.currency !== undefined && c.currency !== filter.currency)
+      || (filter.kind !== undefined && c.kind !== filter.kind)
+      || (filter.partyId !== undefined && c.customerId !== filter.partyId && c.supplierId !== filter.partyId)) continue;
+    if (c.deliveredDay === null) {
+      if (c.deliveryDeadlineDay < s.day) pastDeadlineUndelivered++;
+    } else if (c.deliveredDay <= c.deliveryDeadlineDay) onTime++;
+    else late++;
+  }
+  const delivered = onTime + late;
+  return { delivered, onTime, late, rateBasisPoints: delivered ? Math.floor(onTime * 10000 / delivered) : null, pastDeadlineUndelivered };
+}
+
+export type UpcomingPaymentKind = 'OVERDUE' | 'WAGE' | 'FREIGHT' | 'DUTY';
+
+export interface UpcomingPayment {
+  kind: UpcomingPaymentKind;
+  currency: Currency;
+  amountMinor: number;
+  /** 발생일·급여일·예약 마감일·도착 예정일. 미정이면 null. */
+  day: number | null;
+  trigger: 'AUTO' | 'ON_BOOKING' | 'OVERDUE';
+  contractId: string | null;
+  employeeIds: string[];
+  /** (kind, sourceId)로 행을 식별한다. 급여는 날짜와 통화를 함께 쓴다. */
+  sourceId: string;
+  labelKo: string;
+}
+
+/** 표시용 지급 일정. 급여를 계약 자금 예약에 추가하지 않는다. */
+export function upcomingPayments(
+  s: GameState,
+  config: ScenarioConfig,
+  throughDay: number = Math.min(config.campaignDays, s.day + 6),
+): UpcomingPayment[] {
+  const overdue: UpcomingPayment[] = s.obligations.filter((o) => o.paidDay === null).map((o) => ({
+    kind: 'OVERDUE', currency: o.currency, amountMinor: o.amountMinor, day: o.incurredDay,
+    trigger: 'OVERDUE', contractId: null, employeeIds: [], sourceId: o.id, labelKo: `미지급: ${o.reasonKo}`,
+  }));
+  overdue.sort((a, b) => a.day! - b.day! || compareText(a.sourceId, b.sourceId));
+  if (s.phase === 'ENDED') return overdue;
+
+  const rows: UpcomingPayment[] = [];
+  for (let day = s.day; day <= throughDay; day++) {
+    const wages = new Map<Currency, UpcomingPayment>();
+    for (const emp of s.employees) {
+      if (emp.employmentStatus !== 'employed' || emp.availableFromDay > day) continue;
+      const def = config.employees.find((e) => e.id === emp.id);
+      if (!def || def.salaryPerDayMinor <= 0) continue;
+      let row = wages.get(def.salaryCurrency);
+      if (!row) {
+        row = { kind: 'WAGE', currency: def.salaryCurrency, amountMinor: 0, day, trigger: 'AUTO',
+          contractId: null, employeeIds: [], sourceId: `WAGE-D${String(day).padStart(3, '0')}-${def.salaryCurrency}`, labelKo: '' };
+        wages.set(def.salaryCurrency, row);
+      }
+      row.amountMinor += def.salaryPerDayMinor;
+      row.employeeIds.push(emp.id);
+    }
+    for (const row of wages.values()) {
+      row.labelKo = `${row.employeeIds.length}명 급여`;
+      rows.push(row);
+    }
+  }
+  for (const reservation of cashReservations(s, config)) {
+    const c = s.contracts.find((c) => c.id === reservation.contractId)!;
+    let day: number | null = null;
+    if (reservation.kind === 'FREIGHT') {
+      const route = routeBetween(config, c.originCityId, c.destinationCityId);
+      const sailing = route && listSailings(config, route.id, s.day + 1)
+        .find((sailing) => spaceShortfall(s, config, sailing, c.goodId, c.quantity) === null);
+      if (sailing) day = sailing.departureDay - 1;
+    } else {
+      const shipment = s.shipments.find((sh) => sh.contractId === c.id);
+      const booking = s.bookings.find((b) => b.id === c.bookingId && b.status !== 'CANCELLED');
+      if (shipment) day = Math.max(shipment.scheduledArrivalDay, s.day);
+      else if (booking) day = booking.departureDay + routeOf(config, booking.routeId).transitDays;
+    }
+    if (day !== null && day > throughDay) continue;
+    rows.push({ ...reservation, day, trigger: reservation.kind === 'FREIGHT' ? 'ON_BOOKING' : 'AUTO',
+      employeeIds: [], sourceId: c.id,
+      labelKo: reservation.kind === 'FREIGHT' ? `${c.id} 운임 (예약 때 선지급)` : `${c.id} 수입 관세 (도착 때)`,
+    });
+  }
+  const order = { OVERDUE: 0, WAGE: 1, FREIGHT: 2, DUTY: 3 };
+  rows.sort((a, b) => (a.day === null ? Infinity : a.day) - (b.day === null ? Infinity : b.day)
+    || order[a.kind] - order[b.kind] || compareText(a.currency, b.currency) || compareText(a.sourceId, b.sourceId));
+  return [...overdue, ...rows];
+}
+
+/** 실행 환경의 로케일에 영향을 받지 않는 ID·통화 정렬. */
+function compareText(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export interface CurrencyStanding {
+  currency: Currency;
+  cash: number;
+  inventory: number;
+  prepaidFreight: number;
+  forwardingWip: number;
+  accountsReceivable: number;
+  accountsPayable: number;
+  totalAssets: number;
+  /** 자산 합계 − 미지급금 = 시작 자본 + 누적 손익. */
+  netAssets: number;
+  openingEquity: number;
+  profit: number;
+  /** 취소 계약을 포함한 이 통화 계약의 기여이익 합계. */
+  contractContribution: number;
+}
+
+export interface CampaignSummary {
+  ended: boolean;
+  campaignDays: number;
+  lastClosedDay: number;
+  byCurrency: CurrencyStanding[];
+  onTime: OnTimeDelivery;
+  contracts: { total: number; completed: number; awaitingPayment: number; inProgress: number; cancelled: number };
+  openInvoices: { invoiceId: string; contractId: string; currency: Currency; amountMinor: number; dueDay: number }[];
+  unpaidObligations: { obligationId: string; currency: Currency; amountMinor: number; incurredDay: number; reasonKo: string }[];
+}
+
+/** 호출한 순간의 장부와 계약을 읽는다. 통화 환산·실패 판정·수금 예측은 하지 않는다. */
+export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignSummary {
+  const currencies = [...new Set([config.tradeCurrency, config.payrollCurrency,
+    ...s.ledger.entries.map((e) => e.currency).sort(compareText)])];
+  const byCurrency = currencies.map((currency): CurrencyStanding => {
+    const b = summarize(s.ledger, currency);
+    return {
+      currency, cash: b.cash, inventory: b.inventory, prepaidFreight: b.prepaidFreight, forwardingWip: b.forwardingWip,
+      accountsReceivable: b.accountsReceivable, accountsPayable: b.accountsPayable, totalAssets: b.totalAssets,
+      netAssets: b.totalAssets - b.accountsPayable, openingEquity: b.openingEquity, profit: b.profit,
+      contractContribution: s.contracts.filter((c) => c.currency === currency)
+        .reduce((sum, c) => sum + contractReport(s, c).contribution, 0),
+    };
+  });
+  const contracts = { total: s.contracts.length, completed: 0, awaitingPayment: 0, inProgress: 0, cancelled: 0 };
+  for (const c of s.contracts) {
+    if (c.status === 'COMPLETED') contracts.completed++;
+    else if (c.status === 'CANCELLED') contracts.cancelled++;
+    else if (c.deliveredDay !== null) contracts.awaitingPayment++;
+    else contracts.inProgress++;
+  }
+  return {
+    ended: s.phase === 'ENDED', campaignDays: config.campaignDays,
+    lastClosedDay: s.closedDays.reduce((last, day) => Math.max(last, day), 0), byCurrency,
+    onTime: onTimeDeliveryRate(s), contracts,
+    openInvoices: s.invoices.filter((i) => i.status !== 'PAID').map((i) => ({
+      invoiceId: i.id, contractId: i.contractId, currency: i.currency, amountMinor: i.amountMinor, dueDay: i.dueDay,
+    })).sort((a, b) => a.dueDay - b.dueDay || compareText(a.invoiceId, b.invoiceId)),
+    unpaidObligations: s.obligations.filter((o) => o.paidDay === null).map((o) => ({
+      obligationId: o.id, currency: o.currency, amountMinor: o.amountMinor, incurredDay: o.incurredDay, reasonKo: o.reasonKo,
+    })).sort((a, b) => a.incurredDay - b.incurredDay || compareText(a.obligationId, b.obligationId)),
+  };
 }
