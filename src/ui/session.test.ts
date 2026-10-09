@@ -42,3 +42,36 @@ describe('화면 초기화와 저장 읽기', () => {
     expect(state).toEqual(before); expect(commands).toHaveLength(1);
   });
 });
+
+// 알림 객체와 엔진 상태의 동일성을 순수 함수로 확인한다.
+describe('TASK-0018 알림과 저장 기준', () => {
+  it.each(['새 알림','같은 객체','성장만','알림과 성장','문화 결과','성장 새로움 없음'])('nextAnnouncement %s', async (kind) => {
+    const { nextAnnouncement } = await import('./session');
+    const flash = {kind:'info' as const,text:'새 알림'};
+    const input = {flash:null as ReturnType<typeof initialUiState>['flash'],announcedFlash:null as ReturnType<typeof initialUiState>['flash'],growthFresh:false,growthNotices:['동료 +60 경험치'],growthDay:3};
+    const growth='3일 하루 진행 — 경험치·레벨 변화: 동료 +60 경험치';
+    let expected:string|null=null;
+    if(kind==='새 알림') {input.flash=flash;expected=flash.text;}
+    if(kind==='같은 객체') {input.flash=flash;input.announcedFlash=flash;}
+    if(kind==='성장만') {input.growthFresh=true;expected=growth;}
+    if(kind==='알림과 성장') {input.flash=flash;input.growthFresh=true;expected=flash.text+' '+growth;}
+    if(kind==='문화 결과') {input.flash={...flash,action:'culture-result'};input.growthFresh=true;expected=flash.text;}
+    expect(nextAnnouncement(input)).toBe(expected);
+    expect(nextAnnouncement({...input,flash:null,growthDay:null,growthFresh:true})).toBeNull();
+    expect(nextAnnouncement({...input,flash:null,growthNotices:[],growthFresh:true})).toBeNull();
+  });
+  it('liveRegionText는 같은 글의 끝 공백을 붙였다 뗀다', async () => {
+    const {liveRegionText}=await import('./session');
+    expect(liveRegionText('앞','뒤')).toBe('뒤');
+    expect(liveRegionText('같음','같음')).toBe('같음\u00a0');
+    expect(liveRegionText('같음\u00a0','같음')).toBe('같음');
+  });
+  it('hasUnsavedWork는 대기 명령과 저장한 객체를 비교한다', async () => {
+    const {hasUnsavedWork}=await import('./session');
+    const state=initial();
+    expect(hasUnsavedWork([{id:'대기',type:'START_TRAINING',employeeId:config.employees[0]!.id}],state,state)).toBe(true);
+    expect(hasUnsavedWork([],state,state)).toBe(false);
+    expect(hasUnsavedWork([],structuredClone(state),state)).toBe(true);
+    expect(hasUnsavedWork([],state,null)).toBe(true);
+  });
+});

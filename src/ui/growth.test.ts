@@ -99,7 +99,7 @@ describe('성장 기록과 훈련',()=>{
     const before=openDay(createGame(cfg),cfg).state,after=commitDay(before,cfg,[train]).state;
     const report=krwReportRows(companyReport(after,cfg),cfg);
     expect(report).toContain('<th>훈련비</th><td>−20,000원</td>');expect(report).toContain('<th>급여</th><td>−10,000원</td>');expect(report).toContain('<th>현금</th><td>470,000원</td>');
-    const status=growthStatus(growthMessages(before,after,cfg),before.day);expect(status).toContain('role="status"');expect(status.match(/\+60 경험치/g)).toHaveLength(1);
+    const status=growthStatus(growthMessages(before,after,cfg),before.day);expect(status).not.toContain('role=');expect(status.match(/\+60 경험치/g)).toHaveLength(1);
     expect(growthMessages(after,after,cfg)).toEqual([]);
   });
   it('M1은 상세·훈련·경험치를 표시하지 않는다',()=>{
@@ -112,5 +112,31 @@ describe('성장 기록과 훈련',()=>{
     expect(FOCUS_FALLBACK_SELECTORS).toEqual(['.employee-detail','.recruit-site','.recruit-candidate']);
     expect(focusFallbackIds({action:'train',emp:'EMP01'})[0]).toBe('growth-h-EMP01');
     expect(focusFallbackIds({action:'scout'},'site-h-VEN_PORT')).toEqual(['site-h-VEN_PORT','queue-h']);
+  });
+});
+
+describe('TASK-0018 훈련 지급 가능일',()=>{
+  it('캠페인 끝·없음·날짜를 표시한다',async()=>{
+    const {payrollRunwayKo}=await import('./growth');
+    expect(payrollRunwayKo(null,1,config.campaignDays)).toBe(`${config.campaignDays}일(캠페인 끝)까지`);
+    expect(payrollRunwayKo(0,1,config.campaignDays)).toBe('없음');
+    expect(payrollRunwayKo(3,1,config.campaignDays)).toBe('3일까지');
+  });
+  it.each(['훈련 뒤에만 미지급','지금도 미지급','대기 훈련도 미지급'])('%s',(kind)=>{
+    const cfg=structuredClone(config);
+    const wage=cfg.employees.filter((e)=>!cfg.recruitment!.candidateEmployeeIds.includes(e.id)).reduce((sum,e)=>sum+e.salaryPerDayMinor,0);
+    const fee=cfg.growth!.ordinaryTraining.feeMinor;
+    cfg.startingCash.KRW=wage+(kind==='훈련 뒤에만 미지급' ? fee : 0)-1;
+    let state=openDay(createGame(cfg),cfg).state;
+    if(kind==='대기 훈련도 미지급') {
+      cfg.startingCash.KRW=wage+fee-1;
+      state=planState(openDay(createGame(cfg),cfg).state,cfg,[train]).state;
+    }
+    const html=trainingBlock(state,cfg,cfg.employees[0]!,kind==='대기 훈련도 미지급');
+    expect(html).toContain(kind==='훈련 뒤에만 미지급' ? '→ 훈련하면 없음' : '지금 없음');
+    expect(html).toContain(`⚠ ${kind==='훈련 뒤에만 미지급' ? '이 훈련비를 내면' : '지금도'} 오늘(1일) 급여 일부가 미지급으로 남습니다.`);
+    expect(html).not.toContain('급여는 훈련비와 별도로 평소대로 지급합니다.');
+    expect(html).not.toMatch(/(?<!\d)0일까지/);
+    if(kind==='대기 훈련도 미지급') expect(html).not.toContain('훈련하면');
   });
 });

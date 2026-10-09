@@ -29,6 +29,11 @@ function gainsKo(before:Record<string,number>|null, after:Record<string,number>|
     .map((id)=>`${statKo(id)} +${after[id]!-(before[id] ?? 0)}`).join(', ');
 }
 
+/** null이면 캠페인 끝까지, 오늘보다 앞이면 ‘없음’. */
+export function payrollRunwayKo(day: number | null, today: number, campaignDays: number): string {
+  return day === null ? `${campaignDays}일(캠페인 끝)까지` : day < today ? '없음' : `${day}일까지`;
+}
+
 export function trainingBlock(state:GameState, config:ScenarioConfig, def:EmployeeDef, trainingQueued=false): string {
   if (!config.growth) return '';
   const preview=trainingPreview(state,config,def.id);
@@ -44,15 +49,19 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
   const change = current && preview.levelAfter !== current.level
     ? `완료하면 레벨 ${preview.levelAfter}${gains ? ` (${gains})` : ''}`
     : progress?.xpToNext === null ? '레벨 변화 없음 — 최대 레벨' : `레벨 변화 없음 — 다음 레벨까지 ${progress?.xpToNext ?? '확인 불가'}`;
-  const runway=(day:number|null)=>day===null ? `${config.campaignDays}일(캠페인 끝)까지` : `${day}일까지`;
+  const runway=(day:number|null)=>payrollRunwayKo(day,state.day,config.campaignDays);
+  const before=payrollRunwayDay(state,config), after=payrollRunwayDay(state,config,preview.fee.minor);
+  const already=before !== null && before < state.day;
+  const unpaid=training ? already : (after !== null && after < state.day);
   const money=(amount:number)=>esc(formatMoney(preview.fee.currency,amount));
   return `<div class="training"><h4>일반 훈련</h4>
     <p>훈련비 ${money(preview.fee.minor)} · 기간 ${preview.durationDays}일 · 완료 시 +${preview.xpGain} 경험치</p>
     <p>레벨·능력이 올라도 하루 처리량은 ${def.workUnitsPerDay}pt 그대로입니다. ${preview.durationDays === 1 ? '훈련하는 날은' : `훈련하는 ${preview.durationDays}일 동안`} 다른 업무를 맡을 수 없습니다.</p>
-    <p>급여는 훈련비와 별도로 평소대로 지급합니다.</p>
+    ${unpaid ? '' : '<p>급여는 훈련비와 별도로 평소대로 지급합니다.</p>'}
     ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
-    <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
+    <p>원화 급여 지급 가능일: 지금 ${runway(before)}${training ? '' : ` → 훈련하면 ${runway(after)}`}</p>
+    ${unpaid ? `<p class="reason">⚠ ${already ? '지금도' : '이 훈련비를 내면'} 오늘(${state.day}일) 급여 일부가 미지급으로 남습니다.</p>` : ''}
     ${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}
     ${training ? trainingQueued
       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
@@ -100,6 +109,6 @@ export function growthMessages(before:GameState,after:GameState,config:ScenarioC
   });
 }
 
-export function growthStatus(messages:string[], day:number, announce=true):string {
-  return messages.length ? `<div class="growth-notices"${announce ? ' role="status"' : ''}><h3 class="small">${day}일 하루 진행 — 경험치·레벨 변화</h3>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
+export function growthStatus(messages:string[], day:number):string {
+  return messages.length ? `<div class="growth-notices"><h3 class="small">${day}일 하루 진행 — 경험치·레벨 변화</h3>${messages.map((message)=>`<p>${esc(message)}</p>`).join('')}</div>` : '';
 }

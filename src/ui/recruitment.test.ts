@@ -346,3 +346,43 @@ describe('TASK-0005 접근 이름과 면담 값', () => {
     expect(html).toContain(esc(result.reasonKo));expect(html).toContain('미지급 급여가 남아 있어');
   });
 });
+
+describe('TASK-0018 고용 뒤 원화 미리 보기',()=>{
+  it('고용 가능이면 사본의 사용액과 더 이른 지급 가능일을 보이고 입력을 보존한다',async()=>{
+    const {fundsPosition}=await import('../engine/reservations');
+    const {payrollRunwayDay}=await import('../engine/previews');
+    const {payrollRunwayKo}=await import('./growth');
+    const {formatMoney}=await import('../engine/money');
+    const s=ready(),before=structuredClone(s);
+    const command={id:'고용 미리 보기',type:'HIRE_CANDIDATE' as const,candidateId:hired.id};
+    // 기존에 처리한 미리 보기 ID와 충돌해도 새 명령으로 계산한다.
+    s.processedCommands[`PREVIEW-HIRE-AFTER-${hired.id}`]= {...check(s)(command),status:'APPLIED',day:s.day,type:command.type};
+    const unchanged=structuredClone(s),after=planState(s,config,[command]).state;
+    const available=(state:GameState)=>fundsPosition(state,config,'KRW').available;
+    const day=(state:GameState)=>payrollRunwayDay(state,config);
+    const runway=(state:GameState)=>payrollRunwayKo(day(state),s.day,config.campaignDays);
+    const html=interviewBlock(s,config,hired,check(s)(command));
+    expect(html.match(/class="hire-after"/g)).toHaveLength(2);
+    expect(html).toContain(`고용하면 원화 사용 가능액: 지금 ${formatMoney('KRW',available(s))} → 고용 뒤 ${formatMoney('KRW',available(after))}`);
+    expect(available(after)).toBe(available(s)-hired.salaryPerDayMinor*config.recruitment!.signingFeeWageDays);
+    expect(html).toContain(`원화 급여 지급 가능일: 지금 ${runway(s)} → 고용하면 ${runway(after)}`);
+    expect(day(after)!).toBeLessThan(day(s)!);
+    expect(s).toEqual(unchanged);expect(before.employees).toEqual(s.employees);
+  });
+  it('고용 대기는 반영한 지급 가능일 하나만 표시한다',async()=>{
+    const {payrollRunwayDay}=await import('../engine/previews');
+    const {payrollRunwayKo}=await import('./growth');
+    const s=planState(ready(),config,[{id:'고용',type:'HIRE_CANDIDATE',candidateId:hired.id}]).state;
+    const html=interviewBlock(s,config,hired,check(s)({id:'중복',type:'HIRE_CANDIDATE',candidateId:hired.id}),true,'고용 예정');
+    expect(html.match(/class="hire-after"/g)).toHaveLength(1);
+    expect(html).toContain(`원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(s,config),s.day,config.campaignDays)} (오늘 할 일의 고용 반영)`);
+    expect(html).not.toContain('고용하면 원화');
+  });
+  it('원화가 부족하면 새 줄을 표시하지 않는다',()=>{
+    const cfg=structuredClone(config);cfg.startingCash.KRW=0;
+    const s=ready();s.ledger=createGame(cfg).ledger;
+    const result=planState(s,cfg,[{id:'고용',type:'HIRE_CANDIDATE',candidateId:hired.id}]).results[0]!;
+    expect(result.status).toBe('REJECTED');
+    expect(interviewBlock(s,cfg,hired,result)).not.toContain('hire-after');
+  });
+});

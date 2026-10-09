@@ -50,10 +50,10 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
   const progress = config.growth ? levelProgress(state, config, def.id) : null;
   const level = progress?.level ?? levelFor(state.employees.find((e) => e.id === def.id)!.xp);
   return `
-  <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0"
+  <article class="card attr-bg-${esc(def.character.attribute ?? 'none')} ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(def.id)}" tabindex="0" role="button" aria-pressed="${selected}"
     aria-label="${esc(def.nameKo)} 직원 카드, ${esc(roleKo)}, 레벨 ${level}, ${esc(schedule)}">
     <header class="card-top">
-      <span class="card-name">${esc(def.nameKo)}</span>
+      <span class="card-name">${esc(def.nameKo)}</span>${selected ? '<span class="card-picked">✓ 선택됨</span>' : ''}
       ${attributeChip(def.character.attribute)}
     </header>
     <div class="card-art">

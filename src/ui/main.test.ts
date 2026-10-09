@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import legacySave from '../engine/fixtures/save-v4-m2.json';
-import { loadScenario } from '../content/scenario';
+import { assumptionNotes, loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { serializeSave } from '../engine/save';
 import { runDays, standardDayOneCommands } from '../engine/testkit';
@@ -193,7 +193,8 @@ describe('A 실제 화면 연결',()=>{
   });
   it.each(['restart','scenario'])('%s 뒤 지난 게임의 flash 알림을 비운다',async(mode)=>{
     const ui=await startUi();ui.click({action:'scout',venue:'VEN_PORT'});
-    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info" role="status">오늘 할 일에 넣었습니다.');
+    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info">오늘 할 일에 넣었습니다.');
+    expect(ui.announcements.at(-1)).toContain('오늘 할 일에 넣었습니다.');
     if(mode==='restart')ui.click({action:'restart'});
     else await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
     expect(ui.app.innerHTML).not.toContain('class="flash');
@@ -362,7 +363,8 @@ describe('B 실제 성장 화면 연결',()=>{
     const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">1일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p>');
-    expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
+    expect(ui.announcements.at(-1)).toContain(growthNotice(ui.app.innerHTML)![2]!.includes('2일 하루 진행') ? '2일 하루 진행 — 경험치·레벨 변화:' : '1일 하루 진행 — 경험치·레벨 변화:');
+    expect(ui.announcements.at(-1)).toContain('+60 경험치');
     const queue=()=>ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
     expect(queue().indexOf('대기 중인 명령이 없습니다.')).toBeLessThan(queue().indexOf('class="growth-notices"'));
     ui.click({action:'train',emp:'EMP01'});
@@ -372,21 +374,27 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(queue().indexOf('class="flash')).toBeLessThan(queue().indexOf('<ol class="pending">'));
     ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p>');
-    expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
+    expect(ui.announcements.at(-1)).toContain(growthNotice(ui.app.innerHTML)![2]!.includes('2일 하루 진행') ? '2일 하루 진행 — 경험치·레벨 변화:' : '1일 하루 진행 — 경험치·레벨 변화:');
+    expect(ui.announcements.at(-1)).toContain('+60 경험치');
   });
   it('하루 진행 예외 뒤 이전 성장 알림은 날짜와 함께 남고 다시 읽지 않는다',async()=>{
     const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     const notice=growthNotice(ui.app.innerHTML)![2];
     expect(notice).toContain('1일 하루 진행 — 경험치·레벨 변화');expect(notice).toContain('귀솔 +60 경험치');
-    expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
+    expect(ui.announcements.at(-1)).toContain(growthNotice(ui.app.innerHTML)![2]!.includes('2일 하루 진행') ? '2일 하루 진행 — 경험치·레벨 변화:' : '1일 하루 진행 — 경험치·레벨 변화:');
+    expect(ui.announcements.at(-1)).toContain('+60 경험치');
     const engine=await import('../engine/engine');
     vi.spyOn(engine,'commitDay').mockImplementation(()=>{throw new Error('결산 검증 실패');});
+    const beforeFailure=ui.announcements.length;
     ui.click({action:'end-day'});
+    expect(ui.announcements).toHaveLength(beforeFailure+1);
     expect(ui.app.innerHTML).toContain('하루 진행에 실패했습니다: 결산 검증 실패');
     expect(ui.app.innerHTML).toContain('<b>2일</b>');
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toMatch(/role="status"|aria-live/);
+    expect(ui.announcements.at(-1)).toBe('하루 진행에 실패했습니다: 결산 검증 실패');
+    expect(ui.announcements.at(-1)).not.toContain('경험치');
   });
   it('경험치·레벨 변화 없는 다음 하루를 성공적으로 진행하면 이전 성장 알림을 비운다',async()=>{
     const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
@@ -529,39 +537,54 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(detail).not.toContain('훈련 뒤');expect(detail).not.toContain('훈련하면');
     expect(detail).toContain('◆ 교육 중 0/1일 — 훈련비 50,000원 반영됨. 완료하면 +60 경험치');
     ui.doc.activeElement=null;ui.click({action:'end-day'});
-    const status=()=>ui.app.innerHTML.match(/<div class="growth-notices" role="status">([\s\S]*?)<\/div>/)?.[1];
+    const status=()=>growthNotice(ui.app.innerHTML)?.[2];
     expect(status()).toBe('<h3 class="small">1일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p><p>귀솔 레벨 2 달성 (교섭 +2, 협업 +1)</p>');
     expect(status()!.match(/\+60 경험치/g)).toHaveLength(1);
     expect(status()!.match(/레벨 2 달성/g)).toHaveLength(1);
+    expect(ui.announcements.at(-1)).toContain('귀솔 +60 경험치, 귀솔 레벨 2 달성 (교섭 +2, 협업 +1)');
     const notice=growthNotice(ui.app.innerHTML)![2];
+    const beforeSelect=ui.announcements.length;
     ui.click({action:'select-card',emp:'EMP02'});
+    expect(ui.announcements).toHaveLength(beforeSelect);
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('role="status"');
     expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('aria-live');
+    const beforeDetail=ui.announcements.length;
     ui.click({action:'detail',emp:'EMP02'});
+    expect(ui.announcements).toHaveLength(beforeDetail);
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('role="status"');
     expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('aria-live');
     ui.click({action:'train',emp:'EMP02'});
+    const beforeUnqueue=ui.announcements.length;
     ui.click({action:'unqueue',index:'0'});
+    expect(ui.announcements).toHaveLength(beforeUnqueue);
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toMatch(/role="status"|aria-live/);
+    const beforeFilter=ui.announcements.length;
     ui.click({action:'crew-filter',filter:'busy'});
+    expect(ui.announcements).toHaveLength(beforeFilter);
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe(notice);
     expect(growthNotice(ui.app.innerHTML)![1]).not.toMatch(/role="status"|aria-live/);
     ui.click({action:'train',emp:'EMP02'});ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>물보리 +60 경험치</p>');
-    expect(growthNotice(ui.app.innerHTML)![1]).toContain('role="status"');
+    expect(ui.announcements.at(-1)).toContain(growthNotice(ui.app.innerHTML)![2]!.includes('2일 하루 진행') ? '2일 하루 진행 — 경험치·레벨 변화:' : '1일 하루 진행 — 경험치·레벨 변화:');
+    expect(ui.announcements.at(-1)).toContain('+60 경험치');
     const storage:Record<string,string>={};
     vi.stubGlobal('localStorage',{setItem:(key:string,value:string)=>{storage[key]=value;},getItem:(key:string)=>storage[key]});
-    ui.click({action:'save'});expect(status()).toBeUndefined();
+    const beforeSave=ui.announcements.length;
+    ui.click({action:'save'});expect(ui.announcements).toHaveLength(beforeSave+1);
+    expect(ui.announcements.at(-1)).toContain('저장했습니다.');expect(ui.announcements.at(-1)).not.toContain('경험치');
     expect(growthNotice(ui.app.innerHTML)![2]).toBe('<h3 class="small">2일 하루 진행 — 경험치·레벨 변화</h3><p>물보리 +60 경험치</p>');
-    ui.click({action:'load'});expect(status()).toBeUndefined();
+    const beforeLoad=ui.announcements.length;
+    ui.click({action:'load'});expect(ui.announcements).toHaveLength(beforeLoad+1);
+    expect(ui.announcements.at(-1)).toContain('불러왔습니다.');expect(ui.announcements.at(-1)).not.toContain('경험치');
     expect(growthNotice(ui.app.innerHTML)).toBeNull();
     expect(ui.app.innerHTML).not.toContain('aria-expanded="true" aria-controls="growth-EMP01"');
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     expect(ui.app.innerHTML).toContain('경험치 150 / 300');
-    ui.click({action:'end-day'});expect(status()).toBeUndefined();
+    const beforeNextDay=ui.announcements.length;
+    ui.click({action:'end-day'});expect(ui.announcements).toHaveLength(beforeNextDay);
     expect(growthNotice(ui.app.innerHTML)).toBeNull();
   });
   it('교육 상태는 자원·계약 배정·계획 선택에도 표시하고 제거하면 훈련 선택도 돌아온다',async()=>{
@@ -585,7 +608,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('aria-label="귀솔 직원 카드, 영업, 레벨 1, 대기 — 배정 가능"');
     expect(ui.app.innerHTML).not.toContain('주능력');
     expect(ui.app.innerHTML).toContain('업무·교육 중');
-    expect(crewNote(ui.app.innerHTML)).toBe('처리량은 고정값(LEGACY_FIXED, 하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다. 일급 80,000원.');
+    expect(crewNote(ui.app.innerHTML)).toBe('처리량은 고정값(하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이 시나리오에서 쓰지 않습니다. 일급 80,000원.');
     const table=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
     expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','운영 손익','미지급 급여','현금']);
     expect(table).not.toContain('계약금');expect(table).not.toContain('훈련비');
@@ -620,7 +643,8 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.focus).toHaveBeenCalledExactlyOnceWith({preventScroll:true});
     expect(ui.scroll).toHaveBeenCalledExactlyOnceWith({block:'start'});
     expect(ui.app.innerHTML).toContain(`id="${id}" tabindex="-1"`);
-    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info" role="status">오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.</div>');
+    expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info">오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.</div>');
+    expect(ui.announcements.at(-1)).toContain('오늘 할 일에 넣었습니다.');
     expect(ui.app.innerHTML).toContain('<p class="flash info">오늘 할 일에 넣었습니다.');
   });
   it('배정·예약은 스크롤을 요청하지 않고 같은 칸에 예정 표시와 키보드 초점을 남긴다', async() => {
@@ -889,7 +913,8 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('id="status-culture-CA01-EMP01"');
     ui.scrollIds.length=0;ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');expect(ui.scrollIds).toEqual([]);expect(ui.scrollBy).not.toHaveBeenCalled();
-    expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');expect(toast(ui.app.innerHTML)).toContain('role="status"');
+    expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');expect(ui.announcements.at(-1)).toContain('2일 현지 활동 기록: 한 상인의 포장·보관 요구 — 귀솔');
+    expect(ui.announcements.at(-1)).not.toContain('경험치');
     expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('role');
     const copy=ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
     expect(copy).toContain('<p class="flash info">2일 현지 활동 기록: 한 상인의 포장·보관 요구 — 귀솔</p>');
@@ -897,7 +922,9 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(tab(ui.app.innerHTML)).toContain('<small>닫기</small>');
     expect(ui.app.innerHTML).toMatch(/<div id="local-body">\s*<article class="cul-result"/);
     expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
+    const beforeBook=ui.announcements.length;
     ui.click({action:'culture-book'});
+    expect(ui.announcements).toHaveLength(beforeBook);
     expect(toast(ui.app.innerHTML)).toContain('결과 보기');expect(toast(ui.app.innerHTML)).not.toContain('role="status"');
   });
   it('한 바퀴(b): 닫고 진행은 스크롤 없이 새 기록 표시, 결과 보기만 제목으로 이동한다',async()=>{
@@ -1167,5 +1194,180 @@ describe('TASK-0012 M1 동작 보존',()=>{
     ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
     ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+});
+
+describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
+  const pending=(html:string)=>[...html.matchAll(/data-action="unqueue"/g)].length;
+  const culture=async(ui:Awaited<ReturnType<typeof startUi>>)=>{
+    ui.click({action:'culture-tab'});ui.click({action:'culture-act'});ui.click({action:'culture-emp'});
+  };
+  it('빼기 두 번은 명령 하나만 빼고 500ms 뒤에는 다음 명령을 뺀다',async()=>{
+    const ui=await startUi();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
+    expect(pending(ui.app.innerHTML)).toBe(2);
+    vi.advanceTimersByTime(501);
+    ui.clickNow({action:'unqueue',index:'0'},1);ui.clickNow({action:'unqueue',index:'0'},1);
+    expect(pending(ui.app.innerHTML)).toBe(1);
+    vi.advanceTimersByTime(500);ui.clickNow({action:'unqueue',index:'0'},1);
+    expect(pending(ui.app.innerHTML)).toBe(0);
+  });
+  it('빼기는 명령 ID로 찾고, 이미 빠진 명령의 단추는 아무것도 빼지 않는다',async()=>{
+    const ui=await startUi();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
+    const stale=ui.rendered({action:'unqueue',index:'0'});
+    ui.click({action:'unqueue',index:'0'});expect(pending(ui.app.innerHTML)).toBe(1);
+    vi.advanceTimersByTime(501);ui.clickTarget(stale,1);
+    expect(pending(ui.app.innerHTML)).toBe(1);
+  });
+  it.each(['detail','interview','culture-book'])('열고 닫기 두 번(%s)',async(action)=>{
+    const ui=await startUi();
+    if(action==='detail') ui.click({action:'select-card'});
+    if(action==='interview') await ui.importText(readySave());
+    if(action==='culture-book') ui.click({action:'culture-tab'});
+    vi.advanceTimersByTime(501);ui.clickNow({action},1);ui.clickNow({action},1);
+    expect(ui.app.innerHTML.match(new RegExp(`<button[^>]*data-action="${action}"[^>]*>`))![0]).toContain('aria-expanded="true"');
+    vi.advanceTimersByTime(500);ui.clickNow({action},1);
+    const button=ui.app.innerHTML.match(new RegExp(`<button[^>]*data-action="${action}"[^>]*>`))![0];
+    expect(button).toContain('aria-expanded="false"');
+  });
+  it('떠나기 전 확인은 시작·대기·진행·저장 성공과 실패·불러오기·가져오기·처음부터·내보내기를 구분한다',async()=>{
+    const ui=await startUi();
+    const leaving=(dirty:boolean)=>{
+      const ev={preventDefault:vi.fn(),returnValue:'원래'};ui.fireWindow('beforeunload',ev);
+      expect(ev.preventDefault.mock.calls.length).toBe(dirty ? 1 : 0);expect(ev.returnValue).toBe(dirty ? '' : '원래');
+    };
+    leaving(false);ui.click({action:'accept'});leaving(true);ui.click({action:'unqueue'});leaving(false);
+    ui.click({action:'end-day'});leaving(true);
+    let saved='';const setItem=vi.fn((_key:string,value:string)=>{saved=value;});
+    vi.stubGlobal('localStorage',{setItem,getItem:()=>saved});
+    ui.click({action:'save'});leaving(false);
+    ui.click({action:'end-day'});setItem.mockImplementation(()=>{throw new Error('저장 실패');});
+    ui.click({action:'save'});expect(ui.app.innerHTML).toContain('저장할 수 없습니다.');leaving(true);
+    ui.click({action:'load'});leaving(false);
+    ui.click({action:'end-day'});await ui.importText(saved);leaving(false);
+    ui.click({action:'end-day'});ui.click({action:'restart'});leaving(false);
+    ui.click({action:'end-day'});ui.click({action:'export'});leaving(false);
+    ui.click({action:'accept'});ui.click({action:'export'});leaving(true);
+    ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');leaving(false);
+  });
+  it('CSS는 가로 쓸기와 숨김 입력·건너뛰기 초점을 처리한다',async()=>{
+    const {readFileSync}=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
+    const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
+    expect(css).toContain('overscroll-behavior-x: none');
+    const hidden=css.match(/\.visually-hidden[^}]+}/)![0];
+    expect(hidden).toContain('clip-path: inset(50%)');expect(hidden).not.toContain('display: none');expect(hidden).not.toContain('visibility: hidden');
+    expect(css).toContain('.file-btn:has(> input:focus-visible)');
+    expect(css).toMatch(/\.skip-links:not\(:focus-within\)[^}]*min-height: 0/);
+    expect(css).toMatch(/\.skip-links:focus-within\s*\{[^}]*position: fixed;[^}]*top: .5rem;[^}]*left: .5rem;[^}]*z-index: 30/);
+  });
+  it('화면 코드 순서는 세 열의 거래·동료·자원·오늘 할 일·지도·보고·기록이다',async()=>{
+    const ui=await startUi();
+    const checkOrder=()=>{
+      const html=ui.app.innerHTML;
+      const trade=html.includes('<div class="maincol">') ? '<div class="maincol">' : '<section class="panel trade"';
+      const markers=['class="skip-links"','<div class="masthead">','<div class="statusbar"','</header>','<main',trade,'<aside class="panel crew"','<section class="panel resources"','<section class="panel queue"','<section class="panel world"','<section class="panel report"','<section class="panel log"'];
+      const positions=markers.map((m)=>html.indexOf(m));
+      positions.forEach((position,index)=>{expect(position).toBeGreaterThanOrEqual(0);if(index)expect(position).toBeGreaterThan(positions[index-1]!);});
+      if(html.includes('class="flash-toast')) {expect(html.indexOf('class="flash-toast')).toBeGreaterThan(html.indexOf('</header>'));expect(html.indexOf('class="flash-toast')).toBeLessThan(html.indexOf('<main'));}
+    };
+    checkOrder();ui.click({action:'map-mode',mode:'world'});checkOrder();
+    ui.click({action:'accept'});checkOrder();
+    ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');checkOrder();
+  });
+  it('건너뛰기 두 단추는 첫 정지점이며 제목으로 스크롤하고 초점을 옮긴다',async()=>{
+    const ui=await startUi();
+    expect([...ui.app.innerHTML.matchAll(/data-action="([^"]+)"/g)].slice(0,2).map((m)=>m[1])).toEqual(['skip-to','skip-to']);
+    for(const target of ['trade-h','queue-h']) {
+      ui.scrollIds.length=0;ui.focusIds.length=0;ui.focus.mockClear();
+      ui.click({action:'skip-to',target});expect(ui.scrollIds).toEqual([target]);expect(ui.focusIds).toEqual([target]);expect(ui.focus).toHaveBeenCalledExactlyOnceWith({preventScroll:true});
+    }
+  });
+  it.each(['기본','튐 없음','Tab 없음','고정 영역 밖','200ms 뒤','결과 보기','Enter 뒤'])('Shift+Tab 튐 복원(%s)',async(kind)=>{
+    const ui=await startUi();
+    if(kind==='결과 보기') {await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});}
+    ui.win.scrollY=1200;
+    if(kind!=='Tab 없음')ui.fireDoc('keydown',{key:'Tab',shiftKey:true});
+    if(kind==='200ms 뒤')vi.advanceTimersByTime(200);
+    if(kind==='Enter 뒤')ui.fireDoc('keydown',{key:'Enter'});
+    const target=ui.rendered({action:kind==='결과 보기' ? 'culture-result' : kind==='고정 영역 밖' ? 'accept' : 'end-day'});
+    // 실제 Chromium 순서: keydown → 화면 이동 → focusin(Claude 검수).
+    if(kind!=='튐 없음') ui.win.scrollY=800;
+    ui.fireDoc('focusin',{target});
+    vi.advanceTimersByTime(16);
+    if(kind==='기본'||kind==='결과 보기')expect(ui.win.scrollTo).toHaveBeenCalledExactlyOnceWith(0,1200);
+    else expect(ui.win.scrollTo).not.toHaveBeenCalled();
+  });
+  it('가져오기 입력은 키보드 초점을 받고 같은 label에 이름이 있다',async()=>{
+    const ui=await startUi(),label=ui.app.innerHTML.match(/<label class="file-btn">[^<]*<input[^>]+>[\s\S]*?<\/label>/)![0];
+    expect(label).toContain('가져오기');const input=label.match(/<input[^>]+>/)![0];
+    expect(input).toContain('type="file"');expect(input).toContain('data-action="import"');expect(input).toContain('class="visually-hidden"');
+    expect(input).not.toMatch(/\shidden\b/);expect(input).not.toContain('tabindex="-1"');
+  });
+  it('결과 보기 Tab 한 번: 하루 진행 다음 동작은 결과 보기다',async()=>{
+    const ui=await startUi();await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+    expect(ui.app.innerHTML.split('data-action="end-day"')[1]!.match(/data-action="([^"]+)"/)![1]).toBe('culture-result');
+  });
+  it('알림 영역은 한 번 만들고 다시 그리기는 읽지 않으며 같은 새 알림은 공백을 바꾼다',async()=>{
+    const ui=await startUi();
+    const noRole=()=>{expect(ui.app.innerHTML).not.toContain('role="status"');expect(ui.app.innerHTML).not.toContain('aria-live');};
+    noRole();expect(ui.doc.body.insertAdjacentHTML).toHaveBeenCalledExactlyOnceWith('beforeend','<div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>');
+    expect(ui.announcements).toHaveLength(0);ui.click({action:'accept'});noRole();expect(ui.announcements).toHaveLength(1);
+    const first=ui.announcements[0]!;
+    ui.click({action:'map-mode',mode:'world'});ui.click({action:'crew-filter',filter:'all'});ui.click({action:'select-card'});ui.click({action:'detail'});
+    expect(ui.announcements).toHaveLength(1);
+    ui.click({action:'accept-fwd'});expect(ui.announcements).toHaveLength(2);
+    expect(ui.announcements[1]).not.toBe(first);expect(ui.announcements[1]!.trim()).toBe(first.trim());
+    ui.click({action:'unqueue'});expect(ui.announcements).toHaveLength(2);
+    ui.click({action:'unqueue'});expect(ui.announcements).toHaveLength(2);
+    ui.click({action:'train'});const before=ui.announcements.length;ui.click({action:'end-day'});noRole();
+    expect(ui.announcements).toHaveLength(before+1);expect(ui.announcements.at(-1)).toContain('+60 경험치');
+    const after=ui.announcements.length;
+    ui.click({action:'select-card'});ui.click({action:'detail'});ui.click({action:'crew-filter',filter:'all'});
+    expect(ui.announcements).toHaveLength(after);
+    const engine=await import('../engine/engine');const spy=vi.spyOn(engine,'commitDay').mockImplementation(()=>{throw new Error('결산 실패');});
+    ui.click({action:'end-day'});expect(ui.announcements).toHaveLength(after+1);expect(ui.announcements.at(-1)).toBe('하루 진행에 실패했습니다: 결산 실패');spy.mockRestore();
+    let saved='';vi.stubGlobal('localStorage',{setItem:(_k:string,v:string)=>{saved=v;},getItem:()=>saved});
+    ui.click({action:'save'});expect(ui.announcements).toHaveLength(after+2);expect(ui.announcements.at(-1)).not.toContain('경험치');
+    expect(growthNotice(ui.app.innerHTML)).not.toBeNull();ui.click({action:'load'});expect(ui.announcements).toHaveLength(after+3);expect(ui.announcements.at(-1)).not.toContain('경험치');
+    await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});noRole();
+    expect(ui.announcements.at(-1)).toContain('현지 활동 기록');expect(ui.announcements.at(-1)).not.toContain('경험치');
+    const count=ui.announcements.length;ui.click({action:'culture-book'});expect(ui.announcements).toHaveLength(count);
+    expect(ui.doc.body.insertAdjacentHTML).toHaveBeenCalledOnce();
+  });
+  it('카드·운영표는 선택 글자와 의미를 가지며 막대는 이름 있는 영역이다',async()=>{
+    const ui=await startUi();ui.click({action:'select-card'});
+    const cards=[...ui.app.innerHTML.matchAll(/<article class="card [\s\S]*?<\/article>/g)].map((m)=>m[0]);
+    expect(cards.filter((c)=>c.includes('aria-pressed="true"'))).toHaveLength(1);
+    expect(cards[0]).toContain('✓ 선택됨');expect(cards[1]).toContain('aria-pressed="false"');expect(cards[1]).not.toContain('✓ 선택됨');
+    const rows=[...ui.app.innerHTML.matchAll(/<tr[^>]*data-action="select-card"[\s\S]*?<\/tr>/g)].map((m)=>m[0]);
+    rows.forEach((r,index)=>{const tag=r.match(/<tr[^>]*>/)![0];expect(tag).not.toMatch(/tabindex|aria-selected/);expect(r.match(/class="roster-pick"/g)).toHaveLength(1);expect(r).toContain(`aria-pressed="${index===0}"`);expect(r.includes('✓ 선택됨')).toBe(index===0);});
+    expect(ui.app.innerHTML).toContain('<div class="statusbar" id="status-h" tabindex="-1" role="region" aria-label="오늘 상태">');
+    const other=config.employees[1]!.id;
+    ui.keydown(ui.rendered({action:'select-card',emp:other}),'Enter');
+    expect(ui.app.innerHTML.match(new RegExp(`<article class="card [^>]*data-emp="${other}"[^>]*>`))![0]).toContain('aria-pressed="true"');
+    const before=ui.app.innerHTML;
+    const button=ui.app.querySelectorAll('[data-action]').find((e)=>'tagName' in e && e.tagName==='BUTTON'&&e.dataset.action==='select-card'&&e.dataset.emp!==other)!;
+    ui.keydown(button,' ');expect(ui.app.innerHTML).toBe(before);
+  });
+  it('개발 단계 부호 0건은 성장·문화·M1·지연 대응 화면에 적용된다',async()=>{
+    const ui=await startUi();
+    const clean=()=>expect(ui.app.innerHTML).not.toMatch(/M2a|M2b|LEGACY_FIXED|규칙 M1|규칙 M2|rules-1|M3 사건|DESIGN 가상값|개발용 가상값/);
+    clean();expect(ui.app.innerHTML).toContain('가상값');
+    ui.click({action:'culture-tab'});ui.click({action:'select-card'});ui.click({action:'detail'});clean();
+    const items=(h:string)=>[...h.split('<summary>이 시제품이 가정한 값</summary><ul>')[1]!.split('</ul>')[0]!.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m)=>m[1]);
+    const kept=(id:'SCENARIO_M2_MULTI_TRADE'|'SCENARIO_M1_ONE_TRADE')=>assumptionNotes(id).filter((n)=>!/^규칙 [^:]+: /.test(n)).map(esc);
+    expect(items(ui.app.innerHTML)).toEqual(kept('SCENARIO_M2_MULTI_TRADE'));expect(kept('SCENARIO_M2_MULTI_TRADE').length).toBeGreaterThan(0);
+    ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');clean();
+    expect(items(ui.app.innerHTML)).toEqual(kept('SCENARIO_M1_ONE_TRADE'));
+    ui.change({action:'scenario'},'SCENARIO_M1_DELAY_ACCEPTED');
+    ui.click({action:'accept'});ui.click({action:'assign'});ui.click({action:'book'});
+    for(let day=0;day<10&&!ui.app.innerHTML.includes('data-action="keep"');day++)ui.click({action:'end-day'});
+    expect(ui.app.innerHTML).toContain('data-action="keep"');clean();
+  });
+  it('빌드 표시는 머리 문구에 있고 고정 막대에는 없다',async()=>{
+    const ui=await startUi();const header=/<span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)<\/span>/;
+    expect(ui.app.innerHTML).toMatch(header);
+    ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');expect(ui.app.innerHTML).toMatch(header);
+    expect(ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]).not.toContain('빌드');
   });
 });

@@ -4,3 +4,5 @@ export function focusFallbackIds(data:Record<string,string|undefined>, blockHead
   return [data.action==='train' && data.emp ? `growth-h-${data.emp}` : undefined, blockHeading, 'queue-h']
     .filter((id):id is string=>Boolean(id));
 }
+
+export const FIXED_REGION_SELECTOR = '.statusbar, .skip-links, .flash-toast';
