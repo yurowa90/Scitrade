@@ -505,7 +505,7 @@ main.layout { padding-bottom: 5.5rem; }
 .rec-label small { font-size: .75rem; color: var(--navy-soft); }
 .rec-label .rec-limit { color: var(--warn); }
 .culture-book ul { font-size: .82rem; padding-left: 1.2rem; }
-.book-trust { margin-top: .9rem; background: var(--sky); padding: .45rem .6rem; border-radius: 8px; font-size: .82rem; }
+.local .book-trust { margin-top: .9rem; background: var(--sky); padding: .45rem .6rem; border-radius: 8px; font-size: .82rem; }
 .local-end { margin-top: 1rem; }
 .flash-toast:has([data-action="culture-result"]) { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
 .flash-toast button { pointer-events: auto; min-height: 44px; flex-shrink: 0; }

@@ -251,6 +251,8 @@ describe('TASK-0012 Claude 검수 2차: 반복 활동 문구·읽던 자리 블�
     const s=openDay(commitDay(done(),config,[start('CA01','EMP02'),start('CA02','EMP01')]).state,config).state;
     const text=cultureToastText(s,config)!.text;
     expect(text).toMatch(/^3일 현지 활동 2건\(새 회사 보고서 1건\): ‘[^’]+’, ‘[^’]+’$/);expect(text).not.toContain('기록 2건');
+    const both=openDay(commitDay(openDay(commitDay(dayTwo(),config,[start(),start('CA02','EMP02')]).state,config).state,config,[start('CA01','EMP02'),start('CA02','EMP01')]).state,config).state;
+    expect(cultureToastText(both,config)!.text).toMatch(/^3일 현지 활동 2건\(회사 보고서는 모두 이미 있음\): ‘[^’]+’, ‘[^’]+’$/);
   });
   it('읽던 자리 블록 후보는 열린 패널의 결과·직원 줄·펼친 기록장 보고서다',()=>{
     const s=repeatDay(),ui=(o:object)=>({...initialUiState(),cultureOpen:true,cultureShowFromDay:2,...o});

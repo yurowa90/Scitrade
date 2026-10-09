@@ -95,7 +95,8 @@ export const CULTURE_KO = {
   resultButton: '결과 보기',
   toastOne: (day: number, topic: string, employee: string) => `${day}일 현지 활동 기록: ${topic} — ${employee}`,
   toastRepeat: (day: number, topic: string, employee: string, reportDay: number) => `${day}일 현지 활동: ${topic} — ${employee} (회사 보고서는 ${reportDay}일에 이미 있음)`,
-  toastMany: (day: number, topics: string[], newReports: number) => `${day}일 현지 활동 ${newReports === topics.length ? '기록 ' : ''}${topics.length}건${newReports === topics.length ? '' : `(새 회사 보고서 ${newReports}건)`}: ${topics.map((t) => `‘${t}’`).join(', ')}`,
+  toastMany: (day: number, topics: string[], newReports: number) => `${day}일 현지 활동 ${newReports === topics.length ? '기록 ' : ''}${topics.length}건${newReports === topics.length ? ''
+    : newReports === 0 ? '(회사 보고서는 모두 이미 있음)' : `(새 회사 보고서 ${newReports}건)`}: ${topics.map((t) => `‘${t}’`).join(', ')}`,
   toastRejected: (day: number, reasons: string[]) => `실행하지 못한 명령: ${reasons.join(' / ')} · ${day}일 현지 활동 기록이 있습니다.`,
 };
 

@@ -1076,6 +1076,15 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,423);
   });
+  it('기록장을 펼친 채 제목과 보고서가 함께 보여도 보고서 자리를 지킨다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
+      ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],[`culture-report-${taskId}`,260,700],[`culture-report-h-${taskId}`,270,300]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.afterRender(()=>{ui.bounds[`culture-report-h-${taskId}`]={top:620,bottom:650,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
+  });
   it('기록장 보고서를 읽는 중이면 그 보고서 자리를 지킨다',async()=>{
     const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
     for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],

@@ -178,7 +178,8 @@ function endDay() {
       const head = document.getElementById(headId);
       if (head && inBand(document.getElementById(blockId)?.getBoundingClientRect())) heads.push(head);
     }
-    for (const id of ['culture-h', 'culture-book-h']) {
+    // 기록장을 펼쳤으면 그 제목 대신 보고서 블록이 기준이다. 새 보고서는 제목 바로 아래(목록 맨 위)에 끼어든다.
+    for (const id of ['culture-h', ...(ui.cultureBookOpen ? [] : ['culture-book-h'])]) {
       const head = document.getElementById(id);
       const top = head?.getBoundingClientRect().top;
       if (head && top !== undefined && top >= barBottom && top < bandBottom) heads.push(head);
