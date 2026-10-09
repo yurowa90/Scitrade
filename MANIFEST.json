@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 8001,
-      "sha256": "358d97f91909cd0e9a65c31e0cd31b465ccc39efaae5241d218407d68ad23d03"
+      "size_bytes": 8142,
+      "sha256": "c5cb4457372050e8550b0e0936025b82d6bf2a3399e0ab0e2a96757df88d1fa1"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -609,6 +609,11 @@
       "path": "docs/ai/tasks/results/TASK-0020.md",
       "size_bytes": 114275,
       "sha256": "2d3dfc01fbd7148facb81b4eb6e60c4c3c2fe070589f0ae3aa260c1b69c385b2"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0021.md",
+      "size_bytes": 82189,
+      "sha256": "759727082eb5fee569e9effb70be8ec1de5555837cc1cb87c466ecb1bf24a0b1"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
