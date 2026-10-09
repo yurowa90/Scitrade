@@ -7,8 +7,8 @@
   "files": [
     {
       "path": ".gitignore",
-      "size_bytes": 100,
-      "sha256": "692d55883093eaebe0aebbc56f524fb72773ef2f7ced910c3807e76532c19541"
+      "size_bytes": 114,
+      "sha256": "f8b2ef626e9ab62b6f4bd6eedd282e3960d7ed3a5a4f475a1c700feede0e5df6"
     },
     {
       "path": "AGENTS.md",
@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 8142,
-      "sha256": "c5cb4457372050e8550b0e0936025b82d6bf2a3399e0ab0e2a96757df88d1fa1"
+      "size_bytes": 8180,
+      "sha256": "afd2c96c8f1b9b8670e175771dec26bc9eb2b45299134bf2be41542591e55f5d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -604,6 +604,11 @@
       "path": "docs/ai/tasks/results/TASK-0016.md",
       "size_bytes": 32575,
       "sha256": "4d57f8ea697303cbc88b29ecf78162863469ccc66fc1b2d348974bde944c10b0"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0019.md",
+      "size_bytes": 21452,
+      "sha256": "c7bf4a48013423cb3185f65115896b28a18431947d063c733a9d1876785c59af"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0020.md",
@@ -882,8 +887,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 1134,
-      "sha256": "19944f91f8dfbcd37c9a1857cdf363af36b9572af9400980838ffe6868d0e09e"
+      "size_bytes": 2562,
+      "sha256": "e927229f72560287231cd25ebd5e54b8f517f4e014fc06af57ac0a3e8b2c1c8b"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -911,9 +916,69 @@
       "sha256": "7945d4745be5adb343f51bc0dd53aec246fd7c02e046a3e764cae5461d6e2e7c"
     },
     {
+      "path": "tools/browser/README.md",
+      "size_bytes": 2728,
+      "sha256": "4136f2128831fb228e6fb884f9b35993499d19db1f1c5f29d73ba0e419143ca5"
+    },
+    {
+      "path": "tools/browser/lib.mjs",
+      "size_bytes": 15277,
+      "sha256": "66e60a1c08066188595e8db070040d05535c2dd05e0d2c65acd134ddb4752197"
+    },
+    {
+      "path": "tools/browser/lib.test.mjs",
+      "size_bytes": 8099,
+      "sha256": "9212075c300f2b1ea712905a6b7c706827674c9396c25531b5d1e2fe96e33b47"
+    },
+    {
+      "path": "tools/browser/measure.mjs",
+      "size_bytes": 3819,
+      "sha256": "10c3df09c04ef262885a79c21a726b9eb69bf3d23ff9ab75a23bda4df66d28c7"
+    },
+    {
+      "path": "tools/browser/profiles.json",
+      "size_bytes": 1077,
+      "sha256": "df48d956bdf09594e625767c0f3ee64ce18e1ba7ca621d16e62d192b30e8acff"
+    },
+    {
+      "path": "tools/browser/scenarios/culture-result-flow3.json",
+      "size_bytes": 1075,
+      "sha256": "79f58840d897a6b281a3bf9416a8e82e1f56ed0cc01fd9a35d09cdb6b2ff1ce8"
+    },
+    {
+      "path": "tools/browser/scenarios/day-anchor.json",
+      "size_bytes": 977,
+      "sha256": "be75b2d16d39dfc5b40ef447ab9d8346b56eac5762d18c8fa8def4be4be855cf"
+    },
+    {
+      "path": "tools/browser/scenarios/local-tab-position.json",
+      "size_bytes": 679,
+      "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/smoke.json",
+      "size_bytes": 732,
+      "sha256": "07cfafe949eb50eef125165ed5304ad62d36fc0b4164551d0d6f14ac489019f5"
+    },
+    {
       "path": "tools/build_package.py",
-      "size_bytes": 2719,
-      "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
+      "size_bytes": 4958,
+      "sha256": "f4033de7c0679776ccb52d734d84028fa5c8d305212b352fe85a05443576c46e"
+    },
+    {
+      "path": "tools/check_fact_mixing.py",
+      "size_bytes": 16555,
+      "sha256": "bcc260a760aaca4026cb112e97228fe1babd6ab68114fcdd2c9cb353894b5962"
+    },
+    {
+      "path": "tools/deploy/prepare_static.sh",
+      "size_bytes": 3268,
+      "sha256": "fcd503a7a893454f8c5a2744789c4f7da2c393367a5f88b57714529b035f6bb8"
+    },
+    {
+      "path": "tools/test_check_fact_mixing.py",
+      "size_bytes": 9825,
+      "sha256": "c5ea008c94ff272c78c1f1b249639ae0e0c512e4e13a8521fb2c0f7b1f731d74"
     },
     {
       "path": "tools/test_validate_data.py",
