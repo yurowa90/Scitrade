@@ -245,6 +245,25 @@ describe('화면 없는 비교 실행기', () => {
     expect((JSON.parse(stdout) as SimOutput).runs).toHaveLength(1);
   }, 60_000);
 
+  it('날짜 지표: 운송일수·대금일만 밀려도 지표가 달라진다(Claude 검수)', () => {
+    const config = configs.find((c) => c.id === 'SCENARIO_M2_MULTI_TRADE')!;
+    const policy = policyById('MAX_CONTRIBUTION')!, seed = SIM_SEEDS[0]!;
+    const base = simulate(config, policy, seed).run.metrics;
+    const transit = structuredClone(config);
+    transit.routes = transit.routes.map((r) => ({ ...r, transitDays: r.transitDays + 1 }));
+    const paid = structuredClone(config);
+    paid.offers = paid.offers.map((o) => (o.paymentDueDay == null ? o : { ...o, paymentDueDay: o.paymentDueDay + 5 }));
+    for (const shifted of [transit, paid]) expect(simulate(shifted, policy, seed).run.metrics).not.toEqual(base);
+    // 운송일수 이동은 인도일 목록이, 대금일 이동은 현금 곡선이 잡는다(인도일은 그대로).
+    expect(simulate(transit, policy, seed).run.metrics.timing.deliveredDays).not.toEqual(base.timing.deliveredDays);
+    const paidMetrics = simulate(paid, policy, seed).run.metrics;
+    expect(paidMetrics.timing.deliveredDays).toEqual(base.timing.deliveredDays);
+    expect(paidMetrics.currencies[config.tradeCurrency]!.cashDaySum).not.toBe(base.currencies[config.tradeCurrency]!.cashDaySum);
+    // 날짜 지표를 빼면 운송일수 +1은 구별되지 않는다. 그래서 날짜 지표가 필요하다.
+    const strip = (m: typeof base) => ({ ...m, timing: null, currencies: Object.fromEntries(Object.entries(m.currencies).map(([k, v]) => [k, { ...v, cashDaySum: 0 }])) });
+    expect(strip(simulate(transit, policy, seed).run.metrics)).toEqual(strip(base));
+  }, 60_000);
+
   it('마감 지표: 당일 완료 업무·근무 시작일·대기 업무와 읽기 순수성', () => {
     const config = configs[0]!;
     const sample = cached(config, 'MAX_CONTRIBUTION').state;

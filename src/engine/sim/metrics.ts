@@ -17,6 +17,8 @@ export interface CurrencyMetrics {
   shortfallDays: number;
   shortfallBasisPoints: number;
   firstShortfallDay: number | null;
+  /** 마감한 날마다의 현금 잔액 합(Claude 검수). 금액이 같아도 지급·수금 날짜가 밀리면 달라진다. */
+  cashDaySum: number;
 }
 
 /** 인도한 계약만 분모에 넣는다. TASK-0016 병합 때 합칠 후보. */
@@ -27,11 +29,21 @@ export interface DeliveryMetrics {
   rateBasisPoints: number | null;
   pastDeadlineUndelivered: number;
 }
+/** 날짜 지표(Claude 검수). ID 없이 오름차순 목록으로 둔다. 금액·정시 여부가 같아도 날짜가 밀리면 달라진다. */
+export interface TimingMetrics {
+  /** 취소하지 않고 인도한 계약의 인도일. */
+  deliveredDays: number[];
+  /** 같은 계약의 납기 여유(납기일 − 인도일). 음수는 지연. */
+  slackDays: number[];
+  /** 수금까지 마친 계약의 완료일. */
+  completedDays: number[];
+}
 export interface SimMetrics {
   closedDays: number;
   currencies: Record<string, CurrencyMetrics>;
   contracts: { total: number; directTrade: number; forwarding: number; delivered: number; completed: number; cancelled: number };
   delivery: DeliveryMetrics;
+  timing: TimingMetrics;
   staff: { availableEmployeeDays: number; idleEmployeeDays: number; waitingTaskDays: number };
 }
 export interface MetricsCollector {
@@ -52,15 +64,30 @@ export function deliveryCounts(s: Pick<GameState, 'day' | 'contracts'>): Deliver
     rateBasisPoints: delivered ? Math.floor(onTime * 10000 / delivered) : null, pastDeadlineUndelivered };
 }
 
+export function timingOf(s: Pick<GameState, 'contracts'>): TimingMetrics {
+  const delivered = s.contracts.filter((c) => c.status !== 'CANCELLED' && c.deliveredDay !== null);
+  const asc = (values: number[]) => values.sort((a, b) => a - b);
+  return {
+    deliveredDays: asc(delivered.map((c) => c.deliveredDay!)),
+    slackDays: asc(delivered.map((c) => c.deliveryDeadlineDay - c.deliveredDay!)),
+    completedDays: asc(s.contracts.filter((c) => c.completedDay !== null && c.completedDay !== undefined).map((c) => c.completedDay!)),
+  };
+}
+
 export function createMetricsCollector(config: ScenarioConfig): MetricsCollector {
   const primaryCurrencies = [...new Set([config.tradeCurrency, config.payrollCurrency])];
   const seenCurrencies = new Set<Currency>(primaryCurrencies);
   const shortfalls = new Map<Currency, { days: number; first: number }>();
+  const cashDaySums = new Map<Currency, number>();
   let closedDays = 0;
   const staff = { availableEmployeeDays: 0, idleEmployeeDays: 0, waitingTaskDays: 0 };
   return {
     observeClosedDay(state, _config, closedDay) {
       closedDays++;
+      for (const currency of new Set([...seenCurrencies, ...state.ledger.entries.map((e) => e.currency)])) {
+        seenCurrencies.add(currency);
+        cashDaySums.set(currency, (cashDaySums.get(currency) ?? 0) + summarize(state.ledger, currency).cash);
+      }
       const unpaid = new Set(state.obligations.filter((o) => o.paidDay === null).map((o) => o.currency));
       for (const currency of unpaid) {
         const previous = shortfalls.get(currency);
@@ -99,6 +126,7 @@ export function createMetricsCollector(config: ScenarioConfig): MetricsCollector
           contributionDirectTrade, contributionForwarding, shortfallDays,
           shortfallBasisPoints: closedDays ? Math.floor(shortfallDays * 10000 / closedDays) : 0,
           firstShortfallDay: shortage?.first ?? null,
+          cashDaySum: cashDaySums.get(currency) ?? 0,
         };
       }
       const contracts = state.contracts;
@@ -108,7 +136,7 @@ export function createMetricsCollector(config: ScenarioConfig): MetricsCollector
         delivered: contracts.filter((c) => c.deliveredDay !== null).length,
         completed: contracts.filter((c) => c.status === 'COMPLETED').length,
         cancelled: contracts.filter((c) => c.status === 'CANCELLED').length,
-      }, delivery: deliveryCounts(state), staff: { ...staff } };
+      }, delivery: deliveryCounts(state), timing: timingOf(state), staff: { ...staff } };
     },
   };
 }

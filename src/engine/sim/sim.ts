@@ -5,7 +5,7 @@ import { ENGINE_VERSION, type GameState, type ScenarioConfig } from '../types';
 import { createMetricsCollector, type SimMetrics } from './metrics';
 import { policyById, SIM_POLICIES, type SimPolicy } from './policies';
 
-export const SIM_FORMAT = 1;
+export const SIM_FORMAT = 2;
 /** 진단용 고정 시드 20개. 자료의 시드와 무관한 상수다. */
 export const SIM_SEEDS: readonly number[] = Array.from({ length: 20 }, (_, i) => 1001 + i);
 export interface SimRun {
