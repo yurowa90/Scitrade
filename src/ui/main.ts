@@ -38,7 +38,7 @@ let config: ScenarioConfig;
 let state: GameState;
 let savedState: GameState | null = null;
 let announcedFlash: ReturnType<typeof initialUiState>['flash'] = null;
-let lastTabAt = -Infinity;
+let lastTabAt = -Infinity, tabX = 0, tabY = 0;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
 let ui = initialUiState();
@@ -88,16 +88,18 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 document.body.insertAdjacentHTML('beforeend', '<div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>');
 const liveStatus = document.getElementById('live-status')!;
 
+// Chromium은 Tab 누름(keydown) 뒤, focusin 전에 화면을 옮긴다. 그래서 위치는 Tab을 누른 순간에 적고
+// 고정 영역으로 초점이 들어올 때 그 위치로 되돌린다(Claude 검수: focusin에서 적으면 이미 옮겨진 뒤다).
+// Tab이 아닌 키(Enter 등)나 코드가 옮긴 초점에는 손대지 않는다.
 document.addEventListener('keydown', (ev) => {
-  if (ev.key === 'Tab') lastTabAt = Date.now();
+  if (ev.key === 'Tab') { lastTabAt = Date.now(); tabX = window.scrollX; tabY = window.scrollY; }
+  else if (!['Shift', 'Control', 'Alt', 'Meta'].includes(ev.key)) lastTabAt = -Infinity;
 }, true);
 document.addEventListener('focusin', (ev) => {
-  if (Date.now() - lastTabAt > 100) return;
+  if (activation || Date.now() - lastTabAt > 100) return;
+  lastTabAt = -Infinity;
   if (!(ev.target as HTMLElement).closest(FIXED_REGION_SELECTOR)) return;
-  const x = window.scrollX, y = window.scrollY;
-  window.requestAnimationFrame(() => {
-    if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
-  });
+  if (window.scrollX !== tabX || window.scrollY !== tabY) window.scrollTo(tabX, tabY);
 });
 window.addEventListener('beforeunload', (ev) => {
   if (!hasUnsavedWork(ui.pending, state, savedState)) return;

@@ -120,6 +120,8 @@ export async function startUi(config?: ScenarioConfig) {
     // 두 번 누름 시험은 clickNow와 가짜 타이머를 직접 쓴다.
     click:(dataset:Record<string,string>,fromChild=false)=>{vi.advanceTimersByTime(501);return clickNow(dataset,0,fromChild);},
     clickNow, bounds,
+    // 이미 다시 그려져 사라진 단추를 누르는 경우를 흉내 낸다(Claude 검수).
+    clickTarget:(target:unknown,detail=0)=>listeners.click!({detail,target}),
     resizeStatusbar:(height:number)=>{statusbarHeight=height;resizeStatus!();},
     change:(dataset:Record<string,string>,value:string)=>listeners.change!({target:{...rendered(dataset),value}}),
     importText:async(text:string)=>{const input=new Input(); input.files=[{text:async()=>text}]; await listeners.change!({target:input});},

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import legacySave from '../engine/fixtures/save-v4-m2.json';
-import { loadScenario } from '../content/scenario';
+import { assumptionNotes, loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { serializeSave } from '../engine/save';
 import { runDays, standardDayOneCommands } from '../engine/testkit';
@@ -1211,6 +1211,13 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     vi.advanceTimersByTime(500);ui.clickNow({action:'unqueue',index:'0'},1);
     expect(pending(ui.app.innerHTML)).toBe(0);
   });
+  it('빼기는 명령 ID로 찾고, 이미 빠진 명령의 단추는 아무것도 빼지 않는다',async()=>{
+    const ui=await startUi();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
+    const stale=ui.rendered({action:'unqueue',index:'0'});
+    ui.click({action:'unqueue',index:'0'});expect(pending(ui.app.innerHTML)).toBe(1);
+    vi.advanceTimersByTime(501);ui.clickTarget(stale,1);
+    expect(pending(ui.app.innerHTML)).toBe(1);
+  });
   it.each(['detail','interview','culture-book'])('열고 닫기 두 번(%s)',async(action)=>{
     const ui=await startUi();
     if(action==='detail') ui.click({action:'select-card'});
@@ -1274,14 +1281,17 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
       ui.click({action:'skip-to',target});expect(ui.scrollIds).toEqual([target]);expect(ui.focusIds).toEqual([target]);expect(ui.focus).toHaveBeenCalledExactlyOnceWith({preventScroll:true});
     }
   });
-  it.each(['기본','튐 없음','Tab 없음','고정 영역 밖','200ms 뒤','결과 보기'])('Shift+Tab 튐 복원(%s)',async(kind)=>{
+  it.each(['기본','튐 없음','Tab 없음','고정 영역 밖','200ms 뒤','결과 보기','Enter 뒤'])('Shift+Tab 튐 복원(%s)',async(kind)=>{
     const ui=await startUi();
     if(kind==='결과 보기') {await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});}
     ui.win.scrollY=1200;
     if(kind!=='Tab 없음')ui.fireDoc('keydown',{key:'Tab',shiftKey:true});
     if(kind==='200ms 뒤')vi.advanceTimersByTime(200);
+    if(kind==='Enter 뒤')ui.fireDoc('keydown',{key:'Enter'});
     const target=ui.rendered({action:kind==='결과 보기' ? 'culture-result' : kind==='고정 영역 밖' ? 'accept' : 'end-day'});
-    ui.fireDoc('focusin',{target});if(kind!=='튐 없음') ui.win.scrollY=800;
+    // 실제 Chromium 순서: keydown → 화면 이동 → focusin(Claude 검수).
+    if(kind!=='튐 없음') ui.win.scrollY=800;
+    ui.fireDoc('focusin',{target});
     vi.advanceTimersByTime(16);
     if(kind==='기본'||kind==='결과 보기')expect(ui.win.scrollTo).toHaveBeenCalledExactlyOnceWith(0,1200);
     else expect(ui.win.scrollTo).not.toHaveBeenCalled();
@@ -1344,14 +1354,20 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     const clean=()=>expect(ui.app.innerHTML).not.toMatch(/M2a|M2b|LEGACY_FIXED|규칙 M1|규칙 M2|rules-1|M3 사건|DESIGN 가상값|개발용 가상값/);
     clean();expect(ui.app.innerHTML).toContain('가상값');
     ui.click({action:'culture-tab'});ui.click({action:'select-card'});ui.click({action:'detail'});clean();
+    const items=(h:string)=>[...h.split('<summary>이 시제품이 가정한 값</summary><ul>')[1]!.split('</ul>')[0]!.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m)=>m[1]);
+    const kept=(id:'SCENARIO_M2_MULTI_TRADE'|'SCENARIO_M1_ONE_TRADE')=>assumptionNotes(id).filter((n)=>!/^규칙 [^:]+: /.test(n)).map(esc);
+    expect(items(ui.app.innerHTML)).toEqual(kept('SCENARIO_M2_MULTI_TRADE'));expect(kept('SCENARIO_M2_MULTI_TRADE').length).toBeGreaterThan(0);
     ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');clean();
+    expect(items(ui.app.innerHTML)).toEqual(kept('SCENARIO_M1_ONE_TRADE'));
     ui.change({action:'scenario'},'SCENARIO_M1_DELAY_ACCEPTED');
     ui.click({action:'accept'});ui.click({action:'assign'});ui.click({action:'book'});
     for(let day=0;day<10&&!ui.app.innerHTML.includes('data-action="keep"');day++)ui.click({action:'end-day'});
     expect(ui.app.innerHTML).toContain('data-action="keep"');clean();
   });
   it('빌드 표시는 머리 문구에 있고 고정 막대에는 없다',async()=>{
-    const ui=await startUi();expect(ui.app.innerHTML).toMatch(/시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)/);
+    const ui=await startUi();const header=/<span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)<\/span>/;
+    expect(ui.app.innerHTML).toMatch(header);
+    ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');expect(ui.app.innerHTML).toMatch(header);
     expect(ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]).not.toContain('빌드');
   });
 });
