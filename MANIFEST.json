@@ -257,8 +257,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 5341,
-      "sha256": "bcddbe5dfd4b4aa34d2918046554aca395cd5167308dd13f4ac0b7d14fecaf65"
+      "size_bytes": 5718,
+      "sha256": "276b1ef8f5fef2d72d4f0d8ae05336007f7f3db0e6fb51487b8d5d32be763954"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -379,6 +379,11 @@
       "path": "docs/ai/tasks/TASK-0014-touch-device-readiness.md",
       "size_bytes": 13385,
       "sha256": "b6f100eb826c1f0fe4faea3b1ef480c475f9595d7739496536d75ad4399a64bf"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0015-pyeongtaek-hq.md",
+      "size_bytes": 20973,
+      "sha256": "006b69c1fd516740faa034d6034766a826a9c3c8128b7f58ba45287a1e4103a8"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
