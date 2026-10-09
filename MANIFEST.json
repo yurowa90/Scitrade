@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 6853,
-      "sha256": "d0dc09deefe47092d1caa62f46260f10f204df110fef97086b13f7dd47caffc8"
+      "size_bytes": 7547,
+      "sha256": "f7394063f8634c5c3d425109be42868a5f56786ba584d913eb60f6cf21893200"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -504,6 +504,16 @@
       "path": "docs/ai/tasks/TASK-0018-ui-keyboard-input-safety.md",
       "size_bytes": 56371,
       "sha256": "afb2bf0608f05c62a08902f46720c36bc94674a796f69bcf123a064903879368"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0019-verify-deploy-tools.md",
+      "size_bytes": 74089,
+      "sha256": "a3d2791f233cc88bb7950b50dc2cfd30c3ef64a6a628470e401465f8f4254a1e"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0020-source-conservation-check.md",
+      "size_bytes": 50032,
+      "sha256": "2f0ddd09ef090b7515140216d6a7712b4b1ec183f0bc54567ac957c9f23ff884"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
