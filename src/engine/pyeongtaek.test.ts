@@ -14,7 +14,7 @@ describe('TASK-0015 본사와 노선', () => {
     expect(JSON.stringify(home)).not.toMatch(/7위|환적 화물|TRANSSHIPMENT/);
     expect(HUB_ROLE_KO.HOME_BASE).toBe('본사');
     const transshipment = loadMapCities().find(c => c.id === 'BUSAN')!;
-    expect(transshipment.availability.chapter).toBe(1);
+    expect(transshipment.availability).toMatchObject({ stage: 'M3', chapter: 1, status: 'PLANNED' });
     expect(transshipment.id).not.toBe(config.homeCityId);
     expect(transshipment.roles).toContain('TRANSSHIPMENT_HUB');
   });

@@ -88,9 +88,10 @@
         }
       ],
       "availability": {
-        "stage": "M1",
+        "stage": "M3",
         "chapter": 1,
-        "status": "PLAYABLE"
+        "status": "PLANNED",
+        "note_ko": "평택 본사의 환적 거점. M1·M2 규칙에는 없고 M3 환적 노선에서 연다"
       },
       "hub_note_ko": "1장 환적 거점. 2025년 부산항 컨테이너 처리량의 약 57%가 환적 화물이다.",
       "venue_template_ids": [

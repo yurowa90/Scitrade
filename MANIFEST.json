@@ -147,8 +147,8 @@
     },
     {
       "path": "data/world.json",
-      "size_bytes": 42097,
-      "sha256": "93835ac327f5ba6af50a0524598b45eea92e139de9fd2ea11f764f7dec9a6402"
+      "size_bytes": 42207,
+      "sha256": "6cbde862ef547092defb46da449efa6e8005ef5d3fd53215f0211ae490e36543"
     },
     {
       "path": "docs/ART_DIRECTION.md",
