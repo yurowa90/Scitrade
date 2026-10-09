@@ -231,6 +231,16 @@
       "sha256": "23b42eebe9852bea6b8d28c07ac51bcb368eea86f70c8ed1fa1cc4191aec7e22"
     },
     {
+      "path": "docs/ai/design/DECISION-PACKET-2026-10.md",
+      "size_bytes": 83337,
+      "sha256": "d8590f5fa783bf2784d4294bad921b57819302248e207469103678c930888145"
+    },
+    {
+      "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
+      "size_bytes": 34503,
+      "sha256": "8a5523d05be90dc12ac1853a00819e675af87a9c3d8ab84214e19503a6335124"
+    },
+    {
       "path": "docs/ai/design/PYEONGTAEK-route-basis.md",
       "size_bytes": 12186,
       "sha256": "1e5712705e57ff46b24bc133096771578fcbc10de6bdc088a4b2635371dbfe18"
