@@ -7,6 +7,50 @@
   "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
   "items": [
     {
+      "id": "PYEONGTAEK",
+      "name_ko": "평택",
+      "country_code": "KR",
+      "location_type": "city_port_hub",
+      "geo_position": {
+        "lat": 37.0,
+        "lon": 126.8,
+        "precision_deg": 0.1,
+        "basis": "APPROXIMATE_PUBLIC_COORDINATES",
+        "use": "map_display_only",
+        "note_ko": "거점의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
+      },
+      "source_refs": [
+        "DESIGN-V04",
+        "GPPC-STATS-2026-06",
+        "MOF-PORT-2025",
+        "ZYEN-GFCI39"
+      ],
+      "venue_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ],
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
+      "travel_rules": "screen_selection_is_not_physical_travel",
+      "hub_roles": [
+        "HOME_BASE"
+      ],
+      "selection_basis": [],
+      "availability": {
+        "stage": "M1",
+        "chapter": 1,
+        "status": "PLAYABLE"
+      },
+      "hub_note_ko": "본사. 세계 중심 거점 선정 기준(물동량·금융·해운 서비스 상위)에는 들지 않으며, 교육·지역 기준으로 골랐다. 2025년 컨테이너 처리량은 전국 4위(약 95.6만 TEU), 총물동량은 전국 5위(운임톤)다. 컨테이너 상대국 비중은 중국이 82.3%다. 서울(GFCI 39 8위)은 내륙이라 지도 거점이 아니며, 환전과 지급 일정은 본사의 금융센터(가상)에서 본다.",
+      "map_position": {
+        "x": 0.6,
+        "y": 0.34,
+        "coordinate_system": "normalized_concept_map_DESIGN_not_geographic"
+      }
+    },
+    {
       "id": "BUSAN",
       "name_ko": "부산",
       "country_code": "KR",
@@ -25,16 +69,11 @@
         "note_ko": "항구 도시의 대략 위치(0.1° 반올림). 지도 표시용이며 거리·운송시간 계산에 쓰지 않는다. 공식 항만 좌표와 대조하지 않았다."
       },
       "source_refs": [
-        "DESIGN-V03"
+        "DESIGN-V03",
+        "MOF-PORT-2025"
       ],
-      "venue_ids": [
-        "VEN_TRADE",
-        "VEN_PORT",
-        "VEN_LOUNGE",
-        "VEN_CULTURE",
-        "VEN_FINANCE"
-      ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "venue_ids": [],
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "hub_roles": [
         "CONTAINER_GATEWAY",
@@ -53,7 +92,14 @@
         "chapter": 1,
         "status": "PLAYABLE"
       },
-      "hub_note_ko": "본사. 한국 금융 중심인 서울(GFCI 39 8위)은 내륙이므로 부산의 금융센터 진입점이 국내 금융 업무를 맡는다."
+      "hub_note_ko": "1장 환적 거점. 2025년 부산항 컨테이너 처리량의 약 57%가 환적 화물이다.",
+      "venue_template_ids": [
+        "VEN_TRADE",
+        "VEN_PORT",
+        "VEN_LOUNGE",
+        "VEN_CULTURE",
+        "VEN_FINANCE"
+      ]
     },
     {
       "id": "SHANGHAI",
@@ -76,7 +122,7 @@
       "source_refs": [
         "DESIGN-V03"
       ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "venue_template_ids": [
         "VEN_TRADE",
@@ -145,7 +191,7 @@
       "source_refs": [
         "DESIGN-V03"
       ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "venue_template_ids": [
         "VEN_TRADE",
@@ -168,9 +214,10 @@
         }
       ],
       "availability": {
-        "stage": "M1",
+        "stage": "M3",
         "chapter": 1,
-        "status": "PLAYABLE"
+        "status": "PLANNED",
+        "note_ko": "평택발 정기선이 없어 부산 환적으로 연다(M3)"
       },
       "hub_note_ko": "도쿄만 관문항. 금융 업무는 도쿄권으로 본다. 항만 물동량 순위는 이번에 확인하지 않았다."
     },
@@ -195,7 +242,7 @@
       "source_refs": [
         "DESIGN-V03"
       ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "venue_template_ids": [
         "VEN_TRADE",
@@ -211,9 +258,9 @@
       ],
       "selection_basis": [],
       "availability": {
-        "stage": "M3",
+        "stage": "M1",
         "chapter": 1,
-        "status": "PLANNED"
+        "status": "PLAYABLE"
       },
       "hub_note_ko": "세계 중심 거점 선정 기준(물동량·금융·해운 서비스 상위)에는 들지 않는다. 베트남 북부 생산 거점으로 1장 콘텐츠의 연속성을 위해 유지한다."
     },
@@ -238,7 +285,7 @@
       "source_refs": [
         "DESIGN-V03"
       ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "venue_template_ids": [
         "VEN_TRADE",
@@ -302,7 +349,7 @@
       "source_refs": [
         "DESIGN-V03"
       ],
-      "unique_content_status": "BUSAN pilot only; regional content research pending",
+      "unique_content_status": "PYEONGTAEK pilot only; regional content research pending",
       "travel_rules": "screen_selection_is_not_physical_travel",
       "venue_template_ids": [
         "VEN_TRADE",
@@ -1172,5 +1219,5 @@
       }
     }
   ],
-  "hub_selection_rule_ko": "세계 거점은 실제 물류·무역 금융의 중심 가운데 권역마다 1~3곳을 고른다(사용자 결정 2026-10-05). 근거 지표: 컨테이너 물동량(Lloyd's List 100대 항만), 국제 금융센터 지수(GFCI), 해양 도시 순위(Menon·DNV), 선박 보유량(UNCTAD), 지역 최대 관문 여부. 가까운 항만이 몰린 권역(상하이·닝보, 홍콩·선전, 로테르담·앤트워프·함부르크, 싱가포르·포트클랑)은 한 거점으로 묶는다. 1장 거점 가운데 하이퐁·자카르타는 선정 기준 밖이지만 생산 거점이자 기존 콘텐츠의 연속성을 위해 유지한다."
+  "hub_selection_rule_ko": "세계 거점은 실제 물류·무역 금융의 중심 가운데 권역마다 1~3곳을 고른다(사용자 결정 2026-10-05). 근거 지표: 컨테이너 물동량(Lloyd's List 100대 항만), 국제 금융센터 지수(GFCI), 해양 도시 순위(Menon·DNV), 선박 보유량(UNCTAD), 지역 최대 관문 여부. 가까운 항만이 몰린 권역(상하이·닝보, 홍콩·선전, 로테르담·앤트워프·함부르크, 싱가포르·포트클랑)은 한 거점으로 묶는다. 1장 거점 가운데 하이퐁·자카르타는 선정 기준 밖이지만 생산 거점이자 기존 콘텐츠의 연속성을 위해 유지한다. 본사 평택은 세계 중심 거점 지표의 예외로, 교육·지역 기준으로 고른다."
 }

@@ -36,7 +36,7 @@ describe('예약별 선급 운임에서 고정 취소비 정산', () => {
     expect(s.shipments).toEqual([]);
     expect(s.cargoLots[0]).toMatchObject({ owner: 'COMPANY', carryingAmountMinor: purchase,
       status: path === '취소' ? 'HELD_UNALLOCATED' : 'PREPARING',
-      contractId: path === '취소' ? null : 'CT001', locationCityId: 'BUSAN' });
+      contractId: path === '취소' ? null : 'CT001', locationCityId: 'PYEONGTAEK' });
     checkInvariants(s, config);
     const continued = runDays(s, config, lastDay + 1).state;
     expect(continued.day).toBe(lastDay + 2);

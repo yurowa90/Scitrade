@@ -148,7 +148,8 @@
                 "MARITIME_SERVICES",
                 "SHIPOWNING_CLUSTER",
                 "REGIONAL_GATEWAY",
-                "PRODUCTION_ORIGIN"
+                "PRODUCTION_ORIGIN",
+                "HOME_BASE"
               ]
             }
           },

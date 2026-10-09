@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { loadScenario, M1_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
 import rules from '../../data/character_rules.json';
-import fixture from './fixtures/save-v4-m2.json';
+import legacyFixture from './fixtures/save-v4-m2.json';
+import currentFixture from './fixtures/save-v5-m2.json';
+
+// 현행 자료 판본에서 저장 형식 4의 필드 모양만 재현한다.
+const { culture: _culture, ...v4State } = currentFixture.state;
+const fixture = { ...currentFixture, formatVersion: 4, state: v4State };
 import { createGame } from './engine';
 import { awardTaskCompletion } from './growth';
 import { deserializeSave, SaveError, serializeSave } from './save';
@@ -12,13 +17,13 @@ import type { CultureState, ScenarioConfig } from './types';
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const emptyCulture: CultureState = { reports: [], experiences: [], relationEvents: [] };
 const records: CultureState = {
-  reports: [{ key: 'REPORT', activityId: 'CA01', topicId: 'KT_BUSAN_PACKAGING', cityId: 'BUSAN',
+  reports: [{ key: 'REPORT', activityId: 'CA01', topicId: 'KT_PYEONGTAEK_PACKAGING', cityId: 'PYEONGTAEK',
     sourceContactIds: ['NPC_MARKET'], reporterEmployeeId: 'EMP01', taskId: 'CULTURE-TEST', day: 1,
     contentRevision: '1', status: 'UNVERIFIED' }],
-  experiences: [{ key: 'EXPERIENCE', employeeId: 'EMP01', activityId: 'CA01', topicId: 'KT_BUSAN_PACKAGING',
-    cityId: 'BUSAN', countryCode: 'KR', contentRevision: '1', completedTaskId: 'CULTURE-TEST', verifiedDay: 1 }],
+  experiences: [{ key: 'EXPERIENCE', employeeId: 'EMP01', activityId: 'CA01', topicId: 'KT_PYEONGTAEK_PACKAGING',
+    cityId: 'PYEONGTAEK', countryCode: 'KR', contentRevision: '1', completedTaskId: 'CULTURE-TEST', verifiedDay: 1 }],
   relationEvents: [{ key: 'RELATION', employeeId: 'EMP01', contactId: 'NPC_MARKET', activityId: 'CA01',
-    cityId: 'BUSAN', contentRevision: '1', taskId: 'CULTURE-TEST', day: 1, kind: 'SHARED_ACTIVITY' }],
+    cityId: 'PYEONGTAEK', contentRevision: '1', taskId: 'CULTURE-TEST', day: 1, kind: 'SHARED_ACTIVITY' }],
 };
 const load = (file: unknown) => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
 const freshFile = () => JSON.parse(serializeSave(createGame(config)));
@@ -28,7 +33,25 @@ function reject(file: unknown, path: string, cfg?: ScenarioConfig) {
   expect(read).toThrow(path);
 }
 
-describe('실제 판본 4 저장 보존', () => {
+describe('평택 자료 판본의 저장과 이전 자료 거절', () => {
+  it('0.4.1 실제 저장은 형식 4·5 모두 한국어 이유로 거절한다', () => {
+    for (const formatVersion of [4, 5]) {
+      reject({ ...legacyFixture, formatVersion }, '이전 판(부산 본사)의 저장입니다. 이번 판에서는 열 수 없습니다.');
+    }
+  });
+
+  it('0.4.x 저장은 호출자가 옛 판본을 기대해도 거절한다', () => {
+    for (const dataVersion of ['0.4.0', '0.4.1', '0.4.9']) {
+      expect(() => deserializeSave(JSON.stringify({ ...legacyFixture, dataVersion }), { dataVersion }))
+        .toThrow('이전 판(부산 본사)의 저장입니다. 이번 판에서는 열 수 없습니다.');
+    }
+  });
+
+  it('0.5.0 실제 저장은 전체 상태를 왕복한다', () => {
+    expect(currentFixture.dataVersion).toBe('0.5.0');
+    expect(load(currentFixture)).toEqual(currentFixture.state);
+    expect(JSON.parse(serializeSave(load(currentFixture)))).toEqual(currentFixture);
+  });
   it('경험치·지급 기록·진행 업무와 culture 이외의 전체 상태를 그대로 복원한다', () => {
     expect(fixture.formatVersion).toBe(4);
     expect(fixture.state).not.toHaveProperty('culture');

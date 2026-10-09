@@ -168,6 +168,29 @@ class BuildMapTests(unittest.TestCase):
         self.assertLessEqual(len(used), 20)
         np.testing.assert_array_equal(painted[0, 0], palette_rgb(palette)[4])
 
+    def test_pyeongtaek_routes_stay_at_sea_except_port_approaches(self):
+        routes = json.loads((ROOT / 'data/routes.json').read_text())['items'][:2]
+        sea = {tuple(c) for c in palette_rgb(load_palette())[4:7]}
+        for region in REGIONS:
+            with Image.open(ROOT / f'public/assets/maps/{region}.png') as image:
+                pixels = image.convert('RGB')
+                bounds = REGIONS[region]['bounds']
+                for route in routes:
+                    points = route['map_waypoints']['points']
+                    for index, (a, b) in enumerate(zip(points, points[1:])):
+                        # 대략 항만 좌표로 접근하는 맨 앞·맨 뒤 구간만 육지 칸을 허용한다.
+                        if index in (0, len(points) - 2):
+                            continue
+                        start, end = geo_pixel(a, bounds, image.size), geo_pixel(b, bounds, image.size)
+                        self.assertIsNotNone(start)
+                        self.assertIsNotNone(end)
+                        steps = max(abs(end[0] - start[0]), abs(end[1] - start[1]), 1) * 4
+                        for step in range(steps + 1):
+                            position = {key: a[key] + (b[key] - a[key]) * step / steps for key in ('lat', 'lon')}
+                            pixel = geo_pixel(position, bounds, image.size)
+                            self.assertIsNotNone(pixel)
+                            self.assertIn(pixels.getpixel(pixel), sea, (region, route['id'], index, position))
+
     def test_generated_maps_and_gate_centers(self):
         world = json.loads((ROOT / 'data/world.json').read_text(encoding='utf-8'))
         palette = load_palette()

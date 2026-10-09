@@ -53,11 +53,12 @@ class CultureReportsTest(unittest.TestCase):
 
     def errors(self, tables, cases):
         validator.ERRORS.clear()
-        validator.check_culture(tables, cases, json.loads((validator.ROOT / 'data/game_config.json').read_text())['config']['reporting_currency'])
+        config = json.loads((validator.ROOT / 'data/game_config.json').read_text())['config']
+        validator.check_culture(tables, cases, config['reporting_currency'], config['home_city_id'])
         return list(validator.ERRORS)
 
     def test_generalization_finding_rejected(self):
-        for word in ('부산 사람', '부산 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
+        for word in ('부산 사람', '부산 시민', '평택 사람', '평택 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
             with self.subTest(word=word):
                 tables, cases = self.fixtures()
                 tables['culture_activities']['CA01']['report_ko']['finding_ko'] = word + ' 모두 그렇다.'
@@ -137,6 +138,77 @@ class CultureReportsTest(unittest.TestCase):
                 tables, cases = self.fixtures()
                 tables['culture_activities']['CA01']['report_ko'][key] = '  '
                 self.assertTrue(any('report_ko.' + key in e for e in self.errors(tables, cases)))
+
+
+class HomeAndScheduleTest(unittest.TestCase):
+    def fixtures(self):
+        names = ('world', 'routes', 'sources')
+        return {name: {item['id']: item for item in validator.read('data/' + name + '.json')['items']}
+                for name in names}
+
+    def test_home_and_weekday_schedules_pass(self):
+        tables = self.fixtures()
+        validator.ERRORS.clear()
+        validator.check_home_city(validator.read('data/game_config.json')['config'], tables['world'])
+        validator.check_route_schedules(tables['routes'], set(tables['sources']))
+        self.assertEqual(validator.ERRORS, [])
+
+    def test_home_id_must_exist(self):
+        validator.ERRORS.clear()
+        validator.check_home_city({'home_city_id': 'UNKNOWN'}, self.fixtures()['world'])
+        self.assertIn('본사: home_city_id가 world에 있어야 합니다', validator.ERRORS)
+
+    def test_home_rejects_other_hub_facts(self):
+        for word in ('7위', '환적 화물', 'TRANSSHIPMENT'):
+            with self.subTest(word=word):
+                tables = self.fixtures()
+                tables['world']['PYEONGTAEK']['hub_note_ko'] += word
+                validator.ERRORS.clear()
+                validator.check_home_city({'home_city_id': 'PYEONGTAEK'}, tables['world'])
+                self.assertIn('본사: 다른 거점 고유 문구 ' + word, validator.ERRORS)
+
+    def test_home_role_exempts_world_indicator(self):
+        tables = self.fixtures()
+        tables['scenarios'] = {}
+        # 다른 지표 역할을 함께 가지더라도 본사는 교육·지역 기준으로 고를 수 있다.
+        tables['world']['PYEONGTAEK']['hub_roles'].append('REGIONAL_GATEWAY')
+        validator.ERRORS.clear()
+        validator.check_world_hubs({'world': validator.read('data/world.json')}, tables, set(tables['sources']))
+        self.assertEqual(validator.ERRORS, [])
+
+    def test_schedule_day_mismatch_rejected(self):
+        for rid, days in (('ROUTE01', 6), ('ROUTE02', 5)):
+            with self.subTest(route=rid):
+                tables = self.fixtures()
+                tables['routes'][rid]['transit_days'] = days
+                validator.ERRORS.clear()
+                validator.check_route_schedules(tables['routes'], set(tables['sources']))
+                self.assertIn(rid + ': 운송일수와 요일 차이 불일치', validator.ERRORS)
+
+    def test_schedule_unknown_source_rejected(self):
+        tables = self.fixtures()
+        tables['routes']['ROUTE01']['schedule_basis']['source_refs'] = ['UNKNOWN']
+        validator.ERRORS.clear()
+        validator.check_route_schedules(tables['routes'], set(tables['sources']))
+        self.assertIn('ROUTE01: 요일표 출처 없음 UNKNOWN', validator.ERRORS)
+
+    def test_schedule_invalid_weekday_rejected(self):
+        tables = self.fixtures()
+        tables['routes']['ROUTE01']['schedule_basis']['departure_weekday'] = 'UNKNOWN'
+        validator.ERRORS.clear()
+        validator.check_route_schedules(tables['routes'], set(tables['sources']))
+        self.assertIn('ROUTE01: 출항·접안 요일 필요', validator.ERRORS)
+
+    def test_city_home_mapping_reads_config(self):
+        helper = CultureReportsTest()
+        tables, cases = helper.fixtures()
+        # 본사 대응 검사는 특정 도시 ID를 하드코딩하지 않는다.
+        for case in cases:
+            if case['id'] in ('P0-CITY-01', 'P0-CITY-02', 'P0-CITY-03', 'P0-CITY-04'):
+                case['engine_fixture_mapping']['CITY_HOME'] = 'SHANGHAI'
+        validator.ERRORS.clear()
+        validator.check_culture(tables, cases, 'KRW', 'SHANGHAI')
+        self.assertEqual(validator.ERRORS, [])
 
 
 if __name__ == '__main__':

@@ -16,7 +16,8 @@ export type HubRole =
   | 'MARITIME_SERVICES'
   | 'SHIPOWNING_CLUSTER'
   | 'REGIONAL_GATEWAY'
-  | 'PRODUCTION_ORIGIN';
+  | 'PRODUCTION_ORIGIN'
+  | 'HOME_BASE';
 
 export const HUB_ROLE_KO: Record<HubRole, string> = {
   CONTAINER_GATEWAY: '컨테이너 관문항',
@@ -26,6 +27,7 @@ export const HUB_ROLE_KO: Record<HubRole, string> = {
   SHIPOWNING_CLUSTER: '선주·선박 금융',
   REGIONAL_GATEWAY: '지역 관문',
   PRODUCTION_ORIGIN: '생산 거점',
+  HOME_BASE: '본사',
 };
 
 export interface Availability {

@@ -38,7 +38,7 @@ describe('항만 대기와 오늘 도착 구분', () => {
 
   it.each([
     [5, 'SHANGHAI', 5, 8, 'AT_SEA'],
-    [6, 'YOKOHAMA', 6, 8, 'ARRIVING_TODAY'],
+    [6, 'HAIPHONG', 6, 8, 'ARRIVING_TODAY'],
     [6, 'SHANGHAI', 7, 8, 'ARRIVING_TODAY'],
     [6, 'SHANGHAI', 4, 5, 'ARRIVING_TODAY'],
     [6, 'SHANGHAI', 6, 6, 'WAITING_RESTRICTION'],
@@ -84,7 +84,7 @@ describe('항만 대기와 오늘 도착 구분', () => {
       expect(contractProgress(state, config, state.contracts[0]!).nextKo).toBe('하역 재개 대기');
       expect(contractProgress(state, config, state.contracts[0]!).blockers).toEqual([{
         code: 'WAITING_PORT_RESTRICTION', severity: 'warn',
-        messageKo: `요코하마항 하역 중단으로 바다에서 대기 중입니다 (${day - 7}일째). 납기 8일을 넘기면 50.00 USD 감액됩니다.`,
+        messageKo: `하이퐁항 하역 중단으로 바다에서 대기 중입니다 (${day - 7}일째). 납기 8일을 넘기면 50.00 USD 감액됩니다.`,
       }]);
       state = runDays(state, config, day).state;
     }

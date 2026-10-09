@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import legacySave from '../engine/fixtures/save-v4-m2.json';
 import { loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { serializeSave } from '../engine/save';
@@ -16,6 +17,29 @@ const selectOptions = (html:string,key:string) => html.split(`<select data-actio
 const growthNotice = (html:string) => html.match(/<div class="growth-notices"([^>]*)>([\s\S]*?)<\/div>/);
 const crewNote = (html:string) => html.match(/<p class="muted small">((?:레벨·능력은|처리량은 고정값)[\s\S]*?)<\/p>/)?.[1] ?? '';
 const employeeSection = (html:string) => html.split('<section class="employee-detail"')[1]!.split('</section>')[0]!;
+
+describe('TASK-0015 평택 본사 화면', () => {
+  it('본사·문화 탭·영입 제목을 평택으로 표시한다', async () => {
+    expect(config.homeCityId).toBe('PYEONGTAEK');
+    const ui = await startUi();
+    expect(ui.app.innerHTML).toContain('평택 현지');
+    expect(ui.app.innerHTML).toContain('<h3 id="recruit-h">평택 동료 영입</h3>');
+  });
+
+  it('이전 판 저장의 거절 이유를 보이고 현재 게임을 보존한다', async () => {
+    const ui = await startUi();
+    ui.click({ action: 'accept-fwd', offer: 'OFFER_FWD_01' });
+    let saved = '';
+    vi.stubGlobal('localStorage', { setItem: (_key: string, value: string) => { saved = value; } });
+    ui.click({ action: 'save' });
+    const before = saved;
+    await ui.importText(JSON.stringify(legacySave));
+    expect(ui.app.innerHTML).toContain('이전 판(부산 본사)의 저장입니다. 이번 판에서는 열 수 없습니다.');
+    ui.click({ action: 'save' });
+    expect(saved).toBe(before);
+    expect(ui.app.innerHTML).toContain('오늘 실행 예정');
+  });
+});
 
 describe('TASK-0013 실제 화면 표시', () => {
   it('수금일 전날·당일과 도착 전후를 표시한다', async () => {
@@ -759,7 +783,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.app.innerHTML).toContain('CT001 대금 1,400.00 USD 수금. 계약 종결');
     expect(ui.app.innerHTML).toContain('종결된 계약');
     expect(ui.app.innerHTML).not.toContain('data-action="train"');
-    expect(ui.app.innerHTML).not.toContain('부산 동료 영입');
+    expect(ui.app.innerHTML).not.toContain('id="recruit-h"');
   });
   it('고정되는 상태 막대의 실제 높이를 ResizeObserver로 CSS에 갱신한다', async() => {
     const ui=await startUi();
@@ -998,8 +1022,8 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
   });
   it('M1 전체 화면에는 문화 탭·패널·비용·감싸는 칸이 없다',async()=>{
     const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
-    for(const text of ['부산 현지','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
-    ui.click({action:'end-day'});for(const text of ['부산 현지','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
+    for(const text of ['id="local-tab"','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
+    ui.click({action:'end-day'});for(const text of ['id="local-tab"','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
   });
   it('CA01 하루 뒤 원화 비용 행의 합과 운영 손익·현금식은 일치한다',async()=>{
     const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});ui.click({action:'end-day'});

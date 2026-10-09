@@ -10,7 +10,7 @@
       "id": "OFFER_BUY_01",
       "kind": "supplier",
       "counterparty_id": "SUPPLIER_DEMO",
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "good_id": "APPAREL",
       "quantity": 100,
       "quantity_unit": "piece",
@@ -28,7 +28,7 @@
       "id": "OFFER_SELL_01",
       "kind": "customer",
       "counterparty_id": "CUSTOMER_DEMO",
-      "city_id": "YOKOHAMA",
+      "city_id": "HAIPHONG",
       "good_id": "APPAREL",
       "quantity": 100,
       "quantity_unit": "piece",
@@ -47,7 +47,7 @@
       "id": "OFFER_BUY_02",
       "kind": "supplier",
       "counterparty_id": "SUPPLIER_DEMO_COSMETICS",
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "good_id": "COSMETICS",
       "quantity": 50,
       "quantity_unit": "case",
@@ -84,8 +84,8 @@
       "id": "OFFER_FWD_01",
       "kind": "forwarding",
       "counterparty_id": "SHIPPER_DEMO_FURNITURE",
-      "city_id": "BUSAN",
-      "destination_city_id": "YOKOHAMA",
+      "city_id": "PYEONGTAEK",
+      "destination_city_id": "HAIPHONG",
       "good_id": "FURNITURE",
       "quantity": 120,
       "quantity_unit": "piece",
@@ -105,17 +105,17 @@
       "source_refs": [
         "DESIGN-V04"
       ],
-      "note_ko": "고객 소유 화물의 운송 주선. 신고가액은 고객 상품의 가치이며 회사 재고·매출이 아니다."
+      "note_ko": "현지 사무실·숙소를 여는 회사의 가구 120점(DESIGN 설정). 고객 소유 화물의 운송 주선. 신고가액은 고객 상품의 가치이며 회사 재고·매출이 아니다."
     },
     {
       "id": "OFFER_FWD_02",
       "kind": "forwarding",
-      "counterparty_id": "SHIPPER_DEMO_SOLAR",
-      "city_id": "BUSAN",
-      "destination_city_id": "YOKOHAMA",
-      "good_id": "SOLAR_MODULES",
-      "quantity": 100,
-      "quantity_unit": "piece",
+      "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+      "city_id": "PYEONGTAEK",
+      "destination_city_id": "HAIPHONG",
+      "good_id": "AUTO_PARTS",
+      "quantity": 200,
+      "quantity_unit": "case",
       "cargo_owner": "customer",
       "service_fee": {
         "currency": "USD",
@@ -132,7 +132,7 @@
       "source_refs": [
         "DESIGN-V04"
       ],
-      "note_ko": "납기가 여유 있는 고객 화물. 같은 출항편의 남은 부피에 따라 다음 편으로 미룰 수 있다."
+      "note_ko": "자동차 부품 200상자(8m³, 2,400kg), 신고가액 12,000 USD(상자당 60 USD)는 DESIGN 설정이다. 고객 소유 화물이며 회사 재고·자산·매출이 아니다. 납기가 여유 있어 같은 출항편의 남은 부피에 따라 다음 편으로 미룰 수 있다."
     }
   ],
   "$schema": "../schemas/market_offers.schema.json"

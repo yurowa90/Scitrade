@@ -20,7 +20,7 @@
     "fx_krw_per_usd": 1300,
     "fx_status": "DESIGN_constant_fixture_not_market_quote",
     "active_company_id": "PLAYER_COMPANY",
-    "home_city_id": "BUSAN",
+    "home_city_id": "PYEONGTAEK",
     "active_venue_ids": [
       "VEN_TRADE",
       "VEN_PORT",

@@ -1,6 +1,6 @@
 # Scitrade
 
-현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.4.1.
+현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.5.0.
 
 처음 사용하는 코드 세션에서는 `START_HERE.md`부터 읽습니다. 이 묶음은 설계 v0.4를 담은 재생성 배포본입니다.
 
@@ -134,4 +134,4 @@ M1 거래 → M2a 복수 계약·동료 영입·레벨·교육·도시 활동 �
 python3 tools/build_package.py
 ```
 
-검증 후 `dist/Scitrade_development_v0.4.1.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.
+검증 후 `dist/Scitrade_development_v0.5.0.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.

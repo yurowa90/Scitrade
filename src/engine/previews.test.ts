@@ -125,7 +125,7 @@ describe('화면용 성장·업무 읽기 함수', () => {
     if (reason === '미지급 의무') debt(s, 9_950_001);
     if (reason === '업무 중') s = planState(s, cfg, [scout]).state;
     if (reason === '근무 시작 전') emp(s).availableFromDay = 2;
-    if (reason === '다른 도시') emp(s).locationCityId = 'YOKOHAMA';
+    if (reason === '다른 도시') emp(s).locationCityId = 'HAIPHONG';
     const id = reason === '후보' ? 'EMP04' : reason === '없는 직원' ? 'MISSING' : 'EMP01';
     const p = pure(s, cfg, () => trainingPreview(s, cfg, id));
     const actual = planState(s, cfg, [{ ...training, employeeId: id }]).results[0]!;
@@ -206,8 +206,8 @@ describe('화면용 성장·업무 읽기 함수', () => {
   });
 
   it('훈련 위치 거절은 설정의 본거지 이름을 사용한다', () => {
-    const cfg = { ...config, homeCityId: 'YOKOHAMA' };
-    expect(trainingPreview(open(cfg), cfg, 'EMP01').reasonKo).toBe('일반 훈련은 요코하마에서만 할 수 있습니다.');
+    const cfg = { ...config, homeCityId: 'HAIPHONG' };
+    expect(trainingPreview(open(cfg), cfg, 'EMP01').reasonKo).toBe('일반 훈련은 하이퐁에서만 할 수 있습니다.');
   });
 });
 
@@ -317,7 +317,7 @@ describe('TASK-0008 통화·경계·거절 결과', () => {
     ['후보', 'EMP04', '고용 중인 직원이 아닙니다.'],
     ['없는 직원', 'MISSING', '고용 중인 직원이 아닙니다.'],
     ['근무 시작 전', 'EMP01', '귀솔은(는) 2일부터 업무를 맡을 수 있습니다.'],
-    ['다른 도시', 'EMP01', '일반 훈련은 부산에서만 할 수 있습니다.'],
+    ['다른 도시', 'EMP01', '일반 훈련은 평택에서만 할 수 있습니다.'],
     ['자금 부족', 'EMP01', '훈련비 자금이 부족합니다. 필요 50,000원, 사용 가능 49,999원.'],
     ['업무 중', 'EMP01', '귀솔은(는) 다른 업무(항만 물류단지 현장 조사)를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.'],
   ])('훈련 거절 %s는 processedCommands 전체에 정확한 일자·종류·상태·이유만 추가한다', (reason, employeeId, reasonKo) => {
@@ -325,7 +325,7 @@ describe('TASK-0008 통화·경계·거절 결과', () => {
     if (reason === '자금 부족') cfg.startingCash.KRW = 49_999;
     let s = open(cfg);
     if (reason === '근무 시작 전') emp(s).availableFromDay = 2;
-    if (reason === '다른 도시') emp(s).locationCityId = 'YOKOHAMA';
+    if (reason === '다른 도시') emp(s).locationCityId = 'HAIPHONG';
     if (reason === '업무 중') s = planState(s, cfg, [scout]).state;
     const before = structuredClone(s);
     const result = planState(s, cfg, [{ ...training, employeeId: employeeId! }]);

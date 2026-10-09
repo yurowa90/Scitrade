@@ -108,7 +108,7 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     const p=culturePreview(view,config,'CA01','EMP01');expect(p.allowed).toBe(true);expect(p.waitingTasks).toHaveLength(1);
     const html=preview(panel(s,config,commands));
     expect(html).toContain(`⚠ 기다리는 업무: CT001 ${taskName(p.waitingTasks[0]!.task.kind)} 2pt (2일 출항편 예약됨) — 아직 아무에게도 배정하지 않았습니다.`);
-    expect(html).toContain(busy ? '오늘 쉬는 다른 부산 직원: 없음. 이 활동을 하면 오늘 이 업무를 맡을 사람이 없습니다.' : '오늘 쉬는 다른 부산 직원: 물보리');
+    expect(html).toContain(busy ? '오늘 쉬는 다른 평택 직원: 없음. 이 활동을 하면 오늘 이 업무를 맡을 사람이 없습니다.' : '오늘 쉬는 다른 평택 직원: 물보리');
     expect(html).toContain('(오늘 할 일 반영)');
   });
   it('대기 중인 쌍 하나만 빼서 미리 보고 다른 대기 지출은 남긴다',()=>{
@@ -148,7 +148,7 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     const report=config.culture!.activities[0]!.reportKo!;
     for(const [i,field] of ['findingKo','scopeKo','notClaimedKo','openQuestionKo'].entries()) {
       const body=fields[i]![1]!.match(/<p>([\s\S]*?)<\/p>/)![1]!;
-      expect(body).toBe(esc(field==='notClaimedKo' ? '부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.' : report[field as keyof typeof report]));
+      expect(body).toBe(esc(field==='notClaimedKo' ? '평택의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.' : report[field as keyof typeof report]));
       expect(fields[i]![1]!.includes('넓혀 읽지 않기')).toBe(i===2);
     }
     expect(html).toContain('출처 1명: 시장 상인 윤서 · 다른 출처로 아직 확인하지 않은 기록');

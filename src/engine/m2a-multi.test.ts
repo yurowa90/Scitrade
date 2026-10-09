@@ -104,7 +104,8 @@ describe('P0-M2A-02 운송 주선: 고객 화물과 회사 재고 분리', () =>
     const { state } = runDays(createGame(config), config, 2, pathScript(path));
     const r = companyReport(state, config);
     expect(r.inventoryUnits).toBe(50);
-    expect(r.customerCargoUnits).toBe(120 + 100);
+    // TASK-0015에서 고객 화물을 자동차 부품 200상자로 바꿨다. 금액 기대값은 그대로다.
+    expect(r.customerCargoUnits).toBe(120 + 200);
     expect(r.trade.inventory).toBe(usd(2000 + 180));
     expect(r.trade.forwardingWip).toBe(usd(200));
     expect(state.cargoLots.filter((l) => l.owner === 'CUSTOMER').every((l) => l.carryingAmountMinor === 0)).toBe(true);

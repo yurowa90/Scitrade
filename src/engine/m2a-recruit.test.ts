@@ -82,7 +82,7 @@ describe('P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들�
       expect(p.results[0]!.status).toBe('REJECTED');
       unchangedExceptCommand(s, p.state);
     }
-    s.employees.find((e) => e.id === 'EMP02')!.locationCityId = 'YOKOHAMA';
+    s.employees.find((e) => e.id === 'EMP02')!.locationCityId = 'HAIPHONG';
     expect(plan(s, [scout()]).results[0]!.reasonKo).toContain('현지 인력');
     candidate(s).stage = 'DISCOVERED';
     candidate(s, 'EMP06').stage = 'DISCOVERED';

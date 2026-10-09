@@ -462,7 +462,7 @@ table.roster small { font-size: 12px; }
 /* 아래쪽 고정 알림이 마지막 내용을 가리지 않게 한다. 좁은 화면의 .layout 아래 여백보다 우선한다. */
 main.layout { padding-bottom: 5.5rem; }
 
-/* 부산 현지: 거래 머리의 진입점은 흐름 밖에 두고, 열린 패널은 주 열을 쓴다. */
+/* 평택 현지: 거래 머리의 진입점은 흐름 밖에 두고, 열린 패널은 주 열을 쓴다. */
 .maincol { grid-area: trade; display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 .trade { position: relative; }
 .local-tab { position: absolute; top: .55rem; right: .9rem; line-height: 1.2; padding: .25rem .7rem; min-height: 44px; }

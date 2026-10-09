@@ -165,6 +165,9 @@
       "application_notes": "P0: 현지 거래처의 요구를 확인하는 대화·직원 협업. 국적에 따라 정직성·능력을 고정하지 않음",
       "priority": [
         "P0"
+      ],
+      "activity_ids": [
+        "CA02"
       ]
     },
     {
@@ -228,6 +231,9 @@
       "application_notes": "P0: 커피 공급 차질과 대체 공급자 탐색. 나라 전체를 동일한 생산·기후 조건으로 취급하지 않음",
       "priority": [
         "P0"
+      ],
+      "activity_ids": [
+        "CA02"
       ]
     },
     {
@@ -588,6 +594,9 @@
       "application_notes": "P0: 질량·길이·시간 및 유도량의 단위 일관성, kg·t·m³와 공간 환산. 회계의 화폐 단위 검증은 별도로 수행",
       "priority": [
         "P0"
+      ],
+      "activity_ids": [
+        "CA02"
       ]
     },
     {

@@ -27,7 +27,7 @@ describe('data/scenarios.json 계약 조건 연결', () => {
     expect(delay.terms.preDepartureCancellationFeeMinor).toBe(base.terms.preDepartureCancellationFeeMinor);
     expect(delay.terms.paymentDueDay).toBe(11);
     expect(delay.portRestrictions).toEqual([
-      expect.objectContaining({ eventInstanceId: 'EVI_M1_EV02_YOKOHAMA', cityId: 'YOKOHAMA', announceDay: 5, startDay: 7, endDay: 8 }),
+      expect.objectContaining({ eventInstanceId: 'EVI_M1_EV02_HAIPHONG', cityId: 'HAIPHONG', announceDay: 5, startDay: 7, endDay: 8 }),
     ]);
     expect(loadScenario('SCENARIO_M1_CANCEL_PREDEPARTURE').portRestrictions).toHaveLength(0);
     expect(assumptionNotes('SCENARIO_M1_ONE_TRADE').length).toBeGreaterThan(0);
@@ -102,7 +102,7 @@ describe('M1 출항 전 취소 — SCENARIO_M1_CANCEL_PREDEPARTURE (P0-ACC-13)',
     expect(book.cash).toBe(usd(e.cash_after!));
     expect(lot.quantity).toBe(e.remaining_inventory_units);
     expect(lot.status).toBe('HELD_UNALLOCATED');
-    expect(lot.locationCityId).toBe('BUSAN');
+    expect(lot.locationCityId).toBe('PYEONGTAEK');
     expect(book.inventory).toBe(usd(e.inventory_cost!));
     expect(book.accountsReceivable).toBe(usd(e.accounts_receivable!));
     expect(book.revenue).toBe(usd(e.revenue!));
@@ -128,7 +128,7 @@ describe('M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)', () => {
   const e = expectedTradeResult('SCENARIO_M1_DELAY_ACCEPTED');
   const script = {
     1: standardDayOneCommands(config),
-    5: [{ id: 'CMD-KEEP', type: 'RESPOND_TO_DELAY' as const, noticeId: 'NOTICE-EVI_M1_EV02_YOKOHAMA', shipmentId: 'SH001', choice: 'KEEP_SHIPMENT_BOOKING' as const }],
+    5: [{ id: 'CMD-KEEP', type: 'RESPOND_TO_DELAY' as const, noticeId: 'NOTICE-EVI_M1_EV02_HAIPHONG', shipmentId: 'SH001', choice: 'KEEP_SHIPMENT_BOOKING' as const }],
   };
 
   it('공통 지연 2일을 한 번만 더해 9일에 인도하고 감액한다', () => {
@@ -138,7 +138,7 @@ describe('M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)', () => {
     expect(sh.scheduledArrivalDay).toBe(7);
     expect(sh.arrivalDay).toBe(config.expectedTimeline.arrivalDay);
     expect(sh.observedWaitDays).toBe(2);
-    expect(sh.delayEventIds).toEqual(['EVI_M1_EV02_YOKOHAMA']);
+    expect(sh.delayEventIds).toEqual(['EVI_M1_EV02_HAIPHONG']);
     expect(state.notices).toHaveLength(1);
 
     const book = usdBook(state);
@@ -235,7 +235,7 @@ describe('일자 마감·저장·재현', () => {
   const config = loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
   const script = {
     1: standardDayOneCommands(config),
-    5: [{ id: 'CMD-KEEP', type: 'RESPOND_TO_DELAY' as const, noticeId: 'NOTICE-EVI_M1_EV02_YOKOHAMA', shipmentId: 'SH001', choice: 'KEEP_SHIPMENT_BOOKING' as const }],
+    5: [{ id: 'CMD-KEEP', type: 'RESPOND_TO_DELAY' as const, noticeId: 'NOTICE-EVI_M1_EV02_HAIPHONG', shipmentId: 'SH001', choice: 'KEEP_SHIPMENT_BOOKING' as const }],
   };
 
   it('이미 마감한 날을 다시 마감하면 상태가 바뀌지 않는다', () => {

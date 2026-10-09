@@ -118,7 +118,7 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
       ${queuedQuest ? status(`quest-${e.id}`, '영입 의뢰 예정') : c.stage === 'DISCOVERED' ? `<div data-action-slot="quest-${esc(e.id)}">${choice.html}<button aria-label="${esc(e.nameKo)} 영입 의뢰(${config.recruitment!.questWorkUnits}pt)" data-action="recruit-quest" data-candidate="${esc(e.id)}" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>영입 의뢰(${config.recruitment!.questWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}</div>` : ''}
       ${c.stage === 'INTERVIEW_READY' || queuedHire ? `<button aria-label="${esc(e.nameKo)} 면담" aria-expanded="${interviewId === e.id}" aria-controls="interview-${esc(e.id)}" data-action="interview" data-candidate="${esc(e.id)}">${esc(e.nameKo)} 면담</button>${interviewBlock(s, config, e, check({ id: `PREVIEW-HIRE-${e.id}`, type: 'HIRE_CANDIDATE', candidateId: e.id }), interviewId === e.id, queuedHire ? status(`hire-${e.id}`, '고용 예정') : '')}` : ''}</article>`;
   });
-  return `<section class="recruitment" aria-labelledby="recruit-h"><h3 id="recruit-h">부산 동료 영입</h3>${sites.join('')}<p class="muted">미발견 후보 ${s.recruitment.candidates.filter((c) => c.stage === 'UNDISCOVERED').length}명</p>${candidates.join('')}</section>`;
+  return `<section class="recruitment" aria-labelledby="recruit-h"><h3 id="recruit-h">${esc(cityName(config, config.homeCityId))} 동료 영입</h3>${sites.join('')}<p class="muted">미발견 후보 ${s.recruitment.candidates.filter((c) => c.stage === 'UNDISCOVERED').length}명</p>${candidates.join('')}</section>`;
 }
 
 /** 카드와 운영표 모두 공개된 동료 목록만 전달받는다. */

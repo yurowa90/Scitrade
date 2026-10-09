@@ -103,6 +103,9 @@ export function deserializeSave(text: string, expected: { dataVersion: string; r
       `다른 경제 규칙 판본(${file.rulesVersion})의 저장입니다. ${expected.rulesVersion ? `이 시나리오의 규칙은 ${expected.rulesVersion}이며 ` : ''}규칙 판본 사이의 자동 이관은 없습니다.`,
     );
   }
+  if (typeof file.dataVersion === 'string' && /^0\.4\./.test(file.dataVersion)) {
+    throw new SaveError('이전 판(부산 본사)의 저장입니다. 이번 판에서는 열 수 없습니다.');
+  }
   if (file.dataVersion !== expected.dataVersion) {
     throw new SaveError(`다른 데이터 판본(${file.dataVersion})의 저장입니다. 현재 데이터는 ${expected.dataVersion}입니다.`);
   }

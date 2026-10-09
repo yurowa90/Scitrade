@@ -53,22 +53,22 @@ describe('자료·키·기존 판본', () => {
       expect(Object.values(a.reportKo!).every((text) => text.length > 0)).toBe(true);
       expect(a.topic.contentRevision).toBe('1');
     }
-    expect([config.dataVersion, config.rules.rulesVersion, SAVE_FORMAT_VERSION]).toEqual(['0.4.1', 'M2a-rules-1', 5]);
+    expect([config.dataVersion, config.rules.rulesVersion, SAVE_FORMAT_VERSION]).toEqual(['0.5.0', 'M2a-rules-1', 5]);
   });
 
   // 문장을 수정할 때 자료와 이 표를 함께 갱신한다.
   it.each([
     ["CA01", "finding_ko", "윤서: “지금 들여오는 상자는 우리 가게 선반에 다 들어가지 않아요. 더 작은 묶음이면 좋겠어요.”"],
     ["CA01", "scope_ko", "판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다."],
-    ["CA01", "not_claimed_ko", "부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다."],
+    ["CA01", "not_claimed_ko", "평택의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다."],
     ["CA01", "open_question_ko", "윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지."],
-    ["CA02", "finding_ko", "하람: “같은 배를 두고 전시 안내문과 옛 장부의 날짜가 달라요. 어느 쪽이 맞는지 정하기 전에, 각각 누가 언제 무엇을 보고 썼는지부터 확인해야 해요.”"],
-    ["CA02", "scope_ko", "가상 전시 1곳의 기록 2건을 안내자 1명(하람)과 비교했습니다. 어느 기록이 맞는지는 확인하지 않았습니다."],
-    ["CA02", "not_claimed_ko", "두 기록 가운데 어느 쪽이 옳은지, 그리고 실제 부산항의 역사(이 전시는 가상입니다)."],
-    ["CA02", "open_question_ko", "두 기록을 쓴 사람·시점·근거, 그리고 둘 다 틀렸을 가능성."],
+    ["CA02", "finding_ko", "하람: “이 안내판은 ‘전국 4위’, 저 안내판은 ‘전국 5위’예요. 하나는 컨테이너를 20피트 상자 기준(TEU)으로, 하나는 모든 화물을 톤으로 셌대요. 무엇을 무슨 단위로 셌는지 보기 전에는 한쪽이 틀렸다고 할 수 없어요.”"],
+    ["CA02", "scope_ko", "가상 전시 1곳의 안내판 2개를 안내자 1명(하람)과 읽었습니다. 둘 다 2025년 한 해의 순위입니다. 원래 통계표는 아직 직접 보지 않았습니다."],
+    ["CA02", "not_claimed_ko", "어느 순위가 더 중요한지, 다른 해에도 순위가 같은지, 그리고 평택항의 실제 역사(전시는 가상이고, 순위만 2025년 통계를 따릅니다)."],
+    ["CA02", "open_question_ko", "전시의 ‘톤’이 무게만 센 것인지, 그리고 1위 항만과는 얼마나 차이 나는지."],
     ["CA03", "finding_ko", "윤서: “‘다음 주 초에 조금 더’라고 하면 저는 월요일에 열 상자 정도를 뜻해요.” / 하람: “같은 말도 사람마다 뜻이 다를 수 있으니, 날짜와 숫자로 다시 말해 달라고 하세요.”"],
     ["CA03", "scope_ko", "2명(윤서·하람)과 하루의 대화. ‘월요일·열 상자 정도’는 윤서 본인에게 확인한 뜻입니다. 다른 거래처의 표현은 확인하지 않았습니다."],
-    ["CA03", "not_claimed_ko", "부산의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다."],
+    ["CA03", "not_claimed_ko", "평택의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다."],
     ["CA03", "open_question_ko", "‘정도’가 몇 상자까지인지, 매주 같은 양인지."],
   ])('사용자 승인 문장 %s %s', (id, key, sentence) => {
     const activity = activities.items.find((a) => a.id === id)!;
@@ -138,11 +138,9 @@ describe('자료·키·기존 판본', () => {
     unchangedExceptCommand(s, p.state);
   });
 
-  it('실제 판본 4 저장은 경험치를 보존하고 빈 기록장으로 열린다', () => {
-    const restored = deserializeSave(JSON.stringify(fixtureV4), { dataVersion: config.dataVersion });
-    const { culture, ...other } = restored;
-    expect(culture).toEqual({ reports: [], experiences: [], relationEvents: [] });
-    expect(other).toEqual(fixtureV4.state);
+  it('이전 자료 판본 0.4.1 저장은 거절한다', () => {
+    expect(() => deserializeSave(JSON.stringify(fixtureV4), { dataVersion: config.dataVersion }))
+      .toThrow('이전 판(부산 본사)의 저장입니다. 이번 판에서는 열 수 없습니다.');
   });
 });
 
@@ -297,7 +295,7 @@ describe('P0-CITY-03 출처·경험·쌍별 기록·거래 분리', () => {
       expect(counterpartyRecord(s, party)).toEqual({ inProgress: 0, onTime: 0, late: 0, cancelled: 0 });
     }
     for (const field of ['contracts', 'invoices', 'offers'] as const) expect(s[field]).toEqual(before[field]);
-    expect(s.culture.reports[0]).toMatchObject({ cityId: 'BUSAN', topicId: 'KT_BUSAN_PACKAGING', sourceContactIds: ['NPC_MARKET'],
+    expect(s.culture.reports[0]).toMatchObject({ cityId: 'PYEONGTAEK', topicId: 'KT_PYEONGTAEK_PACKAGING', sourceContactIds: ['NPC_MARKET'],
       day: 1, status: 'UNVERIFIED', reporterEmployeeId: 'EMP01' });
     expect(s.culture.experiences[0]).toMatchObject({ employeeId: 'EMP01', countryCode: 'KR', verifiedDay: 1, completedTaskId: s.tasks[0]!.id });
   });
