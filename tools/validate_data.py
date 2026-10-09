@@ -7,6 +7,7 @@ The schema files can also be used with a complete Draft 2020-12 validator.
 """
 from pathlib import Path
 from decimal import Decimal, ROUND_HALF_EVEN
+import datetime
 import hashlib
 import json
 import sys
@@ -495,11 +496,12 @@ PENDING_P0_CURRICULUM_LINKS = frozenset({
 })
 
 
+_TOKENS = re.compile(r"""('(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`)|//[^\n]*|/\*.*?\*/""", re.S)
+
+
 def strip_comments(text):
-    """/* … */ 묶음과, 앞 공백 뒤 // 로 시작하는 줄을 지운다. 문자열 안의 // 는 건드리지 않는다."""
-    # TS 구문 분석기가 아니다. 문자열 안의 묶음 주석 기호도 지워질 수 있다.
-    text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
-    return re.sub(r'^\s*//[^\n]*', '', text, flags=re.M)
+    """문자열은 그대로 두고, // 줄 주석과 /* */ 묶음 주석을 나타난 순서대로 지운다. 정규식 리터럴은 구분하지 않는다."""
+    return _TOKENS.sub(lambda m: m.group(1) if m.group(1) is not None else ' ', text)
 
 
 def has_title(text, name, call=TEST_CALL):
@@ -551,6 +553,17 @@ def linked_count(cases, kind):
     return sum(isinstance(c.get(f'{kind}_test_ref'), str) for c in cases)
 
 
+def valid_date(value):
+    """ASCII 숫자 YYYY-MM-DD이고 달력에 있는 날짜인지 본다."""
+    if not isinstance(value, str) or re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}', value) is None:
+        return False
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
 def check_acceptance_summary(acceptance, character_doc):
     cases, items = acceptance['cases'], character_doc['items']
     summary = acceptance.get('review_summary', {})
@@ -582,7 +595,7 @@ def check_acceptance_summary(acceptance, character_doc):
         cid = record.get('case_id')
         check(isinstance(cid, str) and cid in ids, f'사람 검토 기록 {i}: 없는 사례 {cid}')
         predicates = {
-            'reviewed_on': lambda v: isinstance(v, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', v) is not None,
+            'reviewed_on': valid_date,
             'reviewer_ko': lambda v: isinstance(v, str) and bool(v.strip()),
             'result': lambda v: v in ('일치', '불일치'),
             'note_ko': lambda v: isinstance(v, str),
@@ -646,7 +659,9 @@ def check_sources(documents, root=ROOT):
         sid = source['id']
         path = source.get('local_path')
         if isinstance(path, str):
-            check((root / path).is_file(), f'{sid}: local_path 파일 없음 {path}')
+            # 저장소 기준 상대 경로만 받는다. 절대 경로와 '..'는 root 밖을 가리킬 수 있다.
+            inside = not Path(path).is_absolute() and '..' not in Path(path).parts
+            check(inside and (root / path).is_file(), f'{sid}: local_path 파일 없음 {path}')
         if not usage[sid]:
             reason = source.get('unreferenced_reason_ko')
             check(isinstance(reason, str) and bool(reason.strip()), f'{sid}: 쓰이지 않는 출처는 unreferenced_reason_ko 필요')
@@ -699,10 +714,17 @@ def check_curriculum_counts(curriculum_doc, curriculum):
 
 def check_acceptance_fixture_numbers(cases, scenarios):
     for case in cases:
-        scenario = scenarios.get(case.get('scenario_id'), {})
+        cid, sid = case['id'], case.get('scenario_id')
+        if sid is not None:
+            check(sid in scenarios, f'{cid}: 없는 시나리오 {sid}')
+        scenario = resolve_scenario(scenarios, sid) if sid in scenarios else {}
+        # 시나리오 값을 읽는다고 적은 사례는 그 값이 있어야 한다.
+        note = case.get('engine_mapping_note_ko')
+        if isinstance(note, str) and 'expected_trade_only_usd' in note:
+            check('expected_trade_only_usd' in scenario, f'{cid}: 연결 시나리오에 expected_trade_only_usd 없음')
         if 'expected_trade_only_usd' in scenario:
             check(case.get('expected_numeric') == scenario['expected_trade_only_usd'],
-                  case['id'] + ': expected_numeric와 시나리오 expected_trade_only_usd 불일치')
+                  cid + ': expected_numeric와 시나리오 expected_trade_only_usd 불일치')
 
 
 def check_test_title_links(cases, root=ROOT):

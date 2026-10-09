@@ -12,7 +12,7 @@
     "isolate_every_case": true,
     "reset_state_before_each_case": true,
     "reuse_previous_case_state": false,
-    "assertion_paths": "개념적 상태 경로다. 연결한 사례는 시험이 실제 상태·설정에 대응시킨다. 대응은 engine_fixture_mapping·engine_mapping_note_ko에 적는다.",
+    "assertion_paths": "개념적 상태 경로다. 연결한 사례 가운데 합성 설정이나 단위 변환이 필요한 사례는 그 대응을 engine_fixture_mapping·engine_mapping_note_ko에 적는다. scenario_id로 실제 시나리오를 그대로 쓰는 사례는 따로 적지 않는다.",
     "numeric_comparison": "정수 금액과 수량은 정확히 비교. 지분은 정수 주식 수의 비율로 검산.",
     "fixture_currency_rule": "accounting_unit=fixture_no_currency 사례는 통화 없는 산술 예제이다. currency가 명시된 M1 취소·지연 사례는 USD, IPO 사례는 KRW이며 사례별 장부를 합산하지 않는다.",
     "parameter_rule": "금액·가격·일수·보상·성장량은 모두 검수용 DESIGN 값이며 관측 통계나 실증 계수가 아니다.",
@@ -91,7 +91,8 @@
       "engine_test_ref": "src/engine/acceptance-p0-acc.test.ts",
       "engine_test_names": [
         "P0-ACC-01 외상 판매의 현금·채권·이익 분리"
-      ]
+      ],
+      "engine_mapping_note_ko": "명세 금액 1을 XXX 통화 최소 단위 1로 본다. 시험 설정은 M1 설정을 복사한 합성이다. 통화를 XXX로 바꾸고 시작 현금·매입가·판매가·운임을 명세 단계 값에 맞춘다. 관세는 관세율(bp)로, 임금은 인도일부터 근무하는 별도 직원의 하루 급여로 만든다. 같은 값을 엔진 명령 경로와 직접 분개 두 방식으로 확인한다."
     },
     {
       "id": "P0-ACC-02",
@@ -143,7 +144,8 @@
       "engine_test_ref": "src/engine/acceptance-p0-acc.test.ts",
       "engine_test_names": [
         "P0-ACC-02 외상대금 수금과 중복 수금 방지"
-      ]
+      ],
+      "engine_mapping_note_ko": "명세 금액 1을 XXX 통화 최소 단위 1로 본다. 수금 전 상태는 엔진 경로가 아니라 장부 직접 기입과 시험용 청구서 하나로 만든다. 같은 수금 ID를 다시 보내거나 저장·불러오기 뒤 보내도 한 번만 반영되는지 본다."
     },
     {
       "id": "P0-CITY-01",
@@ -527,7 +529,7 @@
       ],
       "human_review_check": "100−10×3−1=69; 투자자산 10×3=30; 총자산 69+30=99.",
       "engine_test_ref": null,
-      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(src/engine에 주식 처리 코드가 없고, 기본 설정 game_config의 securities_enabled는 false다). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-02",
@@ -583,7 +585,7 @@
       ],
       "human_review_check": "주식가액 10×4=40; 미실현 이익 40−30=10; 현금 69 유지; 총자산 109.",
       "engine_test_ref": null,
-      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(src/engine에 주식 처리 코드가 없고, 기본 설정 game_config의 securities_enabled는 false다). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-03",
@@ -636,7 +638,7 @@
       ],
       "human_review_check": "공개가격 3만 보이는지와 미래 필드 부재를 확인한다. 시장 공개 이후 표시 전환은 별도 정상 흐름으로 확인한다.",
       "engine_test_ref": null,
-      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(src/engine에 주식 처리 코드가 없고, 기본 설정 game_config의 securities_enabled는 false다). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-04",
@@ -693,7 +695,7 @@
       ],
       "human_review_check": "주식 예약 70+1=71; 가용현금 100−71=29; 40>29이므로 상품 예약 실패. 총현금 100은 체결 전 유지.",
       "engine_test_ref": null,
-      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(src/engine에 주식 처리 코드가 없고, 기본 설정 game_config의 securities_enabled는 false다). P0 완료 조건이 아니다."
     },
     {
       "id": "P2-IPO-01",
@@ -758,7 +760,7 @@
       ],
       "human_review_check": "1000000+250000=1250000주; 250000×2000=500000000 KRW; 1000000÷1250000×100=80%; 신규 투자자 20%.",
       "engine_test_ref": null,
-      "unlinked_reason_ko": "P2 상장 기능은 아직 엔진에 없다(game_config의 ipo_enabled가 false). P0 완료 조건이 아니다."
+      "unlinked_reason_ko": "P2 상장 기능은 아직 엔진에 없다(src/engine에 상장 처리 코드가 없고, 기본 설정 game_config의 ipo_enabled는 false다). P0 완료 조건이 아니다."
     },
     {
       "id": "P0-ACC-13",
@@ -789,7 +791,7 @@
       "engine_test_names": [
         "M1 출항 전 취소 — SCENARIO_M1_CANCEL_PREDEPARTURE (P0-ACC-13)"
       ],
-      "engine_mapping_note_ko": "시험은 같은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽어 USD 최소 단위로 비교한다. 자료 검사기가 두 값이 같은지 확인한다."
+      "engine_mapping_note_ko": "시험은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽는다. 금액은 USD 최소 단위로, 남은 재고는 개수로 비교한다. opening_cash는 직접 단언하지 않고 거래 뒤 현금(cash_after)으로 간접 확인한다. 자료 검사기가 두 값이 같은지 확인한다."
     },
     {
       "id": "P0-ACC-14",
@@ -818,7 +820,7 @@
       "engine_test_names": [
         "M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)"
       ],
-      "engine_mapping_note_ko": "시험은 같은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽어 USD 최소 단위로 비교한다. 자료 검사기가 두 값이 같은지 확인한다."
+      "engine_mapping_note_ko": "시험은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽어 USD 최소 단위로 비교한다. inventory_units는 직접 단언하지 않고 화물의 인도 상태(DELIVERED)로 간접 확인한다. 자료 검사기가 두 값이 같은지 확인한다."
     },
     {
       "id": "P0-M2A-01",
