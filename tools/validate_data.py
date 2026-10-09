@@ -414,8 +414,13 @@ def check_home_city(config, world):
         return
     home = world[home_id]
     check('HOME_BASE' in home.get('hub_roles', []), '본사: HOME_BASE 역할 필요')
-    for word in ('7위', '환적 화물', 'TRANSSHIPMENT'):
-        check(word not in json.dumps(home, ensure_ascii=False), '본사: 다른 거점 고유 문구 ' + word)
+    # 다른 거점 설명문의 비율 수치(예: 부산 환적 57%)도 본사 항목에 옮겨 오지 않는다.
+    # 순위(N위)는 거점마다 겹치므로(평택 4위·상하이 4위) 비율만 거점 자료에서 읽는다.
+    other_shares = {share for cid, city in world.items() if cid != home_id
+                    for share in re.findall(r'\d+(?:\.\d+)?%', city.get('hub_note_ko', ''))}
+    text = json.dumps(home, ensure_ascii=False)
+    for word in ('7위', '환적 화물', 'TRANSSHIPMENT', *sorted(other_shares)):
+        check(word not in text, '본사: 다른 거점 고유 문구 ' + word)
 
 
 def check_route_schedules(routes, source_ids):
@@ -648,7 +653,7 @@ def main():
 
     acceptance = read('tests/acceptance_cases.json')
     cases = acceptance['cases']
-    check_culture(tables, cases, config['reporting_currency'], config['home_city_id'])
+    check_culture(tables, cases, config['reporting_currency'], config.get('home_city_id'))
     summary = acceptance['review_summary']
     check(summary['case_count'] == len(cases), 'review_summary case_count matches cases')
     counts = {phase: sum(c['phase'] == phase for c in cases) for phase in ('P0', 'P1', 'P2')}

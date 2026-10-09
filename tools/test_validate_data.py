@@ -153,13 +153,21 @@ class HomeAndScheduleTest(unittest.TestCase):
         validator.check_route_schedules(tables['routes'], set(tables['sources']))
         self.assertEqual(validator.ERRORS, [])
 
+    def test_home_allows_shared_rank_words(self):
+        # 상하이에도 '4위'가 있지만 평택 자기 순위(4위·5위)는 막지 않는다.
+        tables = self.fixtures()
+        validator.ERRORS.clear()
+        validator.check_home_city({'home_city_id': 'PYEONGTAEK'}, tables['world'])
+        self.assertEqual(validator.ERRORS, [])
+        self.assertIn('4위', tables['world']['PYEONGTAEK']['hub_note_ko'])
+
     def test_home_id_must_exist(self):
         validator.ERRORS.clear()
         validator.check_home_city({'home_city_id': 'UNKNOWN'}, self.fixtures()['world'])
         self.assertIn('본사: home_city_id가 world에 있어야 합니다', validator.ERRORS)
 
     def test_home_rejects_other_hub_facts(self):
-        for word in ('7위', '환적 화물', 'TRANSSHIPMENT'):
+        for word in ('7위', '환적 화물', 'TRANSSHIPMENT', '57%'):
             with self.subTest(word=word):
                 tables = self.fixtures()
                 tables['world']['PYEONGTAEK']['hub_note_ko'] += word

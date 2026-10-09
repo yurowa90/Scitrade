@@ -22,7 +22,8 @@
       "origin_country_code": "KR",
       "source_refs": [
         "DESIGN-V03"
-      ]
+      ],
+      "note_ko": "한국 브랜드 의류 소량 수출을 위한 국내 매입(DESIGN 설정)."
     },
     {
       "id": "OFFER_SELL_01",
@@ -41,7 +42,8 @@
       "payment_due_day": 10,
       "source_refs": [
         "DESIGN-V03"
-      ]
+      ],
+      "note_ko": "한국 브랜드 의류 소량 수출(DESIGN 설정). 하이퐁 고객에게 파는 판매 견적이다."
     },
     {
       "id": "OFFER_BUY_02",

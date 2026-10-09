@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 314292,
-      "sha256": "1bc10aaf94dddbb6300d218d97f82b09dac1ce2737581b3dc8792369a0f03307"
+      "size_bytes": 314738,
+      "sha256": "4e824c43c054dcabfaa3b9c7cf21efe353fd301d6b179b7c376bd811dbb28cec"
     },
     {
       "path": "data/contacts.json",
@@ -92,8 +92,8 @@
     },
     {
       "path": "data/market_offers.json",
-      "size_bytes": 3868,
-      "sha256": "7d1de31718ca38286e867ed2f54900962c1dfa878a6b04a36543df3b63f41dd4"
+      "size_bytes": 4091,
+      "sha256": "11d98e6ec33084b5422478341b89b1fb2d7dba7c96347f22793292e1c13811d1"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 46194,
-      "sha256": "d8c5b34ef0b9136186a438f977223cb2423abb6e9f15ed9b7cd1112141d3dcf4"
+      "size_bytes": 47427,
+      "sha256": "c7b3ae35247e95b1b8b994c82231adf6a1d06823f9c7934686181bf1d101d575"
     },
     {
       "path": "data/team_synergies.json",
@@ -462,8 +462,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0015.md",
-      "size_bytes": 16509,
-      "sha256": "6c0702d9bebe20113d72a44fd2bf481c60af1db3bc57b8b5b82ed0b0eb77ff8c"
+      "size_bytes": 22382,
+      "sha256": "bc7f952fc1f6142518bbcaca648e712bdb396971ed862f1c6bcd45c77201334e"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -767,13 +767,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 11580,
-      "sha256": "cd093a7092278fe9cf2cd0236a0ce0b690e8f06eaf744b9e29e34df5d4198814"
+      "size_bytes": 12010,
+      "sha256": "687806e7e3dcd661319002f8b4f38269b48139d26f249a8b55101941648148d6"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 48820,
-      "sha256": "1ff4a7a0f4cb9b9a2ee89db27db819ad0b4284aff8f5559c3b14cab19e8e6908"
+      "size_bytes": 49265,
+      "sha256": "55914825d52f719bc870fbd21a1866857eb48c19449908b3c903680a7a08ab0c"
     }
   ]
 }
