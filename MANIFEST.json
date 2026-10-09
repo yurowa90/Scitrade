@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 6104,
-      "sha256": "1593c41e4dd3545a895a5f512b595db36c738d3217d5ddf94113986376c56a03"
+      "size_bytes": 6853,
+      "sha256": "d0dc09deefe47092d1caa62f46260f10f204df110fef97086b13f7dd47caffc8"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -494,6 +494,16 @@
       "path": "docs/ai/tasks/TASK-0016-campaign-read-functions.md",
       "size_bytes": 45452,
       "sha256": "ccd1ac40c5d1dab89ec13dfbf733beeb17a9609e285178841c98f7d0934659d8"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0017-headless-sim-runner.md",
+      "size_bytes": 54248,
+      "sha256": "451874d872cbde6cb43efde10e8fb5e3ab40807520fa831ecfbb3e2137ce4c7e"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0018-ui-keyboard-input-safety.md",
+      "size_bytes": 56371,
+      "sha256": "afb2bf0608f05c62a08902f46720c36bc94674a796f69bcf123a064903879368"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
