@@ -49,10 +49,11 @@
 - 취소비: 상속한 계약 조건까지 포함해 모든 시나리오 노선의 고정 취소비(`validate_cancellation`, `:77`, TASK-0008, 2026-10-05).
 - 세계 거점: 역할·단계·지도 위치·근거 출처(`check_world_hubs`, `:456`, `3535c59`, 2026-10-05).
 - 지도 표시 좌표와 ROUTE01 꺾은선 끝점이 항구 좌표 0.2도 안(`:856-862`). 거리·운송일수에는 쓰지 않는 표시 전용 값이다.
-- 문화 활동: 장소·인물·비용·출처 범위와 P0-CITY-01~04 인수 명세 연결(`check_culture`, `:164`, `:212-232`, TASK-0011, 2026-10-06).
+- 문화 활동: 장소·인물·비용·출처 범위와 P0-CITY-01~04 인수 명세 연결(`check_culture`, `:164`, `:219-228`, TASK-0011, 2026-10-06).
 - 인수 명세 시험 연결(TASK-0022, 2026-10-09): 사례마다 연결 시험 파일·제목이 실제로 있는지(`check_test_refs`, `:512`), 시험 제목의 사례 ID가 연결에 있는지(`check_test_title_links`, `:730`), 요약 개수·상태·통과 주장·사람 검토 기록 형식(`check_acceptance_summary`, `:567`), 부서·팀 이름(`check_organization_names`, `:607`), P0-ACC-13·14 기대값과 시나리오 값(`check_acceptance_fixture_numbers`, `:715`). 시험을 돌리지는 않는다.
 - 출처 쓰임(`source_usage`·`check_sources`, `:637`·`:656`): 쓰이지 않는 출처는 이유와 대체 출처를 적고, `local_path`는 저장소 안 파일이어야 한다.
-- 교과 연결(`check_curriculum_stages`·`check_curriculum_counts`, `:676`·`:698`): P0 항목은 P0 표지 연결만 가리킨다(미해결 목록 `:492`), 요약 `counts`가 실제 목록과 같다. 47·18·6·23 고정값도 그대로 둔다.
+- 교과 연결(`check_curriculum_stages`·`check_curriculum_counts`, `:676`·`:698`): P0 항목은 P0 표지 연결만 가리킨다(미해결 목록 `:492`, W2-0b 뒤 0건), 요약 `counts`가 실제 목록과 같다. 47·18·6·23 고정값도 그대로 둔다.
+- P1 확장 교과 연결과 성취기준(W2-0b, 2026-10-09): `extension_curriculum_refs`는 P0 표지가 없고 같은 연결을 다루는 P1 이상 항목이 있어야 한다(`check_extension_curriculum_refs`). 연결마다 공식 원문에서 옮긴 성취기준 코드·문장·근거 종류의 형식을 본다(`check_achievement_standards`). 원문 대조는 검사기 밖에서 했다(`docs/DECISIONS.md` ‘교과 연결 성취기준 대조’).
 
 **이번 실행 (2026-10-09, S1a 문서 정합):** 자료 검사(24,332건)·자료 검사기 회귀 11개·그림 도구 21개·지도 생성 20개를 `3b60314` 작업 트리에서 다시 돌려 위 값과 같았다. `npx vitest run`은 `tests/character_acceptance_cases.json`의 팀 이름을 고친 뒤 돌려 26개 파일·793개 통과, `npm run typecheck`는 오류 없음이었다. 빌드는 `vite build` 결과가 TASK-0012 재채점에 쓴 빌드와 같았다(`docs/ai/tasks/results/TASK-0012.md` ‘재채점’).
 

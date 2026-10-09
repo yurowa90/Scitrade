@@ -47,8 +47,8 @@
     },
     {
       "path": "data/contacts.json",
-      "size_bytes": 3206,
-      "sha256": "8b2ffeedaac38edee11a60f1bba54001921319ab6b3c255a15043da2b3d42963"
+      "size_bytes": 3262,
+      "sha256": "06e2f2ebf9e11a98674cbb6f8f7923aad62bda06f3a2f0f5d87720fbf846d71b"
     },
     {
       "path": "data/content_hooks.json",
@@ -57,13 +57,13 @@
     },
     {
       "path": "data/culture_activities.json",
-      "size_bytes": 20579,
-      "sha256": "1939d5ed822c09712972c4f1fd97503d67179b37e3bc230f7fa914da4d0dbbf7"
+      "size_bytes": 20624,
+      "sha256": "9dba2910fdaaecd7683c2b379388535e907ac5d0dec6a1c12d1a0b79757c7852"
     },
     {
       "path": "data/curriculum_links.json",
-      "size_bytes": 37146,
-      "sha256": "b5c6af0b76eb92c614deb026ed07ca5820c36fa0c4c398d9960c8011183ca149"
+      "size_bytes": 73295,
+      "sha256": "aa1a741f3f4b1a50d32e12c3e529991517190ee7a77328354dada9301f701405"
     },
     {
       "path": "data/employees.json",
@@ -72,8 +72,8 @@
     },
     {
       "path": "data/events.json",
-      "size_bytes": 17329,
-      "sha256": "6d49137a58820ee607dc6801d39fb54106b256f916eb60a7ab4b27ec416a653d"
+      "size_bytes": 17312,
+      "sha256": "a4ba8087193c8d570f4d3e74d0e669d950f7da4e91a7f340e4e7bdb1aee90574"
     },
     {
       "path": "data/game_config.json",
@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 48756,
-      "sha256": "1fe759230bffb1ed46fa78fbc5cd4c2f66a0e3e027c036d2509e36fe170d4fc9"
+      "size_bytes": 49781,
+      "sha256": "72547295c8c281f93c687f4729cdf1b413de692f4c7afdda92d918b1de3832df"
     },
     {
       "path": "data/team_synergies.json",
@@ -142,8 +142,8 @@
     },
     {
       "path": "data/venues.json",
-      "size_bytes": 4826,
-      "sha256": "f2d3f53e29baf5a94a65e1c16fa23a6ff6f3464d4e02e097dd5aa9e64733c8eb"
+      "size_bytes": 4809,
+      "sha256": "0de9aebad18356dc2eded13ebc5be1c5b402e6be8ef9be488c12ecb66dadb169"
     },
     {
       "path": "data/world.json",
@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 131545,
-      "sha256": "282dbde06a4166ad44c17c935b05a22a0d0c7561e9105296b294c336b8485c3e"
+      "size_bytes": 135604,
+      "sha256": "1f936fed5e4726885288d874fb543c0d93c583a8b7187869a5fa6e17795ee0b0"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 7610,
-      "sha256": "63370c3d8131b86230ac595d6aea1c3467ac0fd44a55d54e4f0aec075f0eef85"
+      "size_bytes": 8080,
+      "sha256": "0af9b5c06083947ececedd052e6c58a4ee350b86c8bc65cfcc21dc2af8cf370a"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 9259,
-      "sha256": "d3556ab01a7853956d2ab1ea1591a39aa192bd721eda16fc8c816c0dd20846b6"
+      "size_bytes": 9277,
+      "sha256": "ef7f07584d197409d0d129fb61631051e257699f13af3cc2c78b12ef47e2b93d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -637,8 +637,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0021.md",
-      "size_bytes": 82189,
-      "sha256": "759727082eb5fee569e9effb70be8ec1de5555837cc1cb87c466ecb1bf24a0b1"
+      "size_bytes": 83750,
+      "sha256": "986d4519e454f38539b522659c020c181681f459880e121a36fdca1912adeb49"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0022.md",
@@ -1007,13 +1007,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 45896,
-      "sha256": "2ddac580d89c7d26cb8fc6a5df65f0c68d90e9e4ede3918ecb062dc1b62d0ef9"
+      "size_bytes": 52229,
+      "sha256": "d17d2fbc1026a7199d19337d9dd4a9ee26f379fa027e00d1cd909763083d602a"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 63706,
-      "sha256": "e108c5a4a19c7158123f6c0d75e036681e5601906ed1787abbab10eaea6424e1"
+      "size_bytes": 67354,
+      "sha256": "d898658b5cbd6537976a0e614206ae53cd28294cde41bcbbd776240fafaeffe7"
     }
   ]
 }

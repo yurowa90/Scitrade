@@ -911,6 +911,17 @@
       "checked_on": "2026-10-09",
       "redistribution": "links_and_project_notes_only",
       "local_path": null
+    },
+    {
+      "id": "MOE-2022-33-HWP",
+      "title": "교육부 고시 제2022-33호 각론 첨부 ZIP의 별책6(도덕)·별책7(사회)·별책9(과학) HWP",
+      "url": "https://www.moe.go.kr/boardCnts/fileDown.do?m=&s=moe&fileSeq=1512facbda6c234a1641ac7e9c156ca2",
+      "kind": "official_curriculum",
+      "verification_status": "CONTENT_READ",
+      "scope_ko": "2026-10-09에 교육부 게시물의 첨부 ZIP(SHA-256 b37a372a90d6d00bb3985888bbb41caae7a35f28877dc243a6f4b28861c53146)을 받아 별책6·7·9 HWP 본문을 글자로 뽑아 읽었다. 47개 교과 연결의 내용 요소가 모두 해당 과목 내용 체계에 있고(2개는 가운뎃점 글자만 다름), 성취기준 코드·문장을 원문 그대로 옮겼다. ZIP 안 별책7 파일의 수정 날짜는 2023-11-13, 별책6·9는 2022-12-18·2022-12-19다. 인쇄쪽은 목차의 과목 시작 쪽과만 대조했다.",
+      "checked_on": "2026-10-09",
+      "redistribution": "links_and_project_notes_only",
+      "local_path": null
     }
   ],
   "$schema": "../schemas/sources.schema.json"

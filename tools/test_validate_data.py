@@ -667,11 +667,16 @@ class CurriculumStageTest(unittest.TestCase):
         self.assertIn(f"{self.file}/{self.obj['id']}: P0 항목이 P0 표지 없는 교과 연결을 가리킴 {ref}", validator.ERRORS)
 
     def test_stale_pending_pair_rejected(self):
-        file, oid, ref = sorted(validator.PENDING_P0_CURRICULUM_LINKS)[0]
-        obj = next(o for o in validator.walk(self.documents[file]) if o.get('id') == oid)
-        obj['curriculum_refs'].remove(ref)
-        validator.check_curriculum_stages(self.documents, self.curriculum)
-        self.assertIn(f'교과 연결 미해결 목록이 낡음 {file}/{oid} {ref}', validator.ERRORS)
+        # 실제 미해결 목록은 비어 있다. P0 표지 없는 연결 하나를 합성 미해결 쌍으로 넘긴다.
+        ref = next(cid for cid, c in self.curriculum.items() if not any(p.startswith('P0') for p in c['priority'])
+                   and cid not in self.obj['curriculum_refs'])
+        pair = (self.file, self.obj['id'], ref)
+        self.obj['curriculum_refs'].append(ref)
+        found = validator.check_curriculum_stages(self.documents, self.curriculum, pending=frozenset({pair}))
+        self.assertEqual((validator.ERRORS, found), ([], {pair}))
+        self.obj['curriculum_refs'].remove(ref)
+        validator.check_curriculum_stages(self.documents, self.curriculum, pending=frozenset({pair}))
+        self.assertIn(f'교과 연결 미해결 목록이 낡음 {self.file}/{self.obj["id"]} {ref}', validator.ERRORS)
 
     def test_p0_report_label_counts_as_p0(self):
         ref = next(cid for cid, c in self.curriculum.items() if c['priority'] and all(p.startswith('P0 ') for p in c['priority'])
@@ -704,6 +709,121 @@ class CurriculumStageTest(unittest.TestCase):
         self.obj['curriculum_refs'].append('NO-SUCH-LINK')
         validator.check_curriculum_stages(self.documents, self.curriculum)
         self.assertEqual(validator.ERRORS, [])
+
+
+class ExtensionCurriculumTest(unittest.TestCase):
+    def setUp(self):
+        self.documents = data_documents()
+        self.curriculum = {c['id']: c for c in self.documents['curriculum_links']['links']}
+        self.file, self.obj = next((f, o) for f, d in self.documents.items() if f != 'curriculum_links'
+                                   for o in validator.walk(d) if o.get('extension_curriculum_refs'))
+        self.ref = self.obj['extension_curriculum_refs'][0]
+        self.where = f"{self.file}/{self.obj['id']}"
+        validator.ERRORS.clear()
+
+    def run_check(self):
+        validator.ERRORS.clear()
+        validator.check_extension_curriculum_refs(self.documents, self.curriculum)
+        return validator.ERRORS
+
+    def test_current_extensions_pass(self):
+        self.assertEqual(self.run_check(), [])
+
+    def test_unknown_extension_rejected(self):
+        self.obj['extension_curriculum_refs'] = ['NO-SUCH-LINK']
+        self.assertIn(self.where + ': 없는 확장 교과 연결 NO-SUCH-LINK', self.run_check())
+
+    def test_p0_label_belongs_in_curriculum_refs(self):
+        ref = next(cid for cid, c in self.curriculum.items() if any(p.startswith('P0') for p in c['priority']))
+        self.obj['extension_curriculum_refs'] = [ref]
+        self.assertIn(f'{self.where}: P0 표지 연결은 curriculum_refs에 둔다 {ref}', self.run_check())
+
+    def test_same_link_in_both_fields_rejected(self):
+        self.obj['curriculum_refs'].append(self.ref)
+        self.assertIn(f'{self.where}: 같은 연결이 curriculum_refs와 extension_curriculum_refs에 함께 있음 {self.ref}',
+                      self.run_check())
+
+    def test_extension_needs_p1_item(self):
+        for doc in self.documents.values():
+            for obj in validator.walk(doc):
+                if obj.get('stage') not in (None, 'P0') and self.ref in obj.get('curriculum_refs', []):
+                    obj['curriculum_refs'].remove(self.ref)
+        # P0 항목이 그 연결을 가리켜도 근거가 되지 않는다.
+        p0 = next(o for d in self.documents.values() for o in validator.walk(d)
+                  if o.get('stage') == 'P0' and o is not self.obj and isinstance(o.get('curriculum_refs'), list))
+        p0['curriculum_refs'].append(self.ref)
+        self.assertIn(f'{self.where}: 확장 교과 연결을 다루는 P1 이상 항목이 없음 {self.ref}', self.run_check())
+
+    def test_bad_shape_rejected(self):
+        self.obj['extension_curriculum_refs'] = self.ref
+        self.assertIn(self.where + ': extension_curriculum_refs 형식 오류', self.run_check())
+
+
+class AchievementStandardsTest(unittest.TestCase):
+    def setUp(self):
+        self.documents = data_documents()
+        self.doc = self.documents['curriculum_links']
+        self.curriculum = {c['id']: c for c in self.doc['links']}
+        self.source_ids = {s['id'] for s in self.documents['sources']['items']}
+        self.link = next(iter(self.curriculum.values()))
+        self.item = self.link['achievement_standards'][0]
+        validator.ERRORS.clear()
+
+    def run_check(self):
+        validator.ERRORS.clear()
+        validator.check_achievement_standards(self.doc, self.curriculum, self.source_ids)
+        return validator.ERRORS
+
+    def test_current_standards_pass(self):
+        self.assertEqual(self.run_check(), [])
+
+    def test_code_format(self):
+        cid = self.link['id']
+        for code in ('10통사1-01-01', '[10통사1-1-01]', '[09통사1-01-01]', '[12Econ02-01]'):
+            with self.subTest(code=code):
+                self.item['code'] = code
+                self.assertIn(f'{cid}: 성취기준 코드 형식 오류 {code}', self.run_check())
+
+    def test_grade_matches_selection(self):
+        cid = self.link['id']
+        code = self.item['code']
+        self.link['selection'] = next(s for s in ('common', 'general') if (s == 'common') != (code[1:3] == '10'))
+        self.assertIn(f'{cid}: 성취기준 학년 머리와 selection 불일치 {code}', self.run_check())
+
+    def test_basis_and_text_required(self):
+        cid, code = self.link['id'], self.item['code']
+        cases = [('basis', '추정', f'{cid}: 성취기준 근거 종류 오류 {code}'),
+                 ('sentence_ko', '  ', f'{cid}: 성취기준 sentence_ko 필요 {code}'),
+                 ('keyword_ko', '', f'{cid}: 성취기준 keyword_ko 필요 {code}')]
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                saved = self.item[field]
+                self.item[field] = value
+                self.assertIn(message, self.run_check())
+                self.item[field] = saved
+
+    def test_same_code_same_sentence(self):
+        other = next(c for c in self.curriculum.values() if c is not self.link)
+        copy_item = dict(self.item, sentence_ko=self.item['sentence_ko'] + ' 다른 문장')
+        other['achievement_standards'].append(copy_item)
+        self.assertIn(f"{other['id']}: 같은 성취기준 코드의 문장이 다름 {self.item['code']}", self.run_check())
+
+    def test_duplicate_code_and_empty_list(self):
+        cid = self.link['id']
+        self.link['achievement_standards'].append(dict(self.item))
+        self.assertIn(cid + ': 성취기준 코드 중복', self.run_check())
+        self.link['achievement_standards'] = []
+        self.assertIn(cid + ': achievement_standards 필요', self.run_check())
+
+    def test_source_required(self):
+        self.link['achievement_standards_source_id'] = 'NO-SUCH-SOURCE'
+        self.assertIn(self.link['id'] + ': 성취기준 출처 없음', self.run_check())
+
+    def test_flag_off_skips(self):
+        self.doc['scope']['achievement_standard_codes_included'] = False
+        self.link['achievement_standards'] = []
+        self.assertEqual(self.run_check(), [])
+
 
 
 class AcceptanceFixtureNumbersTest(unittest.TestCase):
@@ -758,6 +878,7 @@ class CityLinkTest(unittest.TestCase):
 class MainWiringTest(unittest.TestCase):
     def test_main_calls_new_checks(self):
         names = ('check_test_refs', 'check_acceptance_summary', 'check_organization_names', 'check_sources',
+                 'check_extension_curriculum_refs', 'check_achievement_standards',
                  'check_curriculum_stages', 'check_curriculum_counts', 'check_acceptance_fixture_numbers', 'check_test_title_links')
         with contextlib.ExitStack() as stack:
             mocks = {name: stack.enter_context(mock.patch.object(validator, name, wraps=getattr(validator, name))) for name in names}

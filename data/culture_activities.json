@@ -11,8 +11,7 @@
       ],
       "curriculum_refs": [
         "SOC04",
-        "SOC07",
-        "SOC10"
+        "SOC07"
       ],
       "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
@@ -76,7 +75,10 @@
         "scope_ko": "판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다.",
         "not_claimed_ko": "평택의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.",
         "open_question_ko": "윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지."
-      }
+      },
+      "extension_curriculum_refs": [
+        "SOC10"
+      ]
     },
     {
       "id": "CA02",

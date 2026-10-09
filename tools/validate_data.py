@@ -488,12 +488,11 @@ def check_world_hubs(documents, tables, source_ids):
 TEST_CALL = r'(?<![\w.$])(?:describe|it|test)\(\s*'
 TODO_CALL = r'(?<![\w.$])(?:it|test)\.todo\(\s*'
 GENERALIZATION_PROPER_NOUNS = ('부산시민공원', '한국소비자원', '국민연금')
-# TASK-0021 표 C의 미해결 7쌍. 승인된 예외가 아니다. W2-0b에서 자료를 고치면 여기서 지운다.
-PENDING_P0_CURRICULUM_LINKS = frozenset({
-    ('culture_activities', 'CA01', 'SOC10'), ('contacts', 'NPC_MARKET', 'SOC10'),
-    ('contacts', 'NPC_GUIDE', 'SOC08'), ('contacts', 'NPC_GUIDE', 'SOC12'), ('contacts', 'NPC_GUIDE', 'SCI05'),
-    ('venues', 'VEN_CULTURE', 'SOC12'), ('events', 'EV06', 'SCI09'),
-})
+# 미해결 쌍 목록. TASK-0021 표 C의 7쌍은 W2-0b(2026-10-09)에서 정리해 비었다.
+# 3쌍은 extension_curriculum_refs로 옮기고 4쌍은 뺐다. 새 쌍은 Claude가 원문을 대조한 뒤에만 더한다.
+PENDING_P0_CURRICULUM_LINKS = frozenset()
+ACHIEVEMENT_CODE = re.compile(r'^\[(10|12)[가-힣]+(?:[12]-[0-9]{2}|[0-9]{2})-[0-9]{2}\]$')
+ACHIEVEMENT_BASIS = ('직접', '해설', '영역')
 
 
 _TOKENS = re.compile(r"""('(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`)|//[^\n]*|/\*.*?\*/""", re.S)
@@ -695,6 +694,66 @@ def check_curriculum_stages(documents, curriculum, pending=PENDING_P0_CURRICULUM
     return found
 
 
+def check_extension_curriculum_refs(documents, curriculum):
+    """P1 확장 연결: P0 표지가 없고, 같은 연결을 다루는 P1 이상 항목이 있어야 한다."""
+    covered = set()
+    for file, doc in documents.items():
+        if file == 'curriculum_links':
+            continue
+        for obj in walk(doc):
+            if obj.get('stage') not in (None, 'P0'):
+                covered.update(obj.get('curriculum_refs', []))
+    for file, doc in documents.items():
+        if file == 'curriculum_links':
+            continue
+        for obj in walk(doc):
+            refs = obj.get('extension_curriculum_refs')
+            if refs is None:
+                continue
+            oid = obj.get('id')
+            if not (isinstance(refs, list) and refs and all(isinstance(r, str) for r in refs)):
+                check(False, f'{file}/{oid}: extension_curriculum_refs 형식 오류')
+                continue
+            for ref in refs:
+                if ref not in curriculum:
+                    check(False, f'{file}/{oid}: 없는 확장 교과 연결 {ref}')
+                    continue
+                check(not any(label.startswith('P0') for label in curriculum[ref].get('priority', [])),
+                      f'{file}/{oid}: P0 표지 연결은 curriculum_refs에 둔다 {ref}')
+                check(ref not in obj.get('curriculum_refs', []),
+                      f'{file}/{oid}: 같은 연결이 curriculum_refs와 extension_curriculum_refs에 함께 있음 {ref}')
+                check(ref in covered, f'{file}/{oid}: 확장 교과 연결을 다루는 P1 이상 항목이 없음 {ref}')
+
+
+def check_achievement_standards(curriculum_doc, curriculum, source_ids):
+    """성취기준 코드·문장 칸의 형식. 원문 대조는 하지 않는다(원문은 저장소에 없다)."""
+    if curriculum_doc.get('scope', {}).get('achievement_standard_codes_included') is not True:
+        return
+    sentences = {}
+    for cid, link in curriculum.items():
+        standards = link.get('achievement_standards')
+        if not (isinstance(standards, list) and standards):
+            check(False, f'{cid}: achievement_standards 필요')
+            continue
+        check(link.get('achievement_standards_source_id') in source_ids, f'{cid}: 성취기준 출처 없음')
+        grade = '10' if link.get('selection') == 'common' else '12'
+        codes = []
+        for item in standards:
+            code = item.get('code') if isinstance(item, dict) else None
+            item = item if isinstance(item, dict) else {}
+            check(isinstance(code, str) and ACHIEVEMENT_CODE.match(code) is not None, f'{cid}: 성취기준 코드 형식 오류 {code}')
+            if isinstance(code, str) and ACHIEVEMENT_CODE.match(code):
+                check(code[1:3] == grade, f'{cid}: 성취기준 학년 머리와 selection 불일치 {code}')
+            check(item.get('basis') in ACHIEVEMENT_BASIS, f'{cid}: 성취기준 근거 종류 오류 {code}')
+            for field in ('sentence_ko', 'keyword_ko'):
+                check(isinstance(item.get(field), str) and bool(item[field].strip()), f'{cid}: 성취기준 {field} 필요 {code}')
+            codes.append(code)
+            sentence = item.get('sentence_ko')
+            if isinstance(code, str) and isinstance(sentence, str):
+                check(sentences.setdefault(code, sentence) == sentence, f'{cid}: 같은 성취기준 코드의 문장이 다름 {code}')
+        check(len(codes) == len(set(codes)), f'{cid}: 성취기준 코드 중복')
+
+
 def check_curriculum_counts(curriculum_doc, curriculum):
     counts = curriculum_doc.get('counts', {})
     check(counts.get('total') == len(curriculum), 'curriculum: counts.total 불일치')
@@ -767,6 +826,8 @@ def main():
               f'curriculum {group}: count')
     check_curriculum_counts(documents['curriculum_links'], curriculum)
     pending_found = check_curriculum_stages(documents, curriculum)
+    check_extension_curriculum_refs(documents, curriculum)
+    check_achievement_standards(documents['curriculum_links'], curriculum, source_ids)
     check_sources(documents)
     for item in curriculum.values():
         check(item['pdf_page'] == item['printed_page'] + 6, item['id'] + ': page offset')

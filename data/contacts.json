@@ -12,8 +12,7 @@
       ],
       "curriculum_refs": [
         "SOC04",
-        "SOC07",
-        "SOC10"
+        "SOC07"
       ],
       "city_id": "PYEONGTAEK",
       "fictional": true,
@@ -41,7 +40,10 @@
         "KT_PYEONGTAEK_ORDER_CLARIFICATION",
         "KT_PYEONGTAEK_PROJECT_REQUIREMENTS"
       ],
-      "visual_motif": "작은 수염의 둥근 비버 상인, 앞치마와 견본 상자"
+      "visual_motif": "작은 수염의 둥근 비버 상인, 앞치마와 견본 상자",
+      "extension_curriculum_refs": [
+        "SOC10"
+      ]
     },
     {
       "id": "NPC_GUIDE",
@@ -52,10 +54,7 @@
         "DESIGN-V04"
       ],
       "curriculum_refs": [
-        "SOC04",
-        "SOC08",
-        "SOC12",
-        "SCI05"
+        "SOC04"
       ],
       "city_id": "PYEONGTAEK",
       "fictional": true,
@@ -86,7 +85,10 @@
         "KT_PYEONGTAEK_FIELD_OBSERVATIONS",
         "KT_PYEONGTAEK_PROJECT_REQUIREMENTS"
       ],
-      "visual_motif": "둥근 부엉이 안내자, 지도 가방과 작은 안경"
+      "visual_motif": "둥근 부엉이 안내자, 지도 가방과 작은 안경",
+      "extension_curriculum_refs": [
+        "SCI05"
+      ]
     }
   ],
   "$schema": "../schemas/contacts.schema.json"
