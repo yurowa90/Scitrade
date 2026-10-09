@@ -37,6 +37,7 @@ python3 tools/validate_data.py   # 자료 검사
 - Codex는 [AGENTS.md](AGENTS.md), Claude는 [CLAUDE.md](CLAUDE.md)에서 시작합니다.
 - 두 파일은 [공통 작업 규칙](docs/ai/WORKFLOW.md)을 함께 사용합니다.
 - [현재 상태](docs/STATUS.md), [단계별 구현 계획](docs/IMPLEMENTATION_PLAN.md), [업무별 자료 위치](docs/ai/CONTEXT_MAP.md)를 확인합니다.
+- [고전게임 인사이트·후속 개선 Claude 인계](docs/ai/CLASSIC_GAME_HANDOFF.md): 기존 플레이 기록과 공식 자료를 현재 단계에 연결한 우선순위·범위·완료 조건입니다. 게임 구현 완료 보고가 아닙니다.
 - M1과 M2a 첫 단계의 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다.
 
 ## 먼저 알아둘 결정
