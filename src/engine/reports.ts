@@ -224,7 +224,10 @@ export interface UpcomingPayment {
   labelKo: string;
 }
 
-/** 표시용 지급 일정. 급여를 계약 자금 예약에 추가하지 않는다. */
+/**
+ * 표시용 지급 일정. 급여를 계약 자금 예약에 추가하지 않는다.
+ * `throughDay`는 캠페인 마지막 날(`config.campaignDays`)로 잘린다. 엔진은 그 뒤 날을 처리하지 않는다.
+ */
 export function upcomingPayments(
   s: GameState,
   config: ScenarioConfig,
@@ -237,8 +240,9 @@ export function upcomingPayments(
   overdue.sort((a, b) => a.day! - b.day! || compareText(a.sourceId, b.sourceId));
   if (s.phase === 'ENDED') return overdue;
 
+  const last = Math.min(throughDay, config.campaignDays);
   const rows: UpcomingPayment[] = [];
-  for (let day = s.day; day <= throughDay; day++) {
+  for (let day = s.day; day <= last; day++) {
     const wages = new Map<Currency, UpcomingPayment>();
     for (const emp of s.employees) {
       if (emp.employmentStatus !== 'employed' || emp.availableFromDay > day) continue;
@@ -272,7 +276,7 @@ export function upcomingPayments(
       if (shipment) day = Math.max(shipment.scheduledArrivalDay, s.day);
       else if (booking) day = booking.departureDay + routeOf(config, booking.routeId).transitDays;
     }
-    if (day !== null && day > throughDay) continue;
+    if (day !== null && day > last) continue;
     rows.push({ ...reservation, day, trigger: reservation.kind === 'FREIGHT' ? 'ON_BOOKING' : 'AUTO',
       employeeIds: [], sourceId: c.id,
       labelKo: reservation.kind === 'FREIGHT' ? `${c.id} 운임 (예약 때 선지급)` : `${c.id} 수입 관세 (도착 때)`,

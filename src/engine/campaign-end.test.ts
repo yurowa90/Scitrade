@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loadScenario } from '../content/scenario';
 import { createGame, openDay, planCommands } from './engine';
-import { campaignSummary, upcomingPayments } from './reports';
+import { campaignSummary, tradePairs, upcomingPayments } from './reports';
 import { deserializeSave, serializeSave } from './save';
 import { acceptAllFeasible, runToCampaignEnd } from './testkit';
 import type { GameState } from './types';
@@ -26,6 +26,19 @@ function identities(s: GameState) {
     .map((o) => ({ obligationId: o.id, currency: o.currency, amountMinor: o.amountMinor, incurredDay: o.incurredDay, reasonKo: o.reasonKo }))
     .sort((a, b) => a.incurredDay - b.incurredDay || a.obligationId.localeCompare(b.obligationId)));
 }
+
+describe('첫날 정책 도우미', () => {
+  it('앞서 고른 직원을 빼고 직접 무역과 운송 주선을 함께 고른다', () => {
+    const pair = tradePairs(config)[0]!;
+    const fwd = config.offers.find((o) => o.kind === 'forwarding')!;
+    const cfg = { ...config, offers: config.offers.filter((o) => [pair.buyOfferId, pair.sellOfferId, fwd.id].includes(o.id)) };
+    const cmds = acceptAllFeasible(openDay(createGame(cfg), cfg).state, cfg);
+    expect(cmds.map((c) => c.type)).toEqual(['ACCEPT_TRADE', 'ACCEPT_FORWARDING']);
+    const staff = cmds.map((c) => (c as { plan?: { employeeId?: string } }).plan?.employeeId);
+    expect(staff.every((id) => typeof id === 'string')).toBe(true);
+    expect(new Set(staff).size).toBe(2);
+  });
+});
 
 describe('M2 캠페인 결산', () => {
   it('정책은 입력을 보존하고 실행 가능한 계획과 연속 명령 ID를 만든다', () => {

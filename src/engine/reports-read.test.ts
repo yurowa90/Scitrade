@@ -70,9 +70,10 @@ describe('정시 인도율', () => {
     s.day = c.deliveryDeadlineDay + 1;
     s.contracts = [
       { ...c, id: 'ONTIME-A', deliveredDay: c.deliveryDeadlineDay },
-      { ...c, id: 'ONTIME-B', kind: 'FORWARDING', currency: config.payrollCurrency, deliveredDay: c.deliveryDeadlineDay },
+      { ...c, id: 'ONTIME-B', kind: 'FORWARDING', currency: config.payrollCurrency, customerId: 'PROBE_SHIPPER', supplierId: null, deliveredDay: c.deliveryDeadlineDay },
       { ...c, id: 'LATE', deliveredDay: c.deliveryDeadlineDay + 1 },
-      { ...c, id: 'CANCELLED', status: 'CANCELLED', deliveredDay: c.deliveryDeadlineDay },
+      // 엔진이 만드는 취소 계약은 인도일이 없다. 납기가 지나도 경과 미인도에 넣지 않는다.
+      { ...c, id: 'CANCELLED', status: 'CANCELLED', cancelledDay: 2, deliveredDay: null },
       { ...c, id: 'PAST' }, { ...c, id: 'TODAY', deliveryDeadlineDay: s.day },
     ];
     expect(onTimeDeliveryRate(s)).toEqual({ delivered: 3, onTime: 2, late: 1, rateBasisPoints: 6666, pastDeadlineUndelivered: 1 });
@@ -81,6 +82,7 @@ describe('정시 인도율', () => {
       const record = counterpartyRecord(s, partyId);
       expect(onTimeDeliveryRate(s, { partyId })).toMatchObject({ onTime: record.onTime, late: record.late });
     }
+    expect(onTimeDeliveryRate(s, { partyId: 'PROBE_SHIPPER' })).toMatchObject({ delivered: 1, onTime: 1, late: 0 });
     expect(onTimeDeliveryRate(s, { currency: config.payrollCurrency })).toMatchObject({ delivered: 1, onTime: 1 });
     expect(onTimeDeliveryRate(s, { kind: 'FORWARDING' })).toMatchObject({ delivered: 1, late: 0 });
     expect(onTimeDeliveryRate(s, { currency: config.tradeCurrency, kind: 'FORWARDING' }).delivered).toBe(0);
@@ -158,6 +160,14 @@ describe('임박 지급', () => {
   });
   it('기간 밖 날짜는 제외하고 미정 날짜는 남기며 기본 창은 오늘부터 7일이다', () => {
     const s = accepted();
+    const freightDay = upcomingPayments(s, config, config.campaignDays).find((r) => r.kind === 'FREIGHT')!.day!;
+    expect(upcomingPayments(s, config, freightDay).some((r) => r.kind === 'FREIGHT')).toBe(true);
+    expect(upcomingPayments(s, config, freightDay - 1).some((r) => r.kind === 'FREIGHT')).toBe(false);
+    const late = accepted();
+    late.day = config.campaignDays - 1;
+    const capped = upcomingPayments(late, config, late.day + 6);
+    expect(capped.every((r) => r.day === null || r.day <= config.campaignDays)).toBe(true);
+    expect(capped).toEqual(upcomingPayments(late, config));
     const short = upcomingPayments(s, config, s.day - 1);
     expect(short.length).toBeGreaterThan(0);
     expect(short.every((r) => r.day === null)).toBe(true);
@@ -281,8 +291,12 @@ describe('업무량과 가용 처리량', () => {
     expect(row.daysToClear).toBe(Math.ceil(row.runningWorkUnits / row.staffWorkUnitsPerDay));
     const worker = report.employees.find((e) => e.running !== null)!;
     expect(worker.running).toMatchObject({ unit: 'WORK_UNITS', remaining: cfg.terms.prepWorkUnits });
+    expect(row.idleWorkUnitsPerDay).toBe(row.staffWorkUnitsPerDay - worker.workUnitsPerDay);
+    expect(row.dayTaskWorkUnitsPerDay).toBe(0);
     const next = commitDay(assigned, cfg, []).state;
     expect(workloadSummary(next, cfg).byCity.find((c) => c.cityId === cityId)!.runningWorkUnits).toBe(cfg.terms.prepWorkUnits - worker.workUnitsPerDay);
+    expect(workloadSummary(next, cfg).employees.find((e) => e.employeeId === worker.employeeId)!.running!.remaining)
+      .toBe(cfg.terms.prepWorkUnits - worker.workUnitsPerDay);
   });
   it('훈련 중 처리량은 일수 업무에 들어가며 유휴에 들어가지 않는다', () => {
     const s = open();
