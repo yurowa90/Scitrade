@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 109092,
-      "sha256": "669466b5e5dbe2435c11c5b453ed8982393210c71d7dabd2fd46c5928fa49328"
+      "size_bytes": 112567,
+      "sha256": "84139ea9731282131c6e045a77a5aca0fc1f73c4828ac846e7bef6fc303e0be9"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 43821,
-      "sha256": "e600c6e2b557fed173440406eeecc5a40ae15e3a89eba0f4890eb107f3cb152c"
+      "size_bytes": 44285,
+      "sha256": "aa8072fd1619d231d1e4752058f27a575208d925fbe9d0e3d60935e3188b4412"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -232,8 +232,8 @@
     },
     {
       "path": "docs/ai/design/TASK-0012-scene-brief.md",
-      "size_bytes": 6529,
-      "sha256": "5ff381a29329f0a84b4b1d9f99378e8bcd36a67d11db9df164610b92298bad65"
+      "size_bytes": 6747,
+      "sha256": "ac5254a33a10819e39c9fa14347bda66ad0a0f3988de304dd79e63cec97991f7"
     },
     {
       "path": "docs/ai/design/TASK-0012-scene-compare.md",
@@ -357,8 +357,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0012-culture-ui.md",
-      "size_bytes": 41011,
-      "sha256": "9b757ccd115a7dfa0cd59fdf2442d864ded7f00e0e8a221802269520a43b7a3f"
+      "size_bytes": 56814,
+      "sha256": "14d543af77774b89e35da4f7ae27814230bed3d7a4daa5a956ce264843d31e65"
     },
     {
       "path": "docs/ai/tasks/TASK-0013-deferred-display-fixes.md",
