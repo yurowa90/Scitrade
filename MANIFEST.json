@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 118699,
-      "sha256": "6d72b8492359f7d9c99b82e74cdc215ca6de11d741cd5597b258323cbd8f7981"
+      "size_bytes": 121157,
+      "sha256": "15a39321a12d28f371c9c1a32410a47ff26b9222aa3cbd75b4c1b001ac20e4b5"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 44285,
-      "sha256": "aa8072fd1619d231d1e4752058f27a575208d925fbe9d0e3d60935e3188b4412"
+      "size_bytes": 44948,
+      "sha256": "cba7c4f650716ada33adbdd8d73360612412e37f46c3cdbc502681f3216d4125"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -257,8 +257,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 5293,
-      "sha256": "4c29867b83826304d50c94c195c9143a9330c37c2e68c01a933c09d5443929ef"
+      "size_bytes": 5341,
+      "sha256": "bcddbe5dfd4b4aa34d2918046554aca395cd5167308dd13f4ac0b7d14fecaf65"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -439,6 +439,11 @@
       "path": "docs/ai/tasks/results/TASK-0011.md",
       "size_bytes": 31806,
       "sha256": "0a19bf41a840a64ff4af6b30074b9739a73cca97192c94a5a27a4436279c9262"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0012.md",
+      "size_bytes": 20573,
+      "sha256": "3c0ce2d974368f7aa6dcd82c18a8e231765a20bbaf55f59a06b648da9bf630e7"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0013.md",
@@ -702,8 +707,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 39613,
-      "sha256": "3a5c3807f8b80f24393beb34191f966f7fbbf50d4633b65891d9f0e3f3ff07cf"
+      "size_bytes": 39385,
+      "sha256": "2120d13ad28ae9a7f680a4383d5fd68696ddc4381820ac669962589afd290496"
     },
     {
       "path": "tests/character_acceptance_cases.json",

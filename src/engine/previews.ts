@@ -6,6 +6,8 @@ import { levelFor, statsFor } from './growth';
 import { cashLessUnpaidMinor, runningTaskOf, fundsPosition, trainingAvailableMinor } from './reservations';
 import type { GameState, ScenarioConfig } from './types';
 
+export const CULTURE_UNCHANGED_KO = '가격·하루 처리량·운임·관세·거래 신뢰';
+
 export function trainingPreview(state: GameState, config: ScenarioConfig, employeeId: string) {
   const training = config.growth?.ordinaryTraining;
   const currency = training?.currency ?? config.payrollCurrency;
@@ -86,6 +88,6 @@ export function culturePreview(state: GameState, config: ScenarioConfig, activit
       relationContactIds: activity?.contactIds.filter((id) => !state.culture.relationEvents.some((r) => r.key === keys!.relationship(id))) ?? [],
       firstCompletionXp: activity && hasGrowth && !state.xpAwards[xpKey] ? config.growth!.taskCompletionXp : 0,
     },
-    unchangedKo: '가격·하루 처리량·운임·관세·거래 신뢰',
+    unchangedKo: CULTURE_UNCHANGED_KO,
   };
 }

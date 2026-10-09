@@ -85,6 +85,7 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
 
 .layout {
   display: grid;
+  grid-template-rows: auto auto 1fr;
   gap: 1rem;
   padding: 1rem 1.2rem 2rem;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
@@ -109,6 +110,7 @@ button.link { border: none; background: none; color: var(--sky-deep); text-decor
     "report report log";
 }
 @media (max-width: 1000px) {
+  .layout, .layout.map-wide { grid-template-rows: none; }
   .layout, .layout.map-wide { grid-template-columns: 1fr; grid-template-areas: "trade" "queue" "crew" "resources" "report" "world" "log"; }
   .actions { margin-left: 0; }
 }
@@ -459,3 +461,52 @@ table.roster small { font-size: 12px; }
 
 /* 아래쪽 고정 알림이 마지막 내용을 가리지 않게 한다. 좁은 화면의 .layout 아래 여백보다 우선한다. */
 main.layout { padding-bottom: 5.5rem; }
+
+/* 부산 현지: 거래 머리의 진입점은 흐름 밖에 두고, 열린 패널은 주 열을 쓴다. */
+.maincol { grid-area: trade; display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.trade { position: relative; }
+.local-tab { position: absolute; top: .55rem; right: .9rem; line-height: 1.2; padding: .25rem .7rem; min-height: 44px; }
+.local-tab span, .local-tab small { display: block; }
+.local-tab small { font-size: .75rem; color: var(--navy-soft); }
+.local-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.local p { margin: .3rem 0; }
+.local-intro, .local-venues { font-size: .82rem; }
+.local-venues { margin: .7rem 0; }
+.local-venues > div { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: .5rem; padding: .35rem 0; border-bottom: 1px solid var(--line); }
+.local-venues > div:last-child { border-bottom: 0; }
+.local-venues dt { font-weight: 600; }
+.local-venues dd { margin: 0; }
+.culture-activity, .culture-book { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .7rem; }
+.local h4 { margin: .7rem 0 .3rem; font-size: .88rem; }
+.culture-frame { background: var(--cream); padding: .5rem .7rem; border-radius: 10px; font-size: .82rem; }
+.culture-frame ol { margin: .3rem 0 0; padding-left: 1.3rem; }
+.culture-choices { display: flex; flex-direction: column; gap: .4rem; }
+.culture-choices button { display: flex; flex-direction: column; text-align: left; }
+.culture-choices small { font-size: .75rem; color: var(--navy-soft); }
+.culture-choices [aria-pressed="true"], .culture-employees [aria-pressed="true"] { border-color: var(--sky-deep); background: var(--sky); }
+.culture-employees { display: flex; flex-wrap: wrap; gap: .4rem; }
+.culture-employees button { font-size: .82rem; }
+#culture-preview { margin-top: .6rem; font-size: .82rem; }
+#culture-preview h4 { margin: 0 0 .3rem; }
+.culture-new ul { margin: .15rem 0 .35rem; padding-left: 1.2rem; }
+.unchanged { background: var(--sky); padding: .45rem .6rem; border-radius: 8px; font-size: .82rem; }
+#culture-slot { margin-top: .5rem; }
+#culture-slot p { font-size: .75rem; }
+.cul-result, .cul-report { margin-bottom: .8rem; }
+.cul-result h3 small, .culture-book h3 small { display: block; }
+.cul-report h5 { margin: .5rem 0 .3rem; font-size: .88rem; }
+.culture-cost b { font-weight: 600; }
+.rec-meta, .spent { font-size: .82rem; }
+.rec4 { margin: .5rem 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.rec-field { border: 1px solid var(--line); border-radius: 8px; padding: .4rem .6rem; font-size: .88rem; }
+.rec-field[data-limit] { border: 2px solid var(--warn); }
+.rec-label { display: flex; flex-wrap: wrap; gap: .15rem .5rem; align-items: baseline; }
+.rec-label b { font-weight: 600; }
+.rec-label small { font-size: .75rem; color: var(--navy-soft); }
+.rec-label .rec-limit { color: var(--warn); }
+.culture-book ul { font-size: .82rem; padding-left: 1.2rem; }
+.local .book-trust { margin-top: .9rem; background: var(--sky); padding: .45rem .6rem; border-radius: 8px; font-size: .82rem; }
+.local-end { margin-top: 1rem; }
+.flash-toast:has([data-action="culture-result"]) { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
+.flash-toast button { pointer-events: auto; min-height: 44px; flex-shrink: 0; }
+@media (max-width: 640px) { .local-venues > div { grid-template-columns: 1fr; gap: .15rem; } }

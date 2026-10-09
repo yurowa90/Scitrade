@@ -7,11 +7,14 @@ import type { CrewFilter } from './recruitment';
 
 export function initialUiState() {
   return {
-    pending: [] as Command[], flash: null as { kind: 'info' | 'warn'; text: string } | null,
+    pending: [] as Command[], flash: null as { kind: 'info' | 'warn'; text: string; action?: 'culture-result' } | null,
     selectedCard: null as string | null, crewFilter: 'all' as CrewFilter,
     interviewId: null as string | null, recruitSelections: {} as Record<string, string>,
     plans: {} as Record<string, CommitPlan>, touchedPlans: new Set<string>(),
     detailId: null as string | null, growthNotices: [] as string[], growthNoticesDay: null as number | null, growthNoticesFresh: false,
+    cultureOpen: false, cultureActivityId: null as string | null, cultureEmployeeId: null as string | null, cultureBookOpen: false,
+    cultureSeenDay: null as number | null, cultureShowFromDay: null as number | null,
+    cultureTabTop: null as number | null, cultureResultFresh: false,
   };
 }
 

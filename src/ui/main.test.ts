@@ -161,11 +161,11 @@ describe('A 실제 화면 연결',()=>{
     const line=ui.app.innerHTML.match(/<p[^>]*>취소하면: ([\s\S]*?)<\/p>/)![1];
     expect(line).toContain(`운임 ${refund} USD 환급·취소비 50.00 USD`);
   });
-  it('운영 장부의 일곱 행은 실제 화면에서 지정 순서로 나온다',async()=>{
+  it('운영 장부의 여덟 행은 실제 화면에서 지정 순서로 나온다',async()=>{
     const ui=await startUi();
     const table=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
-    expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','운영 손익','미지급 급여','현금']);
-    expect(table).toContain('<td colspan="2" class="muted small">급여는 원화로 매일 지급하며 계약금·훈련비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.</td>');
+    expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','현지 활동비','운영 손익','미지급 급여','현금']);
+    expect(table).toContain('<td colspan="2" class="muted small">급여는 원화로 매일 지급하며 계약금·훈련비·현지 활동비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.</td>');
   });
   it.each(['restart','scenario'])('%s 뒤 지난 게임의 flash 알림을 비운다',async(mode)=>{
     const ui=await startUi();ui.click({action:'scout',venue:'VEN_PORT'});
@@ -204,6 +204,8 @@ describe('A 실제 화면 연결',()=>{
     const cfg=structuredClone(config);for(const offer of cfg.offers)offer.validUntilDay=90;
     const ready=()=>readySave(cfg);
     const ui=await startUi(cfg);await ui.importText(ready());
+    ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
+    ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP02'});
     ui.click({action:'interview',candidate:'EMP04'});
     await ui.change({action:'recruit-emp',key:'VEN_PORT'},'EMP02');
     ui.click({action:'select-card',emp:'EMP02'});ui.click({action:'detail',emp:'EMP02'});
@@ -220,6 +222,9 @@ describe('A 실제 화면 연결',()=>{
     else if(mode==='scenario') await ui.change({action:'scenario'},config.id);
     else if(mode==='restart') ui.click({action:'restart'});
     else {vi.stubGlobal('localStorage',{getItem:ready});ui.click({action:'load'});}
+    expect(ui.app.innerHTML).not.toContain('id="local"');
+    expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
+    expect(ui.app.innerHTML).not.toContain('id="culture-book-body"');
     expect(ui.app.innerHTML).not.toContain('is-selected');
     expect(ui.app.innerHTML).toContain('data-filter="all" aria-pressed="true"');
     expect(ui.app.innerHTML).toContain('대기 중인 명령이 없습니다');
@@ -814,5 +819,329 @@ describe('3판 표시 수정 (Codex 사용성 점검 2026-10-07)', () => {
     expect(fwd).toContain('계약상 대금일은 10일입니다.');
     expect(fwd).toContain('대금은 14일에 받을 예정 (인도가 계약상 대금일 10일보다 늦기 때문)');
     expect(ui.app.innerHTML).not.toContain('대금은 10일.');
+  });
+});
+
+describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
+  const taskId='CULTURE-CA01-EMP01-D2';
+  const pendingCount=(html:string)=>(html.match(/<ol class="pending">([\s\S]*?)<\/ol>/)?.[1]?.match(/<li\b/g) ?? []).length;
+  const local=(html:string)=>html.split('<div id="local-body">')[1]!.split('</section>')[0]!;
+  const tab=(html:string)=>html.match(/<button id="local-tab"[^>]*>([\s\S]*?)<\/button>/)![1]!;
+  const toast=(html:string)=>html.match(/<div class="flash-toast[^>]*>([\s\S]*?)<\/div>/)?.[0] ?? '';
+  const header=(html:string)=>html.match(/<header class="topbar">[\s\S]*?<\/header>/)![0];
+  async function select(ui:Awaited<ReturnType<typeof startUi>>) {
+    ui.click({action:'end-day'});ui.click({action:'culture-tab'});
+    ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});
+  }
+  async function exportReader(ui:Awaited<ReturnType<typeof startUi>>) {
+    let blob:Blob|null=null;
+    vi.spyOn(URL,'createObjectURL').mockImplementation((value)=>{blob=value as Blob;return 'blob:task0012';});
+    vi.spyOn(URL,'revokeObjectURL').mockImplementation(()=>undefined);
+    return async()=>{
+      const calls=ui.doc.createElement.mock.calls.length;
+      ui.click({action:'export'});
+      expect(ui.doc.createElement).toHaveBeenCalledWith('a');expect(ui.doc.createElement.mock.calls.length).toBe(calls+1);
+      expect(ui.doc.createElement.mock.results.at(-1)!.value.click).toHaveBeenCalledOnce();
+      return blob!.text();
+    };
+  }
+  it('한 바퀴(a): 연 채 진행·선택 500ms·F1 예정 초점·결과 단일 알림',async()=>{
+    const ui=await startUi();await select(ui);
+    expect(ui.scrollIds).toContain('local-h');expect(ui.focusIds).toContain('local-h');
+    expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');expect(ui.app.innerHTML).toContain('id="culture-preview"');
+    vi.advanceTimersByTime(499);ui.clickNow({action:'culture-queue',activity:'CA01',emp:'EMP01'});
+    expect(pendingCount(ui.app.innerHTML)).toBe(0);
+    ui.scrollBy.mockClear();ui.afterRender(()=>{ui.slotTops['culture-CA01-EMP01']=230;});
+    ui.click({action:'culture-queue',activity:'CA01',emp:'EMP01'});
+    expect(pendingCount(ui.app.innerHTML)).toBe(1);
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
+    expect(ui.doc.activeElement.id).toBe('status-culture-CA01-EMP01');
+    expect(ui.app.innerHTML).toContain('id="status-culture-CA01-EMP01"');
+    ui.click({action:'culture-emp',emp:'EMP02'});
+    expect(ui.app.innerHTML).toContain('같은 활동에 오늘 이미 귀솔이(가) 갑니다.');
+    expect(ui.rendered({action:'culture-queue'}).disabled).toBe(true);
+    ui.click({action:'culture-emp',emp:'EMP01'});
+    expect(local(ui.app.innerHTML)).not.toContain('를 진행 중입니다.');
+    expect(ui.app.innerHTML).toContain('id="status-culture-CA01-EMP01"');
+    ui.scrollIds.length=0;ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');expect(ui.scrollIds).toEqual([]);expect(ui.scrollBy).not.toHaveBeenCalled();
+    expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');expect(toast(ui.app.innerHTML)).toContain('role="status"');
+    expect(growthNotice(ui.app.innerHTML)![1]).not.toContain('role');
+    const copy=ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('</section>')[0]!;
+    expect(copy).toContain('<p class="flash info">2일 현지 활동 기록: 한 상인의 포장·보관 요구 — 귀솔</p>');
+    expect(copy).not.toContain('data-action="culture-result"');expect(copy).not.toContain('role="status"');
+    expect(tab(ui.app.innerHTML)).toContain('<small>닫기</small>');
+    expect(ui.app.innerHTML).toMatch(/<div id="local-body">\s*<article class="cul-result"/);
+    expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
+    ui.click({action:'culture-book'});
+    expect(toast(ui.app.innerHTML)).toContain('결과 보기');expect(toast(ui.app.innerHTML)).not.toContain('role="status"');
+  });
+  it('한 바퀴(b): 닫고 진행은 스크롤 없이 새 기록 표시, 결과 보기만 제목으로 이동한다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});
+    ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
+    expect(ui.scrollBy).not.toHaveBeenCalled();expect(ui.scrollIds).toEqual([]);expect(tab(ui.app.innerHTML)).toContain('새 기록 있음');
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+    ui.click({action:'culture-result'});
+    expect(ui.app.innerHTML).toContain('id="local"');
+    expect(ui.scrollIds).toEqual([`culture-result-h-${taskId}`]);expect(ui.focusIds.at(-1)).toBe(`culture-result-h-${taskId}`);
+    expect(ui.scroll).toHaveBeenLastCalledWith({block:'start'});expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
+    expect(toast(ui.app.innerHTML)).toBe('');
+    ui.clickNow({action:'culture-close',where:'head'});expect(ui.app.innerHTML).toContain('id="local"');
+    // 결과 보기로 본 결과는 본 것으로 남는다.
+    ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
+  });
+  it('안 본 결과는 이틀 진행 뒤에도 남고 열어 본 다음 다시 열 때 사라진다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-close',where:'head'});
+    ui.click({action:'end-day'});ui.click({action:'end-day'});expect(ui.app.innerHTML).toContain('<b>4일</b>');
+    expect(tab(ui.app.innerHTML)).toContain('새 기록 있음');expect(toast(ui.app.innerHTML)).toBe('');
+    ui.click({action:'culture-tab'});
+    expect(ui.app.innerHTML).toMatch(/<div id="local-body">\s*<article class="cul-result"/);
+    expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    ui.click({action:'culture-tab'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).not.toContain('class="cul-result"');
+  });
+  it.each(['tab','head','end'])('닫기 %s는 열기 전 탭 위치로 한 번 복원하고 초점·500ms를 지킨다',async(where)=>{
+    const ui=await startUi();ui.bounds['local-tab']={top:240,bottom:284,height:44};
+    ui.click({action:'culture-tab'});expect(ui.doc.activeElement.id).toBe('local-h');
+    ui.clickNow({action:'culture-tab'});expect(ui.app.innerHTML).toContain('id="local"');
+    ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:310,bottom:354,height:44};});
+    ui.click(where==='tab' ? {action:'culture-tab'} : {action:'culture-close',where});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,70);expect(ui.doc.activeElement.id).toBe('local-tab');
+    expect(ui.app.innerHTML).not.toContain('id="local"');
+    vi.advanceTimersByTime(499);ui.clickNow({action:'culture-tab'});expect(ui.app.innerHTML).not.toContain('id="local"');
+    vi.advanceTimersByTime(1);ui.clickNow({action:'culture-tab'});expect(ui.app.innerHTML).toContain('id="local"');
+  });
+  it('결과 보기로 연 뒤 닫을 때는 탭을 막대 아래·알림 위로 최소 이동한다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});ui.click({action:'end-day'});ui.click({action:'culture-result'});
+    ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:50,bottom:94,height:44};});
+    ui.click({action:'culture-close',where:'end'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,-58);expect(ui.doc.activeElement.id).toBe('local-tab');
+  });
+  it('읽던 직원 제목은 결과 높이만큼 한 번 보정하고 사라지는 미리 보기는 기준이 아니다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});
+    ui.bounds['culture-h']={top:50,bottom:80,height:30};
+    ui.bounds['culture-emp-h']={top:180,bottom:210,height:30};
+    ui.bounds['culture-pv-h']={top:280,bottom:310,height:30};
+    ui.bounds['culture-book-h']={top:780,bottom:810,height:30};
+    ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:530,bottom:560,height:30};});
+    ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);expect(ui.scrollIds).toEqual([]);
+    expect(ui.app.innerHTML).not.toContain('id="culture-pv-h"');expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('읽던 첫 결과가 남고 여러 후보 중 가장 위의 제목을 쓴다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    const heading=`culture-result-h-${taskId}`;ui.bounds[heading]={top:170,bottom:200,height:30};
+    ui.bounds['culture-h']={top:400,bottom:430,height:30};ui.bounds['culture-emp-h']={top:550,bottom:580,height:30};
+    ui.afterRender(()=>{ui.bounds[heading]={top:150,bottom:180,height:30};});ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,-20);
+  });
+  it('직원 고르기는 한 번의 최소 스크롤 뒤 누른 직원에 초점을 둔다',async()=>{
+    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
+    ui.bounds['culture-emp-h']={top:600,bottom:630,height:30};ui.bounds['culture-slot']={top:960,bottom:1050,height:90};
+    ui.bounds['culture-emp-EMP01']={top:700,bottom:744,height:44};
+    ui.setToastTop(620);ui.click({action:'save'});ui.scrollBy.mockClear();
+    ui.click({action:'culture-emp',emp:'EMP01'});
+    // 띠 아래 끝은 알림 위 끝(620px)이다. CSS 변수와 무관하다.
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,430);expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');
+    expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
+  });
+  it('미리 보기 넘침은 누른 직원의 막대 아래 8px 상한을 우선한다',async()=>{
+    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
+    ui.bounds['culture-emp-h']={top:160,bottom:190,height:30};ui.bounds['culture-emp-EMP01']={top:180,bottom:224,height:44};
+    ui.bounds['culture-slot']={top:910,bottom:1000,height:90};ui.scrollBy.mockClear();
+    ui.click({action:'culture-emp',emp:'EMP01'});expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,72);
+    expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');
+  });
+  it('활동·직원의 같은 선택은 유지하고 다른 활동을 고르면 직원·미리 보기만 지운다',async()=>{
+    const ui=await startUi();await select(ui);ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-act',activity:'CA01'});
+    expect(ui.app.innerHTML).toContain('id="culture-preview"');
+    ui.click({action:'culture-act',activity:'CA02'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
+    ui.clickNow({action:'culture-emp',emp:'EMP01'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
+    vi.advanceTimersByTime(500);ui.clickNow({action:'culture-emp',emp:'EMP01'});expect(ui.app.innerHTML).toContain('id="culture-preview"');
+  });
+  it('P0-CITY-01 열람·선택·미리 보기·결과 보기 전후 저장 문자열과 위쪽 막대는 같다',async()=>{
+    const ui=await startUi();const read=await exportReader(ui);const saved=await read(),bar=header(ui.app.innerHTML);
+    for(const action of [{action:'culture-tab'},{action:'culture-book'},{action:'culture-book'},
+      {action:'culture-act',activity:'CA01'},{action:'culture-emp',emp:'EMP01'},
+      {action:'culture-close',where:'head'},{action:'culture-tab'},{action:'culture-close',where:'end'}] as Record<string,string>[]) {
+      ui.click(action);expect(await read()).toBe(saved);expect(header(ui.app.innerHTML)).toBe(bar);
+    }
+    expect(ui.focusIds).toContain('local-h');expect(ui.focusIds).toContain('culture-emp-EMP01');expect(ui.focusIds).toContain('local-tab');
+    ui.click({action:'culture-tab'});ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});ui.click({action:'end-day'});
+    const before=await read(),beforeBar=header(ui.app.innerHTML);expect(toast(ui.app.innerHTML)).toContain('결과 보기');
+    ui.click({action:'culture-result'});expect(await read()).toBe(before);expect(header(ui.app.innerHTML)).toBe(beforeBar);
+    expect(ui.scrollIds.some((id)=>id.startsWith('culture-result-h-'))).toBe(true);expect(toast(ui.app.innerHTML)).toBe('');
+    expect(ui.doc.createElement.mock.calls.length).toBe(11);
+  });
+  it('P0-CITY-01 금융센터는 미구현 표시가 있고 주식·상장 단추가 없다',async()=>{
+    const ui=await startUi();ui.click({action:'culture-tab'});
+    expect(ui.app.innerHTML).toContain('금융센터</dt><dd>주식 거래와 상장(회사 주식을 시장에 내놓기)은 이번 판에 없습니다.');
+    const list=ui.app.innerHTML.match(/<dl class="local-venues">([\s\S]*?)<\/dl>/)![1]!;
+    expect([...list.matchAll(/<dt>/g)]).toHaveLength(5);expect(list).not.toContain('<button');
+    for(const button of ui.app.innerHTML.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/g))expect(button[1]).not.toMatch(/주식|상장|IPO/);
+  });
+  it.each(['restart','load','import','scenario'])('%s 뒤 펼침·기록장·활동·직원 선택은 초기화된다',async(mode)=>{
+    const s=openDay(runDays(createGame(config),config,2,{2:[{id:'C',type:'START_CULTURE_ACTIVITY',activityId:'CA01',employeeId:'EMP01'}]}).state,config).state;
+    const ui=await startUi();await ui.importText(serializeSave(s));ui.click({action:'end-day'});ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
+    ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP01'});
+    if(mode==='load'){vi.stubGlobal('localStorage',{getItem:()=>serializeSave(s)});ui.click({action:'load'});}
+    else if(mode==='import')await ui.importText(serializeSave(s));
+    else if(mode==='restart')ui.click({action:'restart'});
+    else await ui.change({action:'scenario'},config.id);
+    expect(ui.app.innerHTML).not.toContain('id="local"');expect(toast(ui.app.innerHTML)).not.toContain('culture-result');
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');expect(ui.app.innerHTML).not.toContain('id="culture-book-body"');
+    expect(local(ui.app.innerHTML)).not.toContain('aria-pressed="true"');expect(ui.app.innerHTML).not.toContain('id="culture-emp-h"');
+    if(mode==='load'||mode==='import')expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    // 닫기는 초기화 뒤 새로 연 순간의 탭 위치로 돌아간다. 초기화 전 값이 남는지는 이 하네스로 관찰할 수 없다(initialUiState 시험이 맡는다).
+    ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:250,bottom:294,height:44};});ui.click({action:'culture-close',where:'end'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
+  });
+  it('M1 전체 화면에는 문화 탭·패널·비용·감싸는 칸이 없다',async()=>{
+    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    for(const text of ['부산 현지','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
+    ui.click({action:'end-day'});for(const text of ['부산 현지','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
+  });
+  it('CA01 하루 뒤 원화 비용 행의 합과 운영 손익·현금식은 일치한다',async()=>{
+    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    const table=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
+    expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','현지 활동비','운영 손익','미지급 급여','현금']);
+    expect([...table.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−160,000원','0원','0원','−20,000원','−180,000원','0원','9,820,000원']);
+    const read=await exportReader(ui),save=JSON.parse(await read());
+    const {companyReport}=await import('../engine/reports');const p=companyReport(save.state,config).payroll;
+    expect(-p.wageExpense-p.recruitmentExpense-p.trainingExpense-p.cultureExpense).toBe(p.profit);
+    expect(p.cash).toBe(p.openingEquity+p.profit+p.accountsPayable);
+  });
+  it('문화 CSS의 줄 높이·알림 단추·탭 위치는 고정한 규칙이다',async()=>{
+    const {readFileSync}=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
+    const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
+    expect(css).toMatch(/\.layout\s*\{[^}]*grid-template-rows:\s*auto auto 1fr/);
+    expect(css).toMatch(/@media \(max-width: 1000px\)\s*\{\s*\.layout, \.layout\.map-wide\s*\{[^}]*grid-template-rows:\s*none/);
+    expect(css).toMatch(/\.flash-toast button\s*\{[^}]*pointer-events:\s*auto/);
+    expect(css).toMatch(/\.flash-toast button\s*\{[^}]*min-height:\s*44px/);
+    expect(css).toMatch(/\.trade\s*\{[^}]*position:\s*relative/);expect(css).toMatch(/\.local-tab\s*\{[^}]*position:\s*absolute/);
+    const ui=await startUi();expect(ui.app.innerHTML).toMatch(/<h2 id="trade-h"[^>]*>[\s\S]*?<\/h2>\s*<button id="local-tab"/);
+    expect(ui.app.innerHTML).not.toMatch(/id="local-tab"[^>]*aria-controls/);
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-controls="local-body"/);
+  });
+});
+
+describe('TASK-0012 Claude 검수 보강',()=>{
+  const taskId='CULTURE-CA01-EMP01-D2';
+  const tab=(html:string)=>html.match(/<button id="local-tab"[^>]*>([\s\S]*?)<\/button>/)![1]!;
+  const toast=(html:string)=>html.match(/<div class="flash-toast[^>]*>([\s\S]*?)<\/div>/)?.[0] ?? '';
+  async function queued(ui:Awaited<ReturnType<typeof startUi>>) {
+    ui.click({action:'end-day'});ui.click({action:'culture-tab'});
+    ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});
+  }
+  it.each([false,true])('M2에서도 제목이 막대 위인 읽던 계약 본문의 위치를 복원한다 (패널 열림 %s)',async(open)=>{
+    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});ui.click({action:'end-day'});
+    if(open){ui.click({action:'culture-tab'});
+      // 계약 카드가 보이면 거래 칸 전체(견적판 기준)보다 계약 제목이 우선이다.
+      ui.bounds.trade={top:-1000,bottom:900,height:1900};ui.bounds['trade-h']={top:-990,bottom:-960,height:30};}
+    ui.bounds['contract-h-CT001']={top:20,bottom:50,height:30};
+    ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
+    ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);expect(ui.scrollIds).toEqual([]);
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('결과 카드는 제목이 막대 위여도 블록이 보이면 읽던 자리 기준이다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});
+    ui.bounds[`culture-result-h-${taskId}`]={top:40,bottom:70,height:30};ui.bounds[`culture-result-${taskId}`]={top:30,bottom:520,height:490};
+    ui.afterRender(()=>{ui.bounds[`culture-result-h-${taskId}`]={top:300,bottom:330,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,260);
+  });
+  it('읽던 자리 후보는 DOM 순서가 아니라 화면 위에서부터 고른다',async()=>{
+    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});await queued(ui);
+    ui.bounds['culture-h']={top:50,bottom:80,height:30};ui.bounds['culture-emp-h']={top:180,bottom:210,height:30};
+    ui.bounds['culture-book-h']={top:780,bottom:810,height:30};ui.bounds['contract-h-CT001']={top:600,bottom:630,height:30};
+    // 계약 후보는 먼저 모으지만 화면에서는 직원 제목이 위다. 두 후보의 이동량을 다르게 둔다.
+    ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:530,bottom:560,height:30};ui.bounds['contract-h-CT001']={top:900,bottom:930,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
+  });
+  it('패널을 연 채 견적판을 읽으면 위 패널 높이가 바뀌어도 거래 칸을 제자리에 둔다',async()=>{
+    const ui=await startUi();await queued(ui);
+    for(const [id,top] of [['culture-h',-900],['culture-emp-h',-700],['culture-employees',-680],['culture-book-h',20],['trade-h',-40]] as const)ui.bounds[id]={top,bottom:top+30,height:30};
+    ui.bounds.trade={top:-50,bottom:900,height:950};
+    ui.afterRender(()=>{ui.bounds['trade-h']={top:390,bottom:420,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,430);expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('직원 줄이 보이면 그 제목이 막대 위여도 결과 높이만큼 보정한다',async()=>{
+    const ui=await startUi();await queued(ui);
+    ui.bounds['culture-h']={top:-300,bottom:-270,height:30};ui.bounds['culture-emp-h']={top:70,bottom:91,height:21};
+    ui.bounds['culture-employees']={top:120,bottom:164,height:44};ui.bounds['culture-book-h']={top:900,bottom:930,height:30};
+    ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:493,bottom:514,height:21};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,423);
+  });
+  it('기록장을 펼친 채 제목과 보고서가 함께 보여도 보고서 자리를 지킨다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
+      ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],[`culture-report-${taskId}`,260,700],[`culture-report-h-${taskId}`,270,300]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.afterRender(()=>{ui.bounds[`culture-report-h-${taskId}`]={top:620,bottom:650,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
+  });
+  it('펼친 기록장에 띠에 걸친 보고서가 없으면 기록장 제목이 기준이다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [['culture-h',-450,-420],['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],['trade-h',700,730]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.bounds.trade={top:690,bottom:3000,height:2310};
+    ui.afterRender(()=>{ui.bounds['culture-book-h']={top:500,bottom:530,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,380);
+  });
+  it('기록장 보고서를 읽는 중이면 그 보고서 자리를 지킨다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
+      ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',20,50],[`culture-report-${taskId}`,30,500],[`culture-report-h-${taskId}`,40,70]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.afterRender(()=>{ui.bounds[`culture-report-h-${taskId}`]={top:400,bottom:430,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,360);
+  });
+  it.each(['open','closed'])('탭으로 먼저 연 뒤(%s) 결과 보기를 눌러도 방금 마감한 날의 카드로 간다',async(after)=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'culture-close',where:'head'});ui.click({action:'end-day'});
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    if(after==='closed')ui.click({action:'culture-tab'});
+    expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');
+    ui.focusIds.length=0;ui.scrollIds.length=0;ui.click({action:'culture-result'});
+    expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    expect(ui.scrollIds).toEqual([`culture-result-h-${taskId}`]);expect(ui.focusIds.at(-1)).toBe(`culture-result-h-${taskId}`);
+    expect(toast(ui.app.innerHTML)).toBe('');
+    ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
+  });
+  it('같은 날 결과가 두 건이면 결과 보기는 화면의 첫 결과 카드로 간다',async()=>{
+    const ui=await startUi();await queued(ui);
+    ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP02'});ui.click({action:'culture-queue'});
+    ui.click({action:'end-day'});ui.scrollIds.length=0;ui.click({action:'culture-result'});
+    const ids=[...ui.app.innerHTML.matchAll(/id="(culture-result-h-[^"]+)"/g)].map((m)=>m[1]);
+    expect(ids).toHaveLength(2);expect(ui.scrollIds).toEqual([ids[0]]);expect(ui.focusIds.at(-1)).toBe(ids[0]);
+  });
+  it('탭·기록장·활동·직원의 상태 속성과 거래 위 패널 배치',async()=>{
+    const ui=await startUi();ui.click({action:'end-day'});
+    expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="false"/);
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="true"/);
+    expect(ui.app.innerHTML).toMatch(/<div class="maincol"><section class="panel local"[\s\S]*?<\/section>\s*<section class="panel trade"/);
+    expect(ui.app.innerHTML).toMatch(/data-action="culture-book" aria-expanded="false"/);
+    ui.click({action:'culture-book'});expect(ui.app.innerHTML).toMatch(/data-action="culture-book" aria-expanded="true"/);
+    ui.click({action:'culture-act',activity:'CA02'});
+    expect(ui.app.innerHTML).toMatch(/data-activity="CA02" aria-pressed="true"/);expect(ui.app.innerHTML).toMatch(/data-activity="CA01" aria-pressed="false"/);
+    ui.click({action:'culture-emp',emp:'EMP01'});
+    expect(ui.app.innerHTML).toMatch(/id="culture-emp-EMP01"[^>]*aria-pressed="true"/);expect(ui.app.innerHTML).toMatch(/id="culture-emp-EMP02"[^>]*aria-pressed="false"/);
+  });
+});
+
+describe('TASK-0012 M1 동작 보존',()=>{
+  it('M1에서는 제목이 막대 위라도 읽던 계약 본문의 위치를 복원한다',async()=>{
+    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    ui.click({action:'accept',buy:'OFFER_BUY_01',sell:'OFFER_SELL_01'});
+    ui.bounds['contract-h-CT001']={top:20,bottom:50,height:30};
+    ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);expect(ui.doc.activeElement.dataset.action).toBe('end-day');
   });
 });

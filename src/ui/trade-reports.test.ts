@@ -3,7 +3,7 @@ import { loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { companyReport } from '../engine/reports';
 import { runDays, standardDayOneCommands } from '../engine/testkit';
-import { krwReportRows, KRW_REPORT_NOTE_KO } from './reports';
+import { krwReportRows, KRW_REPORT_NOTE_CULTURE_KO, KRW_REPORT_NOTE_KO } from './reports';
 import { cancellationPreviewKo } from './trade';
 import { crewNoteKo } from './crew-status';
 
@@ -38,9 +38,10 @@ describe('취소 안내와 원화 보고', () => {
     const report = companyReport(state, config), p = report.payroll;
     expect(p).toMatchObject({ openingEquity:10_000_000, wageExpense:640_000, recruitmentExpense:550_000, trainingExpense:50_000, profit:-1_240_000,cash:8_760_000 });
     const html = krwReportRows(report, config);
-    expect([...html.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','운영 손익','미지급 급여','현금']);
-    expect([...html.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−640,000원','−550,000원','−50,000원','−1,240,000원','0원','8,760,000원']);
+    expect([...html.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','현지 활동비','운영 손익','미지급 급여','현금']);
+    expect([...html.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−640,000원','−550,000원','−50,000원','0원','−1,240,000원','0원','8,760,000원']);
     expect(p.cash).toBe(p.openingEquity+p.profit+p.accountsPayable);
+    expect(KRW_REPORT_NOTE_CULTURE_KO).toContain('계약금·훈련비·현지 활동비는 한 번 내는 원화 비용');
     expect(KRW_REPORT_NOTE_KO).toContain('계약금·훈련비는 한 번 내는 원화 비용');
     expect(crewNoteKo(config)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000원.');
   });
