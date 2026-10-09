@@ -1035,7 +1035,9 @@ describe('TASK-0012 Claude 검수 보강',()=>{
   }
   it.each([false,true])('M2에서도 제목이 막대 위인 읽던 계약 본문의 위치를 복원한다 (패널 열림 %s)',async(open)=>{
     const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});ui.click({action:'end-day'});
-    if(open)ui.click({action:'culture-tab'});
+    if(open){ui.click({action:'culture-tab'});
+      // 계약 카드가 보이면 거래 칸 전체(견적판 기준)보다 계약 제목이 우선이다.
+      ui.bounds.trade={top:-1000,bottom:900,height:1900};ui.bounds['trade-h']={top:-990,bottom:-960,height:30};}
     ui.bounds['contract-h-CT001']={top:20,bottom:50,height:30};
     ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
     ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
@@ -1057,6 +1059,31 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:530,bottom:560,height:30};ui.bounds['contract-h-CT001']={top:900,bottom:930,height:30};});
     ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
+  });
+  it('패널을 연 채 견적판을 읽으면 위 패널 높이가 바뀌어도 거래 칸을 제자리에 둔다',async()=>{
+    const ui=await startUi();await queued(ui);
+    for(const [id,top] of [['culture-h',-900],['culture-emp-h',-700],['culture-employees',-680],['culture-book-h',20],['trade-h',-40]] as const)ui.bounds[id]={top,bottom:top+30,height:30};
+    ui.bounds.trade={top:-50,bottom:900,height:950};
+    ui.afterRender(()=>{ui.bounds['trade-h']={top:390,bottom:420,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,430);expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('직원 줄이 보이면 그 제목이 막대 위여도 결과 높이만큼 보정한다',async()=>{
+    const ui=await startUi();await queued(ui);
+    ui.bounds['culture-h']={top:-300,bottom:-270,height:30};ui.bounds['culture-emp-h']={top:70,bottom:91,height:21};
+    ui.bounds['culture-employees']={top:120,bottom:164,height:44};ui.bounds['culture-book-h']={top:900,bottom:930,height:30};
+    ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:493,bottom:514,height:21};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,423);
+  });
+  it('기록장 보고서를 읽는 중이면 그 보고서 자리를 지킨다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
+      ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',20,50],[`culture-report-${taskId}`,30,500],[`culture-report-h-${taskId}`,40,70]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.afterRender(()=>{ui.bounds[`culture-report-h-${taskId}`]={top:400,bottom:430,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,360);
   });
   it.each(['open','closed'])('탭으로 먼저 연 뒤(%s) 결과 보기를 눌러도 방금 마감한 날의 카드로 간다',async(after)=>{
     const ui=await startUi();await queued(ui);ui.click({action:'culture-close',where:'head'});ui.click({action:'end-day'});

@@ -4,7 +4,7 @@
 import './style.css';
 import { applyPixelScale } from './pixel';
 import { esc } from './html';
-import { CULTURE_KO, culturePanel, cultureTab, cultureResultTasks, cultureToastText } from './culture';
+import { CULTURE_KO, cultureAnchorBlocks, culturePanel, cultureResultTasks, cultureTab, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
@@ -169,13 +169,16 @@ function endDay() {
   const cardHead = card?.querySelector<HTMLElement>('h3[id]');
   if (cardHead) heads.push(cardHead);
   if (ui.cultureOpen) {
-    // 결과 카드는 블록이 띠에 걸치면 기준이 된다. 네 칸을 읽는 중에 위에 새 결과가 생겨도 자리를 지킨다.
-    for (const task of cultureResultTasks(state, config, ui.cultureShowFromDay ?? state.day - 1)) {
-      const block = document.getElementById(`culture-result-${task.id}`)?.getBoundingClientRect();
-      const head = document.getElementById(`culture-result-h-${task.id}`);
-      if (block && head && block.bottom > barBottom && block.top < bandBottom) heads.push(head);
+    const inBand = (r: DOMRect | undefined) => r !== undefined && r.bottom > barBottom && r.top < bandBottom;
+    // 계약 카드가 없으면 견적판을 읽는 중이다. 위 패널 높이가 바뀌어도 거래 칸을 제자리에 둔다.
+    const tradeHead = document.getElementById('trade-h');
+    if (!cardHead && tradeHead && inBand(app.querySelector<HTMLElement>('.trade')?.getBoundingClientRect())) heads.push(tradeHead);
+    // 결과 카드·직원 줄·기록장 보고서는 블록이 띠에 걸치면 기준이 된다. 네 칸을 읽는 중에 위에 새 결과가 생겨도 자리를 지킨다.
+    for (const [blockId, headId] of cultureAnchorBlocks(state, config, ui)) {
+      const head = document.getElementById(headId);
+      if (head && inBand(document.getElementById(blockId)?.getBoundingClientRect())) heads.push(head);
     }
-    for (const id of ['culture-h', 'culture-emp-h', 'culture-book-h']) {
+    for (const id of ['culture-h', 'culture-book-h']) {
       const head = document.getElementById(id);
       const top = head?.getBoundingClientRect().top;
       if (head && top !== undefined && top >= barBottom && top < bandBottom) heads.push(head);

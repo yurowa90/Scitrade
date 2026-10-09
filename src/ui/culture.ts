@@ -77,7 +77,7 @@ export const CULTURE_KO = {
   queueHint: '넣기만 해서는 시간이 흐르지 않습니다. 활동비는 ‘하루 진행’ 때 나갑니다.',
   unqueueHint: '빼려면 ‘오늘 할 일’에서 ‘빼기’를 누르세요.',
   recordDate: (day: number | null, activity: string, newReport: boolean) => `${day}일 ${newReport ? '기록' : '활동'} · ${activity}`,
-  source: (names: string[]) => `출처 ${names.length}명: ${names.join(' · ')}`,
+  source: (names: string[]) => `출처 ${names.length}명: ${names.join(', ')}`,
   unverified: '다른 출처로 아직 확인하지 않은 기록',
   reporter: (employee: string) => `기록한 직원 ${employee}`,
   existingReport: (day: number, employee: string) => `회사 보고서는 ${day}일에 이미 있습니다. 네 칸은 그대로입니다. · 이번 활동 직원 ${employee}`,
@@ -94,8 +94,8 @@ export const CULTURE_KO = {
   trust: '거래 신뢰는 계약을 약속대로 지켰는지에서만 나옵니다. 현지 활동은 이것을 바꾸지 않습니다.',
   resultButton: '결과 보기',
   toastOne: (day: number, topic: string, employee: string) => `${day}일 현지 활동 기록: ${topic} — ${employee}`,
-  toastRepeat: (day: number, topic: string, employee: string, reportDay: number) => `${day}일 현지 활동: ${topic} — ${employee} (회사 보고서는 ${reportDay}일 것 그대로)`,
-  toastMany: (day: number, topics: string[]) => `${day}일 현지 활동 기록 ${topics.length}건: ${topics.join(' · ')}`,
+  toastRepeat: (day: number, topic: string, employee: string, reportDay: number) => `${day}일 현지 활동: ${topic} — ${employee} (회사 보고서는 ${reportDay}일에 이미 있음)`,
+  toastMany: (day: number, topics: string[], newReports: number) => `${day}일 현지 활동 ${newReports === topics.length ? '기록 ' : ''}${topics.length}건${newReports === topics.length ? '' : `(새 회사 보고서 ${newReports}건)`}: ${topics.map((t) => `‘${t}’`).join(', ')}`,
   toastRejected: (day: number, reasons: string[]) => `실행하지 못한 명령: ${reasons.join(' / ')} · ${day}일 현지 활동 기록이 있습니다.`,
 };
 
@@ -107,6 +107,16 @@ const newest = <T>(items: T[], day: (item: T) => number): T[] => [...items].reve
 export function cultureResultTasks(state: GameState, config: ScenarioConfig, fromDay: number): Task[] {
   return config.culture ? newest(state.tasks.filter((t) => t.kind === 'CULTURE' && t.status === 'DONE'
     && t.completedDay !== null && t.completedDay >= fromDay), (t) => t.completedDay!) : [];
+}
+
+/** 하루 진행 뒤 읽던 자리의 블록 후보: [블록 id, 기준 제목 id]. 블록이 화면에 걸치면 제목이 막대 위여도 기준이 된다. */
+export function cultureAnchorBlocks(state: GameState, config: ScenarioConfig, ui: CultureUi): [string, string][] {
+  if (!config.culture || !ui.cultureOpen) return [];
+  return [
+    ...cultureResultTasks(state, config, ui.cultureShowFromDay ?? state.day - 1).map((t): [string, string] => [`culture-result-${t.id}`, `culture-result-h-${t.id}`]),
+    ...(ui.cultureActivityId ? [['culture-employees', 'culture-emp-h'] as [string, string]] : []),
+    ...(ui.cultureBookOpen ? cultureBook(state, config).reports.map((r): [string, string] => [`culture-report-${r.taskId}`, `culture-report-h-${r.taskId}`]) : []),
+  ];
 }
 
 export function cultureTab(state: GameState, config: ScenarioConfig, ui: CultureUi): string {
@@ -138,7 +148,7 @@ function recordCard(report: Report, activity: CultureActivityDef, config: Scenar
   const headingId = task ? `culture-result-h-${task.id}` : `culture-report-h-${report.taskId}`;
   const sources = CULTURE_KO.source(report.sourceContactIds.map((id) => contactName(config, id)));
   const level = task ? 'h3' : 'h5';
-  return `<article class="${task ? 'cul-result' : 'cul-report'}"${task ? ` id="culture-result-${esc(task.id)}"` : ''} aria-labelledby="${esc(headingId)}"><${level} id="${esc(headingId)}" tabindex="-1">${esc(activity.topic.titleKo)}${task ? ` <small>${esc(CULTURE_KO.recordDate(task.completedDay, activity.titleKo, report.taskId === task.id))}</small>` : ''}</${level}>
+  return `<article class="${task ? 'cul-result' : 'cul-report'}" id="${esc(task ? `culture-result-${task.id}` : `culture-report-${report.taskId}`)}" aria-labelledby="${esc(headingId)}"><${level} id="${esc(headingId)}" tabindex="-1">${esc(activity.topic.titleKo)}${task ? ` <small>${esc(CULTURE_KO.recordDate(task.completedDay, activity.titleKo, report.taskId === task.id))}</small>` : ''}</${level}>
     ${task && report.taskId !== task.id ? `<p class="rec-meta">${esc(CULTURE_KO.existingReport(report.day, employee))}</p>` : ''}
     <p class="rec-meta">${task ? '' : `${report.day}일 · `}${esc(CULTURE_KO.reporter(employeeName(config, report.reporterEmployeeId)))} · ${esc(sources)}${report.status === 'UNVERIFIED' ? ` · ${CULTURE_KO.unverified}` : ''}</p>
     ${recordFour(report)}${task ? `<p class="spent"><b>${CULTURE_KO.spent}</b> ${esc(CULTURE_KO.spentText(employee, task.startedDay, task.completedDay, formatMoney(activity.currency, activity.costMinor)))}</p><p class="unchanged"><b>${CULTURE_KO.unchangedResult}</b> ${CULTURE_UNCHANGED_KO}</p>` : ''}</article>`;
@@ -191,7 +201,7 @@ function previewHtml(p: Preview, state: GameState, config: ScenarioConfig, activ
     ${p.waitingTasks.length ? `${p.waitingTasks.map(({task, reservedDepartureDay}) => `<p class="reason">${esc(CULTURE_KO.waiting(taskSubjectKo(config, task) ?? '', taskName(task.kind), task.requiredWorkUnits - task.progressWorkUnits, reservedDepartureDay))}</p>`).join('')}<p>${esc(CULTURE_KO.otherEmployees(cityName(config, activity.cityId), p.otherFreeLocalEmployeeIds.map((id) => employeeName(config, id))))}</p>` : ''}
     ${beyondCampaign ? `<p class="reason">${esc(CULTURE_KO.campaignWarning(config.campaignDays))}</p>` : p.durationDays > 1 ? `<p>${esc(CULTURE_KO.finish(p.busyUntilDay))}</p>` : ''}
     <p>${esc(CULTURE_KO.funds(money(p.availableBeforeMinor), money(p.availableAfterMinor), otherPending))}</p>
-    <p>${esc(CULTURE_KO.runway(runway(p.payrollRunwayBefore), runway(p.payrollRunwayAfter)))}<br>${CULTURE_KO.wages}</p>
+    <p>${esc(CULTURE_KO.runway(runway(p.payrollRunwayBefore), runway(p.payrollRunwayAfter)))}${unpaid ? '' : `<br>${CULTURE_KO.wages}`}</p>
     ${unpaid ? `<p class="reason">${esc(CULTURE_KO.unpaid(state.day, alreadyUnpaid))}</p>` : ''}
     ${beyondCampaign ? '' : `<div class="culture-new"><p>${CULTURE_KO.newRecords(p.newRecords.firstCompletionXp > 0)}</p><ul>${records.map((text) => `<li>${esc(text)}</li>`).join('')}</ul></div>`}
     ${unchanged}</div>`;
@@ -225,7 +235,7 @@ export function culturePanel(state: GameState, view: GameState, pending: Command
     <p class="local-intro">${CULTURE_KO.intro}</p>${cultureVenues(config)}
     <section class="culture-activity" aria-labelledby="culture-h"><h3 id="culture-h" tabindex="-1">${esc(cultureVenue.title_ko)}</h3><div class="culture-frame"><p>${CULTURE_KO.frame}</p><ol>${CULTURE_KO.fields.map(([label, hint]) => `<li>${label} — ${hint}</li>`).join('')}</ol></div>
     <h4>${CULTURE_KO.chooseActivity}</h4><div class="culture-choices" role="group" aria-label="${CULTURE_KO.activityGroup}">${activities}</div>
-    ${activity ? `<h4 id="culture-emp-h" tabindex="-1">${CULTURE_KO.chooseEmployee}</h4><p class="small muted">${esc(CULTURE_KO.employeeHint(cityName(config, activity.cityId)))}</p><div class="culture-employees">${employees}</div>` : ''}
+    ${activity ? `<h4 id="culture-emp-h" tabindex="-1">${CULTURE_KO.chooseEmployee}</h4><p class="small muted">${esc(CULTURE_KO.employeeHint(cityName(config, activity.cityId)))}</p><div class="culture-employees" id="culture-employees">${employees}</div>` : ''}
     ${p && activity && employee ? previewHtml(p, state, config, activity, employeeName(config, employee.id), pending.some((cmd) => cmd !== pair)) : ''}${slot}</section>
     ${cultureNotebook(state, config, ui.cultureBookOpen)}<button class="local-end" data-action="culture-close" data-where="end">${esc(CULTURE_KO.closeLocal(city))}</button></div></section>`;
 }
@@ -235,11 +245,12 @@ export function cultureToastText(state: GameState, config: ScenarioConfig, rejec
   if (!tasks.length) return null;
   const topic = (task: Task) => config.culture!.activities.find((a) => a.id === task.subjectId)?.topic.titleKo ?? '';
   const first = tasks[0]!;
-  const report = cultureBook(state, config).reports.find((r) => r.activityId === first.subjectId);
+  const book = cultureBook(state, config);
+  const report = book.reports.find((r) => r.activityId === first.subjectId);
   const employee = employeeName(config, first.assignedEmployeeId);
   return { kind: rejected.length ? 'warn' as const : 'info' as const, action: 'culture-result' as const,
     text: rejected.length ? CULTURE_KO.toastRejected(state.day - 1, rejected.map((r) => r.reasonKo))
-      : tasks.length > 1 ? CULTURE_KO.toastMany(state.day - 1, tasks.map(topic))
+      : tasks.length > 1 ? CULTURE_KO.toastMany(state.day - 1, tasks.map(topic), tasks.filter((t) => book.reports.some((r) => r.taskId === t.id)).length)
         : report && report.taskId !== first.id ? CULTURE_KO.toastRepeat(state.day - 1, topic(first), employee, report.day)
           : CULTURE_KO.toastOne(state.day - 1, topic(first), employee) };
 }

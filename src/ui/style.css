@@ -494,8 +494,6 @@ main.layout { padding-bottom: 5.5rem; }
 #culture-slot p { font-size: .75rem; }
 .cul-result, .cul-report { margin-bottom: .8rem; }
 .cul-result h3 small, .culture-book h3 small { display: block; }
-/* 제목으로 옮길 때 고정 막대에 딱 붙지 않게 한다. */
-#local-h, .cul-result h3 { scroll-margin-top: 8px; }
 .cul-report h5 { margin: .5rem 0 .3rem; font-size: .88rem; }
 .culture-cost b { font-weight: 600; }
 .rec-meta, .spent { font-size: .82rem; }
@@ -507,6 +505,7 @@ main.layout { padding-bottom: 5.5rem; }
 .rec-label small { font-size: .75rem; color: var(--navy-soft); }
 .rec-label .rec-limit { color: var(--warn); }
 .culture-book ul { font-size: .82rem; padding-left: 1.2rem; }
+.book-trust { margin-top: .9rem; background: var(--sky); padding: .45rem .6rem; border-radius: 8px; font-size: .82rem; }
 .local-end { margin-top: 1rem; }
 .flash-toast:has([data-action="culture-result"]) { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
 .flash-toast button { pointer-events: auto; min-height: 44px; flex-shrink: 0; }

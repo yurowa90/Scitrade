@@ -7,7 +7,7 @@ import { culturePreview, CULTURE_UNCHANGED_KO } from '../engine/previews';
 import { runDays } from '../engine/testkit';
 import type { Command, GameState, ScenarioConfig } from '../engine/types';
 import { taskName } from './card';
-import { culturePanel, cultureResults, cultureNotebook, cultureVenues, cultureTab, cultureToastText } from './culture';
+import { cultureAnchorBlocks, culturePanel, cultureResults, cultureNotebook, cultureVenues, cultureTab, cultureToastText } from './culture';
 import { esc } from './html';
 import { initialUiState } from './session';
 
@@ -31,6 +31,7 @@ function rejected(html:string, reason:string) {
   for(const text of ['새로 생길 기록','첫 완료 경험치','이 활동에 쓰는 것','다른 업무를 맡을 수 없습니다',
     '활동에 쓸 수 있는 원화','원화 급여 지급 가능일','→','캠페인 마지막 날']) expect(p).not.toContain(text);
   expect(html).toMatch(/data-action="culture-queue"[^>]* disabled/);
+  expect(html).not.toContain('넣기만 해서는 시간이 흐르지 않습니다.');
 }
 
 describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
@@ -54,6 +55,7 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     expect(p).not.toContain('끝나는 날');expect(p).not.toContain('role="status"');expect(p).not.toContain('<button');
     expect(html.indexOf('id="culture-emp-EMP01"')).toBeLessThan(html.indexOf('id="culture-preview"'));
     expect(html.indexOf('id="culture-preview"')).toBeLessThan(html.indexOf('id="culture-slot"'));
+    expect(html).toContain('넣기만 해서는 시간이 흐르지 않습니다.');
   });
   it('RF-2 같은 직원 반복은 엔진 거절만 보이고 기록·비교·경험치는 없다',()=>{
     const s=done(), p=culturePreview(s,config,'CA01','EMP01');expect(p.allowed).toBe(false);
@@ -95,6 +97,8 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     const html=preview(panel(s,cfg));
     expect(html).toContain(`⚠ ${word} 오늘(1일) 급여 일부가 미지급으로 남습니다.`);
     expect(html).toContain('→ 활동하면 없음');expect(html).not.toContain('0일까지');
+    // 미지급 경고와 맞지 않는 ‘평소대로 지급’ 문장은 이때 뺀다.
+    expect(html).not.toContain('급여는 활동비와 별도로 평소대로 지급합니다.');
   });
   it.each([false,true])('미배정 준비 업무 경고와 다른 쉬는 직원 안내 (다른 직원도 바쁨 %s)',(busy)=>{
     const commands:Command[]=[{id:'A',type:'ACCEPT_TRADE',buyOfferId:'OFFER_BUY_01',sellOfferId:'OFFER_SELL_01'},
@@ -160,7 +164,7 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     const s=runDays(dayTwo(cfg),cfg,3,{2:[start()]}).state;
     expect(visible(cultureResults(s,cfg,3))).toContain('쓴 것 귀솔의 2~3일 업무 · 원화 20,000원');
     const two=commitDay(dayTwo(),config,[start('CA03')]).state;
-    expect(cultureResults(two,config,2)).toContain('출처 2명: 시장 상인 윤서 · 지역 기록 안내자 하람');
+    expect(cultureResults(two,config,2)).toContain('출처 2명: 시장 상인 윤서, 지역 기록 안내자 하람 · 다른 출처로');
   });
   it('기록장은 최신·같은 날 역순 보고서와 사건마다 한 줄을 그린다',()=>{
     const s=runDays(createGame(config),config,3,{2:[start()],3:[start('CA03'),start('CA02','EMP02')]}).state;
@@ -205,7 +209,7 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     const s=done();expect(cultureToastText(s,config)).toEqual({kind:'info',action:'culture-result',text:'2일 현지 활동 기록: 한 상인의 포장·보관 요구 — 귀솔'});
     const multiple=commitDay(dayTwo(),config,[start(),start('CA02','EMP02')]).state;
     const [first,second]=[config.culture!.activities[1]!,config.culture!.activities[0]!].map((a)=>a.topic.titleKo);
-    expect(cultureToastText(multiple,config)).toEqual({kind:'info',action:'culture-result',text:`2일 현지 활동 기록 2건: ${first} · ${second}`});
+    expect(cultureToastText(multiple,config)).toEqual({kind:'info',action:'culture-result',text:`2일 현지 활동 기록 2건: ‘${first}’, ‘${second}’`});
     const rejected=commitDay(dayTwo(),config,[start(),start('CA01','EMP02')]);
     expect(cultureToastText(rejected.state,config,rejected.results.filter((r)=>r.status==='REJECTED'))).toEqual({kind:'warn',action:'culture-result',text:`실행하지 못한 명령: ${rejected.results[1]!.reasonKo} · 2일 현지 활동 기록이 있습니다.`});
     expect(cultureToastText(fresh(),config)).toBeNull();
@@ -233,3 +237,30 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     expect(source).not.toMatch(/\}(은|는|이|가|을|를|와|과|으로|로)/);
   });
 });
+
+describe('TASK-0012 Claude 검수 2차: 반복 활동 문구·읽던 자리 블록',()=>{
+  const repeatDay=()=>openDay(commitDay(done(),config,[start('CA01','EMP02')]).state,config).state;
+  it('같은 활동을 다른 직원이 다시 하면 알림·카드가 새 보고서가 아님을 밝힌다',()=>{
+    const s=repeatDay(),topic=config.culture!.activities[0]!.topic.titleKo;
+    expect(cultureToastText(s,config)).toEqual({kind:'info',action:'culture-result',text:`3일 현지 활동: ${topic} — 물보리 (회사 보고서는 2일에 이미 있음)`});
+    const html=cultureResults(s,config,3);
+    expect(html).toContain('<small>3일 활동 · 시장과 포장 요구 탐방</small>');expect(html).not.toContain('3일 기록');
+    expect(cultureResults(done(),config,2)).toContain('<small>2일 기록 · 시장과 포장 요구 탐방</small>');
+  });
+  it('여러 건 가운데 반복이 있으면 새 회사 보고서 수를 따로 적는다',()=>{
+    const s=openDay(commitDay(done(),config,[start('CA01','EMP02'),start('CA02','EMP01')]).state,config).state;
+    const text=cultureToastText(s,config)!.text;
+    expect(text).toMatch(/^3일 현지 활동 2건\(새 회사 보고서 1건\): ‘[^’]+’, ‘[^’]+’$/);expect(text).not.toContain('기록 2건');
+  });
+  it('읽던 자리 블록 후보는 열린 패널의 결과·직원 줄·펼친 기록장 보고서다',()=>{
+    const s=repeatDay(),ui=(o:object)=>({...initialUiState(),cultureOpen:true,cultureShowFromDay:2,...o});
+    expect(cultureAnchorBlocks(s,config,ui({}))).toEqual([['culture-result-CULTURE-CA01-EMP02-D3','culture-result-h-CULTURE-CA01-EMP02-D3'],['culture-result-CULTURE-CA01-EMP01-D2','culture-result-h-CULTURE-CA01-EMP01-D2']]);
+    expect(cultureAnchorBlocks(s,config,ui({cultureShowFromDay:4,cultureActivityId:'CA01',cultureBookOpen:true}))).toEqual([['culture-employees','culture-emp-h'],['culture-report-CULTURE-CA01-EMP01-D2','culture-report-h-CULTURE-CA01-EMP01-D2']]);
+    expect(cultureAnchorBlocks(s,config,ui({cultureOpen:false}))).toEqual([]);
+    expect(cultureAnchorBlocks(fresh(loadScenario('SCENARIO_M1_ONE_TRADE')),loadScenario('SCENARIO_M1_ONE_TRADE'),ui({}))).toEqual([]);
+    const book=cultureNotebook(s,config,true);
+    expect(book).toContain('<article class="cul-report" id="culture-report-CULTURE-CA01-EMP01-D2"');expect(book).toContain('<p class="book-trust">');
+    expect(panel(s,config,[],'EMP01','CA01')).toContain('<div class="culture-employees" id="culture-employees">');
+  });
+});
+
