@@ -7,8 +7,8 @@
   "files": [
     {
       "path": ".gitignore",
-      "size_bytes": 100,
-      "sha256": "692d55883093eaebe0aebbc56f524fb72773ef2f7ced910c3807e76532c19541"
+      "size_bytes": 114,
+      "sha256": "f8b2ef626e9ab62b6f4bd6eedd282e3960d7ed3a5a4f475a1c700feede0e5df6"
     },
     {
       "path": "AGENTS.md",
@@ -596,6 +596,11 @@
       "sha256": "bc7f952fc1f6142518bbcaca648e712bdb396971ed862f1c6bcd45c77201334e"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0019.md",
+      "size_bytes": 18218,
+      "sha256": "52c7320cb2de60b8363a5f9570118332bbfe9c6a070b5b2cfe4678a9ca0a0a92"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -862,8 +867,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 1134,
-      "sha256": "19944f91f8dfbcd37c9a1857cdf363af36b9572af9400980838ffe6868d0e09e"
+      "size_bytes": 2471,
+      "sha256": "5fe1c0d22d0d25cab47808105554e56edff3bf1b63711894dea7b92c174bcc6e"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -891,9 +896,69 @@
       "sha256": "7945d4745be5adb343f51bc0dd53aec246fd7c02e046a3e764cae5461d6e2e7c"
     },
     {
+      "path": "tools/browser/README.md",
+      "size_bytes": 2728,
+      "sha256": "4136f2128831fb228e6fb884f9b35993499d19db1f1c5f29d73ba0e419143ca5"
+    },
+    {
+      "path": "tools/browser/lib.mjs",
+      "size_bytes": 15277,
+      "sha256": "66e60a1c08066188595e8db070040d05535c2dd05e0d2c65acd134ddb4752197"
+    },
+    {
+      "path": "tools/browser/lib.test.mjs",
+      "size_bytes": 7314,
+      "sha256": "a57ca9a7fdece868c05b5da8a7da6c17e1151760b5ffe10e0f58b136574166eb"
+    },
+    {
+      "path": "tools/browser/measure.mjs",
+      "size_bytes": 3780,
+      "sha256": "3f0f4d2872d699f1e001fa97799a2bc5e80b83989e068d926a2e660967121222"
+    },
+    {
+      "path": "tools/browser/profiles.json",
+      "size_bytes": 1077,
+      "sha256": "df48d956bdf09594e625767c0f3ee64ce18e1ba7ca621d16e62d192b30e8acff"
+    },
+    {
+      "path": "tools/browser/scenarios/culture-result-flow3.json",
+      "size_bytes": 1075,
+      "sha256": "79f58840d897a6b281a3bf9416a8e82e1f56ed0cc01fd9a35d09cdb6b2ff1ce8"
+    },
+    {
+      "path": "tools/browser/scenarios/day-anchor.json",
+      "size_bytes": 977,
+      "sha256": "be75b2d16d39dfc5b40ef447ab9d8346b56eac5762d18c8fa8def4be4be855cf"
+    },
+    {
+      "path": "tools/browser/scenarios/local-tab-position.json",
+      "size_bytes": 679,
+      "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/smoke.json",
+      "size_bytes": 732,
+      "sha256": "07cfafe949eb50eef125165ed5304ad62d36fc0b4164551d0d6f14ac489019f5"
+    },
+    {
       "path": "tools/build_package.py",
-      "size_bytes": 2719,
-      "sha256": "f078600a234434551c3a145b4c98a372a9e786d126ccce730ba9e0a29de99f56"
+      "size_bytes": 4958,
+      "sha256": "f4033de7c0679776ccb52d734d84028fa5c8d305212b352fe85a05443576c46e"
+    },
+    {
+      "path": "tools/check_fact_mixing.py",
+      "size_bytes": 16555,
+      "sha256": "bcc260a760aaca4026cb112e97228fe1babd6ab68114fcdd2c9cb353894b5962"
+    },
+    {
+      "path": "tools/deploy/prepare_static.sh",
+      "size_bytes": 2916,
+      "sha256": "db04413c8b726c4056d8550c051fa31e92083c42cb27bc714075e7492233d772"
+    },
+    {
+      "path": "tools/test_check_fact_mixing.py",
+      "size_bytes": 9825,
+      "sha256": "c5ea008c94ff272c78c1f1b249639ae0e0c512e4e13a8521fb2c0f7b1f731d74"
     },
     {
       "path": "tools/test_validate_data.py",
