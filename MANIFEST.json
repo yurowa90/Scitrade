@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 5762,
-      "sha256": "fd14e52b85ad6112f5ca99ca341d6b81856901d39883e5f1479cc44db9068e3f"
+      "size_bytes": 6104,
+      "sha256": "1593c41e4dd3545a895a5f512b595db36c738d3217d5ddf94113986376c56a03"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -489,6 +489,11 @@
       "path": "docs/ai/tasks/TASK-0015-pyeongtaek-hq.md",
       "size_bytes": 20973,
       "sha256": "006b69c1fd516740faa034d6034766a826a9c3c8128b7f58ba45287a1e4103a8"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0016-campaign-read-functions.md",
+      "size_bytes": 45452,
+      "sha256": "ccd1ac40c5d1dab89ec13dfbf733beeb17a9609e285178841c98f7d0934659d8"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
