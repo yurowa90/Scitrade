@@ -226,6 +226,16 @@
       "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
     },
     {
+      "path": "docs/ai/design/DECISION-PACKET-2026-10.md",
+      "size_bytes": 71638,
+      "sha256": "2aefbbfdea56b6c0e9ba649a0e431cd15db271dd5184a4921a34a670880aa8ed"
+    },
+    {
+      "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
+      "size_bytes": 31994,
+      "sha256": "ca48dc2d1b36ce2ae600089b6234c04e91e0592270003d292a68db1818fab339"
+    },
+    {
       "path": "docs/ai/design/TASK-0012-mockups/A.html",
       "size_bytes": 70703,
       "sha256": "0d8d7cc23354901270cfac0e569b5813d83977116bc54f7f9bab4848a890415e"
