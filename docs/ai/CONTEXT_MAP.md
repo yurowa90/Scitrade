@@ -9,13 +9,16 @@
 | 화면·조작 | ../UI_SPEC.md, ../ART_DIRECTION.md | ui_screens, venues, contacts |
 | 동료 수집·직무 | ../CHARACTERS_AND_ORGANIZATION.md | characters, employees, job_templates |
 | 레벨·강화·조직·시너지 | ../CHARACTERS_AND_ORGANIZATION.md | character_rules, organization, team_synergies; tests/character_acceptance_cases.json |
-| 도시·문화·지역 경험 | ../DESIGN_v0.4.md의 23~24절 | culture_activities, contacts, content_hooks |
+| 도시·문화·지역 경험 | ../DESIGN_v0.4.md의 23~24절, ../DECISIONS.md ‘M2a-4 도시 방문·문화 활동’, [문화 화면 장면 기준](design/TASK-0012-scene-brief.md) | culture_activities, contacts, venues, content_hooks. 코드: `src/engine/culture.ts`, `src/ui/culture.ts` |
 | 주식·IPO | ../DESIGN_v0.4.md의 25~27절 | securities; 해당 P1/P2 인수 명세 |
 | 사회·과학·연구 근거 | ../DESIGN_v0.4.md의 5~6·16~22절 | curriculum_links, parameters, sources, observed_fx_sample |
 | 2026-10-05 플레이·개발·그래픽 연구 | [연구 인계](../../references/playthrough_research_2026-10-05/HANDOFF.md), [전체 자료](../../references/playthrough_research_2026-10-05/README.md), [제안별 적용표](../RESEARCH_APPLICATION.md) | 통합 JSON의 영상26개·관찰134개·제안14개, 공식 화면17개. 적용 코드: `src/engine/progress.ts`, `src/engine/research-ref.test.ts` |
 | 원작·영상 참고 | ../../references/REFERENCE_REVIEW.md | dk4_reference, guild3_reference, user_character_clip |
 | 고전게임 인사이트 기획 반영(2026-10-08) | [Claude 인계](CLASSIC_GAME_HANDOFF.md), [CL-01~08 적용표](../CLASSIC_GAME_INSIGHTS.md), ../IMPLEMENTATION_PLAN.md | 기존 플레이 기록과 공식 매뉴얼의 근거 구분, 기존 M2a~M5 연결, 동료·문화·경영 판단의 검증 기준. 구현 완료 보고 아님 |
-| M2a 사용성 시험 | [시험 계획 초안](../USABILITY_TEST_M2A.md) | 과제 T1~T4, 관찰지, 판정 기준, 윤리·개인정보 |
+| M2a 사용성 시험 | [시험 계획 초안](../USABILITY_TEST_M2A.md) | 과제 T1~T5(진행 순서 T1→T3→T2→T4→T5, 시험 계획 4절), 관찰지, 판정 기준, 윤리·개인정보 |
+| 시험 빌드 배포(Netlify) | WORKFLOW.md ‘시험 빌드 정적 배포’, [시험 계획](../USABILITY_TEST_M2A.md) 8절 | 배포한 3판 `a8ffa35`, 주소의 `/version.txt`. 배포 폴더는 `dist`만 올린다 |
+| 평택 본사 전환(2026-10-09) | ../DECISIONS.md ‘평택 본사 전환’·‘평택 노선 재설계 승인’, [TASK-0015 지시서](tasks/TASK-0015-pyeongtaek-hq.md), [노선 근거표](design/PYEONGTAEK-route-basis.md), [부산판 승인 문장 보관](design/BUSAN-approved-texts.md) | world, routes, scenarios, market_offers, culture_activities, contacts, characters, venues, game_config. 병합 전 구현은 `codex/TASK-0015` 브랜치 |
+| 대항해시대 근거 추적 | [DK 적용표](../RESEARCH_APPLICATION.md) ‘대항해시대 IV 적용표’, ../../references/REFERENCE_REVIEW.md | `references/dk4_reference.json`(매뉴얼 관찰 DK4-O), `references/playthrough_research_2026-10-05/Scitrade_playthrough_research.json`(영상 관찰 DK4-V··-O·교차 결론 DK4-F), 같은 폴더 `dk4.json`(영상 목록·개발 제안) |
 | 그림·지도(픽셀아트) | [픽셀 규격](../art/PIXEL_SPEC.md), [제작 절차](../art/PROMPTS.md), [제작 목록](../art/ASSET_BACKLOG.md), ../ART_DIRECTION.md 맨 위 절 | `src/assets/palette.json`, `src/assets/manifest.json`, `scripts/build_map.py`(+`test_build_map.py`), `tools/art/*`, `src/ui/pixel.ts`·`map.ts` |
 | Codex 작업 지시·검수 | [작업 지시서 목록](tasks/README.md), [공통 머리말](tasks/CODEX_PREAMBLE.md), WORKFLOW.md ‘역할 분담’ | `tools/ai/codex_task.sh`(실행), `tools/ai/review_checks.sh`(검수 자동 검사), `docs/ai/tasks/results/`(결과 보고) |
 

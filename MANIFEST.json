@@ -152,13 +152,13 @@
     },
     {
       "path": "docs/ART_DIRECTION.md",
-      "size_bytes": 12801,
-      "sha256": "9769d2cabe173c550d7810821af5cf1a6ae98354875ddad0940f11b52315b3df"
+      "size_bytes": 13308,
+      "sha256": "5aa07086ff1cbad872c3ac96d82b199fb2caa897550f10d37a35a41c5bff35ad"
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 17434,
-      "sha256": "f1a1e0ffd5370c79c5924f8c75d1658b65f46f434e3ed8531521177472e75841"
+      "size_bytes": 18247,
+      "sha256": "1550f5678b1fd0323b24c04983c1ed7e93fd252ee5eaab13a70c21c6a7eca163"
     },
     {
       "path": "docs/CLASSIC_GAME_INSIGHTS.md",
@@ -177,18 +177,18 @@
     },
     {
       "path": "docs/FLOWS.md",
-      "size_bytes": 2759,
-      "sha256": "e9ae57425daa3a7e9c7d29440ca07773817e228d198d223fed7bb54f8bdae016"
+      "size_bytes": 3133,
+      "sha256": "1100a4026301d37f1c488ea5db03c75e3aec8f5e3e74b0dd0e15d8b54b026c6a"
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 14228,
-      "sha256": "3a424fec48601fa721f6f4a348899096da8f0815010a1d359a5d20c5fb9e46af"
+      "size_bytes": 16301,
+      "sha256": "7541027b7ee52f3472955c40c0fca69711f6969a7b51ca49d8957db109ec8c42"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
-      "size_bytes": 15856,
-      "sha256": "572db7dc8352221573235cf8941b8353f5fbcf45702e993e06d13c6f4bba418f"
+      "size_bytes": 25099,
+      "sha256": "f47e0122ca4d26b8bbf0243c196bd0291d96d16d12267199b5fe4380279184cf"
     },
     {
       "path": "docs/STATUS.md",
@@ -197,18 +197,18 @@
     },
     {
       "path": "docs/UI_SPEC.md",
-      "size_bytes": 6284,
-      "sha256": "6f1aa5842937fd909c3f1dd363e3f680606cd9f34065728e2e1dd7c5af017773"
+      "size_bytes": 7305,
+      "sha256": "4685fb1bc73685c6e7615e04235acf7bf802aeef6b20fba70f1939183fbdf4e3"
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 25483,
-      "sha256": "be3e5c2466f020462bea8fa54e880a5f79bcec0ab95774ebff0ceed22e1c8b91"
+      "size_bytes": 29617,
+      "sha256": "cea9c07b708fe17cac4a82da87980a8ff7f4e1d24fab1e700ae844d4d33c012c"
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 2677,
-      "sha256": "8ea72adf66be353756a4e3b7d286fb93957f5a99105f9da1ceae9fad890e1d76"
+      "size_bytes": 6611,
+      "sha256": "3019a717f69271819f5ab399ac6a12beabecd36c87496b9d34267e80d0fcf72b"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -217,13 +217,23 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 3900,
-      "sha256": "3daff0716174e25fdcc2f1218b8d9bb52b21ff8aec7ec607418fbc8cba78fb77"
+      "size_bytes": 5210,
+      "sha256": "75d509c0e26a804ab7376987742e2f5fd3ac6d704920df5a72b2694629e99203"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
       "size_bytes": 14702,
       "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
+    },
+    {
+      "path": "docs/ai/design/BUSAN-approved-texts.md",
+      "size_bytes": 13426,
+      "sha256": "23ae8346ad5b3fee420c428e3164c98386f5d14d5542da9277a9784fdfaacaba"
+    },
+    {
+      "path": "docs/ai/design/PYEONGTAEK-route-basis.md",
+      "size_bytes": 12186,
+      "sha256": "1e5712705e57ff46b24bc133096771578fcbc10de6bdc088a4b2635371dbfe18"
     },
     {
       "path": "docs/ai/design/TASK-0012-mockups/A.html",
@@ -447,8 +457,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0012.md",
-      "size_bytes": 20573,
-      "sha256": "3c0ce2d974368f7aa6dcd82c18a8e231765a20bbaf55f59a06b648da9bf630e7"
+      "size_bytes": 32484,
+      "sha256": "c41498cf22eb26476b501168772c7c592ee078481783c66e2257c53a5959cdbd"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0013.md",
@@ -462,8 +472,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 8922,
-      "sha256": "3a39f07b9bb89599539518159ecc4bf77b7e767761269020697e206c3ed37387"
+      "size_bytes": 12357,
+      "sha256": "d07eafd73e51a3bfc119ef4fcb712e1ec09f10f07e07d63616f206f41c01e226"
     },
     {
       "path": "docs/art/PIXEL_SPEC.md",
@@ -717,8 +727,8 @@
     },
     {
       "path": "tests/character_acceptance_cases.json",
-      "size_bytes": 15316,
-      "sha256": "cfc6abadeecca7c692bbbf7ac426e246682006f19fbbe7755b7ec935cd76f2e6"
+      "size_bytes": 15334,
+      "sha256": "60ecb0bc301b7d842c9fc3e30a99290e06ff676fe6707b4048da916f66d006b7"
     },
     {
       "path": "tools/ai/codex_task.sh",
