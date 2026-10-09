@@ -4,14 +4,14 @@
   "source_refs": [
     "DESIGN-V03"
   ],
-  "numeric_values_status": "합성 개발용 값. 현실 가격·운송일·직원 생산성 추정치가 아님.",
+  "numeric_values_status": "ROUTE01·02 운송일수는 실제 선사 요일표에서 센 값이다. ROUTE03~06 운송일수와 모든 운임·선복은 합성 값이다.",
   "items": [
     {
       "id": "SCENARIO_M1_ONE_TRADE",
       "stage": "M1",
       "city_ids": [
-        "BUSAN",
-        "YOKOHAMA"
+        "PYEONGTAEK",
+        "HAIPHONG"
       ],
       "good_id": "APPAREL",
       "employee_ids": [
@@ -33,7 +33,7 @@
       "tax_rule": {
         "basis": "supplier_goods_invoice_only_fictional",
         "rate": 0.05,
-        "status": "DESIGN_not_actual_Japan_tariff",
+        "status": "DESIGN_not_actual_destination_tariff",
         "duty_currency": "USD"
       },
       "note_ko": "contract_terms.pre_departure_cancellation.freight_refund는 ROUTE01 기준 검산 예시다. 실제 환급은 해당 예약의 선급 운임에서 고정 취소비를 뺀 금액이다.",
@@ -99,7 +99,7 @@
       "id": "SCENARIO_CITY_CULTURE",
       "stage": "M2",
       "city_ids": [
-        "BUSAN"
+        "PYEONGTAEK"
       ],
       "employee_ids": [
         "EMP01",
@@ -142,8 +142,8 @@
       "stage": "M1",
       "base_scenario_id": "SCENARIO_M1_ONE_TRADE",
       "city_ids": [
-        "BUSAN",
-        "YOKOHAMA"
+        "PYEONGTAEK",
+        "HAIPHONG"
       ],
       "good_id": "APPAREL",
       "employee_ids": [
@@ -183,8 +183,8 @@
       "stage": "M1",
       "base_scenario_id": "SCENARIO_M1_ONE_TRADE",
       "city_ids": [
-        "BUSAN",
-        "YOKOHAMA"
+        "PYEONGTAEK",
+        "HAIPHONG"
       ],
       "good_id": "APPAREL",
       "employee_ids": [
@@ -209,8 +209,8 @@
         "data_basis": "DESIGN",
         "status": "USER_REVIEWED_2026-10-04",
         "event_template_id": "EV02",
-        "event_instance_id": "EVI_M1_EV02_YOKOHAMA",
-        "city_id": "YOKOHAMA",
+        "event_instance_id": "EVI_M1_EV02_HAIPHONG",
+        "city_id": "HAIPHONG",
         "announce_day": 5,
         "restriction_start_day": 7,
         "restriction_end_day": 8,
@@ -238,7 +238,7 @@
       "id": "SCENARIO_CREW_M2",
       "stage": "M2",
       "city_ids": [
-        "BUSAN"
+        "PYEONGTAEK"
       ],
       "employee_ids": [
         "EMP01",
@@ -267,12 +267,14 @@
     },
     {
       "id": "SCENARIO_M2_MULTI_TRADE",
-      "growth": { "enabled": true },
+      "growth": {
+        "enabled": true
+      },
       "stage": "M2",
       "title_ko": "복수 계약과 운송 주선 — 자금·인력·선복 예약",
       "city_ids": [
-        "BUSAN",
-        "YOKOHAMA",
+        "PYEONGTAEK",
+        "HAIPHONG",
         "SHANGHAI"
       ],
       "employee_ids": [
@@ -299,7 +301,7 @@
       "tax_rule": {
         "basis": "supplier_goods_invoice_only_fictional",
         "rate": 0.05,
-        "status": "DESIGN_not_actual_Japan_tariff",
+        "status": "DESIGN_not_actual_destination_tariff",
         "duty_currency": "USD"
       },
       "engine_rules": {
@@ -353,7 +355,7 @@
       "expected_paths_usd": [
         {
           "id": "PATH_COSMETICS_AND_FORWARDING",
-          "title_ko": "화장품 직접 무역 + 운송 주선 2건 (태양광은 9일 편)",
+          "title_ko": "화장품 직접 무역 + 운송 주선 2건 (자동차 부품은 9일 편)",
           "trades": [
             [
               "OFFER_BUY_02",
@@ -384,7 +386,7 @@
         },
         {
           "id": "PATH_APPAREL_AND_FORWARDING",
-          "title_ko": "의류 직접 무역 + 운송 주선 2건 (태양광은 9일 편)",
+          "title_ko": "의류 직접 무역 + 운송 주선 2건 (자동차 부품은 9일 편)",
           "trades": [
             [
               "OFFER_BUY_01",
@@ -435,7 +437,7 @@
           "volume_m3_first": 24,
           "volume_m3_second": 8,
           "capacity_m3": 30,
-          "note_ko": "가구 24m³와 태양광 모듈 8m³를 같은 편에 실으면 30m³를 넘는다. 무게(4,400kg)는 한도 안이다."
+          "note_ko": "가구 24m³와 자동차 부품 8m³를 같은 편에 실으면 30m³를 넘는다. 무게(4,800kg)는 한도 안이다."
         }
       ],
       "start_with_existing_employment": true,
@@ -448,7 +450,7 @@
         "DESIGN-V03",
         "DESIGN-V04"
       ],
-      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 부산 현지 활동 3종(원화 비용, USD 기대값과 무관). 창고는 이후 단계.",
+      "scope_note": "M2a: 복수 계약·운송 주선·자원 예약·동료 발견·영입·고용. 기대값은 USD 거래 장부만 검증하며 KRW 급여·영입 계약금은 별도. 평택 현지 활동 3종(원화 비용, USD 기대값과 무관). 창고는 이후 단계.",
       "recruitment": {
         "data_basis": "DESIGN",
         "status": "USER_REVIEWED_2026-10-05",
@@ -465,14 +467,14 @@
         "scout_sites": [
           {
             "venue_id": "VEN_LOUNGE",
-            "city_id": "BUSAN",
+            "city_id": "PYEONGTAEK",
             "candidate_employee_ids": [
               "EMP03"
             ]
           },
           {
             "venue_id": "VEN_PORT",
-            "city_id": "BUSAN",
+            "city_id": "PYEONGTAEK",
             "candidate_employee_ids": [
               "EMP04",
               "EMP06"
@@ -480,7 +482,7 @@
           },
           {
             "venue_id": "VEN_TRADE",
-            "city_id": "BUSAN",
+            "city_id": "PYEONGTAEK",
             "candidate_employee_ids": [
               "EMP05"
             ]

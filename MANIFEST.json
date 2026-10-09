@@ -1,5 +1,5 @@
 {
-  "package_version": "0.4.1",
+  "package_version": "0.5.0",
   "created_on": "2026-10-04",
   "game_implemented": false,
   "external_assets_bundled": false,
@@ -23,17 +23,17 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "1eda0a36e1cbae7b9e32dcb7c73294247e00d5c9d82a9a1653db83e99552df2f"
+      "sha256": "1c93643feac83184247fb2b799c31cb8a37b248a7333680bd1c5ef2d4996f3ea"
     },
     {
       "path": "README.md",
-      "size_bytes": 13001,
-      "sha256": "a9839a395f695045f492c28104992a45169f916a3d8874839a3071fdc49e5c64"
+      "size_bytes": 13305,
+      "sha256": "2007db5ff7d1633999b12d7d4aab6e29d18d5f07cdeb5421defcaed9ec9cd24d"
     },
     {
       "path": "START_HERE.md",
       "size_bytes": 2892,
-      "sha256": "082826c8dd56a65231d7cab5ebef5bd41dfc11e62f2fce009dda34bc2412725b"
+      "sha256": "36e476c00ff80990f70d7362750159bdc19a77976411788e7197999e22f65884"
     },
     {
       "path": "data/character_rules.json",
@@ -42,13 +42,13 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 313836,
-      "sha256": "7f5667ef03c999bebc9cd2a7e61773b4466ca398ea0f429d4cd2ca6c0e401661"
+      "size_bytes": 314738,
+      "sha256": "4e824c43c054dcabfaa3b9c7cf21efe353fd301d6b179b7c376bd811dbb28cec"
     },
     {
       "path": "data/contacts.json",
-      "size_bytes": 3139,
-      "sha256": "123a1a3a3f468e58b44f6bafc6795faf03d2353717f5c881751ef945542460fc"
+      "size_bytes": 3206,
+      "sha256": "8b2ffeedaac38edee11a60f1bba54001921319ab6b3c255a15043da2b3d42963"
     },
     {
       "path": "data/content_hooks.json",
@@ -57,18 +57,18 @@
     },
     {
       "path": "data/culture_activities.json",
-      "size_bytes": 20208,
-      "sha256": "f701b9cb92c235f36f77a9450c46fc25098891fdc1ab60e7ec281ae85365792a"
+      "size_bytes": 20579,
+      "sha256": "1939d5ed822c09712972c4f1fd97503d67179b37e3bc230f7fa914da4d0dbbf7"
     },
     {
       "path": "data/curriculum_links.json",
-      "size_bytes": 37002,
-      "sha256": "70b83e36338ee5703011f508105f2fd7a6dd1068f96e176dfe0a09113227c161"
+      "size_bytes": 37146,
+      "sha256": "b5c6af0b76eb92c614deb026ed07ca5820c36fa0c4c398d9960c8011183ca149"
     },
     {
       "path": "data/employees.json",
-      "size_bytes": 3773,
-      "sha256": "6e6be4fee0a2fa994a545fee810072ed608ae6952cd4ac651296f0dee639be85"
+      "size_bytes": 3833,
+      "sha256": "813d4bdb7e7e94d459c5afd86eb9ac83b957e9bda023bc8b9a42301482c33be6"
     },
     {
       "path": "data/events.json",
@@ -77,8 +77,8 @@
     },
     {
       "path": "data/game_config.json",
-      "size_bytes": 1477,
-      "sha256": "9602c74a8b034fefaad95503c84361148c7862f96b7085a3aed2b74c9a6231ed"
+      "size_bytes": 1482,
+      "sha256": "cde00ee70cfdc08385ffb4b88a9255cf5c382e19a0c1486adba425eedf1a715c"
     },
     {
       "path": "data/goods.json",
@@ -92,8 +92,8 @@
     },
     {
       "path": "data/market_offers.json",
-      "size_bytes": 3608,
-      "sha256": "c704bf994785087eb5a07f9d4dd29917f684658d7a693a07f562661f6b4710e5"
+      "size_bytes": 4091,
+      "sha256": "11d98e6ec33084b5422478341b89b1fb2d7dba7c96347f22793292e1c13811d1"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -112,13 +112,13 @@
     },
     {
       "path": "data/routes.json",
-      "size_bytes": 6197,
-      "sha256": "f07f7835c47ba739d648c730848703d3852e2a30d4191f19dd6872b6f43de8ca"
+      "size_bytes": 7870,
+      "sha256": "5e0a35e6164270961bf5a02caf9eef9ad1071a620a0406b9bc126ce8a54ad4b8"
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 17660,
-      "sha256": "f8720b6302b33fb39ff03c8285ff16ba7e8185244ee95392bdad84b847baf5e1"
+      "size_bytes": 17802,
+      "sha256": "c49945f94f042fac2349a014a13e756a95197a17a05593e7432b3eb031eb0406"
     },
     {
       "path": "data/securities.json",
@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 41786,
-      "sha256": "a9fdf6513f0a31d0f3036b905da60e84f6bec791538d41a93424340c100b58d7"
+      "size_bytes": 47427,
+      "sha256": "c7b3ae35247e95b1b8b994c82231adf6a1d06823f9c7934686181bf1d101d575"
     },
     {
       "path": "data/team_synergies.json",
@@ -142,13 +142,13 @@
     },
     {
       "path": "data/venues.json",
-      "size_bytes": 4801,
-      "sha256": "caff0c4f246f9a6f35724386b8cbaaef75ed7bac4656d90adaef983275f82120"
+      "size_bytes": 4826,
+      "sha256": "f2d3f53e29baf5a94a65e1c16fa23a6ff6f3464d4e02e097dd5aa9e64733c8eb"
     },
     {
       "path": "data/world.json",
-      "size_bytes": 40140,
-      "sha256": "58cccc30e9c5f05811b9cfb2c3428ee576cdb62c98541c5a50078e473fc31be8"
+      "size_bytes": 42207,
+      "sha256": "6cbde862ef547092defb46da449efa6e8005ef5d3fd53215f0211ae490e36543"
     },
     {
       "path": "docs/ART_DIRECTION.md",
@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 125134,
-      "sha256": "4b600048d563929156314a1cbb8374ca35283f4237658ee9ddcb8a78297f46e0"
+      "size_bytes": 130076,
+      "sha256": "28239ef45cc12b141bb82e3f4e28e8a3dc0bb8c655d5712e4b35e1180d4aca7d"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 44948,
-      "sha256": "cba7c4f650716ada33adbdd8d73360612412e37f46c3cdbc502681f3216d4125"
+      "size_bytes": 48493,
+      "sha256": "8f45e6706ca22f1d3a8e4502c371356ef46b0e2657dbf5981225e83731323b8e"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -257,8 +257,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 5718,
-      "sha256": "276b1ef8f5fef2d72d4f0d8ae05336007f7f3db0e6fb51487b8d5d32be763954"
+      "size_bytes": 5762,
+      "sha256": "fd14e52b85ad6112f5ca99ca341d6b81856901d39883e5f1479cc44db9068e3f"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -459,6 +459,11 @@
       "path": "docs/ai/tasks/results/TASK-0014.md",
       "size_bytes": 20356,
       "sha256": "10be9bd0e4bc413048d5350dbc626add2ab3c3d4c33b4285a15ce32db3b9a060"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0015.md",
+      "size_bytes": 22382,
+      "sha256": "bc7f952fc1f6142518bbcaca648e712bdb396971ed862f1c6bcd45c77201334e"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -672,8 +677,8 @@
     },
     {
       "path": "schemas/routes.schema.json",
-      "size_bytes": 4233,
-      "sha256": "6273860b09f9fa9a5aa3050acbf742522e0dd57a9afdde0fec1a676603cf8610"
+      "size_bytes": 6341,
+      "sha256": "84fa64e2885dece5a23b0f4990931c5e6a3a38dedd5b5cae2c6b61003339ef12"
     },
     {
       "path": "schemas/scenarios.schema.json",
@@ -707,13 +712,13 @@
     },
     {
       "path": "schemas/world.schema.json",
-      "size_bytes": 9242,
-      "sha256": "62ff14b7ce6502849cc2e41c2956cc9832a64ba2579a4e63fa91ad5adbb8decb"
+      "size_bytes": 9271,
+      "sha256": "c978faa47353c1612d93e0748b513f75edf576be7b8bd0ba3cd748f4da60d5a7"
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 39385,
-      "sha256": "2120d13ad28ae9a7f680a4383d5fd68696ddc4381820ac669962589afd290496"
+      "size_bytes": 39454,
+      "sha256": "a140b137404394069120915c995a7a6014b6bb7eed6e596ab27429bde6cd6ac0"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -762,13 +767,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 7860,
-      "sha256": "49e79b0b14c4021c011009819613619127eb79b8eca452e8bc1c859a534136dd"
+      "size_bytes": 12010,
+      "sha256": "687806e7e3dcd661319002f8b4f38269b48139d26f249a8b55101941648148d6"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 46694,
-      "sha256": "fdb8485d1c30ce897683541d9741834b129d5b94daf83243b3b6d7c8ac8db56a"
+      "size_bytes": 49265,
+      "sha256": "55914825d52f719bc870fbd21a1866857eb48c19449908b3c903680a7a08ab0c"
     }
   ]
 }

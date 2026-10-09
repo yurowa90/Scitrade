@@ -14,7 +14,7 @@
         "SOC14",
         "SOC15"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "fictional": true,
       "visit_mode": "PANEL",
       "opening_panel_duration_days": 0,
@@ -47,7 +47,7 @@
         "SOC03",
         "SCI11"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "fictional": true,
       "visit_mode": "PANEL",
       "opening_panel_duration_days": 0,
@@ -79,7 +79,7 @@
         "SOC04",
         "SOC09"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "fictional": true,
       "visit_mode": "PANEL",
       "opening_panel_duration_days": 0,
@@ -111,7 +111,7 @@
         "SOC07",
         "SOC12"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "fictional": true,
       "visit_mode": "PANEL",
       "opening_panel_duration_days": 0,
@@ -146,7 +146,7 @@
       "curriculum_refs": [
         "SOC17"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "fictional": true,
       "visit_mode": "PANEL",
       "opening_panel_duration_days": 0,

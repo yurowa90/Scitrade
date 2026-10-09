@@ -1,6 +1,6 @@
 # Scitrade
 
-현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.4.1.
+현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.5.0.
 
 처음 사용하는 코드 세션에서는 `START_HERE.md`부터 읽습니다. 이 묶음은 설계 v0.4를 담은 재생성 배포본입니다.
 
@@ -14,7 +14,7 @@
 
 ## 시제품 실행
 
-M1(거래 한 건)과 M2a 첫 단계(복수 계약·운송 주선·자원 예약)의 엔진과 최소 화면이 있습니다. 화면 위쪽에서 시나리오를 고릅니다. Node.js 22 이상에서:
+M1(거래 한 건)과 M2a 일부(복수 계약·운송 주선·자원 예약, 동료 영입, 경험치·레벨·훈련, 도시 문화 활동)의 엔진과 최소 화면이 있습니다. 본사는 평택입니다(2026-10-09). 화면 위쪽에서 시나리오를 고릅니다. Node.js 22 이상에서:
 
 ```bash
 npm install
@@ -38,7 +38,7 @@ python3 tools/validate_data.py   # 자료 검사
 - 두 파일은 [공통 작업 규칙](docs/ai/WORKFLOW.md)을 함께 사용합니다.
 - [현재 상태](docs/STATUS.md), [단계별 구현 계획](docs/IMPLEMENTATION_PLAN.md), [업무별 자료 위치](docs/ai/CONTEXT_MAP.md)를 확인합니다.
 - [고전게임 인사이트·후속 개선 Claude 인계](docs/ai/CLASSIC_GAME_HANDOFF.md): 기존 플레이 기록과 공식 자료를 현재 단계에 연결한 우선순위·범위·완료 조건입니다. 게임 구현 완료 보고가 아닙니다.
-- M1과 M2a 첫 단계의 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다.
+- M1과 M2a 일부의 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다. 진행 상태는 [현재 상태](docs/STATUS.md)를 기준으로 합니다.
 
 ## 먼저 알아둘 결정
 
@@ -86,9 +86,9 @@ python3 tools/validate_data.py   # 자료 검사
 | `ui_screens.json` | 화면 ID·정보·행동·도입 단계 |
 | `content_hooks.json` | 아직 구현되지 않은 명령·대화 연결점의 등록부 |
 | `game_config.json` | 90일 캠페인, 통화·초기 현금·기능 단계·고정 시드 |
-| `world.json` | 세계 거점 20곳(1장 6곳 + 세계 확장 미리 보기 14곳)과 해협·운하 6곳. 지도 표시용 대략 위경도, 거점 역할·선정 근거·개방 단계. 기존 개념 지도 좌표(`map_position`)는 1장 6곳에만 있음 |
+| `world.json` | 세계 거점 21곳(1장 7곳 + 세계 확장 미리 보기 14곳)과 해협·운하 6곳. 본사는 평택(`HOME_BASE`). 지도 표시용 대략 위경도, 거점 역할·선정 근거·개방 단계. 개념 지도 좌표(`map_position`)는 1장 7곳에만 있음 |
 | `goods.json` | 8개 대표 품목·단위·보관 종류. HS 코드는 확인 전 `null` |
-| `routes.json` | 6개 단방향 합성 노선·용량·출발 간격·요금 |
+| `routes.json` | 6개 단방향 노선·용량·출발 간격·요금. ROUTE01·02의 운송일수는 실제 평택발 선사 요일표 근거(`schedule_basis`), 나머지 값은 합성 |
 | `employees.json` | 직원·후보 6명. 2명 고용 상태, 나머지 후보 |
 | `market_offers.json` | 첫 거래의 매입·판매 견적 |
 | `scenarios.json` | M1 정상·취소·지연, 도시 문화, P1 주식의 분리된 시작 조건 |
@@ -134,4 +134,4 @@ M1 거래 → M2a 복수 계약·동료 영입·레벨·교육·도시 활동 �
 python3 tools/build_package.py
 ```
 
-검증 후 `dist/Scitrade_development_v0.4.1.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.
+검증 후 `dist/Scitrade_development_v0.5.0.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.

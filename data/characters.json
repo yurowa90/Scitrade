@@ -123,7 +123,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "starter",
         "category_ko": "창업 동료",
         "unlock_stage": "P0",
@@ -238,7 +238,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "starter",
         "category_ko": "창업 동료",
         "unlock_stage": "P0",
@@ -353,7 +353,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "P0",
@@ -483,7 +483,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "myth_legend",
         "category_ko": "신화·전설",
         "unlock_stage": "P0",
@@ -586,7 +586,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "P0",
@@ -717,7 +717,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "myth_legend",
         "category_ko": "신화·전설",
         "unlock_stage": "P0",
@@ -1132,7 +1132,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "myth_legend",
         "category_ko": "신화·전설",
         "unlock_stage": "M2a",
@@ -1409,7 +1409,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 무역회관의 신규 거래처 설명회에서 처음 만난다. 첫 거래처 소개 의뢰를 함께 마치면 합류를 제안한다.",
+        "story_clue": "평택 무역회관의 신규 거래처 설명회에서 처음 만난다. 첫 거래처 소개 의뢰를 함께 마치면 합류를 제안한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -1417,7 +1417,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "representative_animal",
         "category_ko": "대표 동물",
         "unlock_stage": "M2a",
@@ -1476,7 +1476,8 @@
       "release_phase": "P1",
       "data_basis": "DESIGN",
       "source_refs": [
-        "DESIGN-V04"
+        "DESIGN-V04",
+        "ME-NIBR-2017-SPOONBILL"
       ],
       "creature_kind": "animal",
       "visual_motif": "주걱 모양 검은 부리와 검은 얼굴, 흰 깃털의 둥근 저어새. 목에 갯벌 조사 수첩을 걸었다",
@@ -1523,7 +1524,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 근교 갯벌 보전 모임의 물새 조사를 돕는 의뢰에서 만난다. 조사 장비 운송 일정을 지켜 주면 합류한다.",
+        "story_clue": "서해안 갯벌 보전 모임의 물새 조사를 돕는 의뢰에서 만난다. 조사 장비 운송 일정을 지켜 주면 합류한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -1531,7 +1532,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "M2a",
@@ -1571,12 +1572,13 @@
         "iucn_status": "VU",
         "note_ko": "세계 개체 수가 늘어 위기(EN)에서 취약(VU)으로 하향 조정되었다. 한국 서해안 무인도 등에서 번식한다.",
         "cites_appendix": null,
-        "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 I급 (확인 필요)",
+        "national_protection_ko": "멸종위기 야생생물 I급(2017년 환경부 보도자료 기준), 한국 천연기념물 (확인 필요)",
         "sources": [
-          "BirdLife DataZone: Black-faced Spoonbill https://datazone.birdlife.org/species/factsheet/black-faced-spoonbill-platalea-minor"
+          "BirdLife DataZone: Black-faced Spoonbill https://datazone.birdlife.org/species/factsheet/black-faced-spoonbill-platalea-minor",
+          "ME-NIBR-2017-SPOONBILL (환경부 보도자료 2017-05-18, 인천광역시 게시본)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-09",
+        "check_level": "BirdLife는 2026-10-04 웹 2차 자료로 확인. I급은 2026-10-09 환경부 보도자료 게시본으로 확인. 천연기념물 지정은 확인 필요",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -4140,7 +4142,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 문화 탐방에서 지리산 반달가슴곰 복원 현장 홍보 행사를 돕는 의뢰를 마치면 합류한다.",
+        "story_clue": "평택 문화 탐방에서 지리산 반달가슴곰 복원을 알리는 순회 홍보 행사를 돕는 의뢰를 마치면 합류한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -4148,7 +4150,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "M2a",
@@ -4255,7 +4257,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 항만 물류단지에서 혼획을 줄이는 그물 개선 캠페인 물품 운송을 도우면 합류한다.",
+        "story_clue": "평택 항만 물류단지에서 서해 안강망 어선에 보낼 상괭이 탈출장치(그물에 다는 혼획 저감 장치) 운송을 도우면 합류한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -4263,7 +4265,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "M2a",
@@ -4322,7 +4324,8 @@
       "release_phase": "P1",
       "data_basis": "DESIGN",
       "source_refs": [
-        "DESIGN-V04"
+        "DESIGN-V04",
+        "YESAN-STORK-HISTORY"
       ],
       "creature_kind": "animal",
       "visual_motif": "흰 몸, 검은 날개깃, 붉은 눈테의 둥근 황새. 높은 선반을 살피는 점검 장대",
@@ -4369,7 +4372,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 문화 탐방에서 황새 복원 마을의 친환경 농산물 운송을 도우면 합류한다.",
+        "story_clue": "평택 문화 탐방에서 충남 예산 황새 복원 마을의 친환경 농산물 운송을 도우면 합류한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -4377,7 +4380,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "M2a",
@@ -4417,12 +4420,12 @@
         "iucn_status": "EN",
         "note_ko": "위기(EN). 한국에서는 야생 개체가 사라졌다가 복원·방사로 2016년부터 야생 번식이 이어지고 있다. ‘한새(큰 새)’는 황새의 옛말로 알려져 있다.",
         "cites_appendix": null,
-        "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 I급 (확인 필요)",
+        "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 I급",
         "sources": [
-          "Wikipedia: Oriental stork https://en.wikipedia.org/wiki/Oriental_stork"
+          "YESAN-STORK-HISTORY (황새생태연구원 황새복원사)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (옛말 유래는 확인 필요)",
+        "checked_on": "2026-10-09",
+        "check_level": "IUCN 위기(EN)·I급·천연기념물·2016년 방사개체 첫 자연번식은 황새생태연구원 자료로 확인. ‘한새’ 옛말 유래는 출처 미확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -5471,7 +5474,8 @@
       "release_phase": "P1",
       "data_basis": "DESIGN",
       "source_refs": [
-        "DESIGN-V04"
+        "DESIGN-V04",
+        "SEOUL-2022-03-15-CRANE"
       ],
       "creature_kind": "animal",
       "visual_motif": "정수리의 붉은 점, 검은 목과 흰 몸의 두루미(단정학). 긴 다리로 우아하게 서서 회의 순서표를 든다",
@@ -5518,7 +5522,7 @@
       "rarity_power_multiplier": 1.0,
       "recruitment": {
         "mode": "QUEST_GUARANTEED",
-        "story_clue": "부산 문화 탐방에서 두루미 월동지 보전 모임의 겨울 먹이 운송을 도우면 합류한다.",
+        "story_clue": "평택 문화 탐방에서 경기 북부 두루미 월동지 보전 모임의 겨울 먹이 운송을 도우면 합류한다.",
         "random_draw_required": false,
         "repeat_copy_required": false,
         "start_employed": false,
@@ -5526,7 +5530,7 @@
       },
       "encounter": {
         "country_code": "KR",
-        "city_id": "BUSAN",
+        "city_id": "PYEONGTAEK",
         "category": "rare_animal",
         "category_ko": "희귀·보전 동물",
         "unlock_stage": "M2a",
@@ -5568,10 +5572,11 @@
         "cites_appendix": null,
         "national_protection_ko": "한국 천연기념물 (확인 필요)",
         "sources": [
-          "작성자 지식 기반"
+          "작성자 지식 기반 (VU 등급, 철원·홋카이도·중국 무리)",
+          "SEOUL-2022-03-15-CRANE (서울신문 2022-03-15, 연천 임진강 두루미 도래지)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "작성자 지식 기반, 출처 대조 필요",
+        "checked_on": "2026-10-09",
+        "check_level": "서울신문 기사는 경기 북부(연천 임진강) 월동지와 국내 월동 약 1,400마리의 근거. VU 등급·철원·홋카이도·중국 무리는 작성자 지식 기반이라 확인 필요",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]

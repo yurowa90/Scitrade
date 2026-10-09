@@ -275,7 +275,7 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
 
   const ports = hubs.map(({ c, p, status }) => {
     const size = status === 'preview' ? 12.5 : 15;
-    const preferLeft = c.id === 'BUSAN' || c.id === 'SHANGHAI' || c.id === 'HAIPHONG';
+    const preferLeft = ['PYEONGTAEK', 'BUSAN', 'HONG_KONG'].includes(c.id) || c.id === 'SHANGHAI' || c.id === 'HAIPHONG';
     const box = labelFor(c.nameKo, p.x, p.y, size, preferLeft);
     const finance = c.roles.includes('FINANCE_CENTER');
     const badgeScale = status === 'preview' ? 0.78 : 1;

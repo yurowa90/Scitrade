@@ -158,7 +158,7 @@ def sailing_day(route, sailing_id):
     return day
 
 
-def check_culture(tables, cases, payroll_currency):
+def check_culture(tables, cases, payroll_currency, home_city_id):
     """활동의 장소·인물·비용·출처 범위와 엔진 인수 명세 연결을 확인한다."""
     scenario = tables['scenarios']['SCENARIO_M2_MULTI_TRADE']
     block = scenario.get('culture')
@@ -204,11 +204,11 @@ def check_culture(tables, cases, payroll_currency):
         finding = report.get('finding_ko', '')
         if isinstance(finding, str):
             finding = unicodedata.normalize('NFC', finding)
-            for word in ('부산 사람', '부산 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
+            for word in ('부산 사람', '부산 시민', '평택 사람', '평택 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
                 check(re.search(r'\s*'.join(map(re.escape, word.split(' '))), finding) is None, aid + ': finding_ko 일반화 금지어 ' + word)
     case_map = {c['id']: c for c in cases}
     mapping = {'ACT_A': 'CA01', 'CONTACT_A': 'NPC_MARKET', 'CONTACT_B': 'NPC_GUIDE',
-               'EMPLOYEE_A': 'EMP01', 'EMPLOYEE_B': 'EMP02', 'CITY_HOME': 'BUSAN', 'CITY_REMOTE': 'SHANGHAI'}
+               'EMPLOYEE_A': 'EMP01', 'EMPLOYEE_B': 'EMP02', 'CITY_HOME': home_city_id, 'CITY_REMOTE': 'SHANGHAI'}
     for cid in ('P0-CITY-01', 'P0-CITY-02', 'P0-CITY-03', 'P0-CITY-04'):
         case = case_map.get(cid, {})
         check(case.get('scenario_id') == 'SCENARIO_M2_MULTI_TRADE', cid + ': M2 시나리오 연결 필요')
@@ -406,6 +406,46 @@ def check_recruitment(tables):
                       label + cid + ' 만남 도시 일치')
 
 
+def check_home_city(config, world):
+    """본사의 존재와 다른 거점 사실이 섞이지 않았는지 확인한다."""
+    home_id = config.get('home_city_id')
+    check(home_id in world, '본사: home_city_id가 world에 있어야 합니다')
+    if home_id not in world:
+        return
+    home = world[home_id]
+    check('HOME_BASE' in home.get('hub_roles', []), '본사: HOME_BASE 역할 필요')
+    # 다른 거점 설명문의 비율 수치(예: 부산 환적 57%)도 본사 항목에 옮겨 오지 않는다.
+    # 순위(N위)는 거점마다 겹치므로(평택 4위·상하이 4위) 비율만 거점 자료에서 읽는다.
+    other_shares = {share for cid, city in world.items() if cid != home_id
+                    for share in re.findall(r'\d+(?:\.\d+)?%', city.get('hub_note_ko', ''))}
+    text = json.dumps(home, ensure_ascii=False)
+    for word in ('7위', '환적 화물', 'TRANSSHIPMENT', *sorted(other_shares)):
+        check(word not in text, '본사: 다른 거점 고유 문구 ' + word)
+
+
+def check_route_schedules(routes, source_ids):
+    """요일표의 달력 날짜 차이와 출처 연결을 검증한다. 허용 오차로 일수를 보정하지 않는다."""
+    weekdays = {day: i for i, day in enumerate(('월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'))}
+    for rid, route in routes.items():
+        if 'schedule_basis' not in route:
+            continue
+        basis = route['schedule_basis']
+        if not isinstance(basis, dict):
+            check(False, rid + ': schedule_basis 객체 필요')
+            continue
+        departure, arrival = basis.get('departure_weekday'), basis.get('arrival_weekday')
+        valid = isinstance(departure, str) and isinstance(arrival, str) and departure in weekdays and arrival in weekdays
+        check(valid, rid + ': 출항·접안 요일 필요')
+        if valid:
+            check(route.get('transit_days') == (weekdays[arrival] - weekdays[departure]) % 7,
+                  rid + ': 운송일수와 요일 차이 불일치')
+        refs = basis.get('source_refs')
+        check(isinstance(refs, list) and bool(refs), rid + ': 요일표 출처 필요')
+        if isinstance(refs, list):
+            for ref in refs:
+                check(isinstance(ref, str) and ref in source_ids, rid + ': 요일표 출처 없음 ' + str(ref))
+
+
 def check_world_hubs(documents, tables, source_ids):
     """World hubs (user decision 2026-10-05): real logistics and trade-finance centres, opened by chapter."""
     world = tables['world']
@@ -418,7 +458,7 @@ def check_world_hubs(documents, tables, source_ids):
         check('availability' in city and 'geo_position' in city, cid + ': availability and map position')
         for item in city.get('selection_basis', []):
             check(item['source_id'] in source_ids, cid + ': selection basis source ' + item['source_id'])
-        if set(city.get('hub_roles', [])) & selection_roles and 'PRODUCTION_ORIGIN' not in city.get('hub_roles', []):
+        if set(city.get('hub_roles', [])) & selection_roles and not ({'PRODUCTION_ORIGIN', 'HOME_BASE'} & set(city.get('hub_roles', []))):
             check(len(city.get('selection_basis', [])) >= 1, cid + ': hub chosen by a cited indicator')
         if city.get('availability', {}).get('status') == 'MAP_PREVIEW':
             check(city['venue_ids'] == [] and city['availability']['stage'] == 'P1',
@@ -435,7 +475,7 @@ def check_world_hubs(documents, tables, source_ids):
     check(len(gates) == 6, 'sea gates: expected 6')
     for gate in gates:
         check(gate['geo_position']['use'] == 'map_display_only', gate['id'] + ': display-only gate position')
-    check(sum(c['availability']['chapter'] == 1 for c in world.values()) == 6, 'chapter 1 keeps the 6 East Asian hubs')
+    check(sum(c['availability']['chapter'] == 1 for c in world.values()) == 7, 'chapter 1 keeps the 7 East Asian hubs')
 
 
 def main():
@@ -449,7 +489,7 @@ def main():
               for name, doc in documents.items() if 'items' in doc}
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
-    expected_counts = {'world': 20, 'goods': 8, 'routes': 6, 'employees': 6,
+    expected_counts = {'world': 21, 'goods': 8, 'routes': 6, 'employees': 6,
                        'market_offers': 6, 'scenarios': 7, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
@@ -553,6 +593,8 @@ def main():
         check(abs(end['lat'] - geo['lat']) <= 0.2 and abs(end['lon'] - geo['lon']) <= 0.2,
               'ROUTE01 map waypoints start and end at their ports')
     config = documents['game_config']['config']
+    check_home_city(config, tables['world'])
+    check_route_schedules(tables['routes'], source_ids)
     check(config['securities_enabled'] is False and config['ipo_enabled'] is False,
           'P0 must not enable future finance automatically')
     check(tables['scenarios']['SCENARIO_CITY_CULTURE']['culture_enabled'] is True,
@@ -611,7 +653,7 @@ def main():
 
     acceptance = read('tests/acceptance_cases.json')
     cases = acceptance['cases']
-    check_culture(tables, cases, config['reporting_currency'])
+    check_culture(tables, cases, config['reporting_currency'], config.get('home_city_id'))
     summary = acceptance['review_summary']
     check(summary['case_count'] == len(cases), 'review_summary case_count matches cases')
     counts = {phase: sum(c['phase'] == phase for c in cases) for phase in ('P0', 'P1', 'P2')}

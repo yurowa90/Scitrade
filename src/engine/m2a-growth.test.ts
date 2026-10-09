@@ -251,7 +251,7 @@ describe('CHAR-ACC-08 일반 훈련 비용·급여·예약', () => {
     for (const reason of ['future', 'city', 'busy']) {
       let s = openDay(createGame(config), config).state;
       if (reason === 'future') employee(s).availableFromDay = 2;
-      if (reason === 'city') employee(s).locationCityId = 'YOKOHAMA';
+      if (reason === 'city') employee(s).locationCityId = 'HAIPHONG';
       if (reason === 'busy') s = planState(s, config, [trade()]).state;
       const p = planState(s, config, [training()]);
       expect(p.results[0]!.status).toBe('REJECTED');

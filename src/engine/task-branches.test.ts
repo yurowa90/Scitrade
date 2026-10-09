@@ -67,7 +67,7 @@ describe('다섯 업무의 기존 값·문장 보존', () => {
 function unknownTaskState() {
   const s = openDay(createGame(config), config).state;
   s.tasks.push({ id: 'UNKNOWN-TASK', kind: 'UNKNOWN' as Task['kind'], contractId: null, subjectId: null,
-    cityId: 'BUSAN', status: 'RUNNING', requiredWorkUnits: 1, progressWorkUnits: 0,
+    cityId: 'PYEONGTAEK', status: 'RUNNING', requiredWorkUnits: 1, progressWorkUnits: 0,
     assignedEmployeeId: 'EMP01', startedDay: 1, completedDay: null });
   return s;
 }
@@ -151,7 +151,7 @@ describe('현금에서 미지급 의무만 뺀 자금 보존', () => {
       if (!cfg.employees.some(e => e.id === 'EMP04')) cfg.employees.push(structuredClone(config.employees.find(e => e.id === 'EMP04')!));
       const def = cfg.employees.find(e => e.id === 'EMP04')!;
       def.salaryCurrency = currency;
-      if (!s.employees.some(e => e.id === 'EMP04')) s.employees.push({ id: 'EMP04', xp: 0, locationCityId: 'BUSAN', employmentStatus: 'candidate', availableFromDay: 1 });
+      if (!s.employees.some(e => e.id === 'EMP04')) s.employees.push({ id: 'EMP04', xp: 0, locationCityId: 'PYEONGTAEK', employmentStatus: 'candidate', availableFromDay: 1 });
       s.recruitment.candidates = [{ employeeId: 'EMP04', stage: 'INTERVIEW_READY', discoveredDay: 1,
         questTaskId: null, interviewReadyDay: 1, hiredDay: null }];
       const fee = 1000 * def.salaryPerDayMinor;

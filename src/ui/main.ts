@@ -106,11 +106,11 @@ const committedRule = () => config.rules.fundsCheck === 'COMMITTED_OUTLAYS';
 
 const PARTY_KO: Record<string, string> = {
   SUPPLIER_DEMO: '의류 공급자',
-  CUSTOMER_DEMO: '요코하마 의류 고객',
+  CUSTOMER_DEMO: '하이퐁 의류 고객',
   SUPPLIER_DEMO_COSMETICS: '화장품 공급자',
   CUSTOMER_DEMO_SHANGHAI: '상하이 화장품 고객',
   SHIPPER_DEMO_FURNITURE: '가구 화주',
-  SHIPPER_DEMO_SOLAR: '태양광 모듈 화주',
+  SHIPPER_DEMO_AUTOPARTS: '자동차 부품 화주',
 };
 const partyKo = (id: string | null) => (id ? (PARTY_KO[id] ?? id) : '-');
 const qtyKo = (goodId: string, quantity: number) => {

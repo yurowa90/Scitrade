@@ -19,14 +19,14 @@ describe('태평양 중심 세계지도 좌표', () => {
     expect(busan.x).toBeLessThan(ny.x);
   });
 
-  it('세계 거점 20곳과 해협 6곳이 모두 세계지도 안에 있다', () => {
+  it('세계 거점 21곳과 해협 6곳이 모두 세계지도 안에 있다', () => {
     const cities = loadMapCities();
-    expect(cities).toHaveLength(20);
+    expect(cities).toHaveLength(21);
     expect(cities.filter((c) => !inBounds(c, B))).toEqual([]);
     expect(loadSeaGates().filter((g) => !inBounds(g, B))).toEqual([]);
-    // 1장 거점은 6곳 그대로다.
+    // 1장 거점은 본사를 더해 7곳이다.
     expect(cities.filter((c) => c.availability.chapter === 1).map((c) => c.id).sort()).toEqual(
-      ['BUSAN', 'HAIPHONG', 'JAKARTA', 'SHANGHAI', 'SINGAPORE', 'YOKOHAMA'],
+      ['BUSAN', 'HAIPHONG', 'JAKARTA', 'PYEONGTAEK', 'SHANGHAI', 'SINGAPORE', 'YOKOHAMA'],
     );
   });
 
