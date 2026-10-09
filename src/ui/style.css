@@ -473,6 +473,7 @@ main.layout { padding-bottom: 5.5rem; }
 .local-intro, .local-venues { font-size: .82rem; }
 .local-venues { margin: .7rem 0; }
 .local-venues > div { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: .5rem; padding: .35rem 0; border-bottom: 1px solid var(--line); }
+.local-venues > div:last-child { border-bottom: 0; }
 .local-venues dt { font-weight: 600; }
 .local-venues dd { margin: 0; }
 .culture-activity, .culture-book { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .7rem; }
@@ -493,6 +494,10 @@ main.layout { padding-bottom: 5.5rem; }
 #culture-slot p { font-size: .75rem; }
 .cul-result, .cul-report { margin-bottom: .8rem; }
 .cul-result h3 small, .culture-book h3 small { display: block; }
+/* 제목으로 옮길 때 고정 막대에 딱 붙지 않게 한다. */
+#local-h, .cul-result h3 { scroll-margin-top: 8px; }
+.cul-report h5 { margin: .5rem 0 .3rem; font-size: .88rem; }
+.culture-cost b { font-weight: 600; }
 .rec-meta, .spent { font-size: .82rem; }
 .rec4 { margin: .5rem 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .4rem; }
 .rec-field { border: 1px solid var(--line); border-radius: 8px; padding: .4rem .6rem; font-size: .88rem; }

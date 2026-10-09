@@ -163,17 +163,25 @@ function endDay() {
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
   const barBottom = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
   const bandBottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
-  const cards = Array.from(app.querySelectorAll<HTMLElement>('.contract'));
-  // M1은 제목이 막대 위에 있어도 읽던 계약 카드 하나를 기준으로 삼던 동작을 유지한다.
-  const heads = config.culture ? cards.map((card) => card.querySelector<HTMLElement>('h3[id]'))
-    : [cards.find((card) => { const r = card.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; })?.querySelector<HTMLElement>('h3[id]') ?? null];
+  // 계약은 3판 기준 그대로다: 막대 아래에 걸친 첫 카드의 제목은 막대 위에 있어도 기준이 된다.
+  const card = Array.from(app.querySelectorAll<HTMLElement>('.contract')).find((e) => { const r = e.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; });
+  const heads: HTMLElement[] = [];
+  const cardHead = card?.querySelector<HTMLElement>('h3[id]');
+  if (cardHead) heads.push(cardHead);
   if (ui.cultureOpen) {
-    heads.push(...[...cultureResultTasks(state, config, ui.cultureShowFromDay ?? state.day - 1).map((t) => `culture-result-h-${t.id}`),
-      'culture-h', 'culture-emp-h', 'culture-book-h'].map((id) => document.getElementById(id)));
+    // 결과 카드는 블록이 띠에 걸치면 기준이 된다. 네 칸을 읽는 중에 위에 새 결과가 생겨도 자리를 지킨다.
+    for (const task of cultureResultTasks(state, config, ui.cultureShowFromDay ?? state.day - 1)) {
+      const block = document.getElementById(`culture-result-${task.id}`)?.getBoundingClientRect();
+      const head = document.getElementById(`culture-result-h-${task.id}`);
+      if (block && head && block.bottom > barBottom && block.top < bandBottom) heads.push(head);
+    }
+    for (const id of ['culture-h', 'culture-emp-h', 'culture-book-h']) {
+      const head = document.getElementById(id);
+      const top = head?.getBoundingClientRect().top;
+      if (head && top !== undefined && top >= barBottom && top < bandBottom) heads.push(head);
+    }
   }
-  const reading = heads.filter((head): head is HTMLElement => head !== null)
-    .map((head) => ({ id: head.id, top: head.getBoundingClientRect().top }))
-    .filter((head) => !config.culture || (head.top >= barBottom && head.top < bandBottom)).sort((a, b) => a.top - b.top);
+  const reading = heads.map((head) => ({ id: head.id, top: head.getBoundingClientRect().top })).sort((a, b) => a.top - b.top);
   ui.growthNotices = growthMessages(state, committed.state, config);
   ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
@@ -806,11 +814,13 @@ function markCultureSeen() {
 function openCulture(result = false) {
   ui.cultureTabTop = result ? null : document.getElementById('local-tab')?.getBoundingClientRect().top ?? null;
   markCultureSeen();
+  // ‘결과 보기’는 같은 날 탭으로 먼저 열었어도 방금 마감한 날의 결과를 보여 준다.
+  if (result) ui.cultureShowFromDay = Math.min(ui.cultureShowFromDay!, state.day - 1);
   ui.cultureOpen = true;
   if (result) ui.flash = null;
   render(true);
   const task = result ? cultureResultTasks(state, config, state.day - 1).find((t) => t.completedDay === state.day - 1) : null;
-  const heading = document.getElementById(task ? `culture-result-h-${task.id}` : 'local-h');
+  const heading = (task && document.getElementById(`culture-result-h-${task.id}`)) || document.getElementById('local-h');
   heading?.scrollIntoView({ block: 'start' });
   heading?.focus({ preventScroll: true });
   ignoreClicksUntil = Date.now() + 500;
@@ -840,8 +850,8 @@ function showCulturePreview(employeeId: string) {
   const employee = document.getElementById(`culture-emp-${employeeId}`);
   if (head && slot && employee) {
     const top = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
-    const toastHeight = app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().height ?? 0;
-    const bottom = window.innerHeight - Math.max(toastHeight, 72);
+    const toastTop = app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity;
+    const bottom = Math.min(window.innerHeight - 72, toastTop);
     const headTop = head.getBoundingClientRect().top;
     const slotBottom = slot.getBoundingClientRect().bottom;
     const needed = slotBottom > bottom ? slotBottom - bottom : headTop < top ? headTop - top : 0;

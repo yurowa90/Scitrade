@@ -3,7 +3,7 @@ import { loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { companyReport } from '../engine/reports';
 import { runDays, standardDayOneCommands } from '../engine/testkit';
-import { krwReportRows, KRW_REPORT_NOTE_CULTURE_KO } from './reports';
+import { krwReportRows, KRW_REPORT_NOTE_CULTURE_KO, KRW_REPORT_NOTE_KO } from './reports';
 import { cancellationPreviewKo } from './trade';
 import { crewNoteKo } from './crew-status';
 
@@ -42,6 +42,7 @@ describe('취소 안내와 원화 보고', () => {
     expect([...html.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−640,000원','−550,000원','−50,000원','0원','−1,240,000원','0원','8,760,000원']);
     expect(p.cash).toBe(p.openingEquity+p.profit+p.accountsPayable);
     expect(KRW_REPORT_NOTE_CULTURE_KO).toContain('계약금·훈련비·현지 활동비는 한 번 내는 원화 비용');
+    expect(KRW_REPORT_NOTE_KO).toContain('계약금·훈련비는 한 번 내는 원화 비용');
     expect(crewNoteKo(config)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000원.');
   });
 });

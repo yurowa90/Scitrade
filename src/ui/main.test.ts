@@ -887,6 +887,8 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.scroll).toHaveBeenLastCalledWith({block:'start'});expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
     expect(toast(ui.app.innerHTML)).toBe('');
     ui.clickNow({action:'culture-close',where:'head'});expect(ui.app.innerHTML).toContain('id="local"');
+    // 결과 보기로 본 결과는 본 것으로 남는다.
+    ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
   });
   it('안 본 결과는 이틀 진행 뒤에도 남고 열어 본 다음 다시 열 때 사라진다',async()=>{
     const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-close',where:'head'});
@@ -939,8 +941,8 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     ui.bounds['culture-emp-EMP01']={top:700,bottom:744,height:44};
     ui.setToastTop(620);ui.click({action:'save'});ui.scrollBy.mockClear();
     ui.click({action:'culture-emp',emp:'EMP01'});
-    // 알림 실측 높이 172px를 예약한다. CSS 변수와 무관하다.
-    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,422);expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');
+    // 띠 아래 끝은 알림 위 끝(620px)이다. CSS 변수와 무관하다.
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,430);expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');
     expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
   });
   it('미리 보기 넘침은 누른 직원의 막대 아래 8px 상한을 우선한다',async()=>{
@@ -978,7 +980,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect([...list.matchAll(/<dt>/g)]).toHaveLength(5);expect(list).not.toContain('<button');
     for(const button of ui.app.innerHTML.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/g))expect(button[1]).not.toMatch(/주식|상장|IPO/);
   });
-  it.each(['restart','load','import','scenario'])('%s 뒤 본 날·탭 위치·펼침·선택은 초기화된다',async(mode)=>{
+  it.each(['restart','load','import','scenario'])('%s 뒤 펼침·기록장·활동·직원 선택은 초기화된다',async(mode)=>{
     const s=openDay(runDays(createGame(config),config,2,{2:[{id:'C',type:'START_CULTURE_ACTIVITY',activityId:'CA01',employeeId:'EMP01'}]}).state,config).state;
     const ui=await startUi();await ui.importText(serializeSave(s));ui.click({action:'end-day'});ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
     ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP01'});
@@ -988,8 +990,9 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     else await ui.change({action:'scenario'},config.id);
     expect(ui.app.innerHTML).not.toContain('id="local"');expect(toast(ui.app.innerHTML)).not.toContain('culture-result');
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');expect(ui.app.innerHTML).not.toContain('id="culture-book-body"');
+    expect(local(ui.app.innerHTML)).not.toContain('aria-pressed="true"');expect(ui.app.innerHTML).not.toContain('id="culture-emp-h"');
     if(mode==='load'||mode==='import')expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
-    // 결과 보기 경로가 탭 위치를 지우고, 초기화 이후 위치는 새로 연 탭의 위치만 기억한다.
+    // 닫기는 초기화 뒤 새로 연 순간의 탭 위치로 돌아간다. 초기화 전 값이 남는지는 이 하네스로 관찰할 수 없다(initialUiState 시험이 맡는다).
     ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:250,bottom:294,height:44};});ui.click({action:'culture-close',where:'end'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
   });
@@ -1019,6 +1022,71 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     const ui=await startUi();expect(ui.app.innerHTML).toMatch(/<h2 id="trade-h"[^>]*>[\s\S]*?<\/h2>\s*<button id="local-tab"/);
     expect(ui.app.innerHTML).not.toMatch(/id="local-tab"[^>]*aria-controls/);
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-controls="local-body"/);
+  });
+});
+
+describe('TASK-0012 Claude 검수 보강',()=>{
+  const taskId='CULTURE-CA01-EMP01-D2';
+  const tab=(html:string)=>html.match(/<button id="local-tab"[^>]*>([\s\S]*?)<\/button>/)![1]!;
+  const toast=(html:string)=>html.match(/<div class="flash-toast[^>]*>([\s\S]*?)<\/div>/)?.[0] ?? '';
+  async function queued(ui:Awaited<ReturnType<typeof startUi>>) {
+    ui.click({action:'end-day'});ui.click({action:'culture-tab'});
+    ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});
+  }
+  it.each([false,true])('M2에서도 제목이 막대 위인 읽던 계약 본문의 위치를 복원한다 (패널 열림 %s)',async(open)=>{
+    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});ui.click({action:'end-day'});
+    if(open)ui.click({action:'culture-tab'});
+    ui.bounds['contract-h-CT001']={top:20,bottom:50,height:30};
+    ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
+    ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);expect(ui.scrollIds).toEqual([]);
+    expect(ui.doc.activeElement.dataset.action).toBe('end-day');
+  });
+  it('결과 카드는 제목이 막대 위여도 블록이 보이면 읽던 자리 기준이다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});
+    ui.bounds[`culture-result-h-${taskId}`]={top:40,bottom:70,height:30};ui.bounds[`culture-result-${taskId}`]={top:30,bottom:520,height:490};
+    ui.afterRender(()=>{ui.bounds[`culture-result-h-${taskId}`]={top:300,bottom:330,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,260);
+  });
+  it('읽던 자리 후보는 DOM 순서가 아니라 화면 위에서부터 고른다',async()=>{
+    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});await queued(ui);
+    ui.bounds['culture-h']={top:50,bottom:80,height:30};ui.bounds['culture-emp-h']={top:180,bottom:210,height:30};
+    ui.bounds['culture-book-h']={top:780,bottom:810,height:30};ui.bounds['contract-h-CT001']={top:600,bottom:630,height:30};
+    // 계약 후보는 먼저 모으지만 화면에서는 직원 제목이 위다. 두 후보의 이동량을 다르게 둔다.
+    ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:530,bottom:560,height:30};ui.bounds['contract-h-CT001']={top:900,bottom:930,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
+  });
+  it.each(['open','closed'])('탭으로 먼저 연 뒤(%s) 결과 보기를 눌러도 방금 마감한 날의 카드로 간다',async(after)=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'culture-close',where:'head'});ui.click({action:'end-day'});
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    if(after==='closed')ui.click({action:'culture-tab'});
+    expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');
+    ui.focusIds.length=0;ui.scrollIds.length=0;ui.click({action:'culture-result'});
+    expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
+    expect(ui.scrollIds).toEqual([`culture-result-h-${taskId}`]);expect(ui.focusIds.at(-1)).toBe(`culture-result-h-${taskId}`);
+    expect(toast(ui.app.innerHTML)).toBe('');
+    ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
+  });
+  it('같은 날 결과가 두 건이면 결과 보기는 화면의 첫 결과 카드로 간다',async()=>{
+    const ui=await startUi();await queued(ui);
+    ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP02'});ui.click({action:'culture-queue'});
+    ui.click({action:'end-day'});ui.scrollIds.length=0;ui.click({action:'culture-result'});
+    const ids=[...ui.app.innerHTML.matchAll(/id="(culture-result-h-[^"]+)"/g)].map((m)=>m[1]);
+    expect(ids).toHaveLength(2);expect(ui.scrollIds).toEqual([ids[0]]);expect(ui.focusIds.at(-1)).toBe(ids[0]);
+  });
+  it('탭·기록장·활동·직원의 상태 속성과 거래 위 패널 배치',async()=>{
+    const ui=await startUi();ui.click({action:'end-day'});
+    expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="false"/);
+    ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="true"/);
+    expect(ui.app.innerHTML).toMatch(/<div class="maincol"><section class="panel local"[\s\S]*?<\/section>\s*<section class="panel trade"/);
+    expect(ui.app.innerHTML).toMatch(/data-action="culture-book" aria-expanded="false"/);
+    ui.click({action:'culture-book'});expect(ui.app.innerHTML).toMatch(/data-action="culture-book" aria-expanded="true"/);
+    ui.click({action:'culture-act',activity:'CA02'});
+    expect(ui.app.innerHTML).toMatch(/data-activity="CA02" aria-pressed="true"/);expect(ui.app.innerHTML).toMatch(/data-activity="CA01" aria-pressed="false"/);
+    ui.click({action:'culture-emp',emp:'EMP01'});
+    expect(ui.app.innerHTML).toMatch(/id="culture-emp-EMP01"[^>]*aria-pressed="true"/);expect(ui.app.innerHTML).toMatch(/id="culture-emp-EMP02"[^>]*aria-pressed="false"/);
   });
 });
 

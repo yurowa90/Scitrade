@@ -25,7 +25,7 @@ const done = (cfg=config) => openDay(commitDay(dayTwo(cfg),cfg,[start()]).state,
 const visible = (html:string) => html.replace(/<[^>]*>/g,'');
 function rejected(html:string, reason:string) {
   const p=preview(html);
-  expect(p).toContain(esc(reason));
+  expect(p).toContain(`⚠ 시작할 수 없음: ${esc(reason)}`);
   expect(p).toContain('시작할 수 없으므로 새로 생기는 기록이 없습니다.');
   expect(p).toContain('<b>바뀌지 않는 것</b>');
   for(const text of ['새로 생길 기록','첫 완료 경험치','이 활동에 쓰는 것','다른 업무를 맡을 수 없습니다',
@@ -39,17 +39,18 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
       cultureSeenDay:null,cultureShowFromDay:null,cultureTabTop:null,cultureResultFresh:false,flash:null});
   });
   it('2일 기본 미리 보기의 기회비용·급여·새 기록·불변 값은 지정 순서다',()=>{
-    const html=panel(), p=preview(html);
+    const html=panel(), p=preview(html), v=visible(p);
     const lines=['미리 보기 — 귀솔 · 시장과 포장 요구 탐방',
       '이 활동에 쓰는 것: 직원 1명의 하루 업무 · 원화 20,000원',
-      '귀솔: 2일 하루 동안 다른 업무를 맡을 수 없습니다.',
+      '귀솔: 오늘(2일) 하루 동안 다른 업무를 맡을 수 없습니다.',
       '활동에 쓸 수 있는 원화: 지금 9,840,000원 → 활동 뒤 9,820,000원',
       '원화 급여 지급 가능일: 지금 62일까지 → 활동하면 62일까지',
-      '급여는 활동비와 별도로 평소대로 지급합니다.', '새로 생길 기록',
+      '급여는 활동비와 별도로 평소대로 지급합니다.', '새로 생길 기록과 경험치',
       '회사 보고서(처음 생김) — 한 상인의 포장·보관 요구', '귀솔의 직접 경험 기록',
       '함께한 활동: 귀솔 — 시장 상인 윤서', '첫 완료 경험치 +10', '바뀌지 않는 것', CULTURE_UNCHANGED_KO];
-    for(const line of lines)expect(p).toContain(line);
-    for(let i=1;i<lines.length;i++)expect(p.indexOf(lines[i]!)).toBeGreaterThan(p.indexOf(lines[i-1]!));
+    for(const line of lines)expect(v).toContain(line);
+    for(let i=1;i<lines.length;i++)expect(v.indexOf(lines[i]!)).toBeGreaterThan(v.indexOf(lines[i-1]!));
+    expect(p).toContain('<p class="culture-cost"><b>이 활동에 쓰는 것:</b> 직원 1명의 하루 업무');
     expect(p).not.toContain('끝나는 날');expect(p).not.toContain('role="status"');expect(p).not.toContain('<button');
     expect(html.indexOf('id="culture-emp-EMP01"')).toBeLessThan(html.indexOf('id="culture-preview"'));
     expect(html.indexOf('id="culture-preview"')).toBeLessThan(html.indexOf('id="culture-slot"'));
@@ -69,21 +70,23 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     rejected(panel(s,cfg),p.reasonKo!);
   });
   it('RF-1 허용된 활동이 캠페인을 넘으면 경고와 지출은 보이고 새 기록은 없다',()=>{
-    const cfg=structuredClone(config);cfg.culture!.activities[0]!.durationDays=2;cfg.campaignDays=2;
+    // 오늘(2일)·시작일과 다른 캠페인 일수(3일)를 써서 어느 값을 읽는지 구분한다.
+    const cfg=structuredClone(config);cfg.culture!.activities[0]!.durationDays=3;cfg.campaignDays=3;
     const s=dayTwo(cfg),p=culturePreview(s,cfg,'CA01','EMP01');
-    expect(p.allowed).toBe(true);expect(p.busyUntilDay).toBeGreaterThan(cfg.campaignDays);
+    expect(p.allowed).toBe(true);expect(p.busyUntilDay).toBe(4);
     const html=preview(panel(s,cfg));
-    expect(html).toContain('⚠ 캠페인 마지막 날(2일)까지 끝나지 않습니다. 기록·경험치는 생기지 않고 활동비는 나갑니다.');
-    expect(html).toContain('직원 1명의 2일 업무');expect(html).toContain('귀솔: 2~3일 동안');
+    expect(html).toContain('⚠ 캠페인 마지막 날(3일)까지 끝나지 않습니다. 기록·경험치는 생기지 않고 활동비는 나갑니다.');
+    expect(html).toContain('직원 1명의 3일 업무');expect(html).toContain('귀솔: 2~4일 동안');
     expect(html).not.toContain('끝나는 날');expect(html).not.toContain('새로 생길 기록');expect(html).not.toContain('첫 완료 경험치');
-    expect(html).toContain('2일(캠페인 끝)까지');
+    expect(html).toContain('3일(캠페인 끝)까지');
     cfg.startingCash.KRW=179_999;
     const poor=dayTwo(cfg),deny=culturePreview(poor,cfg,'CA01','EMP01');expect(deny.allowed).toBe(false);
     rejected(panel(poor,cfg),deny.reasonKo!);
   });
   it('캠페인 안의 여러 날 활동은 완료일과 업무 공백을 보여 준다',()=>{
     const cfg=structuredClone(config);cfg.culture!.activities[0]!.durationDays=2;
-    expect(preview(panel(dayTwo(cfg),cfg))).toContain('끝나는 날: 3일');
+    const p=preview(panel(dayTwo(cfg),cfg));
+    expect(p).toContain('끝나는 날: 3일');expect(p).toContain('귀솔: 2~3일 동안 다른 업무를 맡을 수 없습니다.');
   });
   it.each([[179_999,1,'이 활동비를 내면'],[100_000,0,'지금도']] as const)('급여 %i원은 미지급 경고와 읽을 수 있는 날짜 표기다',(cash,before,word)=>{
     const cfg=structuredClone(config);cfg.startingCash.KRW=cash;const s=fresh(cfg);
@@ -91,7 +94,7 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     expect(p.payrollRunwayBefore).toBe(before);expect(p.payrollRunwayAfter).toBe(0);
     const html=preview(panel(s,cfg));
     expect(html).toContain(`⚠ ${word} 오늘(1일) 급여 일부가 미지급으로 남습니다.`);
-    expect(html).toContain('활동하면 오늘 급여 일부 미지급');expect(html).not.toContain('0일까지');
+    expect(html).toContain('→ 활동하면 없음');expect(html).not.toContain('0일까지');
   });
   it.each([false,true])('미배정 준비 업무 경고와 다른 쉬는 직원 안내 (다른 직원도 바쁨 %s)',(busy)=>{
     const commands:Command[]=[{id:'A',type:'ACCEPT_TRADE',buyOfferId:'OFFER_BUY_01',sellOfferId:'OFFER_SELL_01'},
@@ -113,9 +116,15 @@ describe('TASK-0012 문화 패널의 엔진 읽기와 미리 보기',()=>{
     expect(html).toContain('빼려면 ‘오늘 할 일’에서 ‘빼기’를 누르세요.');
     expect(html).not.toContain('data-action="culture-queue"');
   });
-  it('계획 상태의 바쁜 직원·근무 전 직원만 꺼지고 후보·다른 도시 직원은 없다',()=>{
+  it('대기 목록이 그 쌍뿐이면 ‘(오늘 할 일 반영)’을 붙이지 않는다',()=>{
+    const p=preview(panel(dayTwo(),config,[start()]));
+    expect(p).toContain('지금 9,840,000원 → 활동 뒤 9,820,000원');expect(p).not.toContain('(오늘 할 일 반영)');
+  });
+  it('계획 상태의 바쁜 직원·근무 전 직원만 꺼지고 쉬는 직원은 켜지며 후보는 없다',()=>{
     const s=fresh(), pending=[{id:'T',type:'START_TRAINING',employeeId:'EMP02'} as Command];
     const html=panel(s,config,pending);
+    expect(html).toMatch(/id="culture-emp-EMP01"[^>]*aria-pressed="true">귀솔 · /);
+    expect(html).not.toMatch(/id="culture-emp-EMP01"[^>]* disabled/);
     expect(html).toMatch(/id="culture-emp-EMP02"[^>]* disabled>물보리 · ◆ 교육 중 0\/1일 — 일반 훈련 중/);
     expect(html).not.toContain('id="culture-emp-EMP03"');
     const hired=runDays(createGame(config),config,4,{
@@ -138,7 +147,7 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
       expect(body).toBe(esc(field==='notClaimedKo' ? '부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.' : report[field as keyof typeof report]));
       expect(fields[i]![1]!.includes('넓혀 읽지 않기')).toBe(i===2);
     }
-    expect(html).toContain('출처 시장 상인 윤서(1명) · 다른 출처로 아직 확인하지 않은 기록');
+    expect(html).toContain('출처 1명: 시장 상인 윤서 · 다른 출처로 아직 확인하지 않은 기록');
     expect(visible(html)).toContain('쓴 것 귀솔의 하루 업무(2일) · 원화 20,000원');
     expect(visible(html)).toContain(`바뀌지 않은 것 ${CULTURE_UNCHANGED_KO}`);
     expect(html).not.toContain('<button');expect(html).not.toContain('role="status"');expect(html).not.toContain('경험치');
@@ -151,12 +160,14 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     const s=runDays(dayTwo(cfg),cfg,3,{2:[start()]}).state;
     expect(visible(cultureResults(s,cfg,3))).toContain('쓴 것 귀솔의 2~3일 업무 · 원화 20,000원');
     const two=commitDay(dayTwo(),config,[start('CA03')]).state;
-    expect(cultureResults(two,config,2)).toContain('출처 시장 상인 윤서 · 지역 기록 안내자 하람(2명)');
+    expect(cultureResults(two,config,2)).toContain('출처 2명: 시장 상인 윤서 · 지역 기록 안내자 하람');
   });
   it('기록장은 최신·같은 날 역순 보고서와 사건마다 한 줄을 그린다',()=>{
     const s=runDays(createGame(config),config,3,{2:[start()],3:[start('CA03'),start('CA02','EMP02')]}).state;
     const html=cultureNotebook(s,config,true),book=cultureBook(s,config);
-    const titles=[...html.matchAll(/<article class="cul-report"[\s\S]*?<h3[^>]*>(.*?)<\/h3>/g)].map((m)=>m[1]);
+    // 기록장의 보고서 제목은 ‘회사 보고서’(h4) 아래 단계다.
+    const titles=[...html.matchAll(/<article class="cul-report"[\s\S]*?<h5[^>]*>(.*?)<\/h5>/g)].map((m)=>m[1]);
+    expect(html).not.toMatch(/<article class="cul-report"[^>]*><h3/);
     expect(titles).toEqual([config.culture!.activities[1]!.topic.titleKo,config.culture!.activities[2]!.topic.titleKo,config.culture!.activities[0]!.topic.titleKo]);
     expect(html).toContain('귀솔 — 시장 상인 윤서 · 시장과 포장 요구 탐방 (2일)');
     expect(html).toContain('귀솔 — 시장 상인 윤서 · 언어 교류와 주문 확인 (3일)');
@@ -164,14 +175,23 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     expect(html.match(/<li>귀솔 — 시장 상인 윤서 ·/g)).toHaveLength(2);
     for(const contact of config.culture!.contacts)expect(html).toContain(esc(contact.informationScopeKo));
     for(const e of book.employees.flatMap((employee)=>employee.experiences))expect(html).toContain(`(${e.verifiedDay}일)`);
+    const experiences=html.split('<h4>직원의 직접 경험 기록</h4>')[1]!.split('<h4>')[0]!;
+    expect(experiences).toContain('<li>귀솔 — 시장과 포장 요구 탐방 (2일)</li>');expect(experiences).not.toContain('직접 경험 기록이 없습니다.');
     expect(html).toContain('거래 신뢰는 계약을 약속대로 지켰는지에서만 나옵니다. 현지 활동은 이것을 바꾸지 않습니다.');
     expect(html).not.toContain('쓴 것');expect(html).not.toContain('바뀌지 않은 것');
   });
   it('기록이 없으면 빈 쌍·경험 없는 직원을 나열하지 않는다',()=>{
     const html=cultureNotebook(fresh(),config,true);
-    for(const text of ['회사 보고서가 없습니다.','직접 경험 기록이 없습니다.','함께한 활동이 없습니다.'])expect(html).toContain(text);
+    for(const text of ['회사 보고서가 없습니다.','직접 경험 기록이 없습니다.','함께한 활동이 없습니다.','만난 사람이 없습니다.'])expect(html).toContain(text);
     for(const name of ['귀솔','물보리','윤서','하람'])expect(html).not.toContain(name);
     expect(cultureNotebook(fresh(),config,false)).not.toContain('id="culture-book-body"');
+  });
+  it('만난 사람은 함께한 사건이 있는 인물만이다',()=>{
+    const html=cultureNotebook(done(),config,true);
+    const met=html.split('<h4>만난 사람</h4>')[1]!.split('<p class="book-trust">')[0]!;
+    expect(met).toContain('시장 상인 윤서');expect(met).not.toContain('하람');expect(met).not.toContain('만난 사람이 없습니다.');
+    const none=cultureNotebook(fresh(),config,true).split('<h4>만난 사람</h4>')[1]!;
+    expect(none).toContain('<p>만난 사람이 없습니다.</p>');
   });
   it('장소는 자료 순서의 정적 목록이고 영입 여부에 맞는 안내다',()=>{
     const html=cultureVenues(config);
@@ -184,7 +204,8 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
   it('알림 함수는 1건·2건·거절 동시 완료의 문장과 종류를 만든다',()=>{
     const s=done();expect(cultureToastText(s,config)).toEqual({kind:'info',action:'culture-result',text:'2일 현지 활동 기록: 한 상인의 포장·보관 요구 — 귀솔'});
     const multiple=commitDay(dayTwo(),config,[start(),start('CA02','EMP02')]).state;
-    expect(cultureToastText(multiple,config)).toEqual({kind:'info',action:'culture-result',text:'2일 현지 활동 기록 2건'});
+    const [first,second]=[config.culture!.activities[1]!,config.culture!.activities[0]!].map((a)=>a.topic.titleKo);
+    expect(cultureToastText(multiple,config)).toEqual({kind:'info',action:'culture-result',text:`2일 현지 활동 기록 2건: ${first} · ${second}`});
     const rejected=commitDay(dayTwo(),config,[start(),start('CA01','EMP02')]);
     expect(cultureToastText(rejected.state,config,rejected.results.filter((r)=>r.status==='REJECTED'))).toEqual({kind:'warn',action:'culture-result',text:`실행하지 못한 명령: ${rejected.results[1]!.reasonKo} · 2일 현지 활동 기록이 있습니다.`});
     expect(cultureToastText(fresh(),config)).toBeNull();
@@ -198,6 +219,7 @@ describe('TASK-0012 결과·기록장·장소·알림',()=>{
     const cfg=structuredClone(config);cfg.employees[0]!.nameKo='<귀솔>';cfg.culture!.contacts[0]!.nameKo='<시장 상인 윤서>';
     cfg.culture!.activities[0]!.titleKo='<시장 탐방>';
     const s=dayTwo(cfg),p=panel(s,cfg);expect(p).toContain('&lt;귀솔&gt;');expect(p).toContain('&lt;시장 상인 윤서&gt;');expect(p).toContain('&lt;시장 탐방&gt;');
+    for(const raw of ['<귀솔>','<시장 상인 윤서>','<시장 탐방>'])expect(p).not.toContain(raw);
     const completed=openDay(commitDay(s,cfg,[start()]).state,cfg).state;
     const html=panel(completed,cfg,[],'EMP02','CA01',true)+cultureTab(completed,cfg,initialUiState());
     expect(visible(html)).not.toMatch(/CA\d+|EMP\d+|VEN_|NPC_|CULTURE-|TASK\d+/);

@@ -51,8 +51,9 @@ export const CULTURE_KO = {
   employeeHint: (city: string) => `${city}에 있고 오늘 쉬는 직원만 고를 수 있습니다`,
   starts: (day: number) => `${day}일부터 근무`,
   preview: (employee: string, title: string) => `미리 보기 — ${employee} · ${title}`,
-  cost: (days: number, cost: string) => `이 활동에 쓰는 것: 직원 1명의 ${days === 1 ? '하루' : `${days}일`} 업무 · 원화 ${cost}`,
-  busy: (employee: string, from: number | null, until: number | null) => `${employee}: ${from === until ? `${from}일 하루` : `${from}~${until}일`} 동안 다른 업무를 맡을 수 없습니다.`,
+  costLabel: '이 활동에 쓰는 것',
+  cost: (days: number, cost: string) => `직원 1명의 ${days === 1 ? '하루' : `${days}일`} 업무 · 원화 ${cost}`,
+  busy: (employee: string, from: number | null, until: number | null) => `${employee}: ${from === until ? `오늘(${from}일) 하루` : `${from}~${until}일`} 동안 다른 업무를 맡을 수 없습니다.`,
   waiting: (subject: string, name: string, left: number, departure: number | null) => `⚠ 기다리는 업무: ${subject ? `${subject} ` : ''}${name} ${left}pt${departure === null ? '' : ` (${departure}일 출항편 예약됨)`} — 아직 아무에게도 배정하지 않았습니다.`,
   otherEmployees: (city: string, names: string[]) => `오늘 쉬는 다른 ${city} 직원: ${names.length ? names.join(' · ') : '없음. 이 활동을 하면 오늘 이 업무를 맡을 사람이 없습니다.'}`,
   finish: (day: number | null) => `끝나는 날: ${day}일`,
@@ -60,10 +61,10 @@ export const CULTURE_KO = {
   funds: (before: string, after: string, planned: boolean) => `활동에 쓸 수 있는 원화: 지금 ${before} → 활동 뒤 ${after}${planned ? ' (오늘 할 일 반영)' : ''}`,
   runway: (before: string, after: string) => `원화 급여 지급 가능일: 지금 ${before} → 활동하면 ${after}`,
   runwayEnd: (days: number) => `${days}일(캠페인 끝)까지`,
-  runwayUnpaid: '오늘 급여 일부 미지급', runwayDay: (day: number) => `${day}일까지`,
+  runwayUnpaid: '없음', runwayDay: (day: number) => `${day}일까지`,
   wages: '급여는 활동비와 별도로 평소대로 지급합니다.',
   unpaid: (day: number, already: boolean) => `⚠ ${already ? '지금도' : '이 활동비를 내면'} 오늘(${day}일) 급여 일부가 미지급으로 남습니다.`,
-  newRecords: '새로 생길 기록',
+  newRecords: (xp: boolean) => xp ? '새로 생길 기록과 경험치' : '새로 생길 기록',
   companyNew: (topic: string) => `회사 보고서(처음 생김) — ${topic}`,
   companyExists: '회사 보고서는 이미 있어 새로 생기지 않음',
   experience: (employee: string) => `${employee}의 직접 경험 기록`,
@@ -75,8 +76,8 @@ export const CULTURE_KO = {
   queue: '오늘 할 일에 넣기', queued: '현지 활동 예정',
   queueHint: '넣기만 해서는 시간이 흐르지 않습니다. 활동비는 ‘하루 진행’ 때 나갑니다.',
   unqueueHint: '빼려면 ‘오늘 할 일’에서 ‘빼기’를 누르세요.',
-  recordDate: (day: number | null, activity: string) => `${day}일 기록 · ${activity}`,
-  source: (names: string[]) => `출처 ${names.join(' · ')}(${names.length}명)`,
+  recordDate: (day: number | null, activity: string, newReport: boolean) => `${day}일 ${newReport ? '기록' : '활동'} · ${activity}`,
+  source: (names: string[]) => `출처 ${names.length}명: ${names.join(' · ')}`,
   unverified: '다른 출처로 아직 확인하지 않은 기록',
   reporter: (employee: string) => `기록한 직원 ${employee}`,
   existingReport: (day: number, employee: string) => `회사 보고서는 ${day}일에 이미 있습니다. 네 칸은 그대로입니다. · 이번 활동 직원 ${employee}`,
@@ -84,16 +85,17 @@ export const CULTURE_KO = {
   spentText: (employee: string, from: number | null, until: number | null, cost: string) => `${employee}의 ${from === until ? `하루 업무(${from}일)` : `${from}~${until}일 업무`} · 원화 ${cost}`,
   bookHint: '회사 보고서·직원의 직접 경험 기록·함께한 활동은 서로 다른 기록입니다.',
   reports: '회사 보고서', emptyReports: '회사 보고서가 없습니다. 현지 활동을 마치면 위의 네 칸으로 남습니다.',
-  experiences: '직원의 직접 경험 기록', experienceHint: '그 직원이 직접 듣고 본 기록입니다. 능력·처리량을 바꾸지 않습니다.',
+  experiences: '직원의 직접 경험 기록', experienceHint: '그 직원이 직접 듣고 본 기록입니다. 기록 자체는 능력·처리량을 바꾸지 않습니다.',
   emptyExperiences: '직접 경험 기록이 없습니다.',
   relations: '함께한 활동', relationHint: '점수가 아니라 누가 누구와 무엇을 함께했는지 적은 기록입니다.',
-  emptyRelations: '함께한 활동이 없습니다.', contacts: '만난 사람',
+  emptyRelations: '함께한 활동이 없습니다.', contacts: '만난 사람', emptyContacts: '만난 사람이 없습니다.',
   experienceEntry: (employee: string, activity: string, day: number) => `${employee} — ${activity} (${day}일)`,
   relationEntry: (employee: string, contact: string, activity: string, day: number) => `${employee} — ${contact} · ${activity} (${day}일)`,
   trust: '거래 신뢰는 계약을 약속대로 지켰는지에서만 나옵니다. 현지 활동은 이것을 바꾸지 않습니다.',
   resultButton: '결과 보기',
   toastOne: (day: number, topic: string, employee: string) => `${day}일 현지 활동 기록: ${topic} — ${employee}`,
-  toastMany: (day: number, count: number) => `${day}일 현지 활동 기록 ${count}건`,
+  toastRepeat: (day: number, topic: string, employee: string, reportDay: number) => `${day}일 현지 활동: ${topic} — ${employee} (회사 보고서는 ${reportDay}일 것 그대로)`,
+  toastMany: (day: number, topics: string[]) => `${day}일 현지 활동 기록 ${topics.length}건: ${topics.join(' · ')}`,
   toastRejected: (day: number, reasons: string[]) => `실행하지 못한 명령: ${reasons.join(' / ')} · ${day}일 현지 활동 기록이 있습니다.`,
 };
 
@@ -135,9 +137,10 @@ function recordCard(report: Report, activity: CultureActivityDef, config: Scenar
   const employee = employeeName(config, task ? task.assignedEmployeeId : report.reporterEmployeeId);
   const headingId = task ? `culture-result-h-${task.id}` : `culture-report-h-${report.taskId}`;
   const sources = CULTURE_KO.source(report.sourceContactIds.map((id) => contactName(config, id)));
-  return `<article class="${task ? 'cul-result' : 'cul-report'}" aria-labelledby="${esc(headingId)}"><h3 id="${esc(headingId)}" tabindex="-1">${esc(activity.topic.titleKo)}${task ? ` <small>${esc(CULTURE_KO.recordDate(task.completedDay, activity.titleKo))}</small>` : ''}</h3>
+  const level = task ? 'h3' : 'h5';
+  return `<article class="${task ? 'cul-result' : 'cul-report'}"${task ? ` id="culture-result-${esc(task.id)}"` : ''} aria-labelledby="${esc(headingId)}"><${level} id="${esc(headingId)}" tabindex="-1">${esc(activity.topic.titleKo)}${task ? ` <small>${esc(CULTURE_KO.recordDate(task.completedDay, activity.titleKo, report.taskId === task.id))}</small>` : ''}</${level}>
     ${task && report.taskId !== task.id ? `<p class="rec-meta">${esc(CULTURE_KO.existingReport(report.day, employee))}</p>` : ''}
-    <p class="rec-meta">${task ? '' : `${report.day}일 · `}${esc(CULTURE_KO.reporter(employeeName(config, report.reporterEmployeeId)))} · ${esc(sources)} · ${CULTURE_KO.unverified}</p>
+    <p class="rec-meta">${task ? '' : `${report.day}일 · `}${esc(CULTURE_KO.reporter(employeeName(config, report.reporterEmployeeId)))} · ${esc(sources)}${report.status === 'UNVERIFIED' ? ` · ${CULTURE_KO.unverified}` : ''}</p>
     ${recordFour(report)}${task ? `<p class="spent"><b>${CULTURE_KO.spent}</b> ${esc(CULTURE_KO.spentText(employee, task.startedDay, task.completedDay, formatMoney(activity.currency, activity.costMinor)))}</p><p class="unchanged"><b>${CULTURE_KO.unchangedResult}</b> ${CULTURE_UNCHANGED_KO}</p>` : ''}</article>`;
 }
 
@@ -164,8 +167,8 @@ export function cultureNotebook(state: GameState, config: ScenarioConfig, open: 
     <h4>${CULTURE_KO.reports}</h4>${reports.map((r) => recordCard(r, config.culture!.activities.find((a) => a.id === r.activityId)!, config)).join('') || `<p>${CULTURE_KO.emptyReports}</p>`}
     <h4>${CULTURE_KO.experiences}</h4><p class="small muted">${CULTURE_KO.experienceHint}</p>${experiences.length ? `<ul>${experiences.map((e) => `<li>${esc(CULTURE_KO.experienceEntry(employeeName(config, e.employeeId), activityTitle(e.activityId), e.verifiedDay))}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyExperiences}</p>`}
     <h4>${CULTURE_KO.relations}</h4><p class="small muted">${CULTURE_KO.relationHint}</p>${events.length ? `<ul>${events.map((e) => `<li>${esc(CULTURE_KO.relationEntry(employeeName(config, e.employeeId), contactName(config, e.contactId), activityTitle(e.activityId), e.day))}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyRelations}</p>`}
-    <h4>${CULTURE_KO.contacts}</h4>${met.size ? `<ul>${config.culture.contacts.filter((c) => met.has(c.id)).map((c) => `<li>${esc(c.nameKo)} — ${esc(c.informationScopeKo)}</li>`).join('')}</ul>` : ''}
-    <p>${CULTURE_KO.trust}</p></div>` : ''}</section>`;
+    <h4>${CULTURE_KO.contacts}</h4>${met.size ? `<ul>${config.culture.contacts.filter((c) => met.has(c.id)).map((c) => `<li>${esc(c.nameKo)} — ${esc(c.informationScopeKo)}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyContacts}</p>`}
+    <p class="book-trust">${CULTURE_KO.trust}</p></div>` : ''}</section>`;
 }
 
 function previewHtml(p: Preview, state: GameState, config: ScenarioConfig, activity: CultureActivityDef, employee: string, otherPending: boolean): string {
@@ -183,14 +186,14 @@ function previewHtml(p: Preview, state: GameState, config: ScenarioConfig, activ
     ...(p.newRecords.relationContactIds.length ? [CULTURE_KO.together(p.newRecords.relationContactIds.map((id) => `${employee} — ${contactName(config, id)}`))] : []),
     ...(p.newRecords.firstCompletionXp ? [CULTURE_KO.xp(p.newRecords.firstCompletionXp)] : [])];
   return `<div id="culture-preview">${title}
-    <p>${esc(CULTURE_KO.cost(p.durationDays, money(p.cost.minor)))}</p>
+    <p class="culture-cost"><b>${CULTURE_KO.costLabel}:</b> ${esc(CULTURE_KO.cost(p.durationDays, money(p.cost.minor)))}</p>
     <p>${esc(CULTURE_KO.busy(employee, p.busyFromDay, p.busyUntilDay))}</p>
     ${p.waitingTasks.length ? `${p.waitingTasks.map(({task, reservedDepartureDay}) => `<p class="reason">${esc(CULTURE_KO.waiting(taskSubjectKo(config, task) ?? '', taskName(task.kind), task.requiredWorkUnits - task.progressWorkUnits, reservedDepartureDay))}</p>`).join('')}<p>${esc(CULTURE_KO.otherEmployees(cityName(config, activity.cityId), p.otherFreeLocalEmployeeIds.map((id) => employeeName(config, id))))}</p>` : ''}
     ${beyondCampaign ? `<p class="reason">${esc(CULTURE_KO.campaignWarning(config.campaignDays))}</p>` : p.durationDays > 1 ? `<p>${esc(CULTURE_KO.finish(p.busyUntilDay))}</p>` : ''}
     <p>${esc(CULTURE_KO.funds(money(p.availableBeforeMinor), money(p.availableAfterMinor), otherPending))}</p>
     <p>${esc(CULTURE_KO.runway(runway(p.payrollRunwayBefore), runway(p.payrollRunwayAfter)))}<br>${CULTURE_KO.wages}</p>
     ${unpaid ? `<p class="reason">${esc(CULTURE_KO.unpaid(state.day, alreadyUnpaid))}</p>` : ''}
-    ${beyondCampaign ? '' : `<div class="culture-new"><p>${CULTURE_KO.newRecords}</p><ul>${records.map((text) => `<li>${esc(text)}</li>`).join('')}</ul></div>`}
+    ${beyondCampaign ? '' : `<div class="culture-new"><p>${CULTURE_KO.newRecords(p.newRecords.firstCompletionXp > 0)}</p><ul>${records.map((text) => `<li>${esc(text)}</li>`).join('')}</ul></div>`}
     ${unchanged}</div>`;
 }
 
@@ -216,7 +219,7 @@ export function culturePanel(state: GameState, view: GameState, pending: Command
     const label = !available ? CULTURE_KO.starts(e.availableFromDay) : `${crewStatusKo(task)}${task && !queued ? ` — ${taskSchedule(task, config)}` : ''}`;
     return `<button id="culture-emp-${esc(e.id)}" data-action="culture-emp" data-activity="${esc(activity.id)}" data-emp="${esc(e.id)}" aria-pressed="${ui.cultureEmployeeId === e.id}"${available && (!task || queued) ? '' : ' disabled'}>${esc(employeeName(config, e.id))} · ${esc(label)}</button>`;
   }).join('') : '';
-  const slot = activity && employee && p ? `<div id="culture-slot" data-action-slot="culture-${esc(activity.id)}-${esc(employee.id)}">${pair ? `${status(`culture-${activity.id}-${employee.id}`, CULTURE_KO.queued)}<p class="small muted">${CULTURE_KO.unqueueHint}</p>` : `<button class="primary" data-action="culture-queue" data-activity="${esc(activity.id)}" data-emp="${esc(employee.id)}"${p.allowed ? '' : ' disabled'}>${CULTURE_KO.queue}</button><p class="small muted">${CULTURE_KO.queueHint}</p>`}</div>` : '';
+  const slot = activity && employee && p ? `<div id="culture-slot" data-action-slot="culture-${esc(activity.id)}-${esc(employee.id)}">${pair ? `${status(`culture-${activity.id}-${employee.id}`, CULTURE_KO.queued)}<p class="small muted">${CULTURE_KO.unqueueHint}</p>` : `<button class="primary" data-action="culture-queue" data-activity="${esc(activity.id)}" data-emp="${esc(employee.id)}"${p.allowed ? '' : ' disabled'}>${CULTURE_KO.queue}</button>${p.allowed ? `<p class="small muted">${CULTURE_KO.queueHint}</p>` : ''}`}</div>` : '';
   return `<section class="panel local" id="local" aria-labelledby="local-h"><div class="local-head"><h2 id="local-h" tabindex="-1">${esc(CULTURE_KO.local(city))}</h2><button data-action="culture-close" data-where="head">${CULTURE_KO.close}</button></div><div id="local-body">
     ${cultureResults(state, config, ui.cultureShowFromDay ?? state.day - 1)}
     <p class="local-intro">${CULTURE_KO.intro}</p>${cultureVenues(config)}
@@ -230,9 +233,13 @@ export function culturePanel(state: GameState, view: GameState, pending: Command
 export function cultureToastText(state: GameState, config: ScenarioConfig, rejected: CommandResult[] = []) {
   const tasks = cultureResultTasks(state, config, state.day - 1).filter((t) => t.completedDay === state.day - 1);
   if (!tasks.length) return null;
-  const activity = config.culture!.activities.find((a) => a.id === tasks[0]!.subjectId)!;
+  const topic = (task: Task) => config.culture!.activities.find((a) => a.id === task.subjectId)?.topic.titleKo ?? '';
+  const first = tasks[0]!;
+  const report = cultureBook(state, config).reports.find((r) => r.activityId === first.subjectId);
+  const employee = employeeName(config, first.assignedEmployeeId);
   return { kind: rejected.length ? 'warn' as const : 'info' as const, action: 'culture-result' as const,
     text: rejected.length ? CULTURE_KO.toastRejected(state.day - 1, rejected.map((r) => r.reasonKo))
-      : tasks.length === 1 ? CULTURE_KO.toastOne(state.day - 1, activity.topic.titleKo, employeeName(config, tasks[0]!.assignedEmployeeId))
-        : CULTURE_KO.toastMany(state.day - 1, tasks.length) };
+      : tasks.length > 1 ? CULTURE_KO.toastMany(state.day - 1, tasks.map(topic))
+        : report && report.taskId !== first.id ? CULTURE_KO.toastRepeat(state.day - 1, topic(first), employee, report.day)
+          : CULTURE_KO.toastOne(state.day - 1, topic(first), employee) };
 }
