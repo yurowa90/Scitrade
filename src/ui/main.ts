@@ -174,12 +174,16 @@ function endDay() {
     const tradeHead = document.getElementById('trade-h');
     if (!cardHead && tradeHead && inBand(app.querySelector<HTMLElement>('.trade')?.getBoundingClientRect())) heads.push(tradeHead);
     // 결과 카드·직원 줄·기록장 보고서는 블록이 띠에 걸치면 기준이 된다. 네 칸을 읽는 중에 위에 새 결과가 생겨도 자리를 지킨다.
+    let reportInBand = false;
     for (const [blockId, headId] of cultureAnchorBlocks(state, config, ui)) {
       const head = document.getElementById(headId);
-      if (head && inBand(document.getElementById(blockId)?.getBoundingClientRect())) heads.push(head);
+      if (head && inBand(document.getElementById(blockId)?.getBoundingClientRect())) {
+        heads.push(head);
+        reportInBand ||= blockId.startsWith('culture-report-');
+      }
     }
-    // 기록장을 펼쳤으면 그 제목 대신 보고서 블록이 기준이다. 새 보고서는 제목 바로 아래(목록 맨 위)에 끼어든다.
-    for (const id of ['culture-h', ...(ui.cultureBookOpen ? [] : ['culture-book-h'])]) {
+    // 펼친 기록장의 보고서가 띠에 걸치면 기록장 제목 대신 그 보고서가 기준이다. 새 보고서는 제목 바로 아래(목록 맨 위)에 끼어든다.
+    for (const id of ['culture-h', ...(reportInBand ? [] : ['culture-book-h'])]) {
       const head = document.getElementById(id);
       const top = head?.getBoundingClientRect().top;
       if (head && top !== undefined && top >= barBottom && top < bandBottom) heads.push(head);

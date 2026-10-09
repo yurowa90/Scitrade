@@ -1085,6 +1085,15 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
   });
+  it('펼친 기록장에 띠에 걸친 보고서가 없으면 기록장 제목이 기준이다',async()=>{
+    const ui=await startUi();await queued(ui);ui.click({action:'culture-book'});
+    for(const [id,top,bottom] of [['culture-h',-450,-420],['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],['trade-h',700,730]] as const)
+      ui.bounds[id]={top,bottom,height:bottom-top};
+    ui.bounds.trade={top:690,bottom:3000,height:2310};
+    ui.afterRender(()=>{ui.bounds['culture-book-h']={top:500,bottom:530,height:30};});
+    ui.scrollBy.mockClear();ui.click({action:'end-day'});
+    expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,380);
+  });
   it('기록장 보고서를 읽는 중이면 그 보고서 자리를 지킨다',async()=>{
     const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
     for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
