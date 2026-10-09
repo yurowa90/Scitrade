@@ -261,6 +261,91 @@
       "sha256": "5a1b8dfbc8260cd577a89a1a6c3f9fa918bce02874ec4b4cf4e127bab600e24b"
     },
     {
+      "path": "docs/ai/design/layout-ux04-05/README.md",
+      "size_bytes": 39209,
+      "sha256": "8f7e71306b604622af585a154eab11eb038ac199eea19c1cf995791fa7e3b109"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/card-1366-A.png",
+      "size_bytes": 55109,
+      "sha256": "7697837e47f4dbe4974a43a5ba481a5e92a942ce45fae5be4f7e5cc91a42d9eb"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/card-1366-base.png",
+      "size_bytes": 52156,
+      "sha256": "4e749b7ce89477fd4097d36f377f3560050efd790af35d27ebf662dba508093e"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/day1-1366-C.png",
+      "size_bytes": 49090,
+      "sha256": "965513be83e46cd751e5bf009f39d3649891e0dda0ce49370a9e7a5790e43045"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/detail-1366-A.png",
+      "size_bytes": 45945,
+      "sha256": "b7ff609d8bdb9440daea5eb0f3d71c568aacef725061304b4c0ea5d23de463e5"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/detail-1366-C.png",
+      "size_bytes": 47642,
+      "sha256": "06d8b342e6206431f796e80ee52c6e2fb93444587730e384d6dc25b4ebdeaf70"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/detail-1366-base.png",
+      "size_bytes": 52027,
+      "sha256": "d69a0ec69866ec279e3b0f41c4cd825f94df936d6ddad1c956e37c89a1a85193"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/index.html",
+      "size_bytes": 40884,
+      "sha256": "36c2d1945ed67adcc3b2ccf639b7fdfc9852a3d052e811ea7c61168fffc32696"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/proto-A.patch",
+      "size_bytes": 15061,
+      "sha256": "4a0975b1ec519138d064f69253fd0b90661c38e2c6016b50a5c562187df0c0e5"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/proto-B.patch",
+      "size_bytes": 16343,
+      "sha256": "283df7e5872d785984dff90420ce9fb84f75af4f68f0b0d8b6206a09b1dd8edd"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/proto-C.patch",
+      "size_bytes": 14750,
+      "sha256": "0a183649181f882571424fcf532b90fb127d68308f53675346b282f59d02660e"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1-1000-B.png",
+      "size_bytes": 61700,
+      "sha256": "d4f5711e4ef608c82f330375e75857c0c86c64e267d43cc6f91862b4863ff118"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1-1366-A.png",
+      "size_bytes": 44623,
+      "sha256": "4897762e044bbf824d0b72cc77b40c69b9c70d43badf4fcaf50434de034e1881"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1-1366-B.png",
+      "size_bytes": 43386,
+      "sha256": "747d16a6734c86d81e93de18878e409e9e3f352698314f08a52aed14898f7af7"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1-1366-C.png",
+      "size_bytes": 41070,
+      "sha256": "66c0d274cf20403cb40206dc6b0e2c58d419aafcf8a11eab354878309f6ef52f"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1-1366-base.png",
+      "size_bytes": 44063,
+      "sha256": "fc8e301e6aa428fdea3890b3f8479270b7f1201fe1c901789ca292af701021db"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/t1chip-1366-A.png",
+      "size_bytes": 35657,
+      "sha256": "c8cf541e2595e5c8390e11ad29ce93ffb3e6555a9db98464e63ed838f976eee0"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
