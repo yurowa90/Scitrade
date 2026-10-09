@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { REPO_ROOT, loadProfiles, selectProfiles, validateScenario, loadScenario, resolveDistPath, contentType, fontCacheKey, checkExpectations, isInside } from './lib.mjs';
-const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position'];
+const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position', 'report-contract-link', 'schedule-toggle', 'crew-facet', 'campaign-end'];
 const scenarioFile = name => path.join(REPO_ROOT, 'tools/browser/scenarios', `${name}.json`);
 const profiles = loadProfiles().profiles;
 

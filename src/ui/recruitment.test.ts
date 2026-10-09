@@ -7,7 +7,7 @@ import { createGame, openDay, planCommands, planState } from '../engine/engine';
 import { employedDefs } from '../engine/employees';
 import { runDays } from '../engine/testkit';
 import type { Command, GameState } from '../engine/types';
-import { batchUnlocked, crewEntryCard, candidateCard, crewRow, candidateLabel, crewEntries, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
+import { batchUnlocked, crewEntryCard, candidateCard, crewRow, candidateLabel, crewEntries, crewFacetOptions, interviewBlock, interviewPreview, recruitmentPanel, taskSchedule } from './recruitment';
 import { crewCard } from './card';
 import { crewNoteKo, taskSchedule as engineTaskSchedule } from './crew-status';
 
@@ -384,5 +384,31 @@ describe('TASK-0018 고용 뒤 원화 미리 보기',()=>{
     const result=planState(s,cfg,[{id:'고용',type:'HIRE_CANDIDATE',candidateId:hired.id}]).results[0]!;
     expect(result.status).toBe('REJECTED');
     expect(interviewBlock(s,cfg,hired,result)).not.toContain('hire-after');
+  });
+});
+
+
+describe('공개된 동료의 직무·속성 필터', () => {
+  it('crewFacetOptions는 설정 순서로 공개 값만 중복 없이 반환한다', () => {
+    const s = initial(), entries = crewEntries(s, config, 'all');
+    const options = crewFacetOptions(s, config);
+    expect(options).toEqual({ roles: [...new Set(entries.map(({ def }) => def.role))],
+      attributes: [...new Set(entries.map(({ def }) => def.character.attribute ?? 'none'))] });
+    const hiddenOnly = config.employees.filter((e) => !entries.some(({ def }) => def.id === e.id))
+      .map((e) => e.character.attribute ?? 'none').filter((a) => !entries.some(({ def }) => (def.character.attribute ?? 'none') === a));
+    for (const a of hiddenOnly) expect(options.attributes).not.toContain(a);
+  });
+  it('상태·직무·속성을 함께 걸며 기존 세 인수 호출을 보존한다', () => {
+    for (const s of [initial(), ready()]) for (const filter of ['all', 'free', 'busy', 'candidate'] as const) {
+      const entries = crewEntries(s, config, filter), options = crewFacetOptions(s, config);
+      expect(entries).toEqual(crewEntries(s, config, filter, {}));
+      for (const role of options.roles) {
+        expect(crewEntries(s, config, filter, { role })).toEqual(entries.filter(({ def }) => def.role === role));
+        for (const attribute of options.attributes) expect(crewEntries(s, config, filter, { role, attribute }))
+          .toEqual(entries.filter(({ def }) => def.role === role && (def.character.attribute ?? 'none') === attribute));
+      }
+      for (const attribute of options.attributes) expect(crewEntries(s, config, filter, { attribute }))
+        .toEqual(entries.filter(({ def }) => (def.character.attribute ?? 'none') === attribute));
+    }
   });
 });

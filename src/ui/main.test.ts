@@ -1,9 +1,21 @@
+import { payrollRunwayDay } from '../engine/previews';
+import { payrollRunwayKo } from './growth';
+import { listSailings, routeBetween, unitKo } from '../engine/catalog';
+import { workloadSummary } from '../engine/capacity';
+import { isAvailableFromToday } from '../engine/employees';
+import { formatMoney } from '../engine/money';
+import { campaignSummary, companyReport, onTimeDeliveryRate, tradePairs, upcomingPayments } from '../engine/reports';
+import { fundsPosition } from '../engine/reservations';
+import type { Command, GameState } from '../engine/types';
+import { attributeKo, roleKo, taskName } from './card';
+import { crewEntries, crewFacetOptions } from './recruitment';
+import { bottlenecks, cargoListKo, heldCargoByGood, rateKo, settlementRows, upcomingSummary, workloadLinesKo } from './reports';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import legacySave from '../engine/fixtures/save-v4-m2.json';
 import { assumptionNotes, loadScenario } from '../content/scenario';
 import { createGame, openDay, planState } from '../engine/engine';
 import { serializeSave } from '../engine/save';
-import { runDays, standardDayOneCommands } from '../engine/testkit';
+import { acceptAllFeasible, runToCampaignEnd, runDays, standardDayOneCommands } from '../engine/testkit';
 import { esc } from './html';
 import { startUi } from './main-testkit';
 
@@ -1369,5 +1381,321 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(ui.app.innerHTML).toMatch(header);
     ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');expect(ui.app.innerHTML).toMatch(header);
     expect(ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]).not.toContain('빌드');
+  });
+});
+
+describe('TASK-0023 경영 보고·일정·결산·필터', () => {
+  const initial = (cfg = config) => openDay(createGame(cfg), cfg).state;
+  const panel = (html: string, name: string) => html.split(`<section class="panel ${name}"`)[1]!.split('</section>')[0]!;
+  const book = (html: string, caption: string) => html.split(`<caption>${caption}</caption>`)[1]!.split('</table>')[0]!;
+  const linkHtml = (id: string) => `<button class="link" data-action="goto-contract" data-contract="${esc(id)}" aria-label="${esc(id)} 계약으로 가기">${esc(id)}</button>`;
+  const late = (cfg = config) => {
+    const accept: Command = { id: 'LATE', type: 'ACCEPT_TRADE', ...tradePairs(cfg)[0]! };
+    const c = planState(initial(cfg), cfg, [accept]).state.contracts[0]!;
+    const route = routeBetween(cfg, c.originCityId, c.destinationCityId)!;
+    const sailing = listSailings(cfg, route.id, initial(cfg).day + 1).find((s) => s.scheduledArrivalDay + cfg.terms.customsDays > c.deliveryDeadlineDay)!;
+    const commands: Command[] = [{ ...accept, plan: { employeeId: cfg.employees[0]!.id, sailingId: sailing.id } }];
+    const end = runToCampaignEnd(initial(cfg), cfg, { 1: commands }).state;
+    return { commands, c, end, receipt: end.contracts[0]!.completedDay! };
+  };
+  const savedAt = (day: number, commands: Command[], cfg = config) => openDay(runDays(initial(cfg), cfg, day - 1, { 1: commands }).state, cfg).state;
+  const poor = () => {
+    const cfg = structuredClone(config);
+    cfg.startingCash[cfg.payrollCurrency] = cfg.employees.filter((e) => isAvailableFromToday(initial(cfg), e.id)).reduce((a, e) => a + e.salaryPerDayMinor, 0) - 1;
+    return { cfg, s: savedAt(initial(cfg).day + 2, [], cfg) };
+  };
+  const restore = async (ui: Awaited<ReturnType<typeof startUi>>, how: string, s: GameState = initial()) => {
+    if (how === 'import') await ui.importText(serializeSave(s));
+    if (how === 'load') { vi.stubGlobal('localStorage', { getItem: () => serializeSave(s) }); ui.click({ action: 'load' }); }
+    if (how === 'restart') ui.click({ action: 'restart' });
+    if (how === 'scenario') ui.change({ action: 'scenario' }, config.id);
+  };
+  const assertDue = (html: string, s: GameState, cfg = config) => {
+    const paymentRows = upcomingPayments(s, cfg);
+    const summary = upcomingSummary(paymentRows, cfg);
+    const table = html.match(/<table class="money due-table">[\s\S]*?<\/table>/)![0];
+    expect([...table.matchAll(/<th scope="col">(.*?)<\/th>/g)].map((m) => m[1])).toEqual(['항목', ...summary.currencies]);
+    const values = [...table.matchAll(/<td>(.*?)<\/td>/g)].map((m) => m[1]);
+    expect(values).toEqual(summary.lines.flatMap((l) => summary.currencies.map((currency) => {
+      const matching = paymentRows.filter((r) => r.kind === l.kind && r.currency === currency);
+      return matching.length ? esc(formatMoney(currency, matching.reduce((a, r) => a + r.amountMinor, 0))) : '—';
+    })));
+    values.forEach((value, i) => expect(value).toMatch(i % summary.currencies.length === 0 ? /^(?:—|.*USD)$/ : /^(?:—|.*원)$/));
+  };
+  it('보고 머리·미지급금과 확정 기준 문구 수를 유지한다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' });
+    expect(panel(ui.app.innerHTML, 'report')).toContain('<h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>');
+    const rows = [...book(ui.app.innerHTML, '거래 장부 · USD').matchAll(/<tr[^>]*><th>(.*?)<\/th><td>(.*?)<\/td><\/tr>/g)];
+    const index = rows.findIndex((r) => r[1] === '자산 합계');
+    expect(rows[index + 1]!.slice(1, 3)).toEqual(['미지급금', formatMoney(config.tradeCurrency, companyReport(initial(), config).trade.accountsPayable)]);
+    expect(ui.app.innerHTML.match(/금액은 확정 기준/g)).toHaveLength(2);
+  });
+  it('정시 인도율은 미인도와 늦은 종결 계약을 분리하고 종결 링크를 만들지 않는다', async () => {
+    const ui = await startUi();
+    expect(panel(ui.app.innerHTML, 'report')).toContain('<p>정시 인도율: 아직 인도한 계약이 없습니다.</p>');
+    const l = late(), past = savedAt(l.c.deliveryDeadlineDay + 1, l.commands);
+    await ui.importText(serializeSave(past));
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>납기가 지났는데 아직 인도하지 못한 계약: ${linkHtml(l.c.id)} (인도하면 정시 인도율에 들어갑니다)</p>`);
+    const completed = savedAt(l.receipt + 1, l.commands); await ui.importText(serializeSave(completed));
+    const rate = onTimeDeliveryRate(completed);
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>정시 인도율 ${rateKo(rate.rateBasisPoints!)} — 인도 ${rate.delivered}건 중 납기 안 ${rate.onTime}건</p>`);
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>납기를 넘겨 인도한 계약: ${esc(l.c.id)}</p>`);
+    expect(ui.app.innerHTML).not.toContain(`data-contract="${l.c.id}"`);
+  });
+  it('앞으로 낼 돈은 통화별 표와 미지급 묶음 줄로 보인다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const s = savedAt(initial().day + 1, [{ id: 'A', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }]);
+    assertDue(panel(ui.app.innerHTML, 'report'), s);
+    const p = poor(); expect(p.s.obligations.length).toBeGreaterThanOrEqual(2);
+    await ui.importText(serializeSave(p.s));
+    const list = panel(ui.app.innerHTML, 'report').split('<ul class="due-list">')[1]!.split('</ul>')[0]!;
+    expect(list.match(/<li>/g)).toHaveLength(1);
+    const unpaid = p.s.obligations.filter((o) => o.paidDay === null), first = Math.min(...unpaid.map((o) => o.incurredDay));
+    expect(list).toBe(`<li><span>${first}일부터</span>밀린 지급 ${unpaid.length}건 (현금이 들어오면 먼저 갚음) <b>${formatMoney(config.payrollCurrency, -fundsPosition(p.s, config, config.payrollCurrency).unpaidObligations)}</b></li>`);
+  });
+  it('업무 부하·막힌 곳의 원인 문장과 사람 외 막힘 건수를 보인다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const s = savedAt(initial().day + 1, [{ id: 'A', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }]);
+    const html = panel(ui.app.innerHTML, 'report'), groups = bottlenecks(s, config);
+    for (const line of workloadLinesKo(workloadSummary(s, config), config)) expect(html).toContain(`<li>${esc(line)}</li>`);
+    for (const g of groups) for (const i of g.items) expect(html).toContain(`${i.contractId ? linkHtml(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`);
+    const n = groups.filter((g) => g.kind !== '사람').reduce((a, g) => a + g.items.length, 0);
+    expect(html).toContain(`<p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${n}건은 풀리지 않습니다.</p>`);
+  });
+  it('계약 링크는 취소 대기 사본에서 사라지고 초점·500ms 막기를 지킨다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const button = ui.rendered({ action: 'goto-contract' }), id = button.dataset.contract!;
+    ui.scrollIds.length = 0; ui.focusIds.length = 0; ui.focus.mockClear();
+    const count = ui.announcements.length;
+    ui.fireDoc('keydown', { key: 'Tab' });
+    ui.fireDoc('focusin', { target: button });
+    ui.fireDoc('keydown', { key: 'Enter' });
+    ui.click({ action: 'goto-contract', contract: id });
+    expect(ui.scrollIds).toEqual([`contract-h-${id}`]); expect(ui.focusIds).toEqual([`contract-h-${id}`]);
+    expect(ui.focus).toHaveBeenCalledExactlyOnceWith({ preventScroll: true });
+    expect(ui.announcements).toHaveLength(count); expect(ui.win.scrollTo).not.toHaveBeenCalled();
+    ui.clickNow({ action: 'cancel', contract: id });
+    expect(ui.app.innerHTML).toContain(`id="contract-h-${id}"`);
+    ui.click({ action: 'cancel', contract: id });
+    expect(ui.app.innerHTML).not.toContain(`id="contract-h-${id}"`);
+    expect(panel(ui.app.innerHTML, 'report')).not.toContain(`data-contract="${id}"`);
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`${esc(id)} `);
+    vi.advanceTimersByTime(501); ui.clickTarget(button);
+    expect(ui.scrollIds).toEqual([`contract-h-${id}`]);
+  });
+  it('품목별 화물 화면은 개·상자를 합치지 않고 두 곳에 같은 목록을 쓴다', async () => {
+    const ui = await startUi();
+    const offers = config.offers.filter((o) => o.kind === 'forwarding');
+    for (const o of offers) ui.click({ action: 'accept-fwd', offer: o.id });
+    ui.click({ action: 'end-day' });
+    const cmds: Command[] = offers.map((o, i) => ({ id: `FWD-${i}`, type: 'ACCEPT_FORWARDING', offerId: o.id }));
+    const s = savedAt(initial().day + 1, cmds);
+    const text = config.goods.flatMap((g) => {
+      const quantity = s.cargoLots.filter((lot) => lot.owner === 'CUSTOMER' && lot.goodId === g.id
+        && lot.status !== 'DELIVERED' && lot.status !== 'RETURNED_TO_OWNER').reduce((a, lot) => a + lot.quantity, 0);
+      return quantity ? [`${g.nameKo} ${quantity.toLocaleString('ko-KR')}${unitKo(g)}`] : [];
+    }).join(' · ');
+    expect(cargoListKo(config, heldCargoByGood(s, config, 'CUSTOMER'))).toBe(text);
+    const html = panel(ui.app.innerHTML, 'report');
+    expect(html.split(`맡은 고객 화물 ${esc(text)}`).length - 1).toBe(2);
+    expect(html).toContain(`<li>${esc(`맡은 고객 화물 ${text}는 고객 자산이라 위 표 어디에도 없습니다. 우리 몫은 서비스 대금뿐입니다.`)}</li>`);
+    expect(html).not.toContain(`맡은 고객 화물 ${companyReport(s, config).customerCargoUnits}개`);
+  });
+  it('결산은 끝난 저장에서만 보이며 통화별 표·계약·미지급·종료 표시가 일치한다', async () => {
+    const ui = await startUi(); expect(ui.app.innerHTML).not.toContain('id="settlement-h"');
+    const s = runToCampaignEnd(initial(), config, { 1: acceptAllFeasible(initial(), config) }).state;
+    await ui.importText(serializeSave(s));
+    const sum = campaignSummary(s, config), report = panel(ui.app.innerHTML, 'report');
+    const settlement = report.split('<div class="settlement">')[1]!.split('\n    <div class="books">')[0]!;
+    expect(settlement.match(/<table class="money">/g)).toHaveLength(sum.byCurrency.length);
+    expect(settlement.match(/<caption>결산 · /g)).toHaveLength(sum.byCurrency.length);
+    for (const st of sum.byCurrency) {
+      const table = book(settlement, `결산 · ${st.currency}`), rows = settlementRows(st, config);
+      expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m) => m[1])).toEqual(rows.map((r) => esc(r[0])));
+      expect([...table.matchAll(/<td>(.*?)<\/td>/g)].map((m) => m[1])).toEqual(rows.map((r) => formatMoney(st.currency, r[1])));
+      const unpaid = sum.unpaidObligations.filter((o) => o.currency === st.currency);
+      if (unpaid.length) {
+        const first = Math.min(...unpaid.map((o) => o.incurredDay)), last = Math.max(...unpaid.map((o) => o.incurredDay));
+        expect(settlement).toContain(`<p>남은 미지급 ${st.currency}: ${formatMoney(st.currency, unpaid.reduce((a, o) => a + o.amountMinor, 0))} — ${unpaid.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
+      }
+    }
+    const c = sum.contracts;
+    expect(settlement).toContain(`<p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>`);
+    expect(settlement).toContain('<p>받지 못한 대금: 없음</p>');
+    expect(settlement).toContain(`<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary>`);
+    expect(ui.app.innerHTML).not.toContain(`${config.campaignDays + 1}일`);
+    expect(panel(ui.app.innerHTML, 'queue')).toContain(`<small>${config.campaignDays}일 · 캠페인 종료</small>`);
+    expect(ui.app.innerHTML).not.toContain('id="schedule-toggle"');
+    expect(ui.app.innerHTML).toContain('data-target="settlement-h">결산 보기</button>');
+    expect(ui.app.innerHTML).toContain(`${config.titleKo} ${config.campaignDays}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.`);
+    for (const text of ['<h4>업무 부하</h4>', '<h4>막힌 곳</h4>', '지급 가능일']) expect(report).not.toContain(text);
+    expect(report).toContain('<caption>남은 미지급 (캠페인 종료)</caption>');
+    ui.scrollIds.length = 0; ui.focusIds.length = 0; ui.click({ action: 'skip-to', target: 'settlement-h' });
+    expect(ui.scrollIds).toEqual(['settlement-h']); expect(ui.focusIds).toEqual(['settlement-h']);
+    vi.stubGlobal('localStorage', { setItem: vi.fn() }); ui.click({ action: 'save' });
+    expect(ui.app.innerHTML).toContain(`${config.campaignDays}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.`);
+  });
+  it('결산 하루 진행 종료는 읽던 자리 복원 없이 제목으로 이동하고 한 번 알린다', async () => {
+    const ui = await startUi(), cmds: Command[] = [{ id: 'UNASSIGNED', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }];
+    const s = savedAt(config.campaignDays, cmds); await ui.importText(serializeSave(s));
+    const head = `contract-h-${s.contracts[0]!.id}`;
+    ui.bounds[head] = { top: 180, bottom: 220, height: 40 };
+    ui.afterRender(() => { ui.bounds[head] = { top: 380, bottom: 420, height: 40 }; });
+    ui.scrollIds.length = 0; ui.focusIds.length = 0; ui.scrollBy.mockClear();
+    const count = ui.announcements.length; ui.click({ action: 'end-day' });
+    expect(ui.scrollIds).toEqual(['settlement-h']); expect(ui.doc.activeElement.id).toBe('settlement-h');
+    expect(ui.scrollBy).not.toHaveBeenCalled();
+    const text = `${config.campaignDays}일 캠페인이 끝났습니다. 경영 보고의 ${config.campaignDays}일 결산에서 통화별 결과를 확인하세요.`;
+    expect(ui.app.innerHTML).toContain(`<div class="flash-toast flash info">${text}</div>`);
+    expect(ui.announcements.slice(count)).toEqual([text]);
+    expect(ui.app.innerHTML).not.toContain(`${config.campaignDays + 1}일`);
+  });
+  it('일정 화면은 접힘 기본값·500ms 막기·다시 그리기·알림을 지킨다', async () => {
+    const ui = await startUi(), count = ui.announcements.length;
+    expect(ui.app.innerHTML).toContain('aria-expanded="false" aria-controls="schedule-body"');
+    expect(ui.app.innerHTML).not.toContain('id="schedule-body"');
+    const header = ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0];
+    ui.click({ action: 'schedule-toggle' }); ui.clickNow({ action: 'schedule-toggle' });
+    expect(ui.app.innerHTML).toContain('id="schedule-body"');
+    ui.click({ action: 'map-mode', mode: 'world' }); ui.click({ action: 'crew-filter', filter: 'all' });
+    expect(ui.app.innerHTML).toContain('id="schedule-body"');
+    expect(ui.announcements).toHaveLength(count);
+    ui.click({ action: 'schedule-toggle' }); expect(ui.app.innerHTML).not.toContain('id="schedule-body"');
+    expect(ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0]).toBe(header);
+  });
+  it.each(['load', 'import', 'restart', 'scenario'])('일정 화면 초기화 (%s)', async (how) => {
+    const ui = await startUi(); ui.click({ action: 'end-day' }); ui.click({ action: 'schedule-toggle' });
+    expect(ui.app.innerHTML).toContain('id="schedule-body"');
+    await restore(ui, how);
+    expect(ui.app.innerHTML).toContain('aria-expanded="false" aria-controls="schedule-body"');
+    ui.click({ action: 'schedule-toggle' });
+    expect(panel(ui.app.innerHTML, 'queue')).not.toContain('>새 일정<');
+    expect(panel(ui.app.innerHTML, 'queue')).not.toContain('날짜 바뀜');
+  });
+  it('일정 화면 수락·배정·예약 대기 계약도 링크와 담당 업무 완료 글을 보인다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' });
+    const id = ui.rendered({ action: 'cancel' }).dataset.contract!;
+    const assignment = ui.rendered({ action: 'assign' }).dataset;
+    ui.click({ action: 'assign' }); ui.click({ action: 'book' }); ui.click({ action: 'schedule-toggle' });
+    const html = panel(ui.app.innerHTML, 'queue');
+    const name = config.employees.find((e) => e.id === assignment.emp)!.nameKo;
+    expect(html).toContain(`${linkHtml(id)} ${taskName('EXPORT_PREP')} 완료 — ${esc(name)}`);
+  });
+  it('일정 화면 날짜 바뀜은 하루 진행 직전 사본과 비교한다', async () => {
+    const cfg = structuredClone(config), start = initial(cfg), commands = acceptAllFeasible(start, cfg);
+    const end = runToCampaignEnd(start, cfg, { 1: commands }).state;
+    const sh = end.shipments[0]!, c = end.contracts.find((c) => c.id === sh.contractId)!, day = sh.arrivalDay!;
+    cfg.portRestrictions = [{ eventInstanceId: 'SYNTH-WAIT', templateId: 'SYNTH', cityId: c.destinationCityId,
+      announceDay: 1, startDay: day, endDay: day, forecastKo: '시험용 가상 공지' }];
+    const ui = await startUi(cfg); await ui.importText(serializeSave(savedAt(day, commands, cfg)));
+    ui.click({ action: 'end-day' }); ui.click({ action: 'schedule-toggle' });
+    expect(panel(ui.app.innerHTML, 'queue')).toContain(`<span class="tag">날짜 바뀜 (원래 ${day}일)</span>`);
+  });
+  it('일정 화면 칸 구조와 보고의 칸 구조는 안쪽 section을 만들지 않는다', async () => {
+    const ui = await startUi(); ui.click({ action: 'schedule-toggle' });
+    const queue = ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('<section class="panel world"')[0]!;
+    expect(queue.match(/<section/g) ?? []).toHaveLength(0); expect(queue.match(/<\/section>/g)).toHaveLength(1);
+    const cut = panel(ui.app.innerHTML, 'queue'); expect(cut).toContain('id="schedule-toggle"');
+    expect(cut).toContain('‘예상’은 지금 처리량과 운항표로 계산한 날입니다. 사건이 생기면 바뀔 수 있습니다.');
+    for (const s of [savedAt(initial().day + 1, []), runToCampaignEnd(initial(), config).state]) {
+      await ui.importText(serializeSave(s));
+      const report = ui.app.innerHTML.split('<section class="panel report"')[1]!.split('<section class="panel log"')[0]!;
+      expect(report.match(/<section/g) ?? []).toHaveLength(0); expect(report.match(/<\/section>/g)).toHaveLength(1);
+    }
+  });
+  const crewIds = (html: string, tag: 'article' | 'tr') => [...html.matchAll(new RegExp(`<${tag}[^>]*data-action="select-card"[^>]*data-emp="([^"]+)"`, 'g'))].map((m) => m[1]!);
+  it('동료 필터는 공개 선택지만 쓰고 카드·운영표를 함께 거르며 알림·막대를 유지한다', async () => {
+    const ui = await startUi(), entries = crewEntries(initial(), config, 'all');
+    const options = { roles: [...new Set(entries.map(({ def }) => def.role))],
+      attributes: [...new Set(entries.map(({ def }) => def.character.attribute ?? 'none'))] };
+    expect(crewFacetOptions(initial(), config)).toEqual(options);
+    const html = ui.app.innerHTML, facets = html.split('<div class="crew-facets"')[1]!.split('</div>')[0]!;
+    expect(html.indexOf('class="crew-facets"')).toBeGreaterThan(html.indexOf('class="seg crew-filter"'));
+    expect(html.indexOf('class="crew-facets"')).toBeLessThan(html.indexOf('class="crew-cards"'));
+    for (const role of options.roles) expect(facets).toContain(`<option value="${role}" >${roleKo(role)}</option>`);
+    for (const a of options.attributes) expect(facets).toContain(`<option value="${a}" >${attributeKo(a)}</option>`);
+    for (const e of config.employees.filter((e) => !entries.some(({ def }) => def.id === e.id))) {
+      const attr = e.character.attribute ?? 'none';
+      if (!options.attributes.includes(attr)) expect(facets).not.toContain(`value="${attr}"`);
+    }
+    const count = ui.announcements.length, header = html.match(/<header class="topbar">[\s\S]*?<\/header>/)![0];
+    const role = config.employees[0]!.role, attr = config.employees[0]!.character.attribute!;
+    ui.doc.activeElement = ui.rendered({ action: 'crew-role' });
+    ui.change({ action: 'crew-role' }, role); expect(ui.doc.activeElement.id).toBe('crew-role');
+    expect(crewIds(ui.app.innerHTML, 'article')).toEqual(entries.filter(({ def }) => def.role === role).map(({ def }) => def.id));
+    expect(crewIds(ui.app.innerHTML, 'tr')).toEqual(crewIds(ui.app.innerHTML, 'article'));
+    ui.change({ action: 'crew-role' }, ''); ui.change({ action: 'crew-attr' }, attr);
+    expect(crewIds(ui.app.innerHTML, 'article')).toEqual(entries.filter(({ def }) => def.character.attribute === attr).map(({ def }) => def.id));
+    expect(crewIds(ui.app.innerHTML, 'tr')).toEqual(crewIds(ui.app.innerHTML, 'article'));
+    const other = options.roles.find((r) => r !== role)!; ui.change({ action: 'crew-role' }, other);
+    expect(ui.app.innerHTML).toContain('이 조건의 동료가 없습니다.');
+    expect(ui.announcements).toHaveLength(count);
+    expect(ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0]).toBe(header);
+  });
+  it.each(['load', 'import', 'restart', 'scenario'])('동료 필터 초기화 (%s)', async (how) => {
+    const ui = await startUi(); ui.change({ action: 'crew-role' }, config.employees[0]!.role);
+    ui.change({ action: 'crew-attr' }, config.employees[0]!.character.attribute!); await restore(ui, how);
+    for (const action of ['crew-role', 'crew-attr']) expect(ui.app.innerHTML.split(`data-action="${action}"`)[1]!.split('</select>')[0]).toContain('<option value="" selected>전체</option>');
+    expect(crewIds(ui.app.innerHTML, 'article')).toEqual(crewEntries(initial(), config, 'all').map(({ def }) => def.id));
+    expect(crewIds(ui.app.innerHTML, 'tr')).toEqual(crewIds(ui.app.innerHTML, 'article'));
+  });
+  it('동료 필터 M1은 선택지가 하나라 필터를 그리지 않는다', async () => {
+    const ui = await startUi(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
+    expect(ui.app.innerHTML).not.toContain('class="crew-facets"');
+  });
+  it('구조·키보드 회귀는 새 조작을 기존 영역 안에 두고 양수 tabindex를 쓰지 않는다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const html = ui.app.innerHTML;
+    for (const [marker, before, after] of [
+      ['class="crew-facets"', '<aside class="panel crew"', '<section class="panel resources"'],
+      ['id="schedule-toggle"', '<section class="panel queue"', '<section class="panel world"'],
+      ['data-action="goto-contract"', '<section class="panel report"', '<section class="panel log"'],
+    ]) {
+      const from = html.indexOf(before!), to = html.indexOf(after!);
+      expect(html.indexOf(marker!, from)).toBeGreaterThan(from); expect(html.indexOf(marker!, from)).toBeLessThan(to);
+    }
+    expect(html).not.toMatch(/tabindex="[1-9]/);
+  });
+  it('이스케이프는 일정·보고 계약 링크·필터 이름에 위험 글자를 남기지 않는다', async () => {
+    const cfg = structuredClone(config), bad = '<img src=x onerror=alert(1)>';
+    cfg.employees.forEach((e) => { e.nameKo = bad; e.role = bad + e.role; });
+    cfg.cities.forEach((c) => { c.nameKo = bad; }); cfg.goods.forEach((g) => { g.nameKo = bad; });
+    const s = planState(initial(cfg), cfg, [{ id: 'ESCAPE', type: 'ACCEPT_TRADE', ...tradePairs(cfg)[0]! }]).state;
+    const c = s.contracts[0]!, old = c.id; c.id = bad;
+    s.cargoLots.forEach((lot) => { if (lot.contractId === old) lot.contractId = c.id; });
+    s.tasks.forEach((t) => { if (t.contractId === old) t.contractId = c.id; });
+    const assigned = planState(s, cfg, [{ id: 'ASSIGN', type: 'ASSIGN_TASK', taskId: c.prepTaskId, employeeId: cfg.employees[0]!.id }]).state;
+    const ui = await startUi(cfg); await ui.importText(serializeSave(assigned)); ui.click({ action: 'schedule-toggle' });
+    expect(ui.app.innerHTML).not.toContain(bad); expect(ui.app.innerHTML).toContain(esc(bad));
+    expect(panel(ui.app.innerHTML, 'report')).toContain(linkHtml(assigned.contracts[0]!.id));
+    expect(panel(ui.app.innerHTML, 'queue')).toContain(esc(bad));
+    expect(ui.app.innerHTML.split('<div class="crew-facets"')[1]!.split('</div>')[0]).toContain(esc(bad));
+  });
+});
+
+describe('경영 보고 문장과 결산 잔여 항목', () => {
+  it('흑자 거래의 달러 이익과 원화 급여 자금을 전체 문장으로 구분한다', async () => {
+    const start = openDay(createGame(config), config).state, commands = acceptAllFeasible(start, config);
+    const end = runToCampaignEnd(start, config, { [start.day]: commands }).state;
+    const day = Math.max(...end.contracts.map((c) => c.completedDay!)) + 1;
+    const s = openDay(runDays(start, config, day - 1, { [start.day]: commands }).state, config).state;
+    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const r = companyReport(s, config), runway = payrollRunwayKo(payrollRunwayDay(s, config), s.day, config.campaignDays);
+    expect(r.trade.profit).toBeGreaterThan(0);
+    expect(ui.app.innerHTML).toContain(`<li>거래 손익 ${formatMoney(config.tradeCurrency, r.trade.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${formatMoney(config.payrollCurrency, r.payroll.cash)}에서만 나갑니다(원화 급여 지급 가능일: ${runway}). 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.</li>`);
+  });
+  it('끝난 결산의 미수 대금과 없는 미지급은 전체 문장으로 보인다', async () => {
+    const cfg = structuredClone(config);
+    cfg.terms.paymentDueDay = cfg.campaignDays + 1;
+    cfg.startingCash[cfg.payrollCurrency] = cfg.employees.reduce((a, e) => a + e.salaryPerDayMinor, 0) * cfg.campaignDays;
+    const start = openDay(createGame(cfg), cfg).state;
+    const s = runToCampaignEnd(start, cfg, { [start.day]: acceptAllFeasible(start, cfg) }).state;
+    const ui = await startUi(cfg); await ui.importText(serializeSave(s));
+    const sum = campaignSummary(s, cfg); expect(sum.openInvoices.length).toBeGreaterThan(0);
+    const expected = sum.openInvoices.map((i) => `<button class="link" data-action="goto-contract" data-contract="${i.contractId}" aria-label="${i.contractId} 계약으로 가기">${i.contractId}</button> ${i.dueDay}일 ${formatMoney(i.currency, i.amountMinor)}`).join(', ');
+    expect(ui.app.innerHTML).toContain(`<p>받지 못한 대금: ${expected}</p>`);
+    expect(ui.app.innerHTML).toContain('<p>남은 미지급: 없음</p>');
+    expect(ui.app.innerHTML).toContain('<p>캠페인이 끝나 앞으로 낼 돈은 없습니다.</p>');
+    // 청구서의 계약상 날짜는 캠페인 밖이어도 장부 그대로 보인다.
   });
 });

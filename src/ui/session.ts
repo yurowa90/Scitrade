@@ -7,6 +7,8 @@ import type { CrewFilter } from './recruitment';
 
 export function initialUiState() {
   return {
+    scheduleOpen: false, schedulePrev: null as Record<string, number | null> | null,
+    crewRole: null as string | null, crewAttribute: null as string | null,
     pending: [] as Command[], flash: null as { kind: 'info' | 'warn'; text: string; action?: 'culture-result' } | null,
     selectedCard: null as string | null, crewFilter: 'all' as CrewFilter,
     interviewId: null as string | null, recruitSelections: {} as Record<string, string>,

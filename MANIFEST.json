@@ -641,6 +641,11 @@
       "sha256": "759727082eb5fee569e9effb70be8ec1de5555837cc1cb87c466ecb1bf24a0b1"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0023.md",
+      "size_bytes": 28199,
+      "sha256": "32c51f243e50a56786fa5cbbf075750ae5ded2caedb1edc2b2669d1908aba739"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -947,8 +952,8 @@
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 8099,
-      "sha256": "9212075c300f2b1ea712905a6b7c706827674c9396c25531b5d1e2fe96e33b47"
+      "size_bytes": 8172,
+      "sha256": "a0eac400a3d65762844e9b79300eb06214b17ffb798937ee76d6d020bc7dc8c7"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -959,6 +964,16 @@
       "path": "tools/browser/profiles.json",
       "size_bytes": 1077,
       "sha256": "df48d956bdf09594e625767c0f3ee64ce18e1ba7ca621d16e62d192b30e8acff"
+    },
+    {
+      "path": "tools/browser/scenarios/campaign-end.json",
+      "size_bytes": 1029,
+      "sha256": "e437df30b87019e4c5fdc2e0ba2cc51db5c86e104eeafa819f40c022146f7e5f"
+    },
+    {
+      "path": "tools/browser/scenarios/crew-facet.json",
+      "size_bytes": 1204,
+      "sha256": "34ddbeff767c7ae4cb3c7aaad24a6d84cda728e92a75e2fbc945fbe431c53bef"
     },
     {
       "path": "tools/browser/scenarios/culture-result-flow3.json",
@@ -974,6 +989,16 @@
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/report-contract-link.json",
+      "size_bytes": 1196,
+      "sha256": "c3eef3def004754295ed889444a7c861435acd83b0628b47a4c05ca06c23bc7f"
+    },
+    {
+      "path": "tools/browser/scenarios/schedule-toggle.json",
+      "size_bytes": 1191,
+      "sha256": "5cbbc0ef1ce4383737f45c59674a1bb5ceda87bced5bbad107f7237045cec29d"
     },
     {
       "path": "tools/browser/scenarios/smoke.json",
