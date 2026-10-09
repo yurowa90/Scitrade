@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 47427,
-      "sha256": "c7b3ae35247e95b1b8b994c82231adf6a1d06823f9c7934686181bf1d101d575"
+      "size_bytes": 48756,
+      "sha256": "1fe759230bffb1ed46fa78fbc5cd4c2f66a0e3e027c036d2509e36fe170d4fc9"
     },
     {
       "path": "data/team_synergies.json",
@@ -157,8 +157,8 @@
     },
     {
       "path": "docs/CHARACTERS_AND_ORGANIZATION.md",
-      "size_bytes": 18253,
-      "sha256": "50a9ce5c53d399b9b5ac4472016aa29337cc4f742eaa9b4bff8a7a8f3710300d"
+      "size_bytes": 18302,
+      "sha256": "772312e3f6d7888040655101e5f905bc57450abf0c2141c1f63e871e331c8643"
     },
     {
       "path": "docs/CLASSIC_GAME_INSIGHTS.md",
@@ -182,8 +182,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 16446,
-      "sha256": "fd5fad3d73c8868a9ca1b8fdc24c03f716a8c358cb8f8169a91bdb0162be788f"
+      "size_bytes": 16581,
+      "sha256": "4b7d927e3e472a37805ffd2e62188abed68891e283ab94fe6e2b0d16ccbc4334"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 51340,
-      "sha256": "18db5fdc7c7035353f91f0a6ad9aa9ff7f1e01b0031437854ebb3eb3e089193e"
+      "size_bytes": 51420,
+      "sha256": "09c57754ffaaa5c6d18edc9d36a1ddf5d82ee87a5d277da60779caeab8223bc9"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 6741,
-      "sha256": "9e0d04d60e2211238ea29509e2c013345a089d862ea78692082346fbfcabf7dd"
+      "size_bytes": 7610,
+      "sha256": "63370c3d8131b86230ac595d6aea1c3467ac0fd44a55d54e4f0aec075f0eef85"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 9169,
-      "sha256": "e534c3f8ccaccf38aaf44ca6f771e6fc62df986c7d924f32afe6ae51bbcf8076"
+      "size_bytes": 9259,
+      "sha256": "d3556ab01a7853956d2ab1ea1591a39aa192bd721eda16fc8c816c0dd20846b6"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -641,6 +641,11 @@
       "sha256": "759727082eb5fee569e9effb70be8ec1de5555837cc1cb87c466ecb1bf24a0b1"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0022.md",
+      "size_bytes": 23241,
+      "sha256": "5da58f3232c3a049e0e6e3d829e18c1777cc7c4615087341134ea11eecd5f982"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -892,13 +897,13 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 39454,
-      "sha256": "a140b137404394069120915c995a7a6014b6bb7eed6e596ab27429bde6cd6ac0"
+      "size_bytes": 46945,
+      "sha256": "db583c383f1dc2f6f000c5bd26389f63ec7eac49774efccb5750b37efb711129"
     },
     {
       "path": "tests/character_acceptance_cases.json",
-      "size_bytes": 15334,
-      "sha256": "60ecb0bc301b7d842c9fc3e30a99290e06ff676fe6707b4048da916f66d006b7"
+      "size_bytes": 17096,
+      "sha256": "47d5b959da0f08ae0a790a8b179537c500b337ca1545dcb40e48e63137e6fceb"
     },
     {
       "path": "tools/ai/codex_task.sh",
@@ -1002,13 +1007,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 12010,
-      "sha256": "687806e7e3dcd661319002f8b4f38269b48139d26f249a8b55101941648148d6"
+      "size_bytes": 45896,
+      "sha256": "2ddac580d89c7d26cb8fc6a5df65f0c68d90e9e4ede3918ecb062dc1b62d0ef9"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 49265,
-      "sha256": "55914825d52f719bc870fbd21a1866857eb48c19449908b3c903680a7a08ab0c"
+      "size_bytes": 63706,
+      "sha256": "e108c5a4a19c7158123f6c0d75e036681e5601906ed1787abbab10eaea6424e1"
     }
   ]
 }

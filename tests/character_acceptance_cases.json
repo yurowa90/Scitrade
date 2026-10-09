@@ -2,7 +2,7 @@
   "schema_version": "0.4.0",
   "status": "PARTIALLY_LINKED_TO_ENGINE_TESTS",
   "data_basis": "DESIGN",
-  "purpose": "캐릭터·조직·성장 기능의 추가 인수 기준. CHAR-ACC-01·02·08은 엔진 테스트에 연결하며 나머지는 미실행 명세다. 실행 결과는 작업 보고서에 기록한다.",
+  "purpose": "캐릭터·조직·성장 기능의 추가 인수 기준. 일부 사례는 engine_test_ref·engine_test_names(화면은 ui_test_ref·ui_test_names)로 시험에 연결하고, 나머지는 미실행 명세다(status). 연결은 실행 결과가 아니다. 실행 결과는 작업 보고서에 기록한다.",
   "fixture_policy": "이 파일의 인물 ID·능력·금액·처리량은 독립 인수 검사를 위한 설계값이다. 실제 게임 초기 데이터 또는 관측 자료를 뜻하지 않는다.",
   "items": [
     {
@@ -50,7 +50,10 @@
           "업무 취소·미완료 사건에는 이 완료 보상을 지급하지 않는다."
         ]
       },
-      "engine_test_ref": "src/engine/m2a-growth.test.ts"
+      "engine_test_ref": "src/engine/m2a-growth.test.ts",
+      "engine_test_names": [
+        "CHAR-ACC-01 직원별 완료 경험치 중복 방지"
+      ]
     },
     {
       "id": "CHAR-ACC-02",
@@ -99,7 +102,14 @@
           "갱신 처리의 재호출과 저장·불러오기로 능력 보너스를 다시 더하지 않는다."
         ]
       },
-      "engine_test_ref": "src/engine/m2a-growth.test.ts"
+      "engine_test_ref": "src/engine/m2a-growth.test.ts",
+      "engine_test_names": [
+        "CHAR-ACC-02 누적 경험치로 레벨·능력 재계산"
+      ],
+      "ui_test_ref": "src/ui/growth.test.ts",
+      "ui_test_names": [
+        "CHAR-ACC-02 90→320은 레벨 3·능력 54/42와 두 문턱 알림을 만든다"
+      ]
     },
     {
       "id": "CHAR-ACC-03",
@@ -160,7 +170,9 @@
           "3등급 완료의 누적 보너스를 +5로 덮어쓰거나 +30으로 중복 계산하지 않는다.",
           "여기에 기재한 70만 원은 강화비 합계이며 정기 급여를 포함한 총 현금 지출이 아니다."
         ]
-      }
+      },
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "이 사례 전체를 실행하는 엔진 시험이 아직 없다. 단계는 docs/IMPLEMENTATION_PLAN.md를 따른다."
     },
     {
       "id": "CHAR-ACC-04",
@@ -192,7 +204,9 @@
           "팀장이라는 이유만으로 실행 인원에 자동 추가하지 않는다.",
           "지원 직원도 담당 직원과 동일한 예약 충돌 검사를 받는다."
         ]
-      }
+      },
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "이 사례 전체를 실행하는 엔진 시험이 아직 없다. 단계는 docs/IMPLEMENTATION_PLAN.md를 따른다."
     },
     {
       "id": "CHAR-ACC-05",
@@ -253,7 +267,9 @@
           "한 명으로 가능한 작은 업무에 3인 편성을 강제하지 않는다.",
           "최종 처리량을 물리 용량으로 제한한 뒤 시너지를 다시 곱하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "이 사례 전체를 실행하는 엔진 시험이 아직 없다. 단계는 docs/IMPLEMENTATION_PLAN.md를 따른다."
     },
     {
       "id": "CHAR-ACC-06",
@@ -295,7 +311,9 @@
           "지역 경험은 해당 직원의 학습·현지 업무에서, 거래망은 특정 기관·인물과의 실제 관계 활동에서 얻는다.",
           "동료를 새로 고용했다는 이유만으로 회사 전체의 지역 이해도와 모든 NPC 친밀도가 자동 상승하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "이 사례 전체를 실행하는 엔진 시험이 아직 없다. 단계는 docs/IMPLEMENTATION_PLAN.md를 따른다."
     },
     {
       "id": "CHAR-ACC-07",
@@ -338,7 +356,9 @@
           "속성은 관세율·외부 시장 가격·선박 물리 용량을 직접 바꾸지 않는다.",
           "실제 출항 전 업무가 마감에 늦어 항차를 놓치는 별도 상황까지 동일 도착일로 강제하지 않는다."
         ]
-      }
+      },
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "이 사례 전체를 실행하는 엔진 시험이 아직 없다. 단계는 docs/IMPLEMENTATION_PLAN.md를 따른다."
     },
     {
       "id": "CHAR-ACC-08",
@@ -376,7 +396,19 @@
           "재전송으로 훈련비·급여·경험치를 중복 적용하지 않는다."
         ]
       },
-      "engine_test_ref": "src/engine/m2a-growth.test.ts"
+      "engine_test_ref": "src/engine/m2a-growth.test.ts",
+      "engine_test_names": [
+        "CHAR-ACC-08 일반 훈련 비용·급여·예약"
+      ],
+      "ui_test_ref": "src/ui/growth.test.ts",
+      "ui_test_names": [
+        "CHAR-ACC-08은 훈련비·급여 행을 분리하고 완료 +60을 한 번 알린다"
+      ]
     }
-  ]
+  ],
+  "summary": {
+    "case_count": 8,
+    "engine_linked_case_count": 3,
+    "ui_linked_case_count": 2
+  }
 }

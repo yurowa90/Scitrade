@@ -35,22 +35,24 @@
 
 | 검사 | 명령 | 결과 | 근거 |
 |---|---|---|---|
-| 자료 검사 | `python3 tools/validate_data.py` | PASS. 자료 문서 23개, 구조·참조·산술 검사 24,332건(`3b60314`). 인수 명세 26건(거래·운영 18 + 캐릭터·조직 8)이 들어 있다는 것까지 본다. S1a 커밋은 새 문서 2개를 `MANIFEST.json`에 더해 해시 검사가 4건 늘어 24,336건이다 | `tools/validate_data.py:729-741`(MANIFEST 해시 검사와 출력) |
-| 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 11개 통과 | 2026-10-05 TASK-0001부터 |
-| 엔진·화면 시험 | `npx vitest run` | 26개 파일·793개 통과 | TASK-0012 검수 4차 기록(`docs/ai/tasks/results/TASK-0012.md` ‘자동 검사’)과 이번 실행이 같다 |
+| 자료 검사 | `python3 tools/validate_data.py` | PASS. 자료 문서 23개, 구조·참조·산술 검사 25,184건(TASK-0022 병합 뒤, 2026-10-09). 인수 명세 26건(거래·운영 18 + 캐릭터·조직 8)의 연결 시험 파일·제목이 있는지까지 본다. 시험을 돌리지는 않는다 | `tools/validate_data.py:1033-1056`(MANIFEST 해시 검사와 출력) |
+| 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 60개 통과 | TASK-0022 검수 뒤(2026-10-09) |
+| 엔진·화면 시험 | `npx vitest run` | 31개 파일·891개 통과(할 일 1) | 병렬 세션 1차 통합(`18e2b3a`)과 TASK-0022 병합 뒤가 같다(TASK-0022는 TS 파일을 바꾸지 않음) |
 | 그림 도구 시험 | `python3 tools/art/test_pixel_tools.py` | 21개 통과 | TASK-0007 |
 | 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 20개 통과. 원본 재생성 시험은 원본 폴더가 있을 때만 돈다 | `tools/ai/review_checks.sh:19-21` |
 
-위 다섯 가지와 타입 검사·빌드·`MANIFEST.json` 재생성이 Codex 결과 검수의 자동 검사 8종이다(`tools/ai/review_checks.sh:14-22`).
+위 다섯 가지와 타입 검사·빌드·`MANIFEST.json` 재생성·사실 섞임 검사·브라우저 도구 시험 등이 Codex 결과 검수의 자동 검사다. 수정 모드 11종, 확인 모드(`--check`) 12종이다(`tools/ai/review_checks.sh`).
 
 **2026-10-04 뒤 자료 검사기에 더한 검사:**
-- 영입 블록: 후보·조사 장소·작업량·계약금 일수(`check_recruitment`, `tools/validate_data.py:364`, TASK-0001, 2026-10-05).
-- 성장 규칙: 레벨 범위·경험치 문턱 등 엔진이 고정한 의미와 자료 대조(`validate_growth`, `:28`, TASK-0004-R1, 2026-10-05).
-- 취소비: 상속한 계약 조건까지 포함해 모든 시나리오 노선의 고정 취소비(`validate_cancellation`, `:69`, TASK-0008, 2026-10-05).
-- 세계 거점: 역할·단계·지도 위치·근거 출처(`check_world_hubs`, `:409`, `3535c59`, 2026-10-05).
-- 지도 표시 좌표와 ROUTE01 꺾은선 끝점이 항구 좌표 0.2도 안(`:544-553`). 거리·운송일수에는 쓰지 않는 표시 전용 값이다.
-- 문화 활동: 장소·인물·비용·출처 범위와 P0-CITY-01~04 인수 명세 연결(`check_culture`, `:161`, `:212`, TASK-0011, 2026-10-06).
-- 캐릭터 인수 명세 3건(CHAR-ACC-01·02·08)이 엔진 시험 `src/engine/m2a-growth.test.ts`에 연결됐고 5건은 미실행 명세라는 상태값(`:710-722`).
+- 영입 블록: 후보·조사 장소·작업량·계약금 일수(`check_recruitment`, `tools/validate_data.py:371`, TASK-0001, 2026-10-05).
+- 성장 규칙: 레벨 범위·경험치 문턱 등 엔진이 고정한 의미와 자료 대조(`validate_growth`, `:29`, TASK-0004-R1, 2026-10-05).
+- 취소비: 상속한 계약 조건까지 포함해 모든 시나리오 노선의 고정 취소비(`validate_cancellation`, `:77`, TASK-0008, 2026-10-05).
+- 세계 거점: 역할·단계·지도 위치·근거 출처(`check_world_hubs`, `:456`, `3535c59`, 2026-10-05).
+- 지도 표시 좌표와 ROUTE01 꺾은선 끝점이 항구 좌표 0.2도 안(`:856-862`). 거리·운송일수에는 쓰지 않는 표시 전용 값이다.
+- 문화 활동: 장소·인물·비용·출처 범위와 P0-CITY-01~04 인수 명세 연결(`check_culture`, `:164`, `:212-232`, TASK-0011, 2026-10-06).
+- 인수 명세 시험 연결(TASK-0022, 2026-10-09): 사례마다 연결 시험 파일·제목이 실제로 있는지(`check_test_refs`, `:512`), 시험 제목의 사례 ID가 연결에 있는지(`check_test_title_links`, `:730`), 요약 개수·상태·통과 주장·사람 검토 기록 형식(`check_acceptance_summary`, `:567`), 부서·팀 이름(`check_organization_names`, `:607`), P0-ACC-13·14 기대값과 시나리오 값(`check_acceptance_fixture_numbers`, `:715`). 시험을 돌리지는 않는다.
+- 출처 쓰임(`source_usage`·`check_sources`, `:637`·`:656`): 쓰이지 않는 출처는 이유와 대체 출처를 적고, `local_path`는 저장소 안 파일이어야 한다.
+- 교과 연결(`check_curriculum_stages`·`check_curriculum_counts`, `:676`·`:698`): P0 항목은 P0 표지 연결만 가리킨다(미해결 목록 `:492`), 요약 `counts`가 실제 목록과 같다. 47·18·6·23 고정값도 그대로 둔다.
 
 **이번 실행 (2026-10-09, S1a 문서 정합):** 자료 검사(24,332건)·자료 검사기 회귀 11개·그림 도구 21개·지도 생성 20개를 `3b60314` 작업 트리에서 다시 돌려 위 값과 같았다. `npx vitest run`은 `tests/character_acceptance_cases.json`의 팀 이름을 고친 뒤 돌려 26개 파일·793개 통과, `npm run typecheck`는 오류 없음이었다. 빌드는 `vite build` 결과가 TASK-0012 재채점에 쓴 빌드와 같았다(`docs/ai/tasks/results/TASK-0012.md` ‘재채점’).
 

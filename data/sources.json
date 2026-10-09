@@ -10,7 +10,8 @@
       "scope_ko": "수치·콘텐츠·가상 인물·시나리오",
       "checked_on": "2026-10-04",
       "redistribution": "links_and_project_notes_only",
-      "local_path": "docs/DESIGN_v0.3.md"
+      "local_path": null,
+      "local_path_note_ko": "v0.3 설계 문서 파일은 이 저장소와 git 기록에 없다. 후속 판은 docs/DESIGN_v0.4.md다."
     },
     {
       "id": "C1-SOC",
@@ -567,7 +568,11 @@
       "scope_ko": "2025년 유럽 컨테이너항: 로테르담 약 1,425만, 앤트워프브뤼허 약 1,363만, 함부르크 약 830만 TEU. (검색 결과 요약으로 확인. 작업 환경의 접속 차단으로 원문을 직접 읽지 못했으므로 도감·보고 문구에 쓰기 전 원문 대조 필요) (2026-10-05 대조: 이 자료에는 로테르담 수치가 없어 로테르담 근거는 PORT-ROTTERDAM-2025로 옮겼다.)",
       "checked_on": "2026-10-05",
       "redistribution": "links_and_project_notes_only",
-      "local_path": null
+      "local_path": null,
+      "superseded_by": [
+        "PORT-ROTTERDAM-2025"
+      ],
+      "unreferenced_reason_ko": "로테르담 근거를 원문을 읽은 PORT-ROTTERDAM-2025로 옮긴 뒤 자료에서 쓰지 않는다(이 기록의 scope_ko ‘2026-10-05 대조’). 옛 대조 기록(TASK-0003)을 위해 남긴다."
     },
     {
       "id": "TANGERMED-2025",
@@ -661,7 +666,11 @@
       "scope_ko": "더반항은 사하라 이남 아프리카 최대 컨테이너항. 2024년 더반 컨테이너터미널 약 265만 TEU(설계 용량 360만 TEU). (검색 결과 요약으로 확인. 작업 환경의 접속 차단으로 원문을 직접 읽지 못했으므로 도감·보고 문구에 쓰기 전 원문 대조 필요) (2026-10-05 대조: 위키백과에 2024년 수치가 없어 더반 근거는 AFRICAPORTS-TNPA-2024로 옮겼다. 수치는 터미널이 아니라 항만 전체다.)",
       "checked_on": "2026-10-05",
       "redistribution": "links_and_project_notes_only",
-      "local_path": null
+      "local_path": null,
+      "superseded_by": [
+        "AFRICAPORTS-TNPA-2024"
+      ],
+      "unreferenced_reason_ko": "더반 근거를 AFRICAPORTS-TNPA-2024로 옮긴 뒤 자료에서 쓰지 않는다(이 기록의 scope_ko ‘2026-10-05 대조’). 옛 대조 기록(TASK-0003)을 위해 남긴다."
     },
     {
       "id": "US-PORTS-2025",
@@ -691,7 +700,12 @@
       "scope_ko": "피레우스항은 유럽 상위 5위권 컨테이너항이자 지중해 주요 환적항. 매체마다 2025년 물동량 수치가 달라 순위만 사용. (2026-10-05 대조: 2025년 상반기만 다룬 기사이고 물동량 순위가 아니다. ‘5위’는 2024년 순위다. 피레우스 근거는 PORTECON-EU-2025·PPA-FY2025로 옮겼다.)",
       "checked_on": "2026-10-05",
       "redistribution": "links_and_project_notes_only",
-      "local_path": null
+      "local_path": null,
+      "superseded_by": [
+        "PORTECON-EU-2025",
+        "PPA-FY2025"
+      ],
+      "unreferenced_reason_ko": "피레우스 근거를 PORTECON-EU-2025·PPA-FY2025로 옮긴 뒤 자료에서 쓰지 않는다(이 기록의 scope_ko ‘2026-10-05 대조’). 옛 대조 기록(TASK-0003)을 위해 남긴다."
     },
     {
       "id": "PEMP-ROUTING",
@@ -851,7 +865,8 @@
       "scope_ko": "17개 항로 표. IHP 평택–하이퐁–셔코우–인천, PSS 평택–인천–상해. 표의 PSS 접안요일 화요일은 선사 출항요일 수요일과 구별한다.",
       "checked_on": "2026-10-09",
       "redistribution": "links_and_project_notes_only",
-      "local_path": null
+      "local_path": null,
+      "unreferenced_reason_ko": "평택 노선 근거표(docs/ai/design/PYEONGTAEK-route-basis.md의 S5)와 DECISIONS ‘평택 본사 전환’의 항로 수 근거다. 자료의 노선 요일표(routes.json schedule_basis)는 SINOKOR-ROT-2026만 인용한다. 자료에 연결할지는 Claude가 정한다."
     },
     {
       "id": "MOF-PORT-2025",
