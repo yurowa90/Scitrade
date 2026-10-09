@@ -426,6 +426,11 @@
       "sha256": "0a19bf41a840a64ff4af6b30074b9739a73cca97192c94a5a27a4436279c9262"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0012.md",
+      "size_bytes": 13965,
+      "sha256": "810fe641c36e287d4a5c9624c44be9d76f8c112df610589fc70c3ecec46a956a"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0013.md",
       "size_bytes": 14195,
       "sha256": "4271f52efdf32fdb837da208ab30710a7d6da19818ac99cd1dd69ac2519c3109"
@@ -687,8 +692,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 39613,
-      "sha256": "3a5c3807f8b80f24393beb34191f966f7fbbf50d4633b65891d9f0e3f3ff07cf"
+      "size_bytes": 39385,
+      "sha256": "2120d13ad28ae9a7f680a4383d5fd68696ddc4381820ac669962589afd290496"
     },
     {
       "path": "tests/character_acceptance_cases.json",

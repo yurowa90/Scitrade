@@ -39,6 +39,7 @@ export async function startUi(config?: ScenarioConfig) {
   const focusIds: string[] = [];
   const closestSelectors: string[] = [];
   const doc = { title:'', documentElement:{style:{setProperty:vi.fn()}}, activeElement:null as any, querySelector:()=>app,
+    createElement:vi.fn(() => ({ href:'', download:'', click:vi.fn() })),
     getElementById:(id:string)=> html.includes(`id="${id}"`) ? {
       id, dataset:{}, getBoundingClientRect:()=>bounds[id] ?? rect(), closest:()=>null,
       parentElement:id.startsWith('status-') ? {getBoundingClientRect:()=>slotRect(id.slice(7))} : null,
@@ -52,14 +53,15 @@ export async function startUi(config?: ScenarioConfig) {
     const attrs = Object.fromEntries([...match[2]!.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, unescape(m[2]!)]));
     const dataset = Object.fromEntries(Object.entries(attrs).filter(([key])=>key.startsWith('data-')).map(([key,value])=>[key.slice(5).replace(/-([a-z])/g,(_m,c:string)=>c.toUpperCase()),value]));
     const element = Object.assign(match[1] === 'button' ? new Button() : {}, {
-      dataset, tagName:match[1]!.toUpperCase(), disabled:/\sdisabled(?:\s|$)/.test(match[2]!), getBoundingClientRect:rect,
-      focus:(options?:FocusOptions)=>{focus(options);doc.activeElement=element;},
+      id:attrs.id ?? '', dataset, tagName:match[1]!.toUpperCase(), disabled:/\sdisabled(?:\s|$)/.test(match[2]!), getBoundingClientRect:()=>bounds[attrs.id!] ?? rect(),
+      focus:(options?:FocusOptions)=>{if(attrs.id)focusIds.push(attrs.id);focus(options);doc.activeElement=element;},
       closest:(selector:string)=>{
         closestSelectors.push(selector);
         const selectors=selector.split(',').map((s)=>s.trim());
         if(selectors.includes('[data-action]')) return element;
         if(selectors.includes('[data-action-slot]')) {
-          const slot=dataset.action==='assign' ? `assign-${dataset.task}` : dataset.action==='book' ? `book-${dataset.contract}` : '';
+          const slot=dataset.action==='assign' ? `assign-${dataset.task}` : dataset.action==='book' ? `book-${dataset.contract}`
+            : dataset.action==='culture-queue' ? `culture-${dataset.activity}-${dataset.emp}` : '';
           return slot && html.includes(`data-action-slot="${slot}"`) ? {dataset:{actionSlot:slot},getBoundingClientRect:()=>slotRect(slot)} : null;
         }
         if (selectors.includes('.contract') && ['assign','book','cancel'].includes(dataset.action!)) return {querySelector:()=>({id:`contract-h-${dataset.contract ?? 'CT001'}`})};

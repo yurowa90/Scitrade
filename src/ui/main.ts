@@ -4,6 +4,7 @@
 import './style.css';
 import { applyPixelScale } from './pixel';
 import { esc } from './html';
+import { CULTURE_KO, culturePanel, cultureTab, cultureResultTasks, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
 import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
@@ -161,20 +162,31 @@ function endDay() {
   }
   const rejected = committed.results.filter((r) => r.status === 'REJECTED');
   const barBottom = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
-  const card = Array.from(app.querySelectorAll<HTMLElement>('.contract')).find((e) => { const r = e.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; });
-  const head = card?.querySelector<HTMLElement>('h3[id]');
-  const reading = head ? { id: head.id, top: head.getBoundingClientRect().top } : null;
+  const bandBottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
+  const cards = Array.from(app.querySelectorAll<HTMLElement>('.contract'));
+  // M1은 제목이 막대 위에 있어도 읽던 계약 카드 하나를 기준으로 삼던 동작을 유지한다.
+  const heads = config.culture ? cards.map((card) => card.querySelector<HTMLElement>('h3[id]'))
+    : [cards.find((card) => { const r = card.getBoundingClientRect(); return r.bottom > barBottom && r.top < window.innerHeight; })?.querySelector<HTMLElement>('h3[id]') ?? null];
+  if (ui.cultureOpen) {
+    heads.push(...[...cultureResultTasks(state, config, ui.cultureShowFromDay ?? state.day - 1).map((t) => `culture-result-h-${t.id}`),
+      'culture-h', 'culture-emp-h', 'culture-book-h'].map((id) => document.getElementById(id)));
+  }
+  const reading = heads.filter((head): head is HTMLElement => head !== null)
+    .map((head) => ({ id: head.id, top: head.getBoundingClientRect().top }))
+    .filter((head) => !config.culture || (head.top >= barBottom && head.top < bandBottom)).sort((a, b) => a.top - b.top);
   ui.growthNotices = growthMessages(state, committed.state, config);
   ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
   state = committed.state;
   ui.pending = [];
-  ui.flash = rejected.length
+  ui.cultureEmployeeId = null;
+  ui.flash = cultureToastText(state, config, rejected) ?? (rejected.length
     ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` }
-    : null;
+    : null);
+  ui.cultureResultFresh = ui.flash?.action === 'culture-result';
   render();
-  const again = reading && document.getElementById(reading.id);
-  if (again) { const dy = again.getBoundingClientRect().top - reading.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
+  const remaining = reading.map((head) => ({ ...head, element: document.getElementById(head.id) })).find((head) => head.element);
+  if (remaining) { const dy = remaining.element!.getBoundingClientRect().top - remaining.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
   ignoreClicksUntil = Date.now() + 500;
 }
 
@@ -536,7 +548,8 @@ function tradePanel(): string {
   const anyExpired = view.offers.some((o) => o.status === 'EXPIRED');
   return `
   <section class="panel trade" aria-labelledby="trade-h">
-    <h2 id="trade-h" tabindex="-1">거래·계약 <small>진행 중 ${active.length}건</small></h2>
+    <h2 id="trade-h" tabindex="-1">거래·계약 <small>진행 중 ${active.length}건</small></h2>${config.culture ? `
+    ${cultureTab(state, config, ui)}` : ''}
     ${delayPanel()}
     ${offerBoard()}
     ${active.map(contractPanel).join('')}
@@ -690,7 +703,7 @@ function queuePanel(): string {
     ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? '<p class="muted small amount-basis-note">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>' : ''}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
-    ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh)}
+    ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh && ui.flash?.action !== 'culture-result')}
   </section>`;
 }
 
@@ -722,13 +735,13 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
       ${worldMap()}
       ${crewPanel()}
-      ${tradePanel()}
+      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
       ${resourcePanel()}
       ${queuePanel()}
       ${reportPanel()}
       ${logPanel()}
     </main>
-    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}" role="status">${esc(ui.flash.text)}</div>` : ''}`;
+    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}"${ui.flash.action === 'culture-result' ? ui.cultureResultFresh ? ' role="status"' : '' : ' role="status"'}>${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}`;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
   document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
   measureStatusbar();
@@ -739,6 +752,7 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
   }
   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
   ui.growthNoticesFresh = false;
+  ui.cultureResultFresh = false;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
   frame.dataset.viewportKey = mapRedrawDecision(config, mapMode, mapMeasurements.get(mapMode)).key;
   const positionMap = () => {
@@ -768,7 +782,8 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
   if (focusData && !skipFocus) {
     const target = Array.from(app.querySelectorAll<HTMLElement>('[data-action]')).find((el) =>
       el.tagName === tag && Object.entries(focusData).every(([key, value]) => el.dataset[key] === value));
-    const slot = focusData.action === 'assign' ? `assign-${focusData.task}` : focusData.action === 'book' ? `book-${focusData.contract}` : undefined;
+    const slot = focusData.action === 'assign' ? `assign-${focusData.task}` : focusData.action === 'book' ? `book-${focusData.contract}`
+      : focusData.action === 'culture-queue' ? `culture-${focusData.activity}-${focusData.emp}` : undefined;
     const ids = [slot ? `status-${slot}` : undefined, ...focusFallbackIds(focusData, blockHeading)];
     const fallback = ids.filter((id): id is string => Boolean(id) && !(activation?.pointer && id === 'queue-h'))
       .map((id) => document.getElementById(id)).find(Boolean);
@@ -782,6 +797,60 @@ function showGrowthControl() {
   control?.focus({ preventScroll: true });
 }
 
+/** 본 날을 바꾸기 전에 표시 시작일을 기억해, 여는 순간 결과가 사라지지 않게 한다. */
+function markCultureSeen() {
+  ui.cultureShowFromDay = ui.cultureSeenDay ?? state.day - 1;
+  ui.cultureSeenDay = state.day;
+}
+
+function openCulture(result = false) {
+  ui.cultureTabTop = result ? null : document.getElementById('local-tab')?.getBoundingClientRect().top ?? null;
+  markCultureSeen();
+  ui.cultureOpen = true;
+  if (result) ui.flash = null;
+  render(true);
+  const task = result ? cultureResultTasks(state, config, state.day - 1).find((t) => t.completedDay === state.day - 1) : null;
+  const heading = document.getElementById(task ? `culture-result-h-${task.id}` : 'local-h');
+  heading?.scrollIntoView({ block: 'start' });
+  heading?.focus({ preventScroll: true });
+  ignoreClicksUntil = Date.now() + 500;
+}
+
+function closeCulture() {
+  ui.cultureOpen = false;
+  render(true);
+  const tab = document.getElementById('local-tab');
+  if (tab) {
+    const rect = tab.getBoundingClientRect();
+    const top = (app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0) + 8;
+    const bottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity) - 8;
+    const dy = ui.cultureTabTop !== null ? rect.top - ui.cultureTabTop
+      : rect.top < top ? rect.top - top : rect.bottom > bottom ? rect.bottom - bottom : 0;
+    if (Math.abs(dy) >= 1) window.scrollBy(0, dy);
+    tab.focus({ preventScroll: true });
+  }
+  ui.cultureTabTop = null;
+  ignoreClicksUntil = Date.now() + 500;
+}
+
+/** 직원 고르기 뒤 제목부터 넣기 칸까지를 고정 막대와 알림 사이로 최소 거리만 움직인다. */
+function showCulturePreview(employeeId: string) {
+  const head = document.getElementById('culture-emp-h');
+  const slot = document.getElementById('culture-slot');
+  const employee = document.getElementById(`culture-emp-${employeeId}`);
+  if (head && slot && employee) {
+    const top = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
+    const toastHeight = app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().height ?? 0;
+    const bottom = window.innerHeight - Math.max(toastHeight, 72);
+    const headTop = head.getBoundingClientRect().top;
+    const slotBottom = slot.getBoundingClientRect().bottom;
+    const needed = slotBottom > bottom ? slotBottom - bottom : headTop < top ? headTop - top : 0;
+    const dy = Math.min(needed, employee.getBoundingClientRect().top - top - 8);
+    if (Math.abs(dy) >= 1) window.scrollBy(0, dy);
+  }
+  employee?.focus({ preventScroll: true });
+}
+
 // ── 이벤트 ──
 
 app.addEventListener('click', (ev) => {
@@ -791,6 +860,29 @@ app.addEventListener('click', (ev) => {
   const d = el.dataset;
   try {
     switch (d.action) {
+      case 'culture-tab':
+        return ui.cultureOpen ? closeCulture() : openCulture();
+      case 'culture-close':
+        return closeCulture();
+      case 'culture-result':
+        return openCulture(true);
+      case 'culture-act':
+        if (ui.cultureActivityId !== d.activity) ui.cultureEmployeeId = null;
+        ui.cultureActivityId = d.activity!;
+        render();
+        ignoreClicksUntil = Date.now() + 500;
+        return;
+      case 'culture-emp':
+        ui.cultureEmployeeId = d.emp!;
+        render(true);
+        showCulturePreview(d.emp!);
+        ignoreClicksUntil = Date.now() + 500;
+        return;
+      case 'culture-queue':
+        return queue({ id: newId('CULTURE'), type: 'START_CULTURE_ACTIVITY', activityId: d.activity!, employeeId: d.emp! });
+      case 'culture-book':
+        ui.cultureBookOpen = !ui.cultureBookOpen;
+        return render();
       case 'train':
         return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
       case 'detail':
