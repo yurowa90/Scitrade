@@ -17,14 +17,17 @@ import { contractProgress, portWaitStatus } from '../engine/progress';
 import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
-import { initialUiState, loadSaveText, advanceDay } from './session';
+import { initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
 import { cancellationPreviewKo } from './trade';
 import { krwReportRows, krwReportNoteKo } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
 import { taskSubjectKo } from '../engine/tasks';
 import { employeeDetail, growthMessages, growthStatus } from './growth';
-import { FOCUS_FALLBACK_SELECTORS, focusFallbackIds } from './focus';
+import { FOCUS_FALLBACK_SELECTORS, focusFallbackIds, FIXED_REGION_SELECTOR } from './focus';
 import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, mapPresentation, readMapScroll, mapScrollPosition, mapRedrawDecision, type MapMode } from './map';
+
+declare const __BUILD_ID__: string | undefined;
+const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
@@ -33,6 +36,9 @@ const SCENARIO_TITLES = Object.fromEntries(SCENARIO_IDS.map((id) => [id, loadSce
 
 let config: ScenarioConfig;
 let state: GameState;
+let savedState: GameState | null = null;
+let announcedFlash: ReturnType<typeof initialUiState>['flash'] = null;
+let lastTabAt = -Infinity;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
 let ui = initialUiState();
@@ -79,11 +85,31 @@ function focusWithoutScroll(target: HTMLElement | undefined | null) {
 }
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+document.body.insertAdjacentHTML('beforeend', '<div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>');
+const liveStatus = document.getElementById('live-status')!;
+
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Tab') lastTabAt = Date.now();
+}, true);
+document.addEventListener('focusin', (ev) => {
+  if (Date.now() - lastTabAt > 100) return;
+  if (!(ev.target as HTMLElement).closest(FIXED_REGION_SELECTOR)) return;
+  const x = window.scrollX, y = window.scrollY;
+  window.requestAnimationFrame(() => {
+    if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
+  });
+});
+window.addEventListener('beforeunload', (ev) => {
+  if (!hasUnsavedWork(ui.pending, state, savedState)) return;
+  ev.preventDefault();
+  ev.returnValue = '';
+});
 
 function startScenario(id: ScenarioId) {
   config = loadScenario(id);
   state = openDay(createGame(config), config).state;
   resetUi();
+  savedState = state;
 }
 
 function resetUi() {
@@ -250,7 +276,7 @@ function topbar(): string {
   return `
   <header class="topbar">
   <div class="masthead">
-    <div class="brand"><span class="logo">Scitrade</span><span class="sub">${esc(config.stage)} 시제품 · 규칙 ${esc(config.rules.rulesVersion)} · DESIGN 가상값</span></div>
+    <div class="brand"><span class="logo">Scitrade</span><span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 ${esc(BUILD_ID)}</span></div>
     <label class="scenario">시나리오
       <select data-action="scenario">
         ${SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
@@ -260,11 +286,11 @@ function topbar(): string {
       <button data-action="save">저장</button>
       <button data-action="load">불러오기</button>
       <button data-action="export">내보내기</button>
-      <label class="file-btn">가져오기<input type="file" accept="application/json" data-action="import" hidden /></label>
+      <label class="file-btn">가져오기<input type="file" accept="application/json" data-action="import" class="visually-hidden" /></label>
       <button data-action="restart">처음부터</button>
     </div>
   </div>
-  <div class="statusbar" id="status-h" tabindex="-1" aria-label="오늘 상태">
+  <div class="statusbar" id="status-h" tabindex="-1" role="region" aria-label="오늘 상태">
     <div class="day"><div class="date"><b>${Math.min(state.day, config.campaignDays)}일</b> / ${config.campaignDays}</div><span>${phaseText}</span></div>
     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
@@ -326,7 +352,7 @@ function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[]
       <ul class="schedule">${q.schedule.map((x) => `<li><span>${x.day}일</span>${esc(x.labelKo)}<b>${x.amount === 0 ? '현금 변화 없음' : (x.amount > 0 ? '+' : '−') + usd(Math.abs(x.amount))}</b></li>`).join('')}</ul>
       <p class="muted">지연·취소가 없다는 가정의 계산이며 결과를 보장하지 않습니다.</p>
     </details>
-    <p class="muted small">견적 유효: ${validUntil}일까지 · 모든 수치는 개발용 가상값(DESIGN)</p>
+    <p class="muted small">견적 유효: ${validUntil}일까지 · 모든 수치는 가상값</p>
     <div class="accept-row">
       <button ${actionAttr} ${check.status !== 'APPLIED' ? 'disabled' : ''}>견적만 수락</button>${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}
     </div>
@@ -552,8 +578,8 @@ function delayPanel(): string {
       ${decision ? (queued ? '<span class="pill">현재 예약으로 대기 — 결정 예정</span>' : `
       <div class="choices">
         <button data-action="keep" data-notice="${esc(n.id)}" data-shipment="${esc(decision.shipmentId)}">현재 예약으로 대기<small>예약은 유지, 하역 재개까지 일정이 밀림. 납기를 넘기면 계약 조건대로 ${usd(config.terms.lateDeliveryPriceReductionMinor)} 감액</small></button>
-        <button disabled>대체편 예약<small>대체 노선 선택은 M3 사건 시스템에서 구현합니다</small></button>
-        <button disabled>고객과 납기 협상<small>계약 변경 협상은 M3 사건 시스템에서 구현합니다</small></button>
+        <button disabled>대체편 예약<small>대체 노선 선택은 이번 판에 없습니다</small></button>
+        <button disabled>고객과 납기 협상<small>계약 변경 협상은 이번 판에 없습니다</small></button>
       </div>`) : '<p class="pill">대응 결정 완료: 현재 예약으로 대기</p>'}
     </div>`;
   }).join('');
@@ -605,7 +631,7 @@ function resourcePanel(): string {
       <tr class="total"><th>사용 가능 (오늘 할 일 실행 뒤)</th><td class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</td></tr>
     </table>
     ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${esc(r.contractId)} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : '<p class="muted small">묶인 돈이 없습니다.</p>'}
-    <p class="muted small">${committedRule() ? '규칙 M2a: 새 계약·운임은 사용 가능 자금으로만 판단합니다.' : '규칙 M1: 새 계약은 지금 현금만 확인합니다. 예약은 참고 표시입니다.'}</p>
+    <p class="muted small">${committedRule() ? '새 계약·운임은 사용 가능 자금으로만 판단합니다.' : '새 계약은 지금 현금만 확인합니다. 예약은 참고 표시입니다.'}</p>
     <h3>직원 시간</h3>
     <ul class="crew-time">${crew.join('')}</ul>
     <h3>선복 (다가오는 출항편)</h3>
@@ -719,7 +745,7 @@ function queuePanel(): string {
     ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? '<p class="muted small amount-basis-note">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>' : ''}
     ${ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
-    ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay, ui.growthNoticesFresh && ui.flash?.action !== 'culture-result')}
+    ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay)}
   </section>`;
 }
 
@@ -729,7 +755,7 @@ function logPanel(): string {
   <section class="panel log" aria-labelledby="log-h">
     <h2 id="log-h">기록</h2>
     <ul>${items.map((l) => `<li><span>${l.day}일</span>${esc(l.textKo)}</li>`).join('') || '<li class="muted">아직 기록이 없습니다.</li>'}</ul>
-    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${assumptionNotes(config.id as ScenarioId).map((n) => `<li>${esc(n)}</li>`).join('')}</ul></details>
+    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${assumptionNotes(config.id as ScenarioId).filter((n) => !/^규칙 [^:]+: /.test(n)).map((n) => `<li>${esc(n)}</li>`).join('')}</ul></details>
   </section>`;
 }
 
@@ -747,17 +773,18 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
   const blockHeading = focused?.closest(FOCUS_FALLBACK_SELECTORS.join(', '))?.querySelector('h3, h4')?.id
     ?? focused?.closest('.contract, .panel')?.querySelector('h3[id], h2[id]')?.id;
   app.innerHTML = `
+    <nav class="skip-links" aria-label="바로 가기"><button data-action="skip-to" data-target="trade-h">거래로 바로 가기</button><button data-action="skip-to" data-target="queue-h">오늘 할 일로 바로 가기</button></nav>
     ${topbar()}
+    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
-      ${worldMap()}
-      ${crewPanel()}
       ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
+      ${crewPanel()}
       ${resourcePanel()}
       ${queuePanel()}
+      ${worldMap()}
       ${reportPanel()}
       ${logPanel()}
-    </main>
-    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}"${ui.flash.action === 'culture-result' ? ui.cultureResultFresh ? ' role="status"' : '' : ' role="status"'}>${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}`;
+    </main>`;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
   document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
   measureStatusbar();
@@ -767,6 +794,10 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     if (dy >= 1) window.scrollBy(0, dy);
   }
   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
+  const announcement = nextAnnouncement({ flash: ui.flash, announcedFlash,
+    growthFresh: ui.growthNoticesFresh, growthNotices: ui.growthNotices, growthDay: ui.growthNoticesDay });
+  if (announcement !== null) liveStatus.textContent = liveRegionText(liveStatus.textContent ?? '', announcement);
+  announcedFlash = ui.flash;
   ui.growthNoticesFresh = false;
   ui.cultureResultFresh = false;
   const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
@@ -878,6 +909,13 @@ app.addEventListener('click', (ev) => {
   const d = el.dataset;
   try {
     switch (d.action) {
+      case 'skip-to': {
+        if (d.target !== 'trade-h' && d.target !== 'queue-h') return;
+        const heading = document.getElementById(d.target)!;
+        heading.scrollIntoView({ block: 'start' });
+        heading.focus({ preventScroll: true });
+        return;
+      }
       case 'culture-tab':
         return ui.cultureOpen ? closeCulture() : openCulture();
       case 'culture-close':
@@ -900,19 +938,25 @@ app.addEventListener('click', (ev) => {
         return queue({ id: newId('CULTURE'), type: 'START_CULTURE_ACTIVITY', activityId: d.activity!, employeeId: d.emp! });
       case 'culture-book':
         ui.cultureBookOpen = !ui.cultureBookOpen;
-        return render();
+        render();
+        ignoreClicksUntil = Date.now() + 500;
+        return;
       case 'train':
         return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
       case 'detail':
         ui.detailId = ui.detailId === d.emp ? null : d.emp!;
-        return render();
+        render();
+        ignoreClicksUntil = Date.now() + 500;
+        return;
       case 'scout':
         return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
       case 'recruit-quest':
         return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
       case 'interview':
         ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
-        return render();
+        render();
+        ignoreClicksUntil = Date.now() + 500;
+        return;
       case 'hire':
         return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
       case 'end-day':
@@ -929,10 +973,15 @@ app.addEventListener('click', (ev) => {
         return queue({ id: newId('CANCEL'), type: 'CANCEL_CONTRACT', contractId: d.contract! });
       case 'keep':
         return queue({ id: newId('KEEP'), type: 'RESPOND_TO_DELAY', noticeId: d.notice!, shipmentId: d.shipment!, choice: 'KEEP_SHIPMENT_BOOKING' });
-      case 'unqueue':
-        ui.pending.splice(Number(d.index), 1);
+      case 'unqueue': {
+        const index = ui.pending.findIndex((c) => c.id === d.command);
+        if (index < 0) return;
+        ui.pending.splice(index, 1);
         ui.flash = null;
-        return render();
+        render();
+        ignoreClicksUntil = Date.now() + 500;
+        return;
+      }
       case 'map-mode':
         mapMode = d.mode === 'world' ? 'world' : 'route';
         return render();
@@ -956,6 +1005,7 @@ app.addEventListener('click', (ev) => {
       case 'save':
         try {
           localStorage.setItem(SAVE_KEY, serializeSave(state));
+          savedState = state;
           ui.flash = { kind: 'info', text: `${state.day}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.` };
         } catch {
           ui.flash = { kind: 'warn', text: '이 브라우저에서는 저장할 수 없습니다. ‘내보내기’로 파일을 받아 두세요.' };
@@ -978,6 +1028,7 @@ app.addEventListener('click', (ev) => {
         a.download = `scitrade-${config.id}-day${state.day}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
+        savedState = state;
         return;
       }
     }
@@ -986,7 +1037,7 @@ app.addEventListener('click', (ev) => {
 
 app.addEventListener('keydown', (ev) => {
   const el = ev.target as HTMLElement;
-  if (el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
+  if (!(el instanceof HTMLButtonElement) && el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
     ev.preventDefault();
     ui.selectedCard = el.dataset.emp ?? null;
     render();
@@ -1028,6 +1079,7 @@ function loadText(text: string) {
   } else {
     config = loaded.config;
     state = loaded.state;
+    savedState = state;
     resetUi();
     ui.flash = { kind: 'info', text: `${config.titleKo} ${state.day}일 상태를 불러왔습니다. 이미 공개된 사건은 다시 적용하지 않습니다.` };
   }

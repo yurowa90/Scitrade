@@ -1,6 +1,9 @@
 // 영입 화면의 읽기 전용 정보. 경제 상태와 명령 허용 여부는 엔진에서 가져온다.
 import characters from '../../data/characters.json';
 import venues from '../../data/venues.json';
+import { planState } from '../engine/engine';
+import { payrollRunwayDay } from '../engine/previews';
+import { payrollRunwayKo } from './growth';
 import { cityName } from '../engine/catalog';
 import { employedDefs } from '../engine/employees';
 import { formatMoney } from '../engine/money';
@@ -78,13 +81,24 @@ export function interviewPreview(s: GameState, config: ScenarioConfig, e: Employ
 export function interviewBlock(s: GameState, config: ScenarioConfig, e: EmployeeDef, check: CommandResult, expanded = true, queuedHire = ''): string {
   const p = interviewPreview(s, config, e);
   const won = (n: number) => formatMoney('KRW', n);
+  const runway = (state:GameState) => payrollRunwayKo(payrollRunwayDay(state,config),s.day,config.campaignDays);
+  let afterHire = '';
+  if (queuedHire) {
+    afterHire = `<p class="hire-after">원화 급여 지급 가능일: ${runway(s)} (오늘 할 일의 고용 반영)</p>`;
+  } else if (check.status === 'APPLIED') {
+    let id = `PREVIEW-HIRE-AFTER-${e.id}`;
+    while (s.processedCommands[id]) id += '-';
+    const after = planState(s,config,[{id,type:'HIRE_CANDIDATE',candidateId:e.id}]).state;
+    afterHire = `<p class="hire-after">고용하면 원화 사용 가능액: 지금 ${won(fundsPosition(s,config,'KRW').available)} → 고용 뒤 ${won(fundsPosition(after,config,'KRW').available)}</p>
+      <p class="hire-after">원화 급여 지급 가능일: 지금 ${runway(s)} → 고용하면 ${runway(after)}</p>`;
+  }
   return `<div class="interview" id="interview-${esc(e.id)}" role="region" aria-labelledby="interview-h-${esc(e.id)}" ${expanded ? '' : 'hidden'}>
     <h4 id="interview-h-${esc(e.id)}">면담 — ${esc(e.nameKo)}</h4><dl class="interview-facts">
     <div><dt>계약금 (일급×${config.recruitment?.signingFeeWageDays})</dt><dd>${won(p.signingFee)}</dd></div>
     <div><dt>일급</dt><dd>${won(p.dailyWage)}</dd></div>
     <div><dt>남은 기간 급여 (${s.day < config.campaignDays ? `${s.day + 1}~${config.campaignDays}일` : '남은 기간 없음'})</dt><dd>${won(p.remainingWages)}</dd></div>
     <div><dt>하루 처리량</dt><dd>${p.throughput}pt</dd></div>
-    <div><dt>지금 원화 사용 가능액</dt><dd>${won(p.availableKrw)}</dd></div></dl>
+    <div><dt>지금 원화 사용 가능액</dt><dd>${won(p.availableKrw)}</dd></div></dl>${afterHire}
     <p>지금 인원으로 버티면: 준비 미배정 ${p.unassigned}건 · 출항 불참 위험 ${p.willMiss}건</p>
     ${queuedHire || `<div data-action-slot="hire-${esc(e.id)}"><button data-action="hire" data-candidate="${esc(e.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} aria-label="${esc(e.nameKo)} 고용">${esc(e.nameKo)} 고용</button>
     ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}${p.signingFee === 0 && check.reasonKo.startsWith('영입 계약금 자금이 부족합니다.') && fundsPosition(s, config, 'KRW').unpaidObligations > 0 ? ' 미지급 급여가 남아 있어 계약금이 0원이어도 고용할 수 없습니다.' : ''}</p>` : '<p class="muted small">계약금은 한 번 지급하며, 업무와 급여는 고용 다음 날부터 시작합니다.</p>'}</div>`}
@@ -124,12 +138,12 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
 /** 카드와 운영표 모두 공개된 동료 목록만 전달받는다. */
 export function candidateCard(e: EmployeeDef, s: GameState, c: CandidateState, selected: boolean, config: ScenarioConfig): string {
   const status = esc(candidateLabel(s, c, config));
-  return `<article class="card ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-label="${esc(e.nameKo)} 후보 카드, ${status}"><h3>${esc(e.nameKo)} · ${esc(species(e.id))}</h3>${roleBadge(e.role)}<p>${status}</p><p>하루 ${e.workUnitsPerDay}pt · 일급 ${formatMoney('KRW', e.salaryPerDayMinor)}</p>${signingFeeRule(e, c, config)}<p class="muted small">그림 미제작</p></article>`;
+  return `<article class="card ${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" role="button" aria-pressed="${selected}" aria-label="${esc(e.nameKo)} 후보 카드, ${status}"><h3>${esc(e.nameKo)} · ${esc(species(e.id))}</h3>${selected ? '<span class="card-picked">✓ 선택됨</span>' : ''}${roleBadge(e.role)}<p>${status}</p><p>하루 ${e.workUnitsPerDay}pt · 일급 ${formatMoney('KRW', e.salaryPerDayMinor)}</p>${signingFeeRule(e, c, config)}<p class="muted small">그림 미제작</p></article>`;
 }
 export function crewRow(e: EmployeeDef, s: GameState, config: ScenarioConfig, selected: boolean, candidate?: CandidateState, task?: Task): string {
   const loc = s.employees.find((x) => x.id === e.id)?.locationCityId;
   const location = cityName(config, loc ?? null);
-  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}" tabindex="0" aria-selected="${selected}"><th scope="row"><span class="nm">${esc(e.nameKo)}</span>${roleBadge(e.role)}${config.growth && !candidate ? `<small>레벨 ${levelProgress(s,config,e.id)?.level ?? 1}</small>` : ''}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `${esc(crewStatusKo(task))}<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
+  return `<tr class="${selected ? 'is-selected' : ''}" data-action="select-card" data-emp="${esc(e.id)}"><th scope="row"><button class="roster-pick" data-action="select-card" data-emp="${esc(e.id)}" aria-pressed="${selected}"><span class="nm">${esc(e.nameKo)}</span></button>${selected ? '<small class="picked">✓ 선택됨</small>' : ''}${roleBadge(e.role)}${config.growth && !candidate ? `<small>레벨 ${levelProgress(s,config,e.id)?.level ?? 1}</small>` : ''}</th><td>${candidate ? esc(candidateLabel(s, candidate, config)) : task ? `${esc(crewStatusKo(task))}<small>${esc(taskSchedule(task, config))}</small>` : '○ 대기<small>배정 가능</small>'}<small>${esc(location)}</small></td><td class="num">${e.workUnitsPerDay}pt/일<small>${formatMoney('KRW', e.salaryPerDayMinor)}</small></td></tr>`;
 }
 
 /** 실제 화면과 시험이 같은 카드 선택 경로를 쓴다. */

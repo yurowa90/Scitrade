@@ -21,7 +21,7 @@ describe('취소 안내와 원화 보고', () => {
   });
   it('성장과 M1 각주는 실제 직원 처리량과 범위를 표시한다', () => {
     const m1=loadScenario('SCENARIO_M1_ONE_TRADE');
-    expect(crewNoteKo(m1)).toBe('처리량은 고정값(LEGACY_FIXED, 하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이후 M2a 단계(성장)와 M2b에서 켭니다. 일급 80,000원.');
+    expect(crewNoteKo(m1)).toBe('처리량은 고정값(하루 2pt)만 씁니다. 능력·속성·레벨·시너지는 이 시나리오에서 쓰지 않습니다. 일급 80,000원.');
     for(const cfg of [config,m1]) {
       expect(crewNoteKo(cfg)).not.toContain('하루 Npt');
       expect(crewNoteKo(cfg)).toContain('하루 2pt');

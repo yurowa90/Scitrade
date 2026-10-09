@@ -9,7 +9,17 @@ export async function startUi(config?: ScenarioConfig) {
   vi.useFakeTimers();
   vi.stubGlobal('confirm', vi.fn(() => true));
   const scrollBy = vi.fn();
-  vi.stubGlobal('window', { innerHeight: 800, scrollBy });
+  const windowListeners: Record<string, (ev: any) => unknown> = {};
+  const documentListeners: Record<string, (ev: any) => unknown> = {};
+  const win = { innerHeight: 800, scrollBy, scrollX: 0, scrollY: 0,
+    scrollTo: vi.fn((x:number,y:number)=>{win.scrollX=x;win.scrollY=y;}),
+    addEventListener:(name:string,callback:(ev:any)=>unknown)=>{windowListeners[name]=callback;},
+    requestAnimationFrame:(cb:FrameRequestCallback)=>setTimeout(()=>cb(0),16),
+  };
+  vi.stubGlobal('window', win);
+  const announcements: string[] = [];
+  const liveStatus = { get textContent() { return announcements.at(-1) ?? ''; },
+    set textContent(value:string) { announcements.push(value); } };
   let statusbarHeight = 100;
   let resizeStatus: (() => void) | undefined;
   const bounds: Record<string,{top:number;bottom:number;height:number}> = {};
@@ -39,8 +49,10 @@ export async function startUi(config?: ScenarioConfig) {
   const focusIds: string[] = [];
   const closestSelectors: string[] = [];
   const doc = { title:'', documentElement:{style:{setProperty:vi.fn()}}, activeElement:null as any, querySelector:()=>app,
+    addEventListener:(name:string,callback:(ev:any)=>unknown)=>{documentListeners[name]=callback;},
+    body:{insertAdjacentHTML:vi.fn()},
     createElement:vi.fn(() => ({ href:'', download:'', click:vi.fn() })),
-    getElementById:(id:string)=> html.includes(`id="${id}"`) ? {
+    getElementById:(id:string)=> id==='live-status' ? liveStatus : html.includes(`id="${id}"`) ? {
       id, dataset:{}, getBoundingClientRect:()=>bounds[id] ?? rect(), closest:()=>null,
       parentElement:id.startsWith('status-') ? {getBoundingClientRect:()=>slotRect(id.slice(7))} : null,
       querySelector:()=>null,
@@ -58,6 +70,9 @@ export async function startUi(config?: ScenarioConfig) {
       closest:(selector:string)=>{
         closestSelectors.push(selector);
         const selectors=selector.split(',').map((s)=>s.trim());
+        if ((selectors.includes('.statusbar') && dataset.action==='end-day')
+          || (selectors.includes('.flash-toast') && dataset.action==='culture-result')
+          || (selectors.includes('.skip-links') && dataset.action==='skip-to')) return element;
         if(selectors.includes('[data-action]')) return element;
         if(selectors.includes('[data-action-slot]')) {
           const slot=dataset.action==='assign' ? `assign-${dataset.task}` : dataset.action==='book' ? `book-${dataset.contract}`
@@ -93,7 +108,11 @@ export async function startUi(config?: ScenarioConfig) {
     const element=rendered(dataset);
     return listeners.click!({detail,target:fromChild ? {closest:(selector:string)=>element.closest(selector)} : element});
   };
-  return { app, doc, focus, focusIds, scroll, scrollIds, closestSelectors, rendered, frame:()=>frame, scrollBy, slotTops,
+  return { app, doc, win, announcements,
+    fireDoc:(name:string,ev:any)=>documentListeners[name]!(ev),
+    fireWindow:(name:string,ev:any)=>windowListeners[name]!(ev),
+    keydown:(target:unknown,key:string)=>listeners.keydown!({key,target,preventDefault:vi.fn()}),
+    focus, focusIds, scroll, scrollIds, closestSelectors, rendered, frame:()=>frame, scrollBy, slotTops,
     setToastTop:(top:number)=>{toastTop=top;},
     // 다음 한 번의 다시 그리기 직후에 실행한다. 내용이 늘거나 준 상황을 흉내 낸다.
     afterRender:(callback:()=>void)=>{afterRender=callback;},

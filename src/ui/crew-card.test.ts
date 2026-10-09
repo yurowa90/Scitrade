@@ -9,7 +9,7 @@ describe('M1 카드와 카드 배치 유지',()=>{
     const s=openDay(createGame(cfg),cfg).state;
     expect(crewEntryCard(crewEntries(s,cfg,'all')[0]!,s,cfg,false).replace(/[ \t]+$/gm,'')).toMatchInlineSnapshot(`
       "
-        <article class="card attr-bg-light " data-action="select-card" data-emp="EMP01" tabindex="0"
+        <article class="card attr-bg-light " data-action="select-card" data-emp="EMP01" tabindex="0" role="button" aria-pressed="false"
           aria-label="귀솔 직원 카드, 영업, 레벨 1, 대기 — 배정 가능">
           <header class="card-top">
             <span class="card-name">귀솔</span>
@@ -37,5 +37,23 @@ describe('M1 카드와 카드 배치 유지',()=>{
     expect(css).toContain('perspective(700px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))');
     expect(css).toMatch(/\.card\.is-selected\s*\{[^}]*--tilt-y:\s*-6deg/);
     expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*\.card\s*\{[^}]*transform:\s*none/);
+  });
+});
+
+describe('TASK-0018 카드와 운영표 선택 의미',()=>{
+  it.each([false,true])('선택 %s는 직원·후보 카드와 이름 단추에 같은 의미로 나타난다',async(selected)=>{
+    const {candidateCard,crewRow}=await import('./recruitment');
+    const cfg=loadScenario('SCENARIO_M2_MULTI_TRADE'),s=openDay(createGame(cfg),cfg).state;
+    const entry=crewEntries(s,cfg,'all')[0]!;
+    const c=s.recruitment.candidates[0]!,e=cfg.employees.find((e)=>e.id===c.employeeId)!;
+    for(const html of [crewEntryCard(entry,s,cfg,selected),candidateCard(e,s,c,selected,cfg)]) {
+      expect(html).toContain(`tabindex="0" role="button" aria-pressed="${selected}"`);
+      expect(html.includes('✓ 선택됨')).toBe(selected);
+    }
+    const row=crewRow(entry.def,s,cfg,selected),tag=row.match(/<tr[^>]*>/)![0];
+    expect(tag).not.toContain('tabindex');expect(tag).not.toContain('aria-selected');
+    expect(row.match(/class="roster-pick"/g)).toHaveLength(1);
+    expect(row).toContain(`aria-pressed="${selected}"><span class="nm">`);
+    expect(row.includes('✓ 선택됨')).toBe(selected);
   });
 });

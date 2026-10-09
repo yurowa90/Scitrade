@@ -43,3 +43,27 @@ export function advanceDay(state: GameState, config: ScenarioConfig, pending: Co
     return { errorKo: `하루 진행에 실패했습니다: ${error instanceof Error ? error.message : String(error)}` };
   }
 }
+
+type Flash = NonNullable<ReturnType<typeof initialUiState>['flash']>;
+/** 대기 명령이 있거나 마지막 시작·불러오기·저장·내보내기 뒤 상태가 바뀌었는지 확인한다. */
+export function hasUnsavedWork(pending: Command[], state: GameState, savedState: GameState | null): boolean {
+  return pending.length > 0 || state !== savedState;
+}
+
+/** 이번 그리기에서 알릴 글. 없으면 null. */
+export function nextAnnouncement(input: {
+  flash: Flash | null; announcedFlash: Flash | null;
+  growthFresh: boolean; growthNotices: string[]; growthDay: number | null;
+}): string | null {
+  const messages: string[] = [];
+  if (input.flash && input.flash !== input.announcedFlash) messages.push(input.flash.text);
+  if (input.growthFresh && input.growthNotices.length && input.growthDay !== null && input.flash?.action !== 'culture-result') {
+    messages.push(`${input.growthDay}일 하루 진행 — 경험치·레벨 변화: ${input.growthNotices.join(', ')}`);
+  }
+  return messages.length ? messages.join(' ') : null;
+}
+
+/** 같은 글을 다시 알릴 때도 내용이 바뀌게 끝에 줄바꿈 없는 공백을 붙였다 뗀다. */
+export function liveRegionText(current: string, next: string): string {
+  return current === next ? next + '\u00a0' : next;
+}
