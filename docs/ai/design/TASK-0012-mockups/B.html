@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="only light" />
+<link rel="icon" href="data:," />
+<title>Scitrade 시안 B — 부산 현지 도시 장면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ── 게임 src/ui/style.css의 토큰과 기본 모양을 그대로 옮긴 부분 ── */
+:root {
+  --cream: #fbf6ec; --paper: #fffdf8; --mint: #dff3ea; --mint-deep: #3d8f74;
+  --sky: #dcecf8; --sky-deep: #3a6ea5; --navy: #1f2a44; --navy-soft: #4a5672;
+  --line: #e4dccb; --warn: #a64a25; --warn-bg: #fdebe1; --ok: #2f7a5f; --gold: #c9a24a;
+  --radius: 14px;
+  --shadow: 0 2px 0 rgba(31, 42, 68, 0.06), 0 8px 24px rgba(31, 42, 68, 0.06);
+  color-scheme: only light;
+  --topbar-h: 0px; --toast-h: 0px; --city-top: 0px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: var(--topbar-h); scroll-padding-bottom: var(--toast-h); }
+html, body { overscroll-behavior-y: none; }
+html.city-open { overflow: hidden; }
+body {
+  margin: 0; background: var(--cream); color: var(--navy);
+  font-family: 'IBM Plex Sans KR', system-ui, sans-serif; font-size: 15px; line-height: 1.5;
+  word-break: keep-all; overflow-wrap: anywhere; overflow-anchor: none;
+}
+h2, h3, h4, .logo, .card-name { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
+h2 { font-size: 1.1rem; margin: 0 0 .6rem; display: flex; flex-wrap: wrap; gap: .1rem .5rem; align-items: baseline; }
+h2 small { flex-basis: 100%; }
+h2 small, h3 small { font-weight: 400; color: var(--navy-soft); font-size: .8rem; }
+h3 { font-size: 1rem; margin: 0 0 .5rem; }
+button, select {
+  font: inherit; color: var(--navy); background: var(--paper);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: .4rem .75rem; cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--sky-deep); }
+button:disabled { background: #eee9df; color: var(--navy-soft); border-color: #bcb4a4; cursor: not-allowed; }
+button { touch-action: manipulation; }
+button.primary { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+button.primary:disabled { background: #eee9df; color: var(--navy-soft); border-color: #bcb4a4; }
+button.link { border: none; background: none; color: var(--sky-deep); text-decoration: underline; padding: 0 .3rem; }
+:focus-visible { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
+.muted { color: var(--navy-soft); }
+.small { font-size: .82rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.topbar { display: contents; }
+.masthead { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; padding: .7rem 1.2rem; background: var(--paper); }
+.statusbar {
+  position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center;
+  padding: .5rem 1.2rem; background: var(--paper); border-bottom: 1.5px solid var(--line);
+}
+.masthead > *, .statusbar > * { min-width: 0; max-width: 100%; }
+.day-action { margin-left: auto; display: flex; flex-direction: column; align-items: center; }
+.amount-basis { font-size: 12px; color: var(--navy-soft); }
+.brand { display: flex; flex-direction: column; line-height: 1.1; }
+.logo { font-size: 1.35rem; font-weight: 700; color: var(--mint-deep); }
+.sub { font-size: 12px; color: var(--navy-soft); }
+.scenario { display: flex; flex-direction: column; font-size: 12px; color: var(--navy-soft); gap: .15rem; }
+.day { display: flex; flex-direction: column; font-size: .8rem; color: var(--navy-soft); }
+.day b { font-size: 1.25rem; color: var(--navy); }
+.stat { display: flex; flex-direction: column; font-size: 12px; color: var(--navy-soft); }
+.stat b { font-size: 1.02rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+.actions { margin-left: auto; display: flex; gap: .4rem; flex-wrap: wrap; }
+
+/* 계획한 가로 배치(≥1001px): 견적판이 왼쪽 위, 동료 300px 오른쪽 열 */
+.layout {
+  display: grid; gap: 1rem; padding: 1rem 1.2rem 5.5rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
+  grid-template-areas: "trade trade crew" "trade trade resources" "trade trade queue" "world report log";
+  align-items: start;
+}
+.layout > * { min-width: 0; }
+.world { grid-area: world; } .report { grid-area: report; } .crew { grid-area: crew; }
+.trade { grid-area: trade; } .queue { grid-area: queue; } .log { grid-area: log; } .resources { grid-area: resources; }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; grid-template-areas: "trade" "queue" "crew" "resources" "report" "world" "log"; }
+}
+.panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); }
+.offer, .contract { border: 1.5px dashed var(--line); border-radius: 12px; padding: .9rem; margin-bottom: .9rem; }
+table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.money th { text-align: left; font-weight: 400; padding: .25rem 0; color: var(--navy-soft); }
+table.money td { text-align: right; padding: .25rem 0; }
+table.money tr.total th, table.money tr.total td { font-weight: 700; color: var(--navy); border-top: 1.5px solid var(--line); }
+table.money caption { text-align: left; font-weight: 700; padding-bottom: .3rem; }
+.log ul { list-style: none; padding: 0; margin: 0; }
+.log li { display: grid; grid-template-columns: 3rem 1fr; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.log li span { color: var(--navy-soft); }
+.pill { display: inline-block; background: var(--sky); color: var(--sky-deep); border-radius: 999px; padding: .1rem .7rem; font-size: .82rem; font-weight: 600; }
+.pipeline { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; padding: 0; margin: .3rem 0 .8rem; }
+.pipeline li { font-size: 12px; padding: .2rem .55rem; border-radius: 999px; background: #f1ece0; color: var(--navy-soft); }
+.pipeline li.done { background: var(--mint); color: var(--mint-deep); }
+.pipeline li.now { background: var(--navy); color: #fff; font-weight: 600; }
+.kind { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: .05rem .45rem; margin-right: .25rem; vertical-align: .1em; }
+.kind.kind-trade { background: var(--sky); color: var(--sky-deep); }
+.kind.kind-fwd { background: #f3e6c8; color: #7a5a14; }
+.books { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.flash { border-radius: 10px; padding: .5rem .7rem; font-size: .88rem; }
+.flash.info { background: var(--mint); }
+.flash.warn { background: var(--warn-bg); color: var(--warn); }
+.pending { padding-left: 1.2rem; margin: 0; }
+.pending li { padding: .2rem 0; }
+.flash-toast {
+  position: fixed; bottom: .5rem; left: .65rem; right: .65rem; z-index: 6; margin: 0 auto; max-width: 48rem;
+  border: 1px solid var(--line); box-shadow: var(--shadow); pointer-events: none;
+}
+.flash-toast:empty { display: none; }
+.card-face {
+  width: 44px; height: 40px; flex: none; border-radius: 48% 48% 44% 44%; background: #f6e2c4; border: 3px solid #d9a877;
+  display: grid; place-items: center; font-size: 1.1rem; font-weight: 700; color: #8a5a2f; font-family: 'Gowun Dodum', sans-serif;
+}
+.crew-time, .reserve-list { list-style: none; padding: 0; margin: .3rem 0; font-size: .86rem; }
+.crew-time li { padding: .3rem 0; border-bottom: 1px solid var(--line); }
+.crew-time small { display: block; color: var(--navy-soft); font-size: 12px; }
+.reserve-list li { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--line); padding: .15rem 0; }
+.reserve-list b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.resources h3 { margin-top: .9rem; font-size: .95rem; }
+@media (any-pointer: coarse) {
+  button, select { min-height: 44px; }
+  button.link { padding: .55rem .65rem; }
+}
+
+/* ── 시안 표시: 비워 둔 칸 ── */
+.ghost-note { font-size: 12px; color: var(--navy-soft); margin: .2rem 0 0; }
+.skel { display: block; height: .7rem; border-radius: 6px; background: #efe8d8; margin: .35rem 0; }
+.skel.w40 { width: 40%; } .skel.w60 { width: 60%; } .skel.w80 { width: 80%; }
+.offer.ghost { background: #fffefb; }
+.map-ghost { height: 150px; border-radius: 12px; background: #16365c; border: 3px solid #c9a24a; display: grid; place-items: center; color: #fff6df; font-size: 13px; }
+.mini-card { display: flex; gap: .6rem; align-items: center; padding: .45rem .5rem; border: 1.5px solid #ead9b0; border-radius: 12px; background: linear-gradient(160deg, #fffaf0, #f3ead6); margin-bottom: .5rem; }
+.mini-card .card-name { font-size: 1.05rem; font-weight: 700; display: block; }
+.mini-card small { display: block; font-size: 12px; color: var(--navy-soft); }
+.mini-card small.plan { color: var(--sky-deep); font-weight: 700; }
+.new-row th, .new-row td { background: #f6fbff; }
+.row-tag { font-size: 12px; font-weight: 700; color: var(--sky-deep); margin-left: .3rem; }
+
+/* ── 진입점: 거래 칸 머리줄 안. 제목 두 줄과 같은 높이라 칸 높이를 늘리지 않는다. ── */
+.panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: .6rem; }
+.panel-head h2 { flex: 1; }
+.local-entry {
+  display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; flex: none;
+  border-color: var(--mint-deep); color: var(--navy); padding: .3rem .7rem .3rem .5rem; text-align: left;
+}
+.local-entry svg { width: 30px; height: 30px; flex: none; }
+.local-entry span { display: flex; flex-direction: column; line-height: 1.2; }
+.local-entry b { font-family: 'Gowun Dodum', sans-serif; font-size: 15px; }
+.local-entry small { font-size: 12px; color: var(--mint-deep); font-weight: 600; }
+.local-entry[aria-expanded="true"] { background: var(--mint); }
+
+/* ── 부산 현지: 고정 막대 바로 아래를 덮는 장면 시트. 막대·‘하루 진행 ▶’은 그대로 보인다. ── */
+.city {
+  position: fixed; left: 0; right: 0; top: var(--city-top); bottom: 0; z-index: 4;
+  display: flex; flex-direction: column; background: var(--cream);
+}
+.city[hidden] { display: none; }
+.city-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding: .4rem 1.2rem;
+  background: var(--paper); border-bottom: 1.5px solid var(--line);
+}
+.city-head h2 { margin: 0; font-size: 1.15rem; flex: none; }
+.city-head h2:focus { outline: none; }
+.city-head h2:focus-visible { outline: 3px solid var(--sky-deep); }
+.city-head .note { margin: 0; font-size: 13px; color: var(--navy-soft); flex: 1 1 16rem; }
+.city-tools { display: flex; gap: .4rem; margin-left: auto; }
+.city-tools button { display: inline-flex; align-items: center; gap: .35rem; }
+.city-tools svg { width: 18px; height: 18px; }
+.city-tools .bump { animation: bump .5s ease; }
+@keyframes bump { 40% { transform: scale(1.12); background: var(--mint); } }
+.city-body {
+  --sheet-w: clamp(300px, 32vw, 420px);
+  flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) var(--sheet-w); gap: .9rem;
+  padding: .6rem 1.2rem calc(.6rem + var(--toast-h));
+}
+.city-body.wide { --sheet-w: clamp(420px, 56vw, 820px); }
+.scene-col { min-height: 0; display: flex; flex-direction: column; gap: .35rem; }
+.scene-wrap { flex: 1 1 0; min-height: 0; container-type: size; display: grid; place-items: start center; }
+.scene {
+  position: relative; width: min(100cqw, 133.33cqh); height: min(100cqh, 75cqw); container-type: size;
+  border-radius: 14px; overflow: hidden; border: 3px solid #c9a24a; box-shadow: inset 0 0 0 2px #6b4f1d, var(--shadow); background: #eef5fa;
+}
+.scene .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; }
+.venues { position: absolute; inset: 0; z-index: 1; }
+.venue {
+  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
+  padding: 2px 2px 3px; background: transparent; border: 2px solid transparent; border-radius: 12px; color: var(--navy);
+}
+.venue:hover:not(:disabled) { border-color: rgba(58, 110, 165, .45); background: rgba(255, 253, 248, .25); }
+.venue svg { flex: 1 1 auto; min-height: 0; width: 100%; display: block; transition: transform .2s ease; }
+.venue:hover svg, .venue:focus-visible svg { transform: translateY(-3px); }
+.venue .plate {
+  flex: none; max-width: 100%; font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; font-weight: 700;
+  font-size: max(12px, min(15px, 2.4cqw)); line-height: 1.2; text-align: center; background: var(--paper);
+  border: 1.5px solid var(--navy-soft); border-radius: 8px; padding: .15em .45em; box-shadow: 0 2px 0 rgba(31, 42, 68, .18);
+  overflow-wrap: normal; word-break: keep-all; max-width: 135%;
+}
+.venue .plate small { display: block; font-family: 'IBM Plex Sans KR', sans-serif; font-size: 12px; font-weight: 600; color: var(--mint-deep); }
+.venue .plate .now { display: block; font-size: 12px; font-family: 'IBM Plex Sans KR', sans-serif; }
+.venue[aria-pressed="true"] { border-color: var(--gold); background: rgba(255, 253, 248, .45); }
+.venue[aria-pressed="true"] .plate { background: var(--navy); color: #fff; border-color: var(--navy); }
+.venue[aria-pressed="true"] .plate small { color: #dff3ea; }
+.tokens { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.token { position: absolute; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); transition: left .8s ease, top .8s ease; }
+.token .face {
+  width: max(26px, 5.4cqw); height: max(24px, 5cqw); border-radius: 48% 48% 44% 44%; background: #f6e2c4; border: 2px solid #d9a877;
+  display: grid; place-items: center; font: 700 max(12px, 2.4cqw)/1 'Gowun Dodum', sans-serif; color: #8a5a2f; box-shadow: 0 2px 0 rgba(31, 42, 68, .2);
+}
+.token .tag { font-size: 12px; line-height: 1.25; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0 .45em; white-space: nowrap; margin-top: 1px; }
+.token .tag.plan { background: var(--sky); color: var(--sky-deep); border-color: var(--sky-deep); font-weight: 700; }
+.street-note { margin: 0; font-size: 13px; color: var(--navy-soft); min-height: 1.5em; }
+.street-note b { color: var(--navy); }
+
+/* 대화 장면 (결과) */
+.closeup { position: absolute; inset: 0; z-index: 3; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: #f6ead2; animation: fadein .35s ease; }
+.closeup .cu-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.closeup .bubbles { position: relative; display: grid; gap: .5rem; align-content: start; padding: 3cqw 4cqw 1cqw; overflow: auto; min-height: 0; }
+.bubble {
+  position: relative; margin: 0 0 0 16cqw; background: #fffdf8; border: 2px solid var(--navy); border-radius: 16px;
+  padding: .45em .8em; font-size: max(13px, min(17px, 2.6cqw)); line-height: 1.45; box-shadow: 0 3px 0 rgba(31, 42, 68, .18);
+  animation: pop .45s ease both;
+}
+.bubble::after { content: ''; position: absolute; right: 9cqw; bottom: -12px; border: 10px solid transparent; border-top-color: var(--navy); border-bottom: 0; }
+.bubble .who { display: block; font-size: 12px; font-weight: 700; color: var(--navy-soft); }
+.closeup .cast { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: .5rem; padding: 0 4cqw 2cqw; }
+.cast .side { display: flex; gap: 2cqw; align-items: flex-end; }
+.cast .who-fig { display: flex; flex-direction: column; align-items: center; }
+.cast .who-fig svg { width: max(64px, 17cqw); height: max(76px, 20cqw); }
+.cast .face.big { width: max(48px, 11cqw); height: max(44px, 10cqw); border-radius: 48% 48% 44% 44%; background: #f6e2c4; border: 3px solid #d9a877; display: grid; place-items: center; font: 700 max(18px, 4.5cqw)/1 'Gowun Dodum', sans-serif; color: #8a5a2f; }
+.cast .name { font-size: 12px; font-weight: 700; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0 .5em; margin-top: 2px; white-space: nowrap; }
+.cast .mid { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding-bottom: .2rem; }
+.cast .cu-cap { white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--navy); background: rgba(255, 253, 248, .9); border-radius: 999px; padding: 0 .6em; }
+@keyframes fadein { from { opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+
+/* 오른쪽 시트 */
+.sheet {
+  min-height: 0; overflow: auto; overscroll-behavior: contain; container-type: inline-size;
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: .65rem .85rem; box-shadow: var(--shadow);
+}
+.sheet h3 { font-size: 1.08rem; margin: 0 0 .25rem; }
+.sheet h3:focus { outline: none; }
+.sheet h3:focus-visible { outline: 3px solid var(--sky-deep); }
+.sheet .lead { margin: 0 0 .5rem; font-size: 14px; color: var(--navy-soft); }
+.intro-list { margin: .3rem 0 0; padding-left: 1.1rem; font-size: 14px; }
+.intro-list li { margin: .2rem 0; }
+.one-line { margin: .2rem 0 0; font-size: 15px; background: #f6f2e8; border-radius: 10px; padding: .55rem .7rem; }
+.cul { display: grid; gap: .7rem; }
+@container (min-width: 640px) {
+  .cul { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+}
+.pick-label { font-size: 13px; font-weight: 700; margin: 0 0 .3rem; display: flex; gap: .1rem .4rem; align-items: baseline; flex-wrap: wrap; }
+.pick-label small { font-weight: 400; color: var(--navy-soft); font-size: 12px; }
+.acts { display: grid; gap: .35rem; margin-bottom: .6rem; }
+@container (max-width: 639px) { .acts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.act-btn, .emp-btn { text-align: left; display: flex; flex-direction: column; gap: .05rem; padding: .35rem .55rem; width: 100%; min-height: 44px; }
+.act-btn b { font-family: 'Gowun Dodum', sans-serif; font-size: 15px; line-height: 1.3; }
+.act-btn small, .emp-btn small { font-size: 12px; color: var(--navy-soft); line-height: 1.35; }
+.act-btn small.tag, .emp-btn small.tag { color: var(--sky-deep); font-weight: 700; }
+.act-btn[aria-pressed="true"], .emp-btn[aria-pressed="true"] { border-color: var(--navy); background: #f2f6fb; box-shadow: inset 4px 0 0 var(--navy); }
+.act-btn[aria-pressed="true"] b::before, .emp-btn[aria-pressed="true"] b::before { content: '✓ '; }
+.emps { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+.emp-btn { flex-direction: row; align-items: center; gap: .5rem; }
+.emp-btn .card-face { width: 34px; height: 31px; border-width: 2px; font-size: 15px; }
+.emp-btn span { display: flex; flex-direction: column; min-width: 0; }
+.emp-btn b { font-family: 'Gowun Dodum', sans-serif; font-size: 15px; }
+.plan-list { list-style: none; padding: 0; margin: .4rem 0 0; font-size: 13px; }
+.plan-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .4rem; border-top: 1px dashed var(--line); padding: .25rem 0; }
+
+.pv { border: 1.5px solid var(--line); border-radius: 12px; padding: .5rem .7rem; background: #fffefb; display: grid; gap: .4rem; }
+.pv h4 { margin: 0; font-size: 15px; }
+.pv h4:focus { outline: none; }
+.pv-empty p { margin: 0; font-size: 14px; }
+.tagline { display: inline-block; font-size: 12px; font-weight: 700; border: 1.5px solid currentColor; border-radius: 6px; padding: 0 .35rem; margin-right: .4rem; line-height: 1.45; vertical-align: .05em; }
+.pv-gap { margin: 0; border-left: 4px solid var(--navy); background: #f2f6fb; border-radius: 0 8px 8px 0; padding: .3rem .55rem; font-size: 14px; }
+.pv-warn { margin: 0; background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: .3rem .55rem; font-size: 13.5px; }
+.pv-facts { display: grid; grid-template-columns: 6.6em minmax(0, 1fr); gap: .05rem .6rem; margin: 0; font-size: 14px; }
+.pv-facts dt { color: var(--navy-soft); }
+.pv-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.pv-facts dd small { color: var(--navy-soft); font-size: 12px; }
+.pv-facts dd.over { color: var(--warn); font-weight: 700; }
+.pv-new-h { margin: 0; font-size: 13px; font-weight: 700; }
+.pv-new { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(13em, 1fr)); gap: .05rem .6rem; font-size: 13.5px; }
+.pv-new li::before { content: '＋ '; color: var(--mint-deep); font-weight: 700; }
+.pv-new li.exists::before { content: '＝ '; color: var(--navy-soft); }
+.pv-same { margin: 0; font-size: 13.5px; }
+.pv-reject { margin: 0; background: var(--warn-bg); color: var(--warn); border: 1.5px solid var(--warn); border-radius: 8px; padding: .4rem .6rem; font-size: 14px; }
+.slot { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .5rem; min-height: 44px; }
+.slot .pill:focus { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
+
+/* 결과 카드와 기록장: 네 줄은 같은 모양·같은 글자 크기 */
+.results { display: grid; gap: .6rem; }
+.result-live { margin: 0; font-size: 13px; background: var(--mint); border-radius: 8px; padding: .3rem .55rem; }
+.result-live:empty { display: none; }
+.result h3 { margin: 0; }
+.rec-meta { margin: .1rem 0 0; font-size: 12.5px; color: var(--navy-soft); }
+.four { display: grid; gap: .35rem; margin: .4rem 0; }
+.four > div { display: grid; grid-template-columns: 10.5em minmax(0, 1fr); gap: .1rem .6rem; align-items: baseline; background: #fffefb; border: 1.5px solid var(--line); border-radius: 10px; padding: .4rem .6rem; }
+@container (max-width: 520px) { .four > div { grid-template-columns: 1fr; } }
+.four dt { font-weight: 700; font-size: 13px; display: flex; gap: .35rem; align-items: baseline; }
+.four dt .num { display: inline-grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: 50%; background: var(--navy); color: #fff; font-size: 12px; flex: none; }
+.four dd { margin: 0; font-size: 15px; }
+.after { list-style: none; margin: 0; padding: 0; display: grid; gap: .2rem; font-size: 14px; }
+.result-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.book-sec { margin-top: .8rem; }
+.book-sec h4 { margin: 0 0 .3rem; font-size: 15px; display: flex; flex-wrap: wrap; gap: .1rem .5rem; align-items: baseline; }
+.book-sec h4 small { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 400; font-size: 12px; color: var(--navy-soft); }
+.rec { border: 1.5px solid var(--line); border-radius: 12px; padding: .5rem .65rem; margin-bottom: .5rem; background: var(--paper); }
+.rec.fresh { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 162, 74, .25); animation: fadein .5s ease; }
+.rec h5 { margin: 0; font-family: 'Gowun Dodum', sans-serif; font-size: 15px; display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+.plain-list { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+.plain-list li { display: flex; flex-wrap: wrap; gap: .1rem .6rem; padding: .25rem 0; border-bottom: 1px solid var(--line); }
+.plain-list li b { font-weight: 600; }
+.plain-list li span { color: var(--navy-soft); }
+.plain-list li span.has { color: var(--navy); }
+
+.mock-label {
+  position: fixed; left: 8px; bottom: 8px; z-index: 7; pointer-events: none;
+  font-size: 12px; font-weight: 700; color: #fff; background: rgba(31, 42, 68, .88); border-radius: 8px; padding: 2px 8px;
+}
+@media (max-width: 1000px) {
+  .city-body, .city-body.wide { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .scene-wrap { flex: none; height: min(38vh, 60vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<!-- 공용 그림 조각: 인물 두 명과 무늬. 장면 안 여러 곳에서 다시 쓴다. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pat-win" width="12" height="14" patternUnits="userSpaceOnUse" x="20" y="40"><rect x="3" y="3" width="6" height="8" rx="1" fill="#dcecf8"/></pattern>
+    <pattern id="pat-stripe" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="10" fill="#a64a25"/><rect x="5" width="5" height="10" fill="#fffdf8"/></pattern>
+    <pattern id="pat-mint" width="12" height="10" patternUnits="userSpaceOnUse"><rect width="6" height="10" fill="#3d8f74"/><rect x="6" width="6" height="10" fill="#dff3ea"/></pattern>
+    <symbol id="ch-beaver" viewBox="0 0 100 120">
+      <ellipse cx="50" cy="86" rx="34" ry="33" fill="#a86f45"/>
+      <path d="M30 76 Q50 68 70 76 L72 114 Q50 120 28 114Z" fill="#fbf6ec" stroke="#d9a877" stroke-width="2"/>
+      <circle cx="29" cy="22" r="8" fill="#8f5a35"/><circle cx="71" cy="22" r="8" fill="#8f5a35"/>
+      <circle cx="50" cy="42" r="27" fill="#b97c4f"/>
+      <ellipse cx="50" cy="53" rx="15" ry="11" fill="#e3b98f"/>
+      <circle cx="40" cy="38" r="3.6" fill="#1f2a44"/><circle cx="60" cy="38" r="3.6" fill="#1f2a44"/>
+      <ellipse cx="50" cy="48" rx="5.5" ry="3.8" fill="#4a2a17"/>
+      <rect x="46.5" y="53" width="7" height="6" rx="1" fill="#fffdf8" stroke="#8f5a35" stroke-width=".8"/>
+      <g stroke="#4a2a17" stroke-width="1.2" stroke-linecap="round"><path d="M37 51 L25 48"/><path d="M37 54 L25 57"/><path d="M63 51 L75 48"/><path d="M63 54 L75 57"/></g>
+      <rect x="56" y="88" width="30" height="22" rx="2" fill="#f3e6c8" stroke="#c9a24a" stroke-width="2"/>
+      <path d="M56 95 H86" stroke="#c9a24a" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="ch-owl" viewBox="0 0 100 120">
+      <path d="M24 32 L28 8 L42 24Z M76 32 L72 8 L58 24Z" fill="#7a6a56"/>
+      <ellipse cx="50" cy="72" rx="36" ry="45" fill="#8a7a66"/>
+      <ellipse cx="50" cy="86" rx="22" ry="27" fill="#e9dfca"/>
+      <circle cx="36" cy="48" r="12" fill="#fffdf8"/><circle cx="64" cy="48" r="12" fill="#fffdf8"/>
+      <circle cx="37" cy="49" r="5" fill="#1f2a44"/><circle cx="63" cy="49" r="5" fill="#1f2a44"/>
+      <g fill="none" stroke="#1f2a44" stroke-width="2"><circle cx="37" cy="49" r="8"/><circle cx="63" cy="49" r="8"/><path d="M45 49 H55"/></g>
+      <path d="M46 60 L54 60 L50 68Z" fill="#c9a24a"/>
+      <path d="M22 64 L64 112" stroke="#3d8f74" stroke-width="3"/>
+      <rect x="8" y="90" width="28" height="22" rx="3" fill="#3d8f74"/>
+      <rect x="12" y="83" width="18" height="11" fill="#fffdf8" stroke="#c9a24a" stroke-width="1.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app">
+  <header class="topbar">
+    <div class="masthead">
+      <div class="brand"><span class="logo">Scitrade</span><span class="sub">M2a 시제품 · 규칙 M2a-rules-1 · DESIGN 가상값</span></div>
+      <label class="scenario">시나리오
+        <select data-do="scenario" data-step="scenario" data-key="scenario">
+          <option value="M2" selected>복수 계약과 운송 주선 — 자금·인력·선복 예약</option>
+          <option value="M1">M1 거래 한 건 — 정상 (현지 활동 없음)</option>
+        </select>
+      </label>
+      <div class="actions">
+        <button disabled title="시안에서는 동작하지 않음">저장</button>
+        <button disabled title="시안에서는 동작하지 않음">불러오기</button>
+        <button disabled title="시안에서는 동작하지 않음">내보내기</button>
+        <button disabled title="시안에서는 동작하지 않음">처음부터</button>
+      </div>
+    </div>
+    <div class="statusbar" id="status-h" tabindex="-1" aria-label="오늘 상태">
+      <div class="day"><div class="date"><b id="st-day">2일</b> / 90</div><span id="st-phase">의사결정 중 · 시간 정지</span></div>
+      <div class="stat"><span>거래 현금 (USD)</span><b title="시안에서 비움" aria-label="시안에서 비움">—</b></div>
+      <div class="stat"><span>사용 가능 (예약 제외)</span><b title="시안에서 비움" aria-label="시안에서 비움">—</b></div>
+      <div class="stat"><span>운영 현금 (KRW)</span><b id="st-krw">9,780,000원</b></div>
+      <div class="stat"><span>다음 수금</span><b title="시안에서 비움" aria-label="시안에서 비움">—</b></div>
+      <div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-do="end-day" data-step="end-day" data-key="end-day">하루 진행 ▶</button></div>
+    </div>
+  </header>
+
+  <!-- 부산 현지: 고정 막대 아래를 덮는다. 아래 main은 inert가 되고, 막대의 ‘하루 진행 ▶’은 계속 쓸 수 있다. -->
+  <section class="city" id="city" hidden role="dialog" aria-modal="false" aria-labelledby="city-h">
+    <div class="city-head">
+      <h2 id="city-h" tabindex="-1">부산 현지</h2>
+      <p class="note">열어 보기만 하면 시간·돈이 들지 않습니다. 날짜는 위쪽 ‘하루 진행 ▶’으로만 넘어갑니다.</p>
+      <div class="city-tools">
+        <button data-do="book" data-step="record-book" data-key="record-book"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H3z M17 3h-4a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>기록장</button>
+        <button data-do="close-local" data-step="close-local" data-key="close-local" aria-label="부산 현지 닫기">닫기 ✕</button>
+      </div>
+    </div>
+    <div class="city-body" id="city-body">
+      <div class="scene-col">
+        <p class="street-note" id="street-note"></p>
+        <div class="scene-wrap">
+          <div class="scene" id="scene">
+            <svg class="backdrop" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3f4"/><stop offset=".55" stop-color="#eef5fa"/><stop offset="1" stop-color="#fbf6ec"/></linearGradient>
+                <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a6ea5"/><stop offset="1" stop-color="#16365c"/></linearGradient>
+              </defs>
+              <rect width="800" height="600" fill="url(#g-sky)"/>
+              <circle cx="706" cy="78" r="34" fill="#f7dc94" opacity=".85"/>
+              <g fill="#fffdf8" opacity=".9"><ellipse cx="150" cy="70" rx="46" ry="13"/><ellipse cx="182" cy="60" rx="30" ry="13"/><ellipse cx="520" cy="104" rx="42" ry="11"/><ellipse cx="548" cy="96" rx="22" ry="10"/></g>
+              <path d="M0 250 Q 90 170 190 228 T 380 214 T 560 224 T 800 204 V 330 H0Z" fill="#c4e3d3"/>
+              <path d="M0 292 Q 120 242 250 280 T 520 270 T 800 258 V 330 H0Z" fill="#a8d3bd"/>
+              <g fill="#c7d5e6"><rect x="60" y="262" width="22" height="58"/><rect x="88" y="276" width="16" height="44"/><rect x="420" y="268" width="18" height="52"/><rect x="442" y="280" width="26" height="40"/><rect x="600" y="270" width="20" height="50"/></g>
+              <rect y="316" width="800" height="92" fill="url(#g-sea)"/>
+              <g stroke="#dcecf8" stroke-width="2" opacity=".45" fill="none"><path d="M30 344 q12 -6 24 0 t24 0"/><path d="M480 366 q12 -6 24 0 t24 0"/><path d="M640 342 q12 -6 24 0 t24 0"/><path d="M200 384 q12 -6 24 0 t24 0"/></g>
+              <g transform="translate(268 326)">
+                <path d="M0 22 H150 L138 44 H14Z" fill="#b8332b" stroke="#3a1210" stroke-width="1.5"/>
+                <rect x="18" y="8" width="20" height="14" fill="#3a6ea5"/><rect x="40" y="8" width="20" height="14" fill="#f2c14e"/><rect x="62" y="8" width="20" height="14" fill="#3d8f74"/><rect x="40" y="-6" width="20" height="14" fill="#3a6ea5"/><rect x="84" y="8" width="20" height="14" fill="#f2c14e"/>
+                <rect x="114" y="-4" width="18" height="26" fill="#f4f1ea" stroke="#3a1210"/>
+              </g>
+              <rect y="404" width="800" height="66" fill="#efe6d3"/>
+              <rect y="468" width="800" height="14" fill="#e4dccb"/>
+              <rect y="482" width="800" height="60" fill="#d8cdb6"/>
+              <path d="M0 512 H800" stroke="#fffdf8" stroke-width="4" stroke-dasharray="26 18"/>
+              <rect y="542" width="800" height="58" fill="#efe6d3"/>
+            </svg>
+            <div class="venues" id="venues">
+              <button class="venue" data-do="venue" data-venue="trade" data-step="venue-trade" data-key="venue-trade" aria-pressed="false" style="left:2%;top:8%;width:17%;height:76%">
+                <svg viewBox="0 0 100 210" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+                  <rect x="20" y="40" width="60" height="170" rx="3" fill="#4a5672"/><rect x="20" y="40" width="60" height="170" rx="3" fill="url(#pat-win)"/>
+                  <rect x="32" y="22" width="36" height="20" rx="2" fill="#1f2a44"/><line x1="50" y1="2" x2="50" y2="22" stroke="#1f2a44" stroke-width="2.5"/><path d="M51 3 L68 8 L51 13Z" fill="#c9a24a"/>
+                  <rect x="38" y="186" width="24" height="24" fill="#c9a24a"/>
+                </svg>
+                <span class="plate">무역회관<span class="now" hidden>보는 중</span></span>
+              </button>
+              <button class="venue" data-do="venue" data-venue="finance" data-step="venue-finance" data-key="venue-finance" aria-pressed="false" style="left:20%;top:30%;width:16.5%;height:54%">
+                <svg viewBox="0 0 120 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+                  <rect x="10" y="118" width="100" height="12" fill="#d9cfbb"/><rect x="6" y="112" width="108" height="8" fill="#e4dccb"/>
+                  <rect x="14" y="58" width="92" height="56" fill="#ece3cf"/>
+                  <g fill="#fffdf8" stroke="#c9b98f" stroke-width="1.5"><rect x="20" y="58" width="9" height="54"/><rect x="38" y="58" width="9" height="54"/><rect x="56" y="58" width="9" height="54"/><rect x="74" y="58" width="9" height="54"/><rect x="92" y="58" width="9" height="54"/></g>
+                  <rect x="8" y="50" width="104" height="10" fill="#fbf6ec" stroke="#c9a24a" stroke-width="2"/>
+                  <path d="M6 50 L60 16 L114 50Z" fill="#fbf6ec" stroke="#c9a24a" stroke-width="2.5" stroke-linejoin="round"/>
+                  <circle cx="60" cy="37" r="9" fill="#f2c14e" stroke="#6b4f1d" stroke-width="2"/><text x="60" y="41.5" text-anchor="middle" font-size="12" font-weight="700" fill="#6b4f1d">₩</text>
+                </svg>
+                <span class="plate">금융센터<span class="now" hidden>보는 중</span></span>
+              </button>
+              <button class="venue" data-do="venue" data-venue="culture" data-step="venue-culture" data-key="venue-culture" aria-pressed="false" style="left:37.5%;top:17%;width:25%;height:67%">
+                <svg viewBox="0 0 170 160" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+                  <rect x="22" y="8" width="126" height="8" rx="3" fill="#7a3418"/>
+                  <path d="M4 30 Q 20 26 30 14 L 140 14 Q 150 26 166 30 L 160 38 L 10 38 Z" fill="#a64a25"/>
+                  <rect x="16" y="38" width="138" height="8" fill="#6b4f1d"/>
+                  <rect x="18" y="46" width="9" height="114" fill="#3d8f74"/><rect x="143" y="46" width="9" height="114" fill="#3d8f74"/>
+                  <path d="M27 54 Q 85 72 143 54" stroke="#6b4f1d" stroke-width="1.5" fill="none"/>
+                  <g stroke="#6b4f1d" stroke-width="1"><ellipse cx="45" cy="61" rx="5.5" ry="7" fill="#f2c14e"/><ellipse cx="65" cy="65" rx="5.5" ry="7" fill="#e9785a"/><ellipse cx="85" cy="67" rx="5.5" ry="7" fill="#f2c14e"/><ellipse cx="105" cy="65" rx="5.5" ry="7" fill="#e9785a"/><ellipse cx="125" cy="61" rx="5.5" ry="7" fill="#f2c14e"/></g>
+                  <path d="M32 84 H86 L90 98 H28Z" fill="url(#pat-stripe)" stroke="#7a3418" stroke-width="1"/>
+                  <use href="#ch-beaver" x="42" y="94" width="28" height="34"/>
+                  <rect x="30" y="126" width="58" height="22" fill="#d9a877" stroke="#8a5a2f" stroke-width="1.5"/>
+                  <g fill="#f3e6c8" stroke="#c9a24a"><rect x="34" y="116" width="12" height="10"/><rect x="72" y="114" width="13" height="12"/></g>
+                  <path d="M96 96 Q 118 76 140 96Z" fill="#c9d6e6" stroke="#4a5672" stroke-width="1.2"/>
+                  <rect x="96" y="96" width="44" height="52" fill="#fbf6ec" stroke="#c9b98f" stroke-width="1.5"/>
+                  <rect x="111" y="118" width="14" height="30" fill="#4a5672"/>
+                  <use href="#ch-owl" x="98" y="118" width="16" height="22"/>
+                  <rect x="0" y="152" width="170" height="8" fill="#1f2a44" opacity=".12"/>
+                </svg>
+                <span class="plate">문화생활·현지 탐방<small>직원 현지 활동</small><span class="now" hidden>보는 중</span></span>
+              </button>
+              <button class="venue" data-do="venue" data-venue="lounge" data-step="venue-lounge" data-key="venue-lounge" aria-pressed="false" style="left:63.5%;top:34%;width:15.5%;height:50%">
+                <svg viewBox="0 0 110 110" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+                  <rect x="8" y="30" width="94" height="80" fill="#fffdf8" stroke="#c9b98f" stroke-width="1.5"/>
+                  <rect x="4" y="20" width="102" height="11" fill="#1f2a44"/>
+                  <rect x="6" y="31" width="98" height="12" fill="url(#pat-mint)"/>
+                  <rect x="16" y="54" width="44" height="36" rx="3" fill="#dcecf8" stroke="#4a5672" stroke-width="2"/>
+                  <path d="M30 70 h14 v8 a7 7 0 0 1 -14 0z M44 72 h3 a3 3 0 0 1 0 6 h-3" fill="#fffdf8" stroke="#4a5672" stroke-width="1.5"/>
+                  <rect x="68" y="56" width="24" height="54" rx="2" fill="#3d8f74"/><circle cx="87" cy="84" r="2" fill="#f2c14e"/>
+                  <circle cx="12" cy="104" r="6" fill="#3d8f74"/><circle cx="62" cy="104" r="5" fill="#3d8f74"/>
+                </svg>
+                <span class="plate">비즈니스 라운지<span class="now" hidden>보는 중</span></span>
+              </button>
+              <button class="venue" data-do="venue" data-venue="port" data-step="venue-port" data-key="venue-port" aria-pressed="false" style="left:80%;top:6%;width:18.5%;height:78%">
+                <svg viewBox="0 0 120 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+                  <rect x="4" y="150" width="112" height="50" fill="#e9e1cf" stroke="#c9b98f"/>
+                  <path d="M30 200 L40 60 M76 200 L66 60" stroke="#1f2a44" stroke-width="5" fill="none"/>
+                  <path d="M36 120 L70 150 M72 120 L38 150" stroke="#1f2a44" stroke-width="2" fill="none"/>
+                  <rect x="8" y="50" width="108" height="10" fill="#c9a24a" stroke="#6b4f1d"/>
+                  <path d="M40 50 L53 20 L66 50" stroke="#1f2a44" stroke-width="4" fill="none"/>
+                  <rect x="86" y="60" width="16" height="12" fill="#1f2a44"/><line x1="94" y1="72" x2="94" y2="104" stroke="#1f2a44" stroke-width="1.5"/>
+                  <rect x="80" y="104" width="28" height="14" fill="#3a6ea5" stroke="rgba(0,0,0,.35)"/>
+                  <g stroke="rgba(0,0,0,.3)"><rect x="6" y="184" width="30" height="16" fill="#3a6ea5"/><rect x="38" y="184" width="30" height="16" fill="#f2c14e"/><rect x="84" y="184" width="30" height="16" fill="#3d8f74"/><rect x="6" y="168" width="30" height="16" fill="#b8332b"/><rect x="84" y="168" width="30" height="16" fill="#3a6ea5"/></g>
+                </svg>
+                <span class="plate">항만 물류단지<span class="now" hidden>보는 중</span></span>
+              </button>
+            </div>
+            <div class="tokens" id="tokens" aria-hidden="true"></div>
+            <div class="closeup" id="closeup" hidden></div>
+          </div>
+        </div>
+      </div>
+      <div class="sheet" id="sheet"></div>
+    </div>
+  </section>
+
+  <main class="layout" id="main">
+    <section class="panel trade" aria-labelledby="trade-h">
+      <div class="panel-head">
+        <h2 id="trade-h" tabindex="-1">거래·계약 <small>진행 중 1건</small></h2>
+        <button class="local-entry" id="local-entry" data-do="open-local" data-step="open-local" data-key="open-local" aria-expanded="false" aria-controls="city">
+          <svg viewBox="0 0 30 30" aria-hidden="true" focusable="false"><rect x="2" y="10" width="7" height="17" fill="#4a5672"/><path d="M11 13 Q 15 8 19 13Z" fill="#a64a25"/><rect x="11" y="13" width="8" height="14" fill="#3d8f74"/><rect x="21" y="16" width="7" height="11" fill="#c9a24a"/><rect x="1" y="27" width="28" height="2" fill="#1f2a44"/></svg>
+          <span><b>부산 현지 ▸</b><small>열어 보기는 무료</small></span>
+        </button>
+      </div>
+      <div class="offer-board">
+        <h3 class="board-title">견적판 <small>무엇을 맡을지 고르세요 · 시안에서는 칸만 표시</small></h3>
+        <div class="offer ghost"><span class="kind kind-trade">직접 무역</span><span class="skel w60"></span><span class="skel w80"></span><span class="skel w40"></span><p class="ghost-note">견적 내용은 이 시안에서 비움</p></div>
+        <div class="offer ghost"><span class="kind kind-trade">직접 무역</span><span class="skel w60"></span><span class="skel w80"></span><span class="skel w40"></span><p class="ghost-note">견적 내용은 이 시안에서 비움</p></div>
+        <div class="offer ghost"><span class="kind kind-fwd">운송 주선</span><span class="skel w60"></span><span class="skel w80"></span><span class="skel w40"></span><p class="ghost-note">견적 내용은 이 시안에서 비움</p></div>
+      </div>
+      <div class="contract">
+        <h3><span class="kind kind-fwd">운송 주선</span> CT002</h3>
+        <ol class="pipeline"><li class="done">의뢰</li><li class="done">체결·화물 인수</li><li class="now" aria-current="step">준비 배정</li><li>선적 서류</li><li>출발 대기</li><li>운송</li><li>도착·반출</li><li>인도·채권</li><li>수금·종결</li></ol>
+        <p style="margin:0">준비 업무 2pt — 아직 아무에게도 배정하지 않았습니다. 9일 출항편 예약됨.</p>
+        <p class="ghost-note">배정 버튼·운송 수치는 이 시안에서 생략</p>
+      </div>
+    </section>
+
+    <aside class="panel crew" aria-labelledby="crew-h">
+      <h2 id="crew-h" tabindex="-1">동료 <small>2명 고용 중</small></h2>
+      <div id="crew-list"></div>
+      <p class="ghost-note">카드 그림·운영표는 이 시안에서 생략</p>
+    </aside>
+
+    <section class="panel resources" aria-labelledby="res-h">
+      <h2 id="res-h">자원 예약 <small>오늘 할 일까지 반영 · 같은 돈·사람·공간을 두 번 쓰지 않습니다</small></h2>
+      <div id="res-body"></div>
+    </section>
+
+    <section class="panel queue" aria-labelledby="queue-h">
+      <h2 id="queue-h" tabindex="-1">오늘 할 일 <small id="queue-sub">2일 · 하루 진행 때 이 순서로 실행</small></h2>
+      <div id="queue-body"></div>
+    </section>
+
+    <section class="panel world" aria-labelledby="world-h">
+      <h2 id="world-h">세계지도 <small>이 시안에서 생략</small></h2>
+      <div class="map-ghost" aria-hidden="true">지도 자리</div>
+    </section>
+
+    <section class="panel report" aria-labelledby="report-h">
+      <h2 id="report-h">경영 보고</h2>
+      <div class="books">
+        <table class="money"><caption>거래 장부 · USD</caption><tr><td colspan="2" class="ghost-note" style="text-align:left">USD 값은 이 시안에서 비움</td></tr></table>
+        <table class="money" id="krw-table"></table>
+      </div>
+    </section>
+
+    <section class="panel log" aria-labelledby="log-h">
+      <h2 id="log-h">기록</h2>
+      <ul id="log-list"></ul>
+    </section>
+  </main>
+
+  <div class="flash-toast flash info" id="toast" role="status"></div>
+</div>
+<div class="mock-label">시안 B · 도시 장면형</div>
+
+<script>
+(() => {
+  'use strict';
+  // ── 자료: data/culture_activities.json(CA01~CA03), contacts.json, venues.json, employees.json 그대로 ──
+  const CAMPAIGN_DAYS = 90;
+  const WAGES_PER_DAY = 160000; // employees.json: 귀솔·물보리 각 80,000원/일, 하루 진행 끝에 지급
+  const FAKE_RUNWAY_DAY = 90;   // 시안 상태값(급여 가능일, 전·후 모두 90일까지)
+  const WAITING = [{ label: 'CT002 운송 주선 준비 2pt', departureDay: 9 }];
+  const UNCHANGED = '가격·하루 처리량·운임·관세·거래 신뢰';
+  const QUEUE_TEXT = '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.';
+  const CONTACTS = {
+    NPC_MARKET: { name: '시장 상인 윤서', short: '윤서', art: 'beaver' },
+    NPC_GUIDE: { name: '지역 기록 안내자 하람', short: '하람', art: 'owl' },
+  };
+  const EMPS = [{ id: 'EMP01', name: '귀솔', face: '귀' }, { id: 'EMP02', name: '물보리', face: '물' }];
+  const ACTS = [
+    { id: 'CA01', title: '시장과 포장 요구 탐방', cost: 20000, days: 1, contacts: ['NPC_MARKET'], report: {
+      finding: '윤서: “지금 들여오는 상자는 우리 가게 선반에 다 들어가지 않아요. 더 작은 묶음이면 좋겠어요.”',
+      scope: '판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다.',
+      notClaimed: '부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.',
+      open: '윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지.' } },
+    { id: 'CA02', title: '박물관과 항구 기록 산책', cost: 10000, days: 1, contacts: ['NPC_GUIDE'], report: {
+      finding: '하람: “같은 배를 두고 전시 안내문과 옛 장부의 날짜가 달라요. 어느 쪽이 맞는지 정하기 전에, 각각 누가 언제 무엇을 보고 썼는지부터 확인해야 해요.”',
+      scope: '가상 전시 1곳의 기록 2건을 안내자 1명(하람)과 비교했습니다. 어느 기록이 맞는지는 확인하지 않았습니다.',
+      notClaimed: '두 기록 가운데 어느 쪽이 옳은지, 그리고 실제 부산항의 역사(이 전시는 가상입니다).',
+      open: '두 기록을 쓴 사람·시점·근거, 그리고 둘 다 틀렸을 가능성.' } },
+    { id: 'CA03', title: '언어 교류와 주문 확인', cost: 30000, days: 1, contacts: ['NPC_MARKET', 'NPC_GUIDE'], report: {
+      finding: '윤서: “‘다음 주 초에 조금 더’라고 하면 저는 월요일에 열 상자 정도를 뜻해요.” / 하람: “같은 말도 사람마다 뜻이 다를 수 있으니, 날짜와 숫자로 다시 말해 달라고 하세요.”',
+      scope: '2명(윤서·하람)과 하루의 대화. ‘월요일·열 상자 정도’는 윤서 본인에게 확인한 뜻입니다. 다른 거래처의 표현은 확인하지 않았습니다.',
+      notClaimed: '부산의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다.',
+      open: '‘정도’가 몇 상자까지인지, 매주 같은 양인지.' } },
+  ];
+  // 문화 외 네 곳은 한 줄만. 문구는 실제 구현에서 src/ui/culture.ts 한 곳에 둔다.
+  const VENUES = {
+    trade: { id: 'VEN_TRADE', title: '무역회관', line: '견적·계약은 거래 칸의 견적판에서 합니다. 여기서 따로 할 일은 없습니다.' },
+    finance: { id: 'VEN_FINANCE', title: '금융센터', line: '주식(P1)·상장(P2) 없음. 현금은 위쪽 막대와 경영 보고에서 봅니다.' },
+    culture: { id: 'VEN_CULTURE', title: '문화생활·현지 탐방' },
+    lounge: { id: 'VEN_LOUNGE', title: '비즈니스 라운지', line: '영입 현장 조사는 동료 칸에서 합니다. 여기서 따로 할 일은 없습니다.' },
+    port: { id: 'VEN_PORT', title: '항만 물류단지', line: '운송편 예약은 계약 카드에서 합니다. 여기서 따로 할 일은 없습니다.' },
+  };
+
+  // ── 게임 상태(시안): 2일, 의사결정 중. 엔진 GameState의 culture 부분만 흉내 낸다. ──
+  const S = { scenario: 'M2', day: 2, krwCash: 9780000, cultureExpense: 0, reports: [], experiences: [], relations: [], xp: {}, log: [], pending: [] };
+  // ── 화면 상태: 상태(S)와 따로 둔다. 열기·닫기·고르기는 S를 바꾸지 않는다. ──
+  const UI = { open: false, pane: 'intro', venue: null, act: null, emp: null, toast: null, results: [], resultIdx: 0, filed: true, closeup: false, justFiled: [], prevScroll: 0, slotH: 0, opener: null };
+  let seq = 0;
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const krw = (n) => n.toLocaleString('ko-KR') + '원';
+  const act = (id) => ACTS.find((a) => a.id === id);
+  const emp = (id) => EMPS.find((e) => e.id === id);
+  const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const commandLabel = (c) => { const a = act(c.activityId); return `${a.title} → ${emp(c.employeeId).name} (${krw(a.cost)}·${a.days}일)`; };
+  const particle = (word) => { const c = word.charCodeAt(word.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0 ? '과' : '와'; };
+
+  // 엔진 startCultureActivity와 같은 순서로 검사한다(사본 위에서). 문구는 엔진 문구 그대로.
+  function check(view, actId, empId) {
+    const a = act(actId), e = emp(empId);
+    if (view.busy[empId]) return `${e.name}은(는) 다른 업무(${act(view.busy[empId]).title} 현지 활동)를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+    if (S.experiences.some((x) => x.emp === empId && x.act === actId)) return `${e.name}은(는) 이미 이 활동에 참여했습니다. 다시 해도 새로 생기는 기록이 없습니다.`;
+    const other = view.running[actId];
+    if (other && other !== empId) return `같은 활동에 오늘 이미 ${emp(other).name}이(가) 갑니다. 끝난 뒤에 보낼 수 있습니다.`;
+    if (view.cash < a.cost) return `현지 활동비 자금이 부족합니다. 필요 ${krw(a.cost)}, 사용 가능 ${krw(view.cash)}.`;
+    return null;
+  }
+  function simulate(cmds) {
+    const view = { cash: S.krwCash, busy: {}, running: {} };
+    const results = cmds.map((cmd) => {
+      const reason = check(view, cmd.activityId, cmd.employeeId);
+      if (!reason) { view.cash -= act(cmd.activityId).cost; view.busy[cmd.employeeId] = cmd.activityId; view.running[cmd.activityId] = cmd.employeeId; }
+      return { cmd, ok: !reason, reason };
+    });
+    return { view, results };
+  }
+  const pendingIndex = (actId, empId) => S.pending.findIndex((c) => c.activityId === actId && c.employeeId === empId);
+
+  // culturePreview(state, config, activityId, employeeId)가 돌려주는 필드만 쓴다.
+  function preview(actId, empId) {
+    const idx = pendingIndex(actId, empId);
+    const { view } = simulate(S.pending.filter((_, i) => i !== idx));
+    const a = act(actId);
+    const reason = check(view, actId, empId);
+    return {
+      allowed: !reason, reasonKo: reason, cost: a.cost, durationDays: a.days,
+      busyFromDay: S.day, busyUntilDay: S.day + a.days - 1,
+      availableBefore: view.cash, availableAfter: view.cash - a.cost,
+      payrollRunwayBefore: FAKE_RUNWAY_DAY, payrollRunwayAfter: FAKE_RUNWAY_DAY,
+      waitingTasks: WAITING,
+      otherFreeLocalEmployeeIds: EMPS.filter((e) => e.id !== empId && !view.busy[e.id]).map((e) => e.id),
+      newRecords: {
+        companyReport: S.reports.some((r) => r.act === actId) ? 'EXISTS' : 'NEW',
+        actorExperience: !S.experiences.some((x) => x.emp === empId && x.act === actId),
+        relationContactIds: a.contacts.filter((c) => !S.relations.some((r) => r.emp === empId && r.contact === c && r.act === actId)),
+        firstCompletionXp: S.xp[`${empId}|CULTURE-FIRST-${actId}|CULTURE_FIRST_XP`] ? 0 : 10,
+      },
+      unchangedKo: UNCHANGED,
+    };
+  }
+
+  // ── 하루 진행: 대기 명령 실행 → 1일 활동 완료 기록 → 급여 → 다음 날 ──
+  function endDay() {
+    const day = S.day;
+    const { results } = simulate(S.pending);
+    const applied = results.filter((r) => r.ok).map((r) => r.cmd);
+    const rejected = results.filter((r) => !r.ok);
+    for (const c of applied) {
+      const a = act(c.activityId);
+      S.krwCash -= a.cost; S.cultureExpense += a.cost;
+      S.log.push({ day, text: `${emp(c.employeeId).name} ${a.title} 시작 (${a.days}일, 현지 활동비 ${krw(a.cost)})` });
+    }
+    const done = [];
+    for (const c of applied) {
+      const a = act(c.activityId), e = emp(c.employeeId);
+      const newReport = !S.reports.some((r) => r.act === a.id);
+      if (newReport) S.reports.push({ act: a.id, emp: e.id, day, contacts: [...a.contacts], status: 'UNVERIFIED' });
+      const newExp = !S.experiences.some((x) => x.emp === e.id && x.act === a.id);
+      if (newExp) S.experiences.push({ act: a.id, emp: e.id, day });
+      const newRel = [];
+      for (const ct of a.contacts) {
+        if (!S.relations.some((r) => r.emp === e.id && r.contact === ct && r.act === a.id)) { S.relations.push({ emp: e.id, contact: ct, act: a.id, day, kind: 'SHARED_ACTIVITY' }); newRel.push(ct); }
+      }
+      const shorts = a.contacts.map((ct) => CONTACTS[ct].short);
+      const logText = `${e.name}: ${a.title} 완료 — 회사 기록 ${newReport ? '새로 1건' : '이미 있음'} · 직접 경험 · ${shorts.join('·')}${particle(shorts[shorts.length - 1])} 함께한 활동`;
+      S.log.push({ day, text: logText });
+      const xpKey = `${e.id}|CULTURE-FIRST-${a.id}|CULTURE_FIRST_XP`;
+      const xp = S.xp[xpKey] ? 0 : 10;
+      if (xp) S.xp[xpKey] = xp;
+      done.push({ day, actId: a.id, empId: e.id, newReport, newExp, newRel, xp, logText });
+    }
+    S.krwCash -= WAGES_PER_DAY;
+    S.day += 1;
+    S.pending = [];
+    UI.toast = rejected.length ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reason).join(' / ')}` } : null;
+    if (done.length) {
+      UI.results = done; UI.resultIdx = 0; UI.filed = false; UI.closeup = true; UI.pane = 'result'; UI.venue = 'culture'; UI.justFiled = [];
+      UI.act = null; UI.emp = null;
+      if (!UI.open) openCity(null, true);
+      renderAll();
+      $('#sheet').scrollTop = 0;
+      const h = $('#result-h-0'); if (h) h.focus({ preventScroll: true });
+      // 알림 칸은 빈 채로 먼저 그린 뒤 글을 넣는다(화면 읽기 프로그램이 읽도록). 다음 결과로 넘겨도 글은 남긴다.
+      UI.liveText = `${day}일 하루 진행 결과. ${done.map((d) => d.logText).join(' / ')}`; UI.liveShown = false;
+      setTimeout(() => { const live = $('#result-live'); if (live) live.textContent = UI.liveText; UI.liveShown = true; }, 150);
+    } else {
+      if (UI.pane === 'result') { UI.pane = 'culture'; UI.closeup = false; }
+      renderAll();
+    }
+  }
+
+  function queueSelected(btn) {
+    const { act: a, emp: e } = UI;
+    if (!a || !e) return;
+    const p = preview(a, e);
+    if (!p.allowed) { UI.toast = { kind: 'warn', text: p.reasonKo }; renderAll(); return; }
+    UI.slotH = btn ? Math.round(btn.getBoundingClientRect().height) : 44;
+    const before = slotTop();
+    seq += 1;
+    S.pending.push({ id: `UI-${S.day}-CULTURE-${seq}`, type: 'START_CULTURE_ACTIVITY', activityId: a, employeeId: e });
+    UI.toast = { kind: 'info', text: QUEUE_TEXT };
+    renderAll();
+    holdSlot(before);
+    const pill = $('#status-culture-queue'); if (pill) pill.focus({ preventScroll: true });
+  }
+  // 누른 자리(예정 표시 칸)를 화면의 같은 높이에 둔다. 아래쪽 알림에 가리면 시트 안에서만 올린다.
+  function slotTop() { const el = $('[data-slot="culture-queue"]'); return el ? el.getBoundingClientRect().top : null; }
+  function holdSlot(before) {
+    const sheet = $('#sheet'), el = $('[data-slot="culture-queue"]');
+    if (!sheet || !el) return;
+    if (before !== null) sheet.scrollTop += el.getBoundingClientRect().top - before;
+    revealInSheet(el);
+  }
+  function unqueue(cmdId) {
+    const i = S.pending.findIndex((c) => c.id === cmdId);
+    if (i < 0) return;
+    const before = slotTop();
+    S.pending.splice(i, 1);
+    UI.toast = null;
+    renderAll();
+    if (UI.open) holdSlot(before);
+    const back = $('[data-key="queue"]') || $('#city-h');
+    if (back && UI.open) back.focus({ preventScroll: true });
+    else if (!UI.open) { const q = $('#queue-h'); if (q) q.focus({ preventScroll: true }); }
+  }
+
+  // ── 열기·닫기: 상태(S)는 그대로. 고정 막대 아래에 붙여 막대 높이를 바꾸지 않는다. ──
+  function placeCity() {
+    const bar = $('.statusbar');
+    document.documentElement.style.setProperty('--topbar-h', `${bar.getBoundingClientRect().height}px`);
+    document.documentElement.style.setProperty('--city-top', `${Math.max(0, bar.getBoundingClientRect().bottom)}px`);
+  }
+  function openCity(opener, auto) {
+    UI.open = true; UI.opener = opener || $('#local-entry');
+    UI.prevScroll = window.scrollY;
+    const mh = $('.masthead').offsetHeight;
+    if (window.scrollY < mh) window.scrollTo(0, mh); // 위쪽 머리만 화면 밖으로. 고정 막대는 그대로 맨 위.
+    document.documentElement.classList.add('city-open');
+    $('#city').hidden = false; $('#main').inert = true;
+    $('#local-entry').setAttribute('aria-expanded', 'true');
+    placeCity();
+    if (!auto) { renderAll(); $('#city-h').focus({ preventScroll: true }); }
+  }
+  function closeCity() {
+    UI.open = false;
+    $('#city').hidden = true; $('#main').inert = false;
+    document.documentElement.classList.remove('city-open');
+    $('#local-entry').setAttribute('aria-expanded', 'false');
+    window.scrollTo(0, UI.prevScroll);
+    renderAll();
+    const back = $('#local-entry');
+    if (back && back.offsetParent) back.focus({ preventScroll: true });
+  }
+
+  // 시트 안에서만 스크롤한다(문서는 움직이지 않는다).
+  function revealInSheet(el) {
+    const sheet = $('#sheet');
+    if (!el || !sheet) return;
+    const r = el.getBoundingClientRect(), s = sheet.getBoundingClientRect();
+    if (r.height > s.height || r.top < s.top) sheet.scrollTop -= s.top - r.top + 6;
+    else if (r.bottom > s.bottom) sheet.scrollTop += r.bottom - s.bottom + 6;
+  }
+  function fileRecord() {
+    const card = $('[data-step="result"]');
+    const target = $('[data-step="record-book"]');
+    const done = () => {
+      UI.filed = true; UI.justFiled = UI.results.map((r) => r.actId); UI.pane = 'book'; UI.closeup = false;
+      renderAll(); $('#sheet').scrollTop = 0;
+      const h = $('#book-h'); if (h) h.focus({ preventScroll: true });
+      if (target && !reduceMotion()) { target.classList.remove('bump'); void target.offsetWidth; target.classList.add('bump'); }
+    };
+    if (!card || !target || reduceMotion() || !card.animate) return done();
+    const a = card.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const ghost = card.cloneNode(true);
+    ghost.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    ghost.querySelectorAll('[role]').forEach((n) => n.removeAttribute('role'));
+    ghost.querySelectorAll('[data-step]').forEach((n) => n.removeAttribute('data-step'));
+    ghost.removeAttribute('data-step');
+    ghost.setAttribute('aria-hidden', 'true');
+    Object.assign(ghost.style, { position: 'fixed', left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px`, margin: '0', zIndex: '8', transformOrigin: 'top left', pointerEvents: 'none', overflow: 'hidden', background: 'var(--paper)', borderRadius: '12px', boxShadow: '0 12px 30px rgba(31,42,68,.25)' });
+    document.body.appendChild(ghost);
+    card.style.visibility = 'hidden';
+    const dx = b.left - a.left, dy = b.top - a.top;
+    const anim = ghost.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 24}px) scale(.42) rotate(-4deg)`, opacity: 0.95, offset: 0.55 },
+      { transform: `translate(${dx}px, ${dy}px) scale(${b.width / a.width}, ${b.height / a.height})`, opacity: 0.2 },
+    ], { duration: 700, easing: 'cubic-bezier(.5,0,.3,1)' });
+    anim.onfinish = () => { ghost.remove(); done(); };
+  }
+  function openBook() {
+    if (UI.pane === 'result' && !UI.filed) return fileRecord();
+    UI.pane = 'book'; UI.closeup = false;
+    renderAll(); $('#sheet').scrollTop = 0;
+    const h = $('#book-h'); if (h) h.focus({ preventScroll: true });
+  }
+
+  // ── 그리기 ──
+  function keepFocus(fn) {
+    const a = document.activeElement;
+    const key = a && a.dataset ? a.dataset.key : null;
+    fn();
+    if (key && (!a.isConnected || document.activeElement === document.body)) {
+      const el = document.querySelector(`[data-key="${key}"]`);
+      if (el && !el.disabled) el.focus({ preventScroll: true });
+    }
+  }
+  function stateHash() {
+    const s = JSON.stringify(S); let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(16);
+  }
+  function renderAll() {
+    keepFocus(() => {
+      $('#st-day').textContent = `${S.day}일`;
+      $('#st-krw').textContent = krw(S.krwCash);
+      $('#local-entry').hidden = S.scenario !== 'M2';
+      renderMain();
+      if (UI.open) { renderScene(); renderSheet(); }
+      renderToast();
+    });
+    document.body.dataset.stateHash = stateHash();
+    document.body.dataset.day = String(S.day);
+  }
+  function renderToast() {
+    const t = $('#toast');
+    t.className = `flash-toast flash ${UI.toast ? UI.toast.kind : 'info'}`;
+    t.textContent = UI.toast ? UI.toast.text : '';
+    const r = t.getBoundingClientRect();
+    document.documentElement.style.setProperty('--toast-h', UI.toast ? `${Math.ceil(window.innerHeight - r.top) + 8}px` : '0px');
+  }
+  function empStatus(e, short) {
+    const p = S.pending.find((c) => c.employeeId === e.id);
+    if (!p) return { text: '부산 · 오늘 쉼', plan: false };
+    return { text: short ? '현지 활동 예정' : `오늘 할 일: ${act(p.activityId).title} 예정`, plan: true };
+  }
+  function renderMain() {
+    const culture = S.scenario === 'M2';
+    $('#crew-list').innerHTML = EMPS.map((e) => {
+      const st = empStatus(e);
+      const exp = S.experiences.filter((x) => x.emp === e.id);
+      return `<div class="mini-card"><span class="card-face" aria-hidden="true">${e.face}</span><div><b class="card-name">${e.name}</b><small class="${st.plan ? 'plan' : ''}">${st.plan ? '◇ ' : ''}${esc(st.text)}</small>${culture && exp.length ? `<small>직접 경험: ${exp.map((x) => esc(act(x.act).title)).join(', ')}</small>` : ''}</div></div>`;
+    }).join('');
+    const { view } = simulate(S.pending);
+    $('#res-body').innerHTML = `<h3>직원 시간 (${S.day}일)</h3><ul class="crew-time">${EMPS.map((e) => {
+      const p = S.pending.find((c) => c.employeeId === e.id);
+      return `<li>${e.name}<small>${p ? `${esc(act(p.activityId).title)} (현지 활동) 예정` : '비어 있음'}</small></li>`;
+    }).join('')}</ul><h3>원화</h3><ul class="reserve-list"><li><span>사용 가능 (오늘 할 일 반영)</span><b>${krw(view.cash)}</b></li></ul><p class="ghost-note">선복·창고 칸은 이 시안에서 생략</p>`;
+    $('#queue-sub').textContent = `${S.day}일 · 하루 진행 때 이 순서로 실행`;
+    $('#queue-body').innerHTML = `${UI.toast ? `<p class="flash ${UI.toast.kind}">${esc(UI.toast.text)}</p>` : ''}${S.pending.length
+      ? `<p class="muted small">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p><ol class="pending">${S.pending.map((c) => `<li>${esc(commandLabel(c))}<button class="link" data-do="unqueue" data-cmd="${c.id}" data-step="unqueue-panel" data-key="unqueue-panel-${c.id}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>`
+      : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}`;
+    const rows = [['시작 운영 자금', '—'], ['급여', '—'], ['영입 계약금', '—'], ['훈련비', '—']];
+    $('#krw-table').innerHTML = `<caption>운영 장부 · KRW</caption>${rows.map(([k, v]) => `<tr><th>${k}</th><td title="시안에서 비움">${v}</td></tr>`).join('')}${culture ? `<tr class="new-row" data-step="krw-culture-row"><th>현지 활동비<span class="row-tag">새 행</span></th><td>${S.cultureExpense ? '−' : ''}${krw(S.cultureExpense)}</td></tr>` : ''}<tr><th>운영 손익</th><td title="시안에서 비움">—</td></tr><tr><th>미지급 급여</th><td title="시안에서 비움">—</td></tr><tr class="total"><th>현금</th><td>${krw(S.krwCash)}</td></tr><tr><td colspan="2" class="muted small" style="text-align:left">— 는 이 시안에서 비운 값입니다.${culture ? ' 현지 활동비는 시작할 때 원화로 냅니다. 하루 진행 전에는 ‘빼기’로 뺄 수 있고, 시작한 뒤에는 환불이 없습니다.' : ''}</td></tr>`;
+    const logs = (culture ? S.log : []).slice().reverse();
+    $('#log-list').innerHTML = `${logs.map((l) => `<li><span>${l.day}일</span>${esc(l.text)}</li>`).join('')}<li class="muted"><span>1일</span>이전 기록은 이 시안에서 생략</li>`;
+  }
+
+  const BASE_POS = { EMP01: 6, EMP02: 16 };
+  const PLAN_POS = { EMP01: 42, EMP02: 58 };
+  function renderScene() {
+    document.querySelectorAll('.venue').forEach((b) => {
+      const on = UI.venue === b.dataset.venue && UI.pane !== 'intro';
+      b.setAttribute('aria-pressed', String(on));
+      b.querySelector('.now').hidden = !on;
+    });
+    $('#tokens').innerHTML = EMPS.map((e) => {
+      const p = S.pending.find((c) => c.employeeId === e.id);
+      return `<div class="token" style="left:${p ? PLAN_POS[e.id] : BASE_POS[e.id]}%;top:85.5%"><span class="face">${e.face}</span><span class="tag ${p ? 'plan' : ''}">${e.name}${p ? ' · 예정' : ''}</span></div>`;
+    }).join('');
+    const cu = $('#closeup');
+    cu.hidden = !(UI.closeup && UI.results.length);
+    $('#venues').inert = !cu.hidden;
+    cu.innerHTML = cu.hidden ? '' : closeupHTML();
+    const notes = EMPS.map((e) => `<b>${e.name}</b> ${esc(empStatus(e).text)}`).join(' · ');
+    $('#street-note').innerHTML = cu.hidden ? `건물을 누르면 안내가 열립니다. ${notes}` : '대화 장면 · 결과 카드의 네 줄을 함께 읽으세요.';
+    $('#city-body').classList.toggle('wide', ['culture', 'result', 'book'].includes(UI.pane));
+  }
+  function closeupHTML() {
+    const rs = [UI.results[Math.min(UI.resultIdx, UI.results.length - 1)]];
+    const contacts = [...new Set(rs.flatMap((r) => act(r.actId).contacts))];
+    const emps = [...new Set(rs.map((r) => r.empId))];
+    return `<svg class="cu-bg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <rect width="800" height="600" fill="#f6ead2"/><rect width="800" height="60" fill="url(#pat-stripe)"/><path d="M0 60 H800" stroke="#7a3418" stroke-width="4"/>
+        <g fill="#d9a877" stroke="#8a5a2f" stroke-width="2"><rect x="40" y="170" width="300" height="12"/><rect x="460" y="170" width="300" height="12"/><rect x="40" y="290" width="300" height="12"/><rect x="460" y="290" width="300" height="12"/></g>
+        <g fill="#f3e6c8" stroke="#c9a24a" stroke-width="2"><rect x="60" y="120" width="70" height="50"/><rect x="140" y="135" width="50" height="35"/><rect x="200" y="110" width="80" height="60"/><rect x="480" y="128" width="60" height="42"/><rect x="560" y="140" width="40" height="30"/><rect x="620" y="118" width="90" height="52"/><rect x="70" y="250" width="55" height="40"/><rect x="520" y="246" width="70" height="44"/></g>
+        <rect y="470" width="800" height="130" fill="#c98f5c"/><rect y="464" width="800" height="10" fill="#8a5a2f"/>
+      </svg>
+      <div class="bubbles">${rs.map((r) => `<p class="bubble"><span class="who">${esc(act(r.actId).contacts.map((c) => CONTACTS[c].name).join('·'))}의 말 · ${esc(act(r.actId).title)}</span>${esc(act(r.actId).report.finding)}</p>`).join('')}</div>
+      <div class="cast">
+        <div class="side">${emps.map((id) => `<div class="who-fig"><span class="face big" aria-hidden="true">${emp(id).face}</span><span class="name">${emp(id).name}</span></div>`).join('')}</div>
+        <div class="mid"><span class="cu-cap">${rs[0].day}일 · 부산 현지</span><button data-do="closeup-off" data-key="closeup-off">거리 보기</button></div>
+        <div class="side">${contacts.map((ct) => `<div class="who-fig"><svg viewBox="0 0 100 120" aria-hidden="true" focusable="false"><use href="#ch-${CONTACTS[ct].art}"/></svg><span class="name">${esc(CONTACTS[ct].name)}</span></div>`).join('')}</div>
+      </div>`;
+  }
+
+  function renderSheet() {
+    const html = { intro: introHTML, venue: venueHTML, culture: cultureHTML, result: resultHTML, book: bookHTML }[UI.pane]();
+    $('#sheet').innerHTML = html;
+  }
+  function introHTML() {
+    return `<h3 id="sheet-h" tabindex="-1">어디로 갈까요?</h3>
+      <p class="lead">건물을 누르면 안내가 열립니다.</p>
+      <ul class="intro-list"><li>직원과 함께 하는 활동은 <b>문화생활·현지 탐방</b>에 있습니다.</li><li>다른 네 곳은 한 줄 안내만 있습니다.</li><li>열어 보기만 하면 날짜와 돈은 그대로입니다.</li></ul>`;
+  }
+  function venueHTML() {
+    const v = VENUES[UI.venue];
+    return `<h3 id="sheet-h" tabindex="-1">${v.title}</h3><p class="one-line" data-step="venue-line">${esc(v.line)}</p>`;
+  }
+  function cultureHTML() {
+    const acts = ACTS.map((a) => {
+      const pend = S.pending.find((c) => c.activityId === a.id);
+      const tags = [pend ? `오늘 할 일: ${emp(pend.employeeId).name} 예정` : '', S.reports.some((r) => r.act === a.id) ? '회사 기록 있음' : ''].filter(Boolean);
+      return `<button class="act-btn" data-do="act" data-id="${a.id}" data-step="act-${a.id}" data-key="act-${a.id}" aria-pressed="${UI.act === a.id}"><b>${a.title}</b><small>${krw(a.cost)} · ${a.days}일 · 함께: ${a.contacts.map((c) => CONTACTS[c].short).join('·')}</small>${tags.map((t) => `<small class="tag">${esc(t)}</small>`).join('')}</button>`;
+    }).join('');
+    const emps = EMPS.map((e) => {
+      const st = empStatus(e, true);
+      return `<button class="emp-btn" data-do="emp" data-id="${e.id}" data-step="emp-${e.id}" data-key="emp-${e.id}" aria-pressed="${UI.emp === e.id}"><span class="card-face" aria-hidden="true">${e.face}</span><span><b>${e.name}</b><small class="${st.plan ? 'tag' : ''}">${esc(st.text)}</small></span></button>`;
+    }).join('');
+    const plans = S.pending.length ? `<ul class="plan-list" aria-label="오늘 할 일에 넣은 현지 활동">${S.pending.map((c) => `<li><span class="pill">현지 활동 예정</span>${esc(commandLabel(c))}<button class="link" data-do="unqueue" data-cmd="${c.id}" data-step="unqueue-list" data-key="unqueue-list-${c.id}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ul>` : '';
+    return `<h3 id="sheet-h" tabindex="-1">문화생활·현지 탐방</h3>
+      <p class="lead">직원 한 명이 하루 동안 부산 사람과 활동하고 4줄 기록을 남깁니다.</p>
+      <div class="cul">
+        <div>
+          <div role="group" aria-labelledby="pick-act"><p class="pick-label" id="pick-act">① 활동 고르기</p><div class="acts">${acts}</div></div>
+          <div role="group" aria-labelledby="pick-emp"><p class="pick-label" id="pick-emp">② 갈 직원 <small>부산에 있고 오늘 쉬는 직원</small></p><div class="emps">${emps}</div></div>
+        </div>
+        <div>${previewHTML()}${plans}</div>
+      </div>`;
+  }
+  function slotHTML(allowed) {
+    const idx = pendingIndex(UI.act, UI.emp);
+    if (idx >= 0) {
+      const c = S.pending[idx];
+      return `<div class="slot" data-slot="culture-queue" style="min-height:${Math.max(44, UI.slotH)}px"><span class="pill" id="status-culture-queue" tabindex="-1">현지 활동 예정</span><button class="link" data-do="unqueue" data-cmd="${c.id}" data-step="unqueue" data-key="unqueue" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></div>`;
+    }
+    return `<div class="slot" data-slot="culture-queue"><button class="primary" data-do="queue" data-step="queue" data-key="queue" ${allowed ? '' : 'disabled'}>오늘 할 일에 넣기</button></div>`;
+  }
+  function previewHTML() {
+    if (!UI.act || !UI.emp) {
+      return `<div class="pv pv-empty" data-step="preview"><p class="pick-label" style="margin:0">③ 미리 보기</p><p>활동과 직원을 고르면 여기에 미리 보기가 나옵니다.</p><p class="muted small">고르기만 해서는 아무것도 바뀌지 않습니다.</p></div>`;
+    }
+    const p = preview(UI.act, UI.emp);
+    const a = act(UI.act), e = emp(UI.emp);
+    const head = `<h4 id="pv-h">③ 미리 보기 · ${e.name} → ${a.title}</h4>`;
+    const same = `<p class="pv-same"><span class="tagline">바뀌지 않는 것</span>${esc(p.unchangedKo)}</p>`;
+    if (!p.allowed) {
+      return `<section class="pv" aria-labelledby="pv-h" data-step="preview">${head}
+        <p class="pv-reject" data-step="preview-reason"><span class="tagline">시작할 수 없음</span>${esc(p.reasonKo)}</p>
+        <p class="muted small" style="margin:0">시작할 수 없어서 새로 생길 기록은 보여 주지 않습니다.</p>
+        ${same}${slotHTML(false)}</section>`;
+    }
+    const span = p.busyFromDay === p.busyUntilDay ? `${p.busyFromDay}일 하루` : `${p.busyFromDay}~${p.busyUntilDay}일`;
+    const others = p.otherFreeLocalEmployeeIds.map((id) => emp(id).name);
+    const warn = p.waitingTasks.length ? `<p class="pv-warn"><span class="tagline">⚠ 기다리는 업무</span>${p.waitingTasks.map((t) => `${esc(t.label)} (${t.departureDay}일 출항편 예약됨)`).join(', ')}. ${others.length ? `오늘 쉬는 다른 직원: ${others.join('·')}.` : '오늘 쉬는 다른 직원이 없습니다.'}</p>` : '';
+    const over = p.busyUntilDay > CAMPAIGN_DAYS;
+    const runway = (d) => (d === null ? '마지막 날까지' : `${d}일까지`);
+    const payrollNote = p.payrollRunwayAfter === null || p.payrollRunwayAfter >= CAMPAIGN_DAYS ? '마지막 날까지 급여 미지급 없음' : `${p.payrollRunwayAfter + 1}일부터 급여 미지급이 생깁니다`;
+    const nr = p.newRecords;
+    const items = [
+      nr.companyReport === 'NEW' ? '<li>회사 보고서 — 처음 생김</li>' : '<li class="exists">회사 보고서 — 이미 있어 새로 안 생김</li>',
+      nr.actorExperience ? `<li>${e.name}의 직접 경험</li>` : '',
+      nr.relationContactIds.length ? `<li>함께한 활동 — ${nr.relationContactIds.map((c) => `${e.name}·${CONTACTS[c].short}`).join(', ')}</li>` : '',
+      nr.firstCompletionXp ? `<li>첫 완료 경험치 +${nr.firstCompletionXp}</li>` : '',
+    ].join('');
+    return `<section class="pv" aria-labelledby="pv-h" data-step="preview">${head}
+      <p class="pv-gap" data-step="preview-gap"><span class="tagline">업무 공백</span>${e.name}: ${span} 동안 다른 업무를 맡지 못합니다.</p>
+      ${warn}
+      <dl class="pv-facts">
+        <dt>비용</dt><dd>${krw(p.cost)} <small>원화 · 시작할 때 냄</small></dd>
+        <dt>원화 사용 가능</dt><dd>${krw(p.availableBefore)} → ${krw(p.availableAfter)}</dd>
+        <dt>급여 가능일</dt><dd>${runway(p.payrollRunwayBefore)} → ${runway(p.payrollRunwayAfter)} <small>${payrollNote}</small></dd>
+        <dt>끝나는 날</dt><dd class="${over ? 'over' : ''}">${p.busyUntilDay}일 <small>${over ? '⚠ 캠페인 마지막 날(' + CAMPAIGN_DAYS + '일)을 넘깁니다' : `마지막 날(${CAMPAIGN_DAYS}일) 안에 끝남`}</small></dd>
+      </dl>
+      <p class="pv-new-h">새로 생길 기록</p><ul class="pv-new" data-step="preview-new">${items}</ul>
+      ${same}${slotHTML(true)}</section>`;
+  }
+  function fourHTML(rep) {
+    const rows = [['알게 된 점', rep.finding], ['범위', rep.scope], ['이 기록이 말하지 않는 것', rep.notClaimed], ['아직 모르는 것', rep.open]];
+    return `<dl class="four">${rows.map(([k, v], i) => `<div><dt><span class="num" aria-hidden="true">${i + 1}</span>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  }
+  function resultHTML() {
+    const n = UI.results.length, i = Math.min(UI.resultIdx, n - 1);
+    const cards = [UI.results[i]].map((r) => {
+      const a = act(r.actId), e = emp(r.empId);
+      const made = [r.newReport ? '회사 보고서 1건' : '회사 보고서는 이미 있음', r.newExp ? `${e.name}의 직접 경험` : '', r.newRel.length ? `함께한 활동(${r.newRel.map((c) => `${e.name}·${CONTACTS[c].short}`).join(', ')})` : '', r.xp ? `경험치 +${r.xp}` : ''].filter(Boolean);
+      return `<article class="result" aria-labelledby="result-h-${i}">
+        <h3 id="result-h-${i}" tabindex="-1">${r.day}일 결과${n > 1 ? ` ${i + 1}/${n}` : ''} · ${a.title}</h3>
+        <p class="rec-meta">${e.name} · ${esc(a.contacts.map((c) => CONTACTS[c].name).join('·'))} · 부산</p>
+        ${fourHTML(a.report)}
+        <ul class="after">
+          <li><span class="tagline">쓴 것</span>${e.name}의 하루 업무(${r.day}일) · 원화 ${krw(a.cost)}</li>
+          <li><span class="tagline">새로 생긴 기록</span>${made.join(' · ')}</li>
+          <li><span class="tagline">바뀌지 않은 것</span>${UNCHANGED}</li>
+        </ul></article>`;
+    }).join('');
+    return `<div class="results" data-step="result"><p class="result-live" id="result-live" role="status">${UI.liveShown ? esc(UI.liveText) : ''}</p>${cards}
+      <div class="result-actions">${i < n - 1
+        ? '<button class="primary" data-do="next-result" data-step="next-result" data-key="next-result">다음 결과 ▸</button>'
+        : '<button class="primary" data-do="file" data-step="file-record" data-key="file-record">기록장에 넣기</button>'}<button data-do="back-culture" data-key="back-culture">현지 활동으로</button></div></div>`;
+  }
+  function bookHTML() {
+    const reports = S.reports.map((r) => {
+      const a = act(r.act); const fresh = UI.justFiled.includes(r.act);
+      return `<article class="rec ${fresh ? 'fresh' : ''}"><h5>${a.title}${fresh ? ' <span class="pill">방금 넣음</span>' : ''}</h5>
+        <p class="rec-meta">보고: ${emp(r.emp).name} · ${r.day}일 · 출처: ${esc(r.contacts.map((c) => CONTACTS[c].name).join('·'))} · <span class="tagline">아직 확인 전</span></p>${fourHTML(a.report)}</article>`;
+    }).join('') || '<p class="muted small" style="margin:0">아직 회사 보고서가 없습니다. 현지 활동을 마치면 4줄 기록이 여기에 들어옵니다.</p>';
+    const exps = EMPS.map((e) => {
+      const list = S.experiences.filter((x) => x.emp === e.id);
+      return `<li><b>${e.name}</b><span class="${list.length ? 'has' : ''}">${list.length ? list.map((x) => `${esc(act(x.act).title)} (${x.day}일 · 부산)`).join(', ') : '아직 없음'}</span></li>`;
+    }).join('');
+    const rels = EMPS.flatMap((e) => Object.keys(CONTACTS).map((ct) => {
+      const ev = S.relations.filter((r) => r.emp === e.id && r.contact === ct);
+      return `<li><b>${e.name} · ${esc(CONTACTS[ct].name)}</b><span class="${ev.length ? 'has' : ''}">${ev.length ? ev.map((r) => `${esc(act(r.act).title)} (${r.day}일)`).join(', ') : '아직 함께한 활동 없음'}</span></li>`;
+    })).join('');
+    return `<h3 id="book-h" tabindex="-1">기록장</h3>
+      <p class="lead">회사 보고서·직원의 직접 경험·함께한 활동은 서로 다른 기록입니다.</p>
+      <section class="book-sec" aria-labelledby="bk-rep"><h4 id="bk-rep">회사 보고서 <small>회사에 남는 4줄 기록</small></h4>${reports}</section>
+      <section class="book-sec" aria-labelledby="bk-exp"><h4 id="bk-exp">직원의 직접 경험 <small>그 직원만 가진 경험</small></h4><ul class="plain-list">${exps}</ul></section>
+      <section class="book-sec" aria-labelledby="bk-rel"><h4 id="bk-rel">함께한 활동 <small>점수가 아니라, 누구와 무엇을 함께 했는지</small></h4><ul class="plain-list">${rels}</ul></section>
+      <div class="result-actions" style="margin-top:.7rem"><button data-do="back-culture" data-key="back-culture">현지 활동으로</button></div>`;
+  }
+
+  // ── 입력 ──
+  document.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-do]');
+    if (!b || b.disabled || b.tagName === 'SELECT') return;
+    const d = b.dataset;
+    switch (d.do) {
+      case 'open-local': return openCity(b, false);
+      case 'close-local': return closeCity();
+      case 'venue':
+        UI.venue = d.venue; UI.pane = d.venue === 'culture' ? 'culture' : 'venue'; UI.closeup = false;
+        renderAll(); $('#sheet').scrollTop = 0; return;
+      case 'act': UI.act = d.id; return renderAll();
+      case 'emp': {
+        UI.emp = d.id; renderAll();
+        revealInSheet($('[data-step="preview"]'));
+        return;
+      }
+      case 'queue': return queueSelected(b);
+      case 'unqueue': return unqueue(d.cmd);
+      case 'end-day': return endDay();
+      case 'file': return fileRecord();
+      case 'next-result': {
+        UI.resultIdx += 1; UI.closeup = true; renderAll(); $('#sheet').scrollTop = 0;
+        const h = $(`#result-h-${UI.resultIdx}`); if (h) h.focus({ preventScroll: true });
+        return;
+      }
+      case 'book': return openBook();
+      case 'back-culture':
+        UI.pane = 'culture'; UI.venue = 'culture'; UI.closeup = false; renderAll();
+        { const h = $('#sheet-h'); if (h) h.focus({ preventScroll: true }); } return;
+      case 'closeup-off': UI.closeup = false; renderAll(); { const v = $('[data-key="venue-culture"]'); if (v) v.focus({ preventScroll: true }); } return;
+    }
+  });
+  document.addEventListener('change', (ev) => {
+    if (ev.target.dataset.do !== 'scenario') return;
+    S.scenario = ev.target.value;
+    if (UI.open && S.scenario !== 'M2') closeCity();
+    renderAll();
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && UI.open) { ev.preventDefault(); closeCity(); }
+  });
+  window.addEventListener('resize', () => { if (UI.open) placeCity(); renderToast(); });
+  // 시트가 열린 동안 문서가 움직여도(초점 이동 등) 시트 윗변을 고정 막대 아래에 다시 맞춘다.
+  window.addEventListener('scroll', () => {
+    if (!UI.open) return;
+    const mh = $('.masthead').offsetHeight;
+    if (window.scrollY < mh) window.scrollTo(0, mh);
+    placeCity();
+  }, { passive: true });
+
+  window.mockB = { S, UI };
+  renderAll();
+})();
+</script>
+</body>
+</html>

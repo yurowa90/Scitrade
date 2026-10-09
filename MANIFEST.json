@@ -162,8 +162,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 104053,
-      "sha256": "543bd482edc37cc74654c468150a30334d9297fd08aa8dbae9a3e85ab72cfa44"
+      "size_bytes": 109092,
+      "sha256": "669466b5e5dbe2435c11c5b453ed8982393210c71d7dabd2fd46c5928fa49328"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -216,9 +216,29 @@
       "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
     },
     {
+      "path": "docs/ai/design/TASK-0012-mockups/A.html",
+      "size_bytes": 70703,
+      "sha256": "0d8d7cc23354901270cfac0e569b5813d83977116bc54f7f9bab4848a890415e"
+    },
+    {
+      "path": "docs/ai/design/TASK-0012-mockups/B.html",
+      "size_bytes": 83013,
+      "sha256": "3df2f7ab08831ca3b6cf830116ceca737ccd8dc4320ea57a54f483adced284f3"
+    },
+    {
+      "path": "docs/ai/design/TASK-0012-mockups/C.html",
+      "size_bytes": 69343,
+      "sha256": "8cc40974edee7e5703880212e0313b54480f836614d4bd5bc9559d83db8a2510"
+    },
+    {
       "path": "docs/ai/design/TASK-0012-scene-brief.md",
-      "size_bytes": 5385,
-      "sha256": "92d66441b58474c89e7bbef53d1395c9326d130b2c72c56420ff8a49a04c40a9"
+      "size_bytes": 6529,
+      "sha256": "5ff381a29329f0a84b4b1d9f99378e8bcd36a67d11db9df164610b92298bad65"
+    },
+    {
+      "path": "docs/ai/design/TASK-0012-scene-compare.md",
+      "size_bytes": 7643,
+      "sha256": "5a1b8dfbc8260cd577a89a1a6c3f9fa918bce02874ec4b4cf4e127bab600e24b"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -227,8 +247,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 5154,
-      "sha256": "5e39df38c7f068b619a41be08a5622c8690778e5f0123265a2c670314f9086d5"
+      "size_bytes": 5293,
+      "sha256": "4c29867b83826304d50c94c195c9143a9330c37c2e68c01a933c09d5443929ef"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -334,6 +354,11 @@
       "path": "docs/ai/tasks/TASK-0011-culture-engine.md",
       "size_bytes": 22660,
       "sha256": "cf727eb3cee8f0614edbc54bf23ccdbea7aa1a2c1c6e6a5f5d6ed1b500fafa50"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0012-culture-ui.md",
+      "size_bytes": 41011,
+      "sha256": "9b757ccd115a7dfa0cd59fdf2442d864ded7f00e0e8a221802269520a43b7a3f"
     },
     {
       "path": "docs/ai/tasks/TASK-0013-deferred-display-fixes.md",
