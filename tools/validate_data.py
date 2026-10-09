@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate bundled data and arithmetic references, not an unimplemented game engine.
+"""Validate bundled data, arithmetic references and acceptance-test links. It does not run the game engine or its tests.
 
 Standard-library validator for the JSON Schema keywords used by this bundle:
 type, required, properties, items, enum, minimum, maximum, minItems, uniqueItems, additionalProperties.
@@ -66,15 +66,17 @@ def validate_growth(rules, characters):
           'ordinary training fee excludes salary')
 
 
+def resolve_scenario(scenarios, sid):
+    """시나리오의 부모를 먼저 풀고 자식 값으로 덮는다."""
+    scenario = scenarios[sid]
+    base = resolve_scenario(scenarios, scenario['base_scenario_id']) if scenario.get('base_scenario_id') else {}
+    return {**base, **scenario}
+
+
 def validate_cancellation(scenarios, routes):
     """상속한 계약 조건을 포함해 모든 시나리오 노선의 고정 취소비를 검사한다."""
-    def resolve(sid):
-        scenario = scenarios[sid]
-        base = resolve(scenario['base_scenario_id']) if scenario.get('base_scenario_id') else {}
-        return {**base, **scenario}
-
     for sid in scenarios:
-        scenario = resolve(sid)
+        scenario = resolve_scenario(scenarios, sid)
         cancel = scenario.get('contract_terms', {}).get('pre_departure_cancellation')
         if cancel is None:
             continue
@@ -165,7 +167,8 @@ def check_culture(tables, cases, payroll_currency, home_city_id):
     check(scenario.get('culture_enabled') is True and isinstance(block, dict), 'M2 문화 활동 블록·활성화 필요')
     ids = block.get('activity_ids', []) if isinstance(block, dict) else []
     check(ids == ['CA01', 'CA02', 'CA03'], 'M2 문화 활동은 CA01~03 순서')
-    for item in tables['scenarios'].values():
+    for sid in tables['scenarios']:
+        item = resolve_scenario(tables['scenarios'], sid)
         if 'culture' in item:
             check(item.get('culture_enabled') is True, item['id'] + ': culture 블록은 culture_enabled 필요')
     known = {'company_id', 'actor_id', 'contact_id', 'activity_id', 'city_id', 'content_revision'}
@@ -203,7 +206,10 @@ def check_culture(tables, cases, payroll_currency, home_city_id):
             check(isinstance(report.get(field), str) and bool(report[field].strip()), aid + ': report_ko.' + field + ' 필요')
         finding = report.get('finding_ko', '')
         if isinstance(finding, str):
+            finding = ''.join(c for c in finding if unicodedata.category(c) != 'Cf')
             finding = unicodedata.normalize('NFC', finding)
+            for noun in GENERALIZATION_PROPER_NOUNS:
+                finding = finding.replace(noun, ' ')
             for word in ('부산 사람', '부산 시민', '평택 사람', '평택 시민', '한국인', '한국 사람', '한국 소비자', '국민', '상인들은'):
                 check(re.search(r'\s*'.join(map(re.escape, word.split(' '))), finding) is None, aid + ': finding_ko 일반화 금지어 ' + word)
     case_map = {c['id']: c for c in cases}
@@ -212,7 +218,7 @@ def check_culture(tables, cases, payroll_currency, home_city_id):
     for cid in ('P0-CITY-01', 'P0-CITY-02', 'P0-CITY-03', 'P0-CITY-04'):
         case = case_map.get(cid, {})
         check(case.get('scenario_id') == 'SCENARIO_M2_MULTI_TRADE', cid + ': M2 시나리오 연결 필요')
-        check(case.get('engine_test_ref') == 'src/engine/m2a-culture.test.ts', cid + ': 문화 엔진 시험 연결 필요')
+        check(isinstance(case.get('engine_test_ref'), str), cid + ': 문화 엔진 시험 연결 필요')
         check(case.get('engine_fixture_mapping') == mapping, cid + ': 구체 활동·인물·직원·도시 대응 필요')
         note = case.get('engine_mapping_note_ko', '')
         check('20,000원·1일' in note and '두 실행의 원화 현금 차이 20,000원' in note and '시험 전용 합성 활동' in note,
@@ -478,6 +484,243 @@ def check_world_hubs(documents, tables, source_ids):
     check(sum(c['availability']['chapter'] == 1 for c in world.values()) == 7, 'chapter 1 keeps the 7 East Asian hubs')
 
 
+TEST_CALL = r'(?<![\w.$])(?:describe|it|test)\(\s*'
+TODO_CALL = r'(?<![\w.$])(?:it|test)\.todo\(\s*'
+GENERALIZATION_PROPER_NOUNS = ('부산시민공원', '한국소비자원', '국민연금')
+# TASK-0021 표 C의 미해결 7쌍. 승인된 예외가 아니다. W2-0b에서 자료를 고치면 여기서 지운다.
+PENDING_P0_CURRICULUM_LINKS = frozenset({
+    ('culture_activities', 'CA01', 'SOC10'), ('contacts', 'NPC_MARKET', 'SOC10'),
+    ('contacts', 'NPC_GUIDE', 'SOC08'), ('contacts', 'NPC_GUIDE', 'SOC12'), ('contacts', 'NPC_GUIDE', 'SCI05'),
+    ('venues', 'VEN_CULTURE', 'SOC12'), ('events', 'EV06', 'SCI09'),
+})
+
+
+def strip_comments(text):
+    """/* … */ 묶음과, 앞 공백 뒤 // 로 시작하는 줄을 지운다. 문자열 안의 // 는 건드리지 않는다."""
+    # TS 구문 분석기가 아니다. 문자열 안의 묶음 주석 기호도 지워질 수 있다.
+    text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    return re.sub(r'^\s*//[^\n]*', '', text, flags=re.M)
+
+
+def has_title(text, name, call=TEST_CALL):
+    text = strip_comments(text)
+    return any(re.search(call + re.escape(q + name + q), text) for q in ("'", '"', '`'))
+
+
+def check_test_refs(cases, root=ROOT):
+    """연결한 파일과 고정 제목의 존재만 확인하며 시험을 실행하지 않는다."""
+    for case in cases:
+        cid = case['id']
+        check('engine_test_ref' in case, f'{cid}: engine_test_ref 키 필요')
+        if case.get('engine_test_ref') is None:
+            reason = case.get('unlinked_reason_ko')
+            check(isinstance(reason, str) and bool(reason.strip()), f'{cid}: 연결 없는 사례는 unlinked_reason_ko 필요')
+            check(not case.get('engine_test_names'), f'{cid}: 연결 없는 사례에 engine_test_names가 남음')
+        check(('ui_test_ref' in case) == ('ui_test_names' in case), f'{cid}: ui_test_ref와 ui_test_names는 함께 필요')
+        texts = {}
+        for kind in ('engine', 'ui'):
+            path = case.get(f'{kind}_test_ref')
+            if path is None and kind == 'engine':
+                continue
+            if kind == 'ui' and 'ui_test_ref' not in case:
+                continue
+            valid_path = (isinstance(path, str) and path.startswith('src/') and path.endswith('.test.ts')
+                          and '..' not in path and not Path(path).is_absolute())
+            check(valid_path, f'{cid}: {kind}_test_ref 경로 형식 오류 {path}')
+            if valid_path:
+                file = root / path
+                check(file.is_file(), f'{cid}: {kind}_test_ref 파일 없음 {path}')
+                if file.is_file():
+                    texts[kind] = file.read_text(encoding='utf-8')
+            names = case.get(f'{kind}_test_names')
+            valid_names = isinstance(names, list) and bool(names) and all(isinstance(n, str) for n in names)
+            check(valid_names, f'{cid}: {kind}_test_names 필요')
+            if valid_names:
+                for name in names:
+                    check('${' not in name, f'{cid}: {kind} 시험 이름은 고정 문자열이어야 함 {name}')
+                    check(has_title(texts.get(kind, ''), name), f'{cid}: {kind} 시험 이름 없음 {name}')
+                check(any(cid in name for name in names), f'{cid}: {kind}_test_names에 사례 ID가 든 이름 필요')
+        for assertion in case.get('unexecuted_assertions', []):
+            if 'todo_test_name' in assertion:
+                name = assertion['todo_test_name']
+                check(isinstance(name, str) and has_title(texts.get('engine', ''), name, TODO_CALL),
+                      f'{cid}: 미실행 단언의 할 일 시험 없음 {name}')
+
+
+def linked_count(cases, kind):
+    return sum(isinstance(c.get(f'{kind}_test_ref'), str) for c in cases)
+
+
+def check_acceptance_summary(acceptance, character_doc):
+    cases, items = acceptance['cases'], character_doc['items']
+    summary = acceptance.get('review_summary', {})
+    for kind in ('engine', 'ui'):
+        check(summary.get(f'{kind}_linked_case_count') == linked_count(cases, kind),
+              f'review_summary {kind}_linked_case_count matches cases')
+        check(character_doc.get('summary', {}).get(f'{kind}_linked_case_count') == linked_count(items, kind),
+              f'character summary {kind}_linked_case_count matches items')
+    check(character_doc.get('summary', {}).get('case_count') == len(items), 'character summary case_count matches items')
+    for doc, records, message in ((acceptance, cases, 'acceptance status matches linked cases'),
+                                  (character_doc, items, 'character status matches linked items')):
+        if 0 < linked_count(records, 'engine') < len(records):
+            check(doc.get('status') == 'PARTIALLY_LINKED_TO_ENGINE_TESTS', message)
+    check(summary.get('engine_test_pass_claim') is False, 'acceptance file makes no engine pass claim')
+    for case in items:
+        linked = isinstance(case.get('engine_test_ref'), str)
+        expected = 'EXECUTABLE_ENGINE_TEST_LINKED' if linked else 'SPECIFICATION_NOT_EXECUTED'
+        check(case.get('status') == expected, case['id'] + ': status와 engine_test_ref 연결 불일치')
+    records = acceptance.get('human_review_records')
+    check(isinstance(records, list), 'human_review_records 목록 필요')
+    if not isinstance(records, list):
+        return
+    ids = {c['id'] for c in cases}
+    fields = {'case_id', 'reviewed_on', 'reviewer_ko', 'result', 'note_ko'}
+    for i, record in enumerate(records):
+        record = record if isinstance(record, dict) else {}
+        for key in sorted(set(record) - fields):
+            check(False, f'사람 검토 기록 {i}: 알 수 없는 키 {key}')
+        cid = record.get('case_id')
+        check(isinstance(cid, str) and cid in ids, f'사람 검토 기록 {i}: 없는 사례 {cid}')
+        predicates = {
+            'reviewed_on': lambda v: isinstance(v, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', v) is not None,
+            'reviewer_ko': lambda v: isinstance(v, str) and bool(v.strip()),
+            'result': lambda v: v in ('일치', '불일치'),
+            'note_ko': lambda v: isinstance(v, str),
+        }
+        for field, predicate in predicates.items():
+            check(predicate(record.get(field)), f'사람 검토 기록 {i}: {field} 오류')
+
+
+def check_organization_names(character_cases, organization_doc):
+    departments = {d['id']: d['name_ko'] for d in organization_doc['departments']}
+    teams = {t['name_ko']: t for t in organization_doc['items']}
+    for case in character_cases:
+        cid = case['id']
+        for field in ('setup', 'expected'):
+            obj = case.get(field)
+            if not isinstance(obj, dict):
+                continue
+            dept, team = obj.get('department'), obj.get('permanent_team')
+            if 'department' in obj:
+                check(dept in departments.values(), f'{cid}: organization.json에 없는 부서 이름 {dept}')
+            if 'permanent_team' in obj:
+                check(isinstance(team, str) and team in teams, f'{cid}: organization.json에 없는 팀 이름 {team}')
+            if 'department' in obj and isinstance(team, str) and team in teams:
+                check(departments.get(teams[team]['department_id']) == dept, f'{cid}: 팀과 부서 불일치 {team}/{dept}')
+
+
+def string_values(value):
+    """객체의 키를 제외한 모든 문자열 값을 걷는다."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from string_values(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from string_values(item)
+
+
+def source_usage(documents, root=ROOT):
+    sources = documents['sources']['items']
+    usage = {s['id']: set() for s in sources}
+    data_values = {v for name, doc in documents.items() if name != 'sources' for v in string_values(doc)}
+    reference_values = {v for file in (root / 'references').glob('*.json')
+                        for v in string_values(json.loads(file.read_text(encoding='utf-8')))}
+    design_file = root / 'docs/DESIGN_v0.4.md'
+    design = design_file.read_text(encoding='utf-8') if design_file.is_file() else ''
+    for source in sources:
+        sid = source['id']
+        if sid in data_values:
+            usage[sid].add('data')
+        if sid in reference_values or source.get('url') in reference_values:
+            usage[sid].add('references')
+        if re.search(r'\[' + re.escape(sid) + r'(?:\]|,)', design):
+            usage[sid].add('design')
+    return usage
+
+
+def check_sources(documents, root=ROOT):
+    usage = source_usage(documents, root)
+    for source in documents['sources']['items']:
+        sid = source['id']
+        path = source.get('local_path')
+        if isinstance(path, str):
+            check((root / path).is_file(), f'{sid}: local_path 파일 없음 {path}')
+        if not usage[sid]:
+            reason = source.get('unreferenced_reason_ko')
+            check(isinstance(reason, str) and bool(reason.strip()), f'{sid}: 쓰이지 않는 출처는 unreferenced_reason_ko 필요')
+        else:
+            check('unreferenced_reason_ko' not in source, f'{sid}: 쓰이는 출처에 unreferenced_reason_ko가 남음')
+        for target in source.get('superseded_by', []):
+            check(target in usage, f'{sid}: superseded_by에 없는 출처 {target}')
+            if target in usage:
+                check(bool(usage[target]), f'{sid}: superseded_by의 출처도 쓰이지 않음 {target}')
+
+
+def check_curriculum_stages(documents, curriculum, pending=PENDING_P0_CURRICULUM_LINKS):
+    found = set()
+    for file, doc in documents.items():
+        if file == 'curriculum_links':
+            continue
+        for obj in walk(doc):
+            if obj.get('stage') != 'P0':
+                continue
+            for ref in obj.get('curriculum_refs', []):
+                if ref not in curriculum:
+                    continue
+                if not any(label.startswith('P0') for label in curriculum[ref].get('priority', [])):
+                    oid = obj.get('id')
+                    pair = (file, oid, ref)
+                    check(pair in pending, f'{file}/{oid}: P0 항목이 P0 표지 없는 교과 연결을 가리킴 {ref}')
+                    if pair in pending:
+                        found.add(pair)
+    for file, oid, ref in sorted(pending - found):
+        check(False, f'교과 연결 미해결 목록이 낡음 {file}/{oid} {ref}')
+    return found
+
+
+def check_curriculum_counts(curriculum_doc, curriculum):
+    counts = curriculum_doc.get('counts', {})
+    check(counts.get('total') == len(curriculum), 'curriculum: counts.total 불일치')
+    for field in ('group', 'selection'):
+        actual = {}
+        for item in curriculum.values():
+            value = item[field]
+            actual[value] = actual.get(value, 0) + 1
+        expected = counts.get('by_' + field, {})
+        for value in sorted(set(actual) | set(expected)):
+            check(expected.get(value) == actual.get(value, 0), f'curriculum: counts.by_{field}.{value} 불일치')
+    prefixes = {'social': 'SOC', 'ethics': 'ETH', 'science': 'SCI'}
+    for cid, item in curriculum.items():
+        prefix = prefixes.get(item.get('group'))
+        check(prefix is not None and cid.startswith(prefix), f'{cid}: 연결 ID 머리와 group 불일치')
+
+
+def check_acceptance_fixture_numbers(cases, scenarios):
+    for case in cases:
+        scenario = scenarios.get(case.get('scenario_id'), {})
+        if 'expected_trade_only_usd' in scenario:
+            check(case.get('expected_numeric') == scenario['expected_trade_only_usd'],
+                  case['id'] + ': expected_numeric와 시나리오 expected_trade_only_usd 불일치')
+
+
+def check_test_title_links(cases, root=ROOT):
+    case_map = {c['id']: c for c in cases}
+    titles = TEST_CALL + r'''(?:'([^'\\\n]*)'|"([^"\\\n]*)"|`([^`$\\]*)`)'''
+    case_id = r'(?<![A-Za-z0-9-])(?:P[0-2]-[A-Z0-9]+-\d{2}|CHAR-ACC-\d{2})(?!\d)'
+    for file in sorted((root / 'src').rglob('*.test.ts')):
+        path = file.relative_to(root).as_posix()
+        for match in re.finditer(titles, strip_comments(file.read_text(encoding='utf-8'))):
+            title = next(g for g in match.groups() if g is not None)
+            for cid in re.findall(case_id, title):
+                check(cid in case_map, f'{path}: 시험 제목의 사례 ID가 인수 명세에 없음 {cid}')
+                if cid in case_map:
+                    case = case_map[cid]
+                    check(path in (case.get('engine_test_ref'), case.get('ui_test_ref')),
+                          f'{path}: 시험 제목의 {cid}가 그 사례의 시험 연결에 없음')
+
+
 def main():
     documents = {}
     for file in sorted((ROOT / 'data').glob('*.json')):
@@ -500,6 +743,9 @@ def main():
     for group, prefix, count in [('social','SOC',18), ('ethics','ETH',6), ('science','SCI',23)]:
         check(sum(key.startswith(prefix) for key in curriculum) == count,
               f'curriculum {group}: count')
+    check_curriculum_counts(documents['curriculum_links'], curriculum)
+    pending_found = check_curriculum_stages(documents, curriculum)
+    check_sources(documents)
     for item in curriculum.values():
         check(item['pdf_page'] == item['printed_page'] + 6, item['id'] + ': page offset')
         check(item['source_id'] in source_ids, item['id'] + ': unknown source')
@@ -659,8 +905,9 @@ def main():
     counts = {phase: sum(c['phase'] == phase for c in cases) for phase in ('P0', 'P1', 'P2')}
     check(summary['phase_case_counts'] == counts, 'review_summary phase counts match cases')
     index(cases, 'acceptance cases')
-    check(len(cases) == 18, 'expected 18 acceptance specifications')
-    # Reference arithmetic only. No simulation engine exists in this package.
+    check_test_refs(cases)
+    check_acceptance_fixture_numbers(cases, tables['scenarios'])
+    # Reference arithmetic only. Engine behaviour is checked by the linked tests (npx vitest run).
     check(10000-1000-200+150 == tables['scenarios']['SCENARIO_M1_CANCEL_PREDEPARTURE']['expected_trade_only_usd']['cash_after'], 'cancel reference arithmetic')
     check(10000-1250+1350 == tables['scenarios']['SCENARIO_M1_DELAY_ACCEPTED']['expected_trade_only_usd']['cash_after_collection'], 'late delivery arithmetic')
     # M1 contract terms used by the engine (DESIGN, reviewed 2026-10-04).
@@ -749,19 +996,13 @@ def main():
     crew_scenario = tables['scenarios']['SCENARIO_CREW_M2']
     check(crew_scenario['character_system_enabled'] is True and
           crew_scenario['productivity_mode'] == 'CHARACTER_WEIGHTED', 'M2 character mode explicit')
-    character_cases = read('tests/character_acceptance_cases.json')['items']
+    character_doc = read('tests/character_acceptance_cases.json')
+    character_cases = character_doc['items']
     index(character_cases, 'character acceptance cases')
-    check(len(character_cases) == 8, '8 additional character acceptance specifications')
-    linked_character_ids = {'CHAR-ACC-01', 'CHAR-ACC-02', 'CHAR-ACC-08'}
-    for case in character_cases:
-        if case['id'] in linked_character_ids:
-            check(case['status'] == 'EXECUTABLE_ENGINE_TEST_LINKED' and
-                  case.get('engine_test_ref') == 'src/engine/m2a-growth.test.ts',
-                  case['id'] + ': linked growth engine test')
-        else:
-            check(case['status'] == 'SPECIFICATION_NOT_EXECUTED', case['id'] + ': unimplemented specification')
-    check(sum(c['status'] == 'EXECUTABLE_ENGINE_TEST_LINKED' for c in character_cases) == 3,
-          '3 character specifications linked; 5 remain unexecuted')
+    check_test_refs(character_cases)
+    check_acceptance_summary(acceptance, character_doc)
+    check_organization_names(character_cases, documents['organization'])
+    check_test_title_links(cases + character_cases)
 
     for file in sorted((ROOT/'references').glob('*.json')):
         obj=json.loads(file.read_text(encoding='utf-8'))
@@ -780,8 +1021,14 @@ def main():
         print(f'{len(ERRORS)} errors; {CHECKS} checks')
         return 1
     print(f'PASS: {len(documents)} data documents; {CHECKS} structural/reference/arithmetic checks')
-    print('26 acceptance specifications included (18 core + 8 character); this validator does not run engine tests (npm test).')
-    print('Character specifications: 3 linked to engine tests; 5 remain unexecuted specifications.')
+    n_core, n_char = len(cases), len(character_cases)
+    core_engine, char_engine = linked_count(cases, 'engine'), linked_count(character_cases, 'engine')
+    core_ui, char_ui = linked_count(cases, 'ui'), linked_count(character_cases, 'ui')
+    print(f'{n_core + n_char} acceptance specifications included ({n_core} core + {n_char} character); '
+          f'linked by file and test name: {core_engine} core and {char_engine} character to engine tests, '
+          f'{core_ui + char_ui} to screen tests. This validator checks that those files and names exist; it does not run them (npx vitest run).')
+    print(f'Unlinked specifications: {n_core - core_engine} core, {n_char - char_engine} character. '
+          f'Curriculum: {len(pending_found)} P0 item links without a P0 label remain on the pending list (not approved exceptions).')
     print('Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.')
     print('Economic calibration and playtesting are pending.')
     return 0

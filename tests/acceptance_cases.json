@@ -5,20 +5,22 @@
   "specification_version": "v0.3",
   "source_specification": "docs/DESIGN_v0.4.md",
   "prepared_on": "2026-10-04",
-  "status": "DESIGN_ONLY_NOT_EXECUTED_AGAINST_ENGINE",
+  "status": "PARTIALLY_LINKED_TO_ENGINE_TESTS",
   "evidence_class": "DESIGN",
-  "purpose": "코딩 세션에서 엔진 구현 전후에 사용할 독립적인 인수 기준과 수동 검산 사례. 엔진 테스트 실행 결과가 아님.",
+  "purpose": "코딩 세션에서 쓰는 독립적인 인수 기준과 수동 검산 사례다. 일부 사례는 engine_test_ref·engine_test_names(화면은 ui_test_ref·ui_test_names)로 실행 시험에 연결한다. 연결은 실행 결과가 아니다. 통과 여부는 그때 돌린 npx vitest run 결과로만 말한다.",
   "execution_contract": {
     "isolate_every_case": true,
     "reset_state_before_each_case": true,
     "reuse_previous_case_state": false,
-    "assertion_paths": "엔진 구현 전의 개념적 상태 경로. 구현자는 실제 모델에 연결하는 어댑터를 정의할 것.",
+    "assertion_paths": "개념적 상태 경로다. 연결한 사례는 시험이 실제 상태·설정에 대응시킨다. 대응은 engine_fixture_mapping·engine_mapping_note_ko에 적는다.",
     "numeric_comparison": "정수 금액과 수량은 정확히 비교. 지분은 정수 주식 수의 비율로 검산.",
     "fixture_currency_rule": "accounting_unit=fixture_no_currency 사례는 통화 없는 산술 예제이다. currency가 명시된 M1 취소·지연 사례는 USD, IPO 사례는 KRW이며 사례별 장부를 합산하지 않는다.",
     "parameter_rule": "금액·가격·일수·보상·성장량은 모두 검수용 DESIGN 값이며 관측 통계나 실증 계수가 아니다.",
     "accounting_rule": "수익 인식과 수금을 구분하고, 자산 간 이동과 영업비용을 구분한다. 이 문서는 특정 국가의 회계·상장 규정 전체를 재현하지 않는다.",
     "time_rule": "시간 변화는 명시적 일자 진행으로만 발생한다. 화면 열기와 도시 선택은 실제 이동 또는 Task 완료를 뜻하지 않는다.",
-    "human_review_rule": "각 사례의 human_review_check를 사람이 확인한 후 엔진 검증 결과와 별도로 기록한다. 이 파일의 작성·JSON 검증만으로 엔진 통과를 표시하지 않는다."
+    "human_review_rule": "각 사례의 human_review_check를 사람이 확인한 후 엔진 검증 결과와 별도로 기록한다. 이 파일의 작성·JSON 검증만으로 엔진 통과를 표시하지 않는다.",
+    "test_link_rule": "engine_test_ref·ui_test_ref는 저장소 기준 시험 파일 경로이고, engine_test_names·ui_test_names는 그 파일의 describe·it·test 제목(고정 문자열)이다. 자료 검사기는 파일과 제목이 있는지만 확인하고 시험을 돌리지 않는다. 연결하지 않은 사례는 engine_test_ref를 null로 두고 unlinked_reason_ko를 적는다.",
+    "human_review_record_rule": "human_review_records에는 사람이 human_review_check를 직접 확인한 사례만 적는다. 항목은 case_id, reviewed_on(YYYY-MM-DD), reviewer_ko(사람의 역할), result(일치 또는 불일치), note_ko다. 자동 검사나 AI 검토는 적지 않는다."
   },
   "phase_scope": {
     "P0": "기존 M0~M5, 90일 경영 캠페인, 본사 도시 문화 활동 3종. 주식·IPO는 필수 완료 조건에서 제외.",
@@ -85,7 +87,11 @@
         "운송료·관세를 매출원가에 포함한 후 별도 비용으로 다시 빼지 않는다.",
         "상품 소유권·재고는 인도 조건에 따라 한 번만 이전한다."
       ],
-      "human_review_check": "현금 100−60−5−3−4=28; 채권 90; 이익 90−60−5−3−4=18; 현금+채권=118."
+      "human_review_check": "현금 100−60−5−3−4=28; 채권 90; 이익 90−60−5−3−4=18; 현금+채권=118.",
+      "engine_test_ref": "src/engine/acceptance-p0-acc.test.ts",
+      "engine_test_names": [
+        "P0-ACC-01 외상 판매의 현금·채권·이익 분리"
+      ]
     },
     {
       "id": "P0-ACC-02",
@@ -133,7 +139,11 @@
         "수금으로 매출·이익을 재인식하지 않는다.",
         "동일 수금 ID는 무시 또는 이미 처리됨으로 응답하며 추가 현금이 생기지 않는다."
       ],
-      "human_review_check": "28+90=118; 채권 90−90=0; 이익은 18로 유지. 재전송 이후에도 동일."
+      "human_review_check": "28+90=118; 채권 90−90=0; 이익은 18로 유지. 재전송 이후에도 동일.",
+      "engine_test_ref": "src/engine/acceptance-p0-acc.test.ts",
+      "engine_test_names": [
+        "P0-ACC-02 외상대금 수금과 중복 수금 방지"
+      ]
     },
     {
       "id": "P0-CITY-01",
@@ -196,7 +206,14 @@
       },
       "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다.",
       "ui_test_ref": "src/ui/main.test.ts",
-      "ui_test_note_ko": "명세의 ‘5개 도시 진입점’은 이번 범위의 ‘평택 현지 장소 5곳’ 정적 목록에 대응한다. 시험: ‘P0-CITY-01 열람·선택·미리 보기·결과 보기 전후 저장 문자열과 위쪽 막대는 같다’, ‘P0-CITY-01 금융센터는 미구현 표시가 있고 주식·상장 단추가 없다’."
+      "ui_test_note_ko": "명세의 ‘5개 도시 진입점’은 이번 범위의 ‘평택 현지 장소 5곳’ 정적 목록에 대응한다. 시험: ‘P0-CITY-01 열람·선택·미리 보기·결과 보기 전후 저장 문자열과 위쪽 막대는 같다’, ‘P0-CITY-01 금융센터는 미구현 표시가 있고 주식·상장 단추가 없다’.",
+      "engine_test_names": [
+        "P0-CITY-01 읽기 함수·미리 보기"
+      ],
+      "ui_test_names": [
+        "P0-CITY-01 열람·선택·미리 보기·결과 보기 전후 저장 문자열과 위쪽 막대는 같다",
+        "P0-CITY-01 금융센터는 미구현 표시가 있고 주식·상장 단추가 없다"
+      ]
     },
     {
       "id": "P0-CITY-02",
@@ -258,7 +275,10 @@
         "CITY_HOME": "PYEONGTAEK",
         "CITY_REMOTE": "SHANGHAI"
       },
-      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다."
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다.",
+      "engine_test_names": [
+        "P0-CITY-02 비용·완료·중복"
+      ]
     },
     {
       "id": "P0-CITY-03",
@@ -323,6 +343,9 @@
           "status": "미실행 단언",
           "reason_ko": "퇴사 기능이 없어 실행하지 않는다."
         }
+      ],
+      "engine_test_names": [
+        "P0-CITY-03 출처·경험·쌍별 기록·거래 분리"
       ]
     },
     {
@@ -385,7 +408,10 @@
         "CITY_HOME": "PYEONGTAEK",
         "CITY_REMOTE": "SHANGHAI"
       },
-      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다."
+      "engine_mapping_note_ko": "ACT_A는 CA01(20,000원·1일). 현금 100 → 98은 활동 유무만 다른 두 실행의 원화 현금 차이 20,000원에 대응한다. CITY_REMOTE는 시험 전용 합성 활동으로 다룬다. 화면 열람은 엔진 읽기 함수의 상태 불변으로 검사한다.",
+      "engine_test_names": [
+        "P0-CITY-04 현지 인력·업무 예약"
+      ]
     },
     {
       "id": "P0-TIME-01",
@@ -438,7 +464,20 @@
         "완료된 날짜의 마감 재전송은 새 날짜를 추가 진행하거나 임금·검사비를 다시 차감하지 않는다.",
         "저장 파일은 날짜뿐 아니라 일자 단계·명령 ID·적용 이벤트 ID·난수 상태를 보존한다."
       ],
-      "human_review_check": "100−4−3=93. 두 분기의 의미상 동일한 상태를 비교하고 중복 마감 이후에도 93인지 확인한다."
+      "human_review_check": "100−4−3=93. 두 분기의 의미상 동일한 상태를 비교하고 중복 마감 이후에도 93인지 확인한다.",
+      "engine_test_ref": "src/engine/acceptance-p0-time.test.ts",
+      "engine_test_names": [
+        "P0-TIME-01 저장·불러오기 후 하루 마감과 사건 적용 재현"
+      ],
+      "engine_mapping_note_ko": "명세의 시작 상태(입력 대기 단계이면서 사건 적용 0건)는 엔진에서 함께 성립하지 않는다. 엔진은 날을 열 때(openDay) 사건을 적용한다. 그래서 시험은 저장 시점 두 가지를 모두 본다. (가) 날을 열기 전(PENDING_OPEN)에 저장한다. 분기마다 사건이 0건에서 1건이 된다. (나) 날을 연 뒤(AWAITING_INPUT)에 저장한다. 사건 1건이 이미 적용되어 있고, 복원 뒤 다시 열어도 상태가 같으며 새 공지는 0건이다. 시험 설정은 합성이다. M2 설정을 복사해 급여 통화를 XXX로, 직원을 한 명(하루 급여 wage_expense_each_branch)으로, 사건을 시험용 EVENT_A 하나로 바꾸고, 사건 흐름에서 random_cursor번 추첨해 커서를 만든다. 시작 현금은 simulation_day 전날까지 급여를 낸 뒤 company_cash가 되게 정한다.",
+      "unexecuted_assertions": [
+        {
+          "assertion": "분기마다 현금이 company_cash_each_branch다(검사비 inspection_expense_each_branch 포함). 마감 재전송 뒤에도 검사비를 다시 빼지 않는다.",
+          "status": "미실행 단언",
+          "reason_ko": "검사비를 내는 비용 사건은 M3에서 생긴다. 지금 시험은 급여만 뺀 현금을 확인한다.",
+          "todo_test_name": "검사비 3(EVENT_A 비용 사건, M3) 반영 뒤 분기마다 현금 company_cash_each_branch 확인"
+        }
+      ]
     },
     {
       "id": "P1-SEC-01",
@@ -486,7 +525,9 @@
         "보유주식은 회사 자산이며 대표 개인 계좌로 복제하지 않는다.",
         "소수지분 매수만으로 물류 할인·경영권·비공개정보 접근을 부여하지 않는다."
       ],
-      "human_review_check": "100−10×3−1=69; 투자자산 10×3=30; 총자산 69+30=99."
+      "human_review_check": "100−10×3−1=69; 투자자산 10×3=30; 총자산 69+30=99.",
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-02",
@@ -540,7 +581,9 @@
         "장부가액 40과 평가이익 10을 총자산에 중복 합산하지 않는다.",
         "같은 평가 재적용으로 이익이 20이 되지 않는다."
       ],
-      "human_review_check": "주식가액 10×4=40; 미실현 이익 40−30=10; 현금 69 유지; 총자산 109."
+      "human_review_check": "주식가액 10×4=40; 미실현 이익 40−30=10; 현금 69 유지; 총자산 109.",
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-03",
@@ -591,7 +634,9 @@
         "저장 복원만으로 난수 흐름을 다시 뽑지 않는다. 동일 입력이면 이후 결과가 재현돼야 한다.",
         "로컬 저장파일을 사용자가 직접 변조·역분석하는 것까지 방지했다는 보안 주장으로 확대하지 않는다."
       ],
-      "human_review_check": "공개가격 3만 보이는지와 미래 필드 부재를 확인한다. 시장 공개 이후 표시 전환은 별도 정상 흐름으로 확인한다."
+      "human_review_check": "공개가격 3만 보이는지와 미래 필드 부재를 확인한다. 시장 공개 이후 표시 전환은 별도 정상 흐름으로 확인한다.",
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
     },
     {
       "id": "P1-SEC-04",
@@ -646,7 +691,9 @@
         "가용현금 29로 40의 상품 주문을 승인하지 않는다.",
         "중복 주문 ID를 새로운 주문으로 처리하지 않는다."
       ],
-      "human_review_check": "주식 예약 70+1=71; 가용현금 100−71=29; 40>29이므로 상품 예약 실패. 총현금 100은 체결 전 유지."
+      "human_review_check": "주식 예약 70+1=71; 가용현금 100−71=29; 40>29이므로 상품 예약 실패. 총현금 100은 체결 전 유지.",
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "P1 주식 기능은 아직 엔진에 없다(game_config의 securities_enabled가 false). P0 완료 조건이 아니다."
     },
     {
       "id": "P2-IPO-01",
@@ -709,7 +756,9 @@
         "향후 구주 매출을 추가할 때에는 매각대금 수령자를 매도 주주로 구분한다. 구주 매각만으로 회사 현금·총발행주식 수가 증가해서는 안 된다.",
         "이 기능은 P2이며 P0 90일 창업 캠페인의 필수 종료 조건이 아니다."
       ],
-      "human_review_check": "1000000+250000=1250000주; 250000×2000=500000000 KRW; 1000000÷1250000×100=80%; 신규 투자자 20%."
+      "human_review_check": "1000000+250000=1250000주; 250000×2000=500000000 KRW; 1000000÷1250000×100=80%; 신규 투자자 20%.",
+      "engine_test_ref": null,
+      "unlinked_reason_ko": "P2 상장 기능은 아직 엔진에 없다(game_config의 ipo_enabled가 false). P0 완료 조건이 아니다."
     },
     {
       "id": "P0-ACC-13",
@@ -735,7 +784,12 @@
         "팔지 않은 재고100개 원가1000은 자산에 남는다.",
         "매출·채권·관세를 만들지 않는다."
       ],
-      "human_review_check": "10000−1000−200+150=8950; 재고1000; 자산9950; 거래손익−50"
+      "human_review_check": "10000−1000−200+150=8950; 재고1000; 자산9950; 거래손익−50",
+      "engine_test_ref": "src/engine/m1-trade.test.ts",
+      "engine_test_names": [
+        "M1 출항 전 취소 — SCENARIO_M1_CANCEL_PREDEPARTURE (P0-ACC-13)"
+      ],
+      "engine_mapping_note_ko": "시험은 같은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽어 USD 최소 단위로 비교한다. 자료 검사기가 두 값이 같은지 확인한다."
     },
     {
       "id": "P0-ACC-14",
@@ -759,7 +813,12 @@
         "매출1350과 비용1250의 차이는100.",
         "수금전8750, 수금후10100이며 채권은0."
       ],
-      "human_review_check": "10000−1000−200−50=8750; 매출1400−50=1350; 8750+1350=10100"
+      "human_review_check": "10000−1000−200−50=8750; 매출1400−50=1350; 8750+1350=10100",
+      "engine_test_ref": "src/engine/m1-trade.test.ts",
+      "engine_test_names": [
+        "M1 지연 수락 — SCENARIO_M1_DELAY_ACCEPTED (P0-ACC-14)"
+      ],
+      "engine_mapping_note_ko": "시험은 같은 기대값을 data/scenarios.json의 이 시나리오 expected_trade_only_usd에서 읽어 USD 최소 단위로 비교한다. 자료 검사기가 두 값이 같은지 확인한다."
     },
     {
       "id": "P0-M2A-01",
@@ -792,7 +851,11 @@
         "거절된 명령은 장부·견적·화물 상태를 바꾸지 않는다.",
         "운임을 예약해 지급하면 그 계약의 운임 예약은 풀리고, 관세 예약은 도착해 관세를 낼 때까지 남는다."
       ],
-      "human_review_check": "3000−1000=2000; 예약 200+50=250; 2000−250=1750 < 2000+180+100=2280"
+      "human_review_check": "3000−1000=2000; 예약 200+50=250; 2000−250=1750 < 2000+180+100=2280",
+      "engine_test_ref": "src/engine/m2a-multi.test.ts",
+      "engine_test_names": [
+        "P0-M2A-01 복수 계약의 자금 예약"
+      ]
     },
     {
       "id": "P0-M2A-02",
@@ -834,7 +897,11 @@
         "운송 주선 화물의 관세는 회사가 내지 않는다(수입자 부담 가정).",
         "주선 운임은 출항 때 진행원가로, 인도 때 주선 원가로 옮겨 서비스 매출과 같은 날 비용이 된다."
       ],
-      "human_review_check": "화장품 2500−2000−180−100=220; 가구 380−200=180; 자동차 부품 300−200=100; 합계 500; 3000+500=3500"
+      "human_review_check": "화장품 2500−2000−180−100=220; 가구 380−200=180; 자동차 부품 300−200=100; 합계 500; 3000+500=3500",
+      "engine_test_ref": "src/engine/m2a-multi.test.ts",
+      "engine_test_names": [
+        "P0-M2A-02 운송 주선: 고객 화물과 회사 재고 분리"
+      ]
     },
     {
       "id": "P0-M2A-03",
@@ -872,7 +939,11 @@
         "업무 중인 직원에게 두 번째 업무를 배정하지 않는다.",
         "같은 날 대기 명령은 앞 명령의 예약을 반영해 누적 검증한다."
       ],
-      "human_review_check": "24+8=32 > 30m³; 3000−200=2800; 남은 예약은 자동차 부품 운임 200"
+      "human_review_check": "24+8=32 > 30m³; 3000−200=2800; 남은 예약은 자동차 부품 운임 200",
+      "engine_test_ref": "src/engine/m2a-multi.test.ts",
+      "engine_test_names": [
+        "P0-M2A-03 선복·직원 중복 예약 방지"
+      ]
     },
     {
       "id": "P0-M2A-04",
@@ -915,7 +986,11 @@
         "영입 없는 M1·M2 검산 값과 저장 전후 재현성을 유지한다."
       ],
       "human_review_check": "현돌 일급 110,000원 × 5일 = 계약금 550,000원. 4일 고용 → 5일부터 급여·업무.",
-      "engine_test_ref": "src/engine/m2a-recruit.test.ts"
+      "engine_test_ref": "src/engine/m2a-recruit.test.ts",
+      "engine_test_names": [
+        "P0-M2A-04 발견·의뢰: 직원 시간을 쓰지만 고용을 만들지 않는다",
+        "P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여"
+      ]
     }
   ],
   "review_summary": {
@@ -927,9 +1002,9 @@
     },
     "arithmetic_review": "각 사례의 초기 상태·단위·직접 계산식·예상 수치를 수동 대조했다. 서로 다른 사례의 현금·자산·일자를 합산하지 않는다.",
     "unimplemented_items": [
-      "실제 엔진 연결 어댑터",
-      "자동 테스트 실행",
-      "실제 UI 검수",
+      "연결하지 않은 사례(engine_test_ref가 null)의 엔진 시험",
+      "미실행 단언(사례별 unexecuted_assertions)",
+      "사람의 실제 화면 검수",
       "경제 밸런스와 실증 계수 검증",
       "실제 국가의 회계·상장 규정 대조"
     ],
@@ -942,6 +1017,9 @@
       "P0 완료에 P1·P2 기능을 강요하지 않음"
     ],
     "engine_test_pass_claim": false,
-    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18."
-  }
+    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.",
+    "engine_linked_case_count": 13,
+    "ui_linked_case_count": 1
+  },
+  "human_review_records": []
 }

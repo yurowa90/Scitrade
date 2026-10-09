@@ -127,8 +127,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 47427,
-      "sha256": "c7b3ae35247e95b1b8b994c82231adf6a1d06823f9c7934686181bf1d101d575"
+      "size_bytes": 48756,
+      "sha256": "1fe759230bffb1ed46fa78fbc5cd4c2f66a0e3e027c036d2509e36fe170d4fc9"
     },
     {
       "path": "data/team_synergies.json",
@@ -641,6 +641,11 @@
       "sha256": "759727082eb5fee569e9effb70be8ec1de5555837cc1cb87c466ecb1bf24a0b1"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0022.md",
+      "size_bytes": 19785,
+      "sha256": "c8a970322396618e2f7967711ba20b52bc7600ac27315b60e6a70c7b38c818e4"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -892,13 +897,13 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 39454,
-      "sha256": "a140b137404394069120915c995a7a6014b6bb7eed6e596ab27429bde6cd6ac0"
+      "size_bytes": 45529,
+      "sha256": "9ade1e5e1ff5adf350a537814510294db63162c89adfa6616a45523de56c8747"
     },
     {
       "path": "tests/character_acceptance_cases.json",
-      "size_bytes": 15334,
-      "sha256": "60ecb0bc301b7d842c9fc3e30a99290e06ff676fe6707b4048da916f66d006b7"
+      "size_bytes": 17096,
+      "sha256": "47d5b959da0f08ae0a790a8b179537c500b337ca1545dcb40e48e63137e6fceb"
     },
     {
       "path": "tools/ai/codex_task.sh",
@@ -1002,13 +1007,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 12010,
-      "sha256": "687806e7e3dcd661319002f8b4f38269b48139d26f249a8b55101941648148d6"
+      "size_bytes": 34017,
+      "sha256": "f291039fe35b0cf58199e415cef9dfd412938bdabba05dce45bfe56e57d01a39"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 49265,
-      "sha256": "55914825d52f719bc870fbd21a1866857eb48c19449908b3c903680a7a08ab0c"
+      "size_bytes": 62700,
+      "sha256": "4e3cb6babe403514747b2b41a529f81dabd8fc072a9fcca63fc62c9c74aae939"
     }
   ]
 }
