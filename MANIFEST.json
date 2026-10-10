@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 164934,
-      "sha256": "923d5a834e65f006a372bb5d14cd0c543bc546bce59101a4f484c74c2071ba28"
+      "size_bytes": 167151,
+      "sha256": "a474d874c9e732ab5f63ea9d8544bdf935d704b7fef598c406a84d16e1bd530f"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 65034,
-      "sha256": "5a362744b68ab6e855cb6d42ad0de5765f51099d848451c44299c07a5bd71efe"
+      "size_bytes": 66596,
+      "sha256": "64347b6bbd14b55fe8595e7a2c35f0143154c3b99f22c10702cd86a84cb5c5fe"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -232,8 +232,8 @@
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 15160,
-      "sha256": "ac494e1c2bdea2791f22a083c0e89151b66f8cee7b53d3376099a9ff85fba3d6"
+      "size_bytes": 15632,
+      "sha256": "73daf30c7f18ae57fbd9e111b6cf0b2480c767a8e165ad73330b11db72019ac3"
     },
     {
       "path": "docs/ai/design/BUSAN-approved-texts.md",
@@ -1307,8 +1307,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 13216,
-      "sha256": "c41b98b61459a0db16523cb9f9528173211a80c5c157d47f858ef28e9134d168"
+      "size_bytes": 13734,
+      "sha256": "65fc32b17f40f1df567bc48ca07309b0bb21240229b07e663b948aa5ac1236e9"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",

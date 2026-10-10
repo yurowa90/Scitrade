@@ -125,6 +125,8 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
 ## 시험 빌드 정적 배포 (Netlify, 2026-10-06 사용자 결정)
 
 - **사이트:** `scitrade-usability-test` (사용자 Netlify 팀 `yurowa90`). 주소 https://scitrade-usability-test.netlify.app
+- **평택판 사이트(D15, 2026-10-10):** `scitrade-pyeongtaek-test`(같은 팀). 주소 https://scitrade-pyeongtaek-test.netlify.app. 부산 3판 사이트는 덮어쓰지 않는다.
+  - 3단계의 업로드 명령에는 Netlify가 발급한 일회용 접근 경로가 들어 있다. 자동 권한 검사가 이를 막을 수 있으니, 막히면 우회하지 말고 사용자에게 한 번 허락을 받는다. 접근 경로는 출력하거나 저장하지 않는다.
 - **올리는 것:** 시험 빌드의 `dist`만 올린다. 원본 저장소·문서·자료는 올리지 않는다.
   1. 그 커밋을 별도 작업 트리에서 빌드한다(`git worktree add --detach … <커밋>`, `node_modules`는 `cp -r`, `npm run build`).
   2. `dist`를 배포 전용 폴더로 복사하고 다음을 더한다.
