@@ -876,6 +876,11 @@
       "sha256": "c562981dafa46be0f2a963edf873dcee8353b0027115dbd9b972a2571d4cf8fe"
     },
     {
+      "path": "docs/ai/tasks/TASK-0027-R1-m2a5-engine.md",
+      "size_bytes": 10050,
+      "sha256": "c422ead06879101a464cc255d8d86a7099a234e44b1bdfb2ac75d633ab2b11db"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0027-m2a5-engine.md",
       "size_bytes": 55024,
       "sha256": "b7864fd00375e2f7e114c4ddce53a7811d13f99d186ebe96c625de2b3d84828d"
@@ -1012,8 +1017,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0027.md",
-      "size_bytes": 19575,
-      "sha256": "68a402b06e1df4fa1a461887259a07bbafded2697ed83790fdad1d6e9b6a7972"
+      "size_bytes": 22128,
+      "sha256": "72367ac00646ccd80e64c21cd9a3b31e61dd0d15438384060eacf3581ff7b3fc"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
