@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
-      "size_bytes": 18335,
-      "sha256": "bf4be0f685288ec125d13fca17d913f5d8aa77f94763d7c86d87c64949dd92b5"
+      "size_bytes": 18427,
+      "sha256": "742873fa6158369735bffaa5eedc9c41dc56f87948bee31b6ee86ae799a0cb67"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -886,14 +886,49 @@
       "sha256": "81c9a642f01a6ba347f8d2c8abeeb2c249e628d71a603c14a7595776c94b17b6"
     },
     {
+      "path": "docs/ai/design/m2a5-review/spec_check/exp_spec.py",
+      "size_bytes": 10806,
+      "sha256": "bd476ada2f0c509a6cdecd0887729a26a953419d98e7e0725400eaaf47ba03d5"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/judge_runs.txt",
+      "size_bytes": 2236,
+      "sha256": "73a3a618950c59765ea4b30160f5d0de16977788531241d6de2b6b1289fb0f90"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/out_B_skip.md",
+      "size_bytes": 2689,
+      "sha256": "db9fe1adfd03e37d0e0f9f7274e88a240beb43762cac270aa716ae0987494ebf"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/out_B_spec.md",
+      "size_bytes": 2745,
+      "sha256": "0ef68f4227eeb9622006064bb55c4c8b677f414a062fcb16dfe0b2e27e75c291"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/out_B_window7.md",
+      "size_bytes": 2691,
+      "sha256": "f71183972bbf3e25806bbf4aa5e0d1cff61dd78e8a538a3012643f2dcd904dc5"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/out_B_window7_flat100.md",
+      "size_bytes": 2717,
+      "sha256": "b6d392aefeb180f40e28ece6ac945b5607283d94354aeea02a30f67eb224197e"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/out_B_window7_flat50.md",
+      "size_bytes": 2759,
+      "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 10796,
-      "sha256": "bfb5c77f3074f6bf66234ae89011b387b3fb7f14da6e3a1f09565f1a54d1964e"
+      "size_bytes": 11528,
+      "sha256": "64dfd9a164bf5b2304a70631c7fa49d1ac009ab1f69a1f504f5702d092a324d2"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
