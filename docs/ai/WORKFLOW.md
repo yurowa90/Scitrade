@@ -75,7 +75,7 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
    - 실행 장소는 로컬 작업 브랜치 `codex/<작업 ID>`다.
    - Codex는 변경과 결과 보고서(`docs/ai/tasks/results/<작업 ID>.md`)만 남긴다.
 3. **검수:** Claude가 아래를 확인한다.
-   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·파이썬 시험(그림 도구, 지도 생성, 자료 검사기 회귀 `tools/test_validate_data.py`). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
+   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·빌드 크기 한도(`tools/check_bundle_size.mjs`, 빌드가 성공했을 때만)·파이썬 시험(그림 도구, 지도 생성, 자료 검사기 회귀 `tools/test_validate_data.py`)·node 시험(측정 도구, 크기 검사기). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
    - diff 전체를 읽고, 기존 기대값이 바뀌지 않았는지 본다.
    - 지시서의 완료 조건을 하나씩 대조한다.
    - 화면 작업은 Playwright로 클릭해 진행한다.

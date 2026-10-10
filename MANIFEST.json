@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 144349,
-      "sha256": "6932d4471958eb24667ad814d2cb5e2198e1430def9c2d61798ed3be3db42cfb"
+      "size_bytes": 146110,
+      "sha256": "67eb0341f4486578f6d9e24cf4151dec019dd1d3d9619f624e7320e1cd1b083e"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 54622,
-      "sha256": "fa5baab581d78db5c7773d3c68726b434c94dc976fa230c0e3f746482485e386"
+      "size_bytes": 56049,
+      "sha256": "05f6e8ce5aad8f1c325692c0937b40e963dd4818c1f445571914eaf97af31e28"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 8037,
-      "sha256": "e224b0b210e2d933f545e4aa3489b07b94d26ee28df2944e17361e47ccbd4cf2"
+      "size_bytes": 8739,
+      "sha256": "87738c4018173ca82ca5d91c60568a7ef7dc9f9ba4c8e72d283a943ad5fce95c"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 14702,
-      "sha256": "6b5df8d75a1f4bd007b32ee61dac88e8cd537dff98eabe13150f8090234aa3bc"
+      "size_bytes": 14832,
+      "sha256": "bc587af226b0363dde10a99419dc364041014aa1af88bd28250d4d6306081d7f"
     },
     {
       "path": "docs/ai/design/BUSAN-approved-texts.md",
@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 10032,
-      "sha256": "600e08b73d97f92d994663d9fc23209c4bca77957b2055bf392e3a3c42b0c073"
+      "size_bytes": 10459,
+      "sha256": "02023b323afccd230681d2305272adb09b6dcac85204f1fa6528bd6a208f1316"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -661,6 +661,11 @@
       "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0026.md",
+      "size_bytes": 20902,
+      "sha256": "673228a408e105c4097248a354a47acc1ba6e6ffab511c9e28f6ff95f821324a"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -932,8 +937,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 2562,
-      "sha256": "e927229f72560287231cd25ebd5e54b8f517f4e014fc06af57ac0a3e8b2c1c8b"
+      "size_bytes": 3019,
+      "sha256": "32d1b59c6dbac5b6c2f55587221f72f30661d14ff520903ba6b046feb024b218"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -1029,6 +1034,21 @@
       "path": "tools/build_package.py",
       "size_bytes": 4958,
       "sha256": "f4033de7c0679776ccb52d734d84028fa5c8d305212b352fe85a05443576c46e"
+    },
+    {
+      "path": "tools/bundle-size.mjs",
+      "size_bytes": 6731,
+      "sha256": "24c9daa3388daf24c64eb6bd692fb5dc640c173147e1facfa0cfb97604c7470d"
+    },
+    {
+      "path": "tools/check_bundle_size.mjs",
+      "size_bytes": 1208,
+      "sha256": "988dc3f79880e49c38c7158e0f5f517e379eeff88ecc9af4b5e3eadf684e5ce2"
+    },
+    {
+      "path": "tools/check_bundle_size.test.mjs",
+      "size_bytes": 15191,
+      "sha256": "69c37d5bab4c766702a257848f35dde8ee09f6cce1cf9788d9bf29f43f737b09"
     },
     {
       "path": "tools/check_fact_mixing.py",

@@ -37,7 +37,15 @@ else run python3 tools/build_package.py --manifest-only; fi
 run python3 tools/validate_data.py
 run npm run --silent typecheck
 run npx vitest run
+build_fails=$fails
 run npm run --silent build
+# 크기 한도 검사는 방금 빌드가 성공했을 때만 한다. 실패했으면 남아 있을 수 있는 옛 dist를 재지 않고 실패로 센다.
+if ((fails == build_fails)); then run node tools/check_bundle_size.mjs dist
+else
+  total=$((total+1)); fails=$((fails+1))
+  echo '▶ node tools/check_bundle_size.mjs dist'
+  echo '  실패 (빌드가 실패해 재지 않았다)'
+fi
 # 그림 도구와 지도 생성 시험. 지도 원본 재생성 시험은 원본 폴더(SCITRADE_MAP_SOURCES, 없으면 저장소 옆 map/)가 있을 때만 돈다.
 run python3 tools/art/test_pixel_tools.py
 run python3 -m unittest discover -s scripts -p 'test_*.py'
@@ -45,6 +53,7 @@ run python3 tools/test_validate_data.py
 run python3 tools/check_fact_mixing.py
 run python3 tools/test_check_fact_mixing.py
 run node --test tools/browser/lib.test.mjs
+run node --test tools/check_bundle_size.test.mjs
 if [[ "$mode" == 확인 ]]; then
   after="$(tree_state)"
   total=$((total+1))

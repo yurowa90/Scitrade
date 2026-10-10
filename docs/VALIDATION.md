@@ -39,9 +39,11 @@
 | 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 74개 통과 | W2-0b 교과 검사 뒤(2026-10-09) |
 | 엔진·화면 시험 | `npx vitest run` | 32개 파일·973개 통과(할 일 1) | TASK-0023 병합 뒤(2026-10-10). 그 전에는 31개 파일·891개 |
 | 그림 도구 시험 | `python3 tools/art/test_pixel_tools.py` | 21개 통과 | TASK-0007 |
-| 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 20개 통과. 원본 재생성 시험은 원본 폴더가 있을 때만 돈다 | `tools/ai/review_checks.sh:19-21` |
+| 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 21개 통과. 원본 재생성 시험 3개는 원본 폴더가 있을 때만 돌고, 없으면 건너뛴다(CI) | `tools/ai/review_checks.sh:49-51`(2026-10-10 다시 셈) |
+| 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 212,001 B·자료 317,893 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 555,863 B(한도 600,000 B)·gzip 127,974 B(한도 140,000 B), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0026 병합 뒤(2026-10-10). 수치는 빌드 표시 `dev` 기준 |
+| 크기 검사기 시험 | `node --test tools/check_bundle_size.test.mjs` | 11개 통과 | TASK-0026 |
 
-위 다섯 가지와 타입 검사·빌드·`MANIFEST.json` 재생성·사실 섞임 검사·브라우저 도구 시험 등이 Codex 결과 검수의 자동 검사다. 수정 모드 11종, 확인 모드(`--check`) 12종이다(`tools/ai/review_checks.sh`).
+위 일곱 가지와 타입 검사·빌드·`MANIFEST.json` 재생성·사실 섞임 검사·브라우저 도구 시험 등이 Codex 결과 검수의 자동 검사다. 수정 모드 13종, 확인 모드(`--check`) 14종이다(`tools/ai/review_checks.sh`, TASK-0026 병합 뒤). CI(`.github/workflows/checks.yml`)는 확인 모드를 돈다.
 
 **2026-10-04 뒤 자료 검사기에 더한 검사:**
 - 영입 블록: 후보·조사 장소·작업량·계약금 일수(`check_recruitment`, `tools/validate_data.py:371`, TASK-0001, 2026-10-05).
