@@ -802,6 +802,60 @@ def check_test_title_links(cases, root=ROOT):
                           f'{path}: 시험 제목의 {cid}가 그 사례의 시험 연결에 없음')
 
 
+def check_market_rules(documents, tables):
+    """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
+    market = documents['market_rules']
+    names = {p['id'] for p in market['counterparties']}
+    for rule in market['rule_sets']:
+        rows = rule['rows']
+        check(len(rows) == 6 and len({(r['city_id'], r['good_id'], r['side']) for r in rows}) == 6,
+              'market_rules: 시세표는 6행이어야 함')
+        templates = rule['forwarding']['templates']
+        for t in templates:
+            tid = t['id']
+            route = next((r for r in tables['routes'].values()
+                          if r['from_city_id'] == rule['trade']['buy_city_id']
+                          and r['to_city_id'] == t['destination_city_id']), None)
+            check(route is not None and t['deadline_offset_days'] >= route['transit_days'] + 1,
+                  f'{tid}: 납기가 운송일보다 짧음')
+            check(t['payment_offset_days'] >= t['deadline_offset_days'], f'{tid}: 결제일이 납기보다 이름')
+            party = t['counterparty_id']
+            check(party in names, f'{tid}: 거래처 이름 없음 {party}')
+            prep = t.get('prep_work_units')
+            check((type(prep) is int and prep >= 2) if t['service_class'] == 'HANDLING' else prep is None,
+                  f'{tid}: 준비량 칸 오류')
+        for d in rule['forwarding']['draws']:
+            grade = d['service_class']
+            check(d['count'] <= sum(t['service_class'] == grade for t in templates),
+                  f'market_rules: {grade} 뽑기 수가 틀 수보다 많음')
+        for g in rule['trade']['goods']:
+            for party in [g['buy_counterparty_id']] + [p['counterparty_id'] for p in g['sell_counterparties']]:
+                check(party in names, f"{g['good_id']}: 거래처 이름 없음 {party}")
+    for offer in tables['market_offers'].values():
+        party = offer['counterparty_id']
+        check(party in names, f"{offer['id']}: 거래처 이름 없음 {party}")
+    for sid in tables['scenarios']:
+        scenario = resolve_scenario(tables['scenarios'], sid)
+        if 'operations' in scenario:
+            check(scenario.get('engine_rules', {}).get('rules_version') == 'M2a-rules-2',
+                  f'{sid}: operations는 M2a-rules-2 필요')
+        late = scenario.get('contract_terms', {}).get('late_delivery')
+        if late:
+            cap = late.get('cap_basis_points')
+            check((type(cap) is int and 1 <= cap <= 10000) if late['basis'] == 'per_late_day_capped'
+                  else 'cap_basis_points' not in late, f'{sid}: 지연 감액 상한 칸 오류')
+    param = next(p for p in documents['parameters']['items'] if p['id'] == 'PAR_PAYMENT_GRACE_DAYS')
+    try:
+        file, pointer = param['json_pointer'].split('#')
+        value = documents[file.removesuffix('.json')]
+        for part in pointer.lstrip('/').split('/'):
+            value = value[int(part)] if isinstance(value, list) else value[part]
+    except (KeyError, IndexError, ValueError, TypeError):
+        value = None
+    check(type(param['value']) is int and param['value'] == value,
+          'PAR_PAYMENT_GRACE_DAYS: 시나리오 값과 다름')
+
+
 def main():
     documents = {}
     for file in sorted((ROOT / 'data').glob('*.json')):
@@ -814,7 +868,7 @@ def main():
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
     expected_counts = {'world': 21, 'goods': 8, 'routes': 6, 'employees': 6,
-                       'market_offers': 6, 'scenarios': 7, 'securities': 4,
+                       'market_offers': 6, 'scenarios': 8, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
@@ -979,6 +1033,7 @@ def main():
               sid + ': M1 rule set unchanged')
     check_m2a(tables)
     validate_cancellation(tables['scenarios'], tables['routes'])
+    check_market_rules(documents, tables)
 
     acceptance = read('tests/acceptance_cases.json')
     cases = acceptance['cases']

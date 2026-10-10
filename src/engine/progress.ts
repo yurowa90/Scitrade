@@ -1,3 +1,5 @@
+import { lateDeliveryReduction, projectPrepCompletion } from './operations';
+import { applyBasisPoints } from './money';
 // REF-10 계약 진행과 막힌 이유. 상태에서 계산하는 읽기 전용 보고이며 상태를 바꾸지 않는다.
 // "무엇이 다음 단계를 막고 있는가"를 화면이 직원 처리량·운항표·사건과 같은 근거로 설명하게 한다.
 
@@ -43,10 +45,11 @@ export interface ContractProgress {
 
 export function contractProgress(s: GameState, config: ScenarioConfig, c: Contract): ContractProgress {
   if (c.status === 'CANCELLED') return { nextKo: '취소된 계약', blockers: [] };
-  if (c.status === 'COMPLETED') return { nextKo: `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
+  if (c.status === 'COMPLETED') return { nextKo: c.invoiceId === null && c.priceReductionMinor === c.saleAmountMinor
+    ? `${c.completedDay}일 인도 완료 · 전액 감액으로 종결` : `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
   const blockers: Blocker[] = [];
   const money = (minor: number) => formatMoney(c.currency, minor);
-  const late = config.terms.lateDeliveryPriceReductionMinor;
+  const late = (days: number) => lateDeliveryReduction(config, c.saleAmountMinor, days);
   const lostFee = config.terms.preDepartureCancellationFeeMinor;
   const task = s.tasks.find((t) => t.id === c.prepTaskId);
   const booking = c.bookingId ? s.bookings.find((b) => b.id === c.bookingId && b.status !== 'CANCELLED') : undefined;
@@ -68,7 +71,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
     if (shipment.arrivalDay === null) {
       const status = portWaitStatus(s, config, shipment);
       if (status === 'WAITING_RESTRICTION') {
-        blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${money(late)} 감액됩니다.` });
+        blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${config.terms.lateDeliveryBasis === 'PER_LATE_DAY_CAPPED' && config.terms.lateDeliveryCapBasisPoints !== null ? `늦은 하루마다 ${money(config.terms.lateDeliveryPriceReductionMinor)}씩, 최대 ${money(applyBasisPoints(c.saleAmountMinor, config.terms.lateDeliveryCapBasisPoints!))}까지` : money(late(1))} 감액됩니다.` });
         return { nextKo: '하역 재개 대기', blockers };
       }
       if (status === 'ARRIVING_TODAY') {
@@ -96,9 +99,9 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
     const rate = emp?.workUnitsPerDay ?? 0;
     const remaining = task.requiredWorkUnits - task.progressWorkUnits;
     // 업무는 하루 마감 때 진행되고, 출항은 같은 날 업무 진행 뒤에 처리한다. 그래서 출항일에 끝나도 실을 수 있다.
-    readyDay = rate > 0 ? s.day + Math.ceil(remaining / rate) - 1 : null;
+    readyDay = config.operations ? projectPrepCompletion(s, config).find((p) => p.taskId === task.id)?.readyDay ?? null : rate > 0 ? s.day + Math.ceil(remaining / rate) - 1 : null;
     if (sailing && (readyDay === null || readyDay > sailing.departureDay)) {
-      blockers.push({ code: 'TASK_WILL_MISS_SAILING', severity: 'risk', messageKo: `지금 속도(하루 ${rate}pt)면 준비가 ${readyDay ?? '?'}일에 끝나 ${sailing.departureDay}일 출항을 놓칩니다. 놓치면 운임 중 ${money(lostFee)}를 잃고 다시 예약해야 합니다.` });
+      blockers.push({ code: 'TASK_WILL_MISS_SAILING', severity: 'risk', messageKo: `${config.operations ? '창고 처리 순서를 반영하면' : `지금 속도(하루 ${rate}pt)면`} 준비가 ${readyDay ?? '?'}일에 끝나 ${sailing.departureDay}일 출항을 놓칩니다. 놓치면 운임 중 ${money(lostFee)}를 잃고 다시 예약해야 합니다.` });
     }
   } else if (task?.status === 'DONE') {
     readyDay = task.completedDay;
@@ -107,7 +110,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
   if (sailing) {
     const release = sailing.scheduledArrivalDay + config.terms.customsDays;
     if (release > c.deliveryDeadlineDay) {
-      blockers.push({ code: 'BOOKED_SAILING_LATE', severity: 'risk', messageKo: `예약한 ${sailing.departureDay}일 편은 ${release}일 인도 예정이라 납기 ${c.deliveryDeadlineDay}일을 ${release - c.deliveryDeadlineDay}일 넘깁니다 (감액 ${money(late)}).` });
+      blockers.push({ code: 'BOOKED_SAILING_LATE', severity: 'risk', messageKo: `예약한 ${sailing.departureDay}일 편은 ${release}일 인도 예정이라 납기 ${c.deliveryDeadlineDay}일을 ${release - c.deliveryDeadlineDay}일 넘깁니다 (감액 ${money(late(release - c.deliveryDeadlineDay))}).` });
     }
   } else if (route) {
     const sailings = listSailings(config, route.id, s.day + 1);
@@ -122,7 +125,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
       blockers.push({ code: 'NO_BOOKING', severity: 'warn', messageKo: `운송편을 예약하지 않았습니다. ${departure}이고 예약 마감은 ${next.departureDay - 1}일입니다.` });
       const release = next.scheduledArrivalDay + config.terms.customsDays;
       if (release > c.deliveryDeadlineDay) {
-        blockers.push({ code: 'NEXT_SAILING_LATE', severity: 'risk', messageKo: `다음 편으로도 ${release}일 인도라 납기 ${c.deliveryDeadlineDay}일을 넘깁니다 (감액 ${money(late)}).` });
+        blockers.push({ code: 'NEXT_SAILING_LATE', severity: 'risk', messageKo: `다음 편으로도 ${release}일 인도라 납기 ${c.deliveryDeadlineDay}일을 넘깁니다 (감액 ${money(late(release - c.deliveryDeadlineDay))}).` });
       }
     }
   }

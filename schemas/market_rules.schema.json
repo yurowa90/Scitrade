@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "반복 시장 규칙 (DESIGN)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "data_basis",
+    "source_refs",
+    "numeric_values_status",
+    "rule_sets",
+    "counterparties",
+    "$schema"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "data_basis": {
+      "type": "string"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "numeric_values_status": {
+      "type": "string"
+    },
+    "rule_sets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "publish",
+          "rng",
+          "index",
+          "regional_pct",
+          "counterparty_pct",
+          "rows",
+          "trade",
+          "forwarding",
+          "drop_if_beyond_campaign"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "publish": {
+            "type": "object",
+            "required": [
+              "first_day",
+              "interval_days",
+              "last_day",
+              "valid_days"
+            ],
+            "properties": {
+              "first_day": {
+                "type": "integer"
+              },
+              "interval_days": {
+                "type": "integer"
+              },
+              "last_day": {
+                "type": "integer"
+              },
+              "valid_days": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "rng": {
+            "type": "object",
+            "required": [
+              "stream_prefix",
+              "stream_digits"
+            ],
+            "properties": {
+              "stream_prefix": {
+                "type": "string"
+              },
+              "stream_digits": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "index": {
+            "type": "object",
+            "required": [
+              "goods",
+              "start_bp",
+              "min_bp",
+              "max_bp",
+              "step_pct"
+            ],
+            "properties": {
+              "goods": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "start_bp": {
+                "type": "integer"
+              },
+              "min_bp": {
+                "type": "integer"
+              },
+              "max_bp": {
+                "type": "integer"
+              },
+              "step_pct": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "regional_pct": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "counterparty_pct": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "city_id",
+                "good_id",
+                "side",
+                "base_price"
+              ],
+              "properties": {
+                "city_id": {
+                  "type": "string"
+                },
+                "good_id": {
+                  "type": "string"
+                },
+                "side": {
+                  "type": "string"
+                },
+                "base_price": {
+                  "type": "object",
+                  "required": [
+                    "currency",
+                    "amount"
+                  ],
+                  "properties": {
+                    "currency": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "trade": {
+            "type": "object",
+            "required": [
+              "buy_city_id",
+              "sell_city_ids",
+              "goods",
+              "max_lots_choices",
+              "sell_deadline_offset_days",
+              "payment_offset_days"
+            ],
+            "properties": {
+              "buy_city_id": {
+                "type": "string"
+              },
+              "sell_city_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "goods": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "good_id",
+                    "id_tag",
+                    "base_lot",
+                    "buy_counterparty_id",
+                    "sell_counterparties"
+                  ],
+                  "properties": {
+                    "good_id": {
+                      "type": "string"
+                    },
+                    "id_tag": {
+                      "type": "string"
+                    },
+                    "base_lot": {
+                      "type": "integer"
+                    },
+                    "buy_counterparty_id": {
+                      "type": "string"
+                    },
+                    "sell_counterparties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "city_id",
+                          "counterparty_id"
+                        ],
+                        "properties": {
+                          "city_id": {
+                            "type": "string"
+                          },
+                          "counterparty_id": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "max_lots_choices": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "sell_deadline_offset_days": {
+                "type": "integer"
+              },
+              "payment_offset_days": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "city_id",
+                    "days"
+                  ],
+                  "properties": {
+                    "city_id": {
+                      "type": "string"
+                    },
+                    "days": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "forwarding": {
+            "type": "object",
+            "required": [
+              "draws",
+              "templates"
+            ],
+            "properties": {
+              "draws": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "service_class",
+                    "count"
+                  ],
+                  "properties": {
+                    "service_class": {
+                      "type": "string",
+                      "enum": [
+                        "STANDARD",
+                        "HANDLING"
+                      ]
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "templates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "service_class",
+                    "title_ko",
+                    "good_id",
+                    "quantity",
+                    "destination_city_id",
+                    "service_fee",
+                    "deadline_offset_days",
+                    "payment_offset_days",
+                    "counterparty_id",
+                    "prep_work_units"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "service_class": {
+                      "type": "string",
+                      "enum": [
+                        "STANDARD",
+                        "HANDLING"
+                      ]
+                    },
+                    "title_ko": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "good_id": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer"
+                    },
+                    "destination_city_id": {
+                      "type": "string"
+                    },
+                    "service_fee": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "deadline_offset_days": {
+                      "type": "integer"
+                    },
+                    "payment_offset_days": {
+                      "type": "integer"
+                    },
+                    "counterparty_id": {
+                      "type": "string"
+                    },
+                    "prep_work_units": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "drop_if_beyond_campaign": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "counterparties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name_ko"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name_ko": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

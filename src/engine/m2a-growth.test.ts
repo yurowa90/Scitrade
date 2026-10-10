@@ -330,8 +330,8 @@ describe('기준 경로·판본 이관·불변 조건', () => {
       for (const l of file.state.cargoLots) delete l.ownerPartyId;
     }
     const restored = deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg });
-    expect(SAVE_FORMAT_VERSION).toBe(5);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(5);
+    expect(SAVE_FORMAT_VERSION).toBe(6);
+    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(restored).toEqual(s);
     expect(employee(restored).xp).toBe(cfg.employees[0]!.growth?.startXp ?? 0);
     expect(restored.xpAwards).toEqual({});

@@ -1,3 +1,5 @@
+import { lateDeliveryReduction, unpaidByCurrency } from './operations';
+import type { OperationsState } from './types';
 // 상태에서 계산하는 보고 값. 별도의 현금·이익을 저장하지 않는다.
 
 import { dutyEstimate, listSailings, offerOf, routeBetween, routeOf } from './catalog';
@@ -98,7 +100,7 @@ function preview(
   const arrival = sailing ? sailing.scheduledArrivalDay : null;
   const release = arrival === null ? null : arrival + config.terms.customsDays;
   const late = release !== null && release > deadline;
-  const sale = money.sale - (late ? config.terms.lateDeliveryPriceReductionMinor : 0);
+  const sale = money.sale - lateDeliveryReduction(config, money.sale, release === null ? 0 : release - deadline);
   const due = release === null ? paymentDueDay : Math.max(paymentDueDay, release);
   const schedule: QuotePreview['schedule'] = [];
   if (money.purchase) schedule.push({ day: bookingDay, labelKo: '매입 대금 지급', amount: -money.purchase });
@@ -302,12 +304,18 @@ export interface CurrencyStanding {
   accountsReceivable: number;
   accountsPayable: number;
   totalAssets: number;
-  /** 자산 합계 − 미지급금 = 시작 자본 + 누적 손익. */
+  /** 자산 합계 − 미지급금 = 시작 자본 + 누적 손익 + 통화 간 이체. */
   netAssets: number;
   openingEquity: number;
   profit: number;
   /** 취소 계약을 포함한 이 통화 계약의 기여이익 합계. */
   contractContribution: number;
+  rentExpense: number;
+  facilitySetupExpense: number;
+  spaceContractExpense: number;
+  fxSpreadExpense: number;
+  currencyTransferNet: number;
+
 }
 
 export interface CampaignSummary {
@@ -318,6 +326,9 @@ export interface CampaignSummary {
   onTime: OnTimeDelivery;
   contracts: { total: number; completed: number; awaitingPayment: number; inProgress: number; cancelled: number };
   openInvoices: { invoiceId: string; contractId: string; currency: Currency; amountMinor: number; dueDay: number }[];
+  operations?: { outcome: OperationsState['outcome']; failure: OperationsState['failure'];
+    arrearsAtEnd: ReturnType<typeof unpaidByCurrency>; defaultEvents: OperationsState['defaultEvents'];
+    fixedCostsByCurrency: { currency: Currency; rentExpense: number; facilitySetupExpense: number; spaceContractExpense: number; fxSpreadExpense: number }[]; exchanges: OperationsState['exchanges'] };
   unpaidObligations: { obligationId: string; currency: Currency; amountMinor: number; incurredDay: number; reasonKo: string }[];
 }
 
@@ -331,6 +342,11 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
       currency, cash: b.cash, inventory: b.inventory, prepaidFreight: b.prepaidFreight, forwardingWip: b.forwardingWip,
       accountsReceivable: b.accountsReceivable, accountsPayable: b.accountsPayable, totalAssets: b.totalAssets,
       netAssets: b.totalAssets - b.accountsPayable, openingEquity: b.openingEquity, profit: b.profit,
+      rentExpense: b.rentExpense,
+      facilitySetupExpense: b.facilitySetupExpense,
+      spaceContractExpense: b.spaceContractExpense,
+      fxSpreadExpense: b.fxSpreadExpense,
+      currencyTransferNet: b.currencyTransferNet,
       contractContribution: s.contracts.filter((c) => c.currency === currency)
         .reduce((sum, c) => sum + contractReport(s, c).contribution, 0),
     };
@@ -343,6 +359,9 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
     else contracts.inProgress++;
   }
   return {
+    ...(config.operations && s.operations ? { operations: { outcome: s.operations.outcome, failure: structuredClone(s.operations.failure),
+      arrearsAtEnd: unpaidByCurrency(s, config), defaultEvents: structuredClone(s.operations.defaultEvents), exchanges: structuredClone(s.operations.exchanges),
+      fixedCostsByCurrency: byCurrency.map((b) => ({ currency: b.currency, rentExpense: b.rentExpense, facilitySetupExpense: b.facilitySetupExpense, spaceContractExpense: b.spaceContractExpense, fxSpreadExpense: b.fxSpreadExpense })) } } : {}),
     ended: s.phase === 'ENDED', campaignDays: config.campaignDays,
     lastClosedDay: s.closedDays.reduce((last, day) => Math.max(last, day), 0), byCurrency,
     onTime: onTimeDeliveryRate(s), contracts,
