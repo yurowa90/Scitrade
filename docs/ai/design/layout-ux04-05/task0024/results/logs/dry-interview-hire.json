@@ -1,0 +1,14 @@
+{
+  "dry_run": true,
+  "scenario": "interview-hire",
+  "profiles": [
+    "l1366",
+    "cb1366t",
+    "ipadAirL",
+    "ipadminiL",
+    "ipadmini6L",
+    "l1920",
+    "t1000"
+  ],
+  "steps": 20
+}

@@ -58,6 +58,21 @@ const actionSizes = new Map<string, { height: number; width: number }>();
 /** 누른 버튼이 칸 안에서 있던 높이. 예정 표시를 그 자리에 둔다. */
 const actionOffsets = new Map<string, number>();
 
+/** 세 열 배치의 오른쪽 세 칸. */
+const SIDE_PANELS = '.crew, .resources, .queue';
+/** 하루 진행 뒤 오른쪽 칸에서 읽던 자리 후보. */
+const SIDE_ANCHORS = '.crew h2, .crew h3, .crew h4, .crew article.card, .crew tbody tr, .resources h2, .resources h3, .resources li, .queue h2, .queue li, .queue .growth-notices';
+/** 마지막으로 누르거나 굴리거나 초점을 둔 열(배치안 A). */
+let lastColumn: 'main' | 'side' | null = null;
+/** 동료를 카드로 골랐으면 상세를 그 카드 바로 아래에 둔다. 운영표 줄로 골랐으면 운영표 아래. */
+let detailUnder: 'card' | 'roster' = 'card';
+/** Esc로 닫는 칸. 안쪽 칸이 앞이다(기록장은 현지 패널 안). */
+type LayerKey = 'book' | 'local' | 'interview' | 'detail';
+const LAYER_ORDER: LayerKey[] = ['book', 'local', 'interview', 'detail'];
+/** 칸마다 마지막으로 열거나 그 안을 누르거나 초점을 둔 순번. */
+const layerTouched: Record<LayerKey, number> = { book: 0, local: 0, interview: 0, detail: 0 };
+let layerSeq = 0;
+
 /** 다시 그려도 배정·예약 자리가 줄어들어 다음 버튼이 움직이지 않게 한다. */
 function queuedStatus(slot: string, text: string): string {
   const offset = actionOffsets.get(slot);
@@ -97,6 +112,7 @@ const liveStatus = document.getElementById('live-status')!;
 document.addEventListener('keydown', (ev) => {
   if (ev.key === 'Tab') { lastTabAt = Date.now(); tabX = window.scrollX; tabY = window.scrollY; }
   else if (!['Shift', 'Control', 'Alt', 'Meta'].includes(ev.key)) lastTabAt = -Infinity;
+  if (ev.key === 'Escape' && !ev.repeat && !ev.isComposing && !ev.ctrlKey && !ev.altKey && !ev.metaKey && !ev.shiftKey) closeTopLayer(ev);
 }, true);
 document.addEventListener('focusin', (ev) => {
   if (activation || Date.now() - lastTabAt > 100) return;
@@ -124,6 +140,9 @@ function resetUi() {
   mapMeasurements.clear();
   actionSizes.clear();
   actionOffsets.clear();
+  lastColumn = null;
+  detailUnder = 'card';
+  for (const key of LAYER_ORDER) layerTouched[key] = 0;
 }
 
 function newId(type: string): string {
@@ -221,6 +240,14 @@ function endDay() {
     }
   }
   const reading = heads.map((head) => ({ id: head.id, top: head.getBoundingClientRect().top })).sort((a, b) => a.top - b.top);
+  // 배치안 A: 세 열에서 마지막 조작이 오른쪽 칸이면 그 칸의 후보를 기준으로 삼는다(M2만).
+  // 막대 아래에서 시작하는 후보를 먼저 쓴다. 없으면 막대에 걸친 후보를 쓴다.
+  const sideBoxes = config.culture && lastColumn === 'side' && !isOneColumn()
+    ? Array.from(app.querySelectorAll<HTMLElement>(SIDE_ANCHORS)).map((el) => ({ el, r: el.getBoundingClientRect() }))
+      .filter(({ r }) => r.height > 0 && r.bottom > barBottom + 1 && r.top < bandBottom).sort((a, b) => a.r.top - b.r.top)
+    : [];
+  const sideReading = [...sideBoxes.filter(({ r }) => r.top >= barBottom - 1), ...sideBoxes.filter(({ r }) => r.top < barBottom - 1)]
+    .map(({ el, r }) => ({ key: sideKey(el), top: r.top }));
   ui.growthNotices = growthMessages(state, committed.state, config);
   ui.growthNoticesDay = state.day;
   ui.growthNoticesFresh = true;
@@ -245,9 +272,33 @@ function endDay() {
     return;
   }
   render();
-  const remaining = reading.map((head) => ({ ...head, element: document.getElementById(head.id) })).find((head) => head.element);
-  if (remaining) { const dy = remaining.element!.getBoundingClientRect().top - remaining.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
+  if (sideReading.length) {
+    const all = Array.from(app.querySelectorAll<HTMLElement>(SIDE_ANCHORS));
+    const hit = sideReading.map((s) => ({ ...s, element: all.find((el) => sideKey(el) === s.key) })).find((s) => s.element);
+    if (hit) { const dy = hit.element!.getBoundingClientRect().top - hit.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
+  } else {
+    const remaining = reading.map((head) => ({ ...head, element: document.getElementById(head.id) })).find((head) => head.element);
+    if (remaining) { const dy = remaining.element!.getBoundingClientRect().top - remaining.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
+  }
   ignoreClicksUntil = Date.now() + 500;
+}
+
+/** 펼친 칸의 실행 단추를 띠 안으로 최소 거리만 가져온다. 칸 제목은 막대 아래 8px 밑에 남긴다. 누른 뒤 생길 아래쪽 알림 자리 72px을 미리 비운다. */
+function revealBelow(target: HTMLElement | null, head: HTMLElement | null) {
+  if (!target) return;
+  const top = app.querySelector<HTMLElement>('.statusbar')!.getBoundingClientRect().bottom;
+  const bottom = Math.min(window.innerHeight - 72, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
+  let dy = target.getBoundingClientRect().bottom + 8 - bottom;
+  if (dy < 1) return;
+  if (head) dy = Math.min(dy, head.getBoundingClientRect().top - top - 8);
+  if (dy >= 1) window.scrollBy(0, dy);
+}
+
+/** 오른쪽 칸 후보의 열쇠. 다시 그린 뒤에도 같은 열쇠로 찾는다. id → 직원 → 칸·태그·글자 앞 24자. */
+function sideKey(el: HTMLElement): string {
+  if (el.id) return `#${el.id}`;
+  const panel = el.closest(SIDE_PANELS)!.classList[1];
+  return `${panel}|${el.tagName}|${el.dataset.emp ?? (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 24)}`;
 }
 
 // ── 화면 조각 ──
@@ -314,7 +365,7 @@ function topbar(): string {
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
     <div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
-    <div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
+    ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
   </div>
   </header>`;
 }
@@ -780,17 +831,20 @@ function crewPanel(): string {
     `<button data-action="crew-filter" data-filter="${f}" aria-pressed="${ui.crewFilter === f}">${label}</button>`;
   // REF-01·05: 카드와 운영표가 같은 직원 상태(view)를 같은 필터로 보여 준다. 행을 고르면 카드도 함께 선택된다.
   const rows = shown.map(({ def, candidate, task }) => crewRow(def, view, config, ui.selectedCard === def.id, candidate, task)).join('');
+  const detail = ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : '';
+  // 배치 공통: 카드로 골랐고 그 카드가 보이면 상세를 카드 바로 아래에 둔다(M2만).
+  const inline = Boolean(config.culture && detail && detailUnder === 'card' && shown.some((entry) => entry.def.id === ui.selectedCard));
   return `
   <aside class="panel crew" aria-labelledby="crew-h">
     <h2 id="crew-h" tabindex="-1">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무·교육 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
     ${facets ? `<div class="crew-facets" role="group" aria-label="직무·속성으로 걸러 보기">${facets}</div>` : ''}
-    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id) + (inline && entry.def.id === ui.selectedCard ? `<div class="card-detail">${detail}</div>` : '')).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
+    ${inline ? '' : detail}
     ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending, queuedStatus)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
@@ -861,6 +915,73 @@ function logPanel(): string {
   </section>`;
 }
 
+/** 한 열 배치 조건. style.css 112행 `@media (max-width: 1000px)`와 같은 글자다. */
+const ONE_COLUMN_QUERY = '(max-width: 1000px)';
+const oneColumnQuery = window.matchMedia(ONE_COLUMN_QUERY);
+function isOneColumn(): boolean { return oneColumnQuery.matches; }
+/** 한 열 여부가 바뀌면(회전·창 크기) 패널 순서를 다시 그린다. 초점은 같은 조작에 그대로 두고 굴리지 않는다. */
+function onColumnChange() {
+  const was = document.activeElement as HTMLElement | null;
+  const key = was && was !== document.body ? { id: was.id, tag: was.tagName, data: { ...was.dataset } } : null;
+  render(true);
+  if (!key || (!key.id && !key.data.action)) return;
+  const again = (key.id ? document.getElementById(key.id) : null) ?? Array.from(app.querySelectorAll<HTMLElement>('[data-action]'))
+    .find((el) => el.tagName === key.tag && Object.entries(key.data).every(([k, v]) => el.dataset[k] === v));
+  if (again) again.focus({ preventScroll: true });
+}
+oneColumnQuery.addEventListener('change', onColumnChange);
+
+for (const type of ['pointerdown', 'wheel', 'touchstart', 'focusin']) {
+  app.addEventListener(type, (ev) => {
+    const el = ev.target as HTMLElement;
+    if (el.closest(SIDE_PANELS)) lastColumn = 'side';
+    else if (el.closest('.layout')) lastColumn = 'main';
+    if (type === 'pointerdown' || type === 'focusin') touchLayers(el);
+  }, { capture: true, passive: true });
+}
+
+/** 열린 칸과 그 칸의 안 판정 선택자·연 단추. 안쪽 칸이 앞이다. */
+function openLayers(): { key: LayerKey; within: string; opener: () => HTMLElement | null }[] {
+  const layers: { key: LayerKey; within: string; opener: () => HTMLElement | null }[] = [];
+  if (ui.cultureOpen && ui.cultureBookOpen) layers.push({ key: 'book', within: '#culture-book-body, [data-action="culture-book"]', opener: () => app.querySelector<HTMLElement>('[data-action="culture-book"]') });
+  if (ui.cultureOpen) layers.push({ key: 'local', within: '#local, #local-tab', opener: () => document.getElementById('local-tab') });
+  const iv = ui.interviewId;
+  if (iv && document.getElementById(`interview-${iv}`)) layers.push({ key: 'interview', within: `#interview-${iv}, [data-action="interview"][data-candidate="${iv}"]`, opener: () => app.querySelector<HTMLElement>(`[data-action="interview"][data-candidate="${iv}"]`) });
+  const dt = ui.detailId;
+  if (dt && dt === ui.selectedCard && document.getElementById(`growth-${dt}`)) layers.push({ key: 'detail', within: `#growth-${dt}, [data-action="detail"][data-emp="${dt}"]`, opener: () => app.querySelector<HTMLElement>(`[data-action="detail"][data-emp="${dt}"]`) });
+  return layers;
+}
+/** 누르거나 초점을 둔 곳이 열린 칸 안이면 그 칸을 맨 위로 올린다. */
+function touchLayers(el: HTMLElement) {
+  const seq = ++layerSeq;
+  for (const layer of openLayers()) if (el.closest(layer.within)) layerTouched[layer.key] = seq;
+}
+function markOpened(key: LayerKey) { layerTouched[key] = ++layerSeq; }
+/** 닫은 칸을 연 단추를 띠 안으로 최소 거리만 옮기고 초점을 둔다(closeCulture 976~980행과 같은 띠). */
+function revealOpener(el: HTMLElement | null) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const top = app.querySelector<HTMLElement>('.statusbar')!.getBoundingClientRect().bottom + 8;
+  const bottom = Math.min(window.innerHeight, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity) - 8;
+  const dy = rect.top < top ? rect.top - top : rect.bottom > bottom ? rect.bottom - bottom : 0;
+  if (Math.abs(dy) >= 1) window.scrollBy(0, dy);
+  el.focus({ preventScroll: true });
+}
+/** D13: Esc로 맨 위 칸을 닫고 연 단추로 초점을 돌려준다. */
+function closeTopLayer(ev: KeyboardEvent) {
+  const layers = openLayers();
+  if (!layers.length) return;
+  const top = layers.reduce((a, b) => (layerTouched[b.key] > layerTouched[a.key] ? b : a));
+  ev.preventDefault();
+  if (top.key === 'local') return closeCulture();
+  if (top.key === 'book') ui.cultureBookOpen = false;
+  if (top.key === 'interview') ui.interviewId = null;
+  if (top.key === 'detail') ui.detailId = null;
+  render(true);
+  revealOpener(top.opener() ?? document.getElementById('crew-h'));
+  ignoreClicksUntil = Date.now() + 500;
+}
+
 function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
@@ -880,12 +1001,8 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
       ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
-      ${crewPanel()}
-      ${resourcePanel()}
-      ${queuePanel()}
-      ${worldMap()}
-      ${reportPanel()}
-      ${logPanel()}
+      ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
+        : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
     </main>`;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
   document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
@@ -958,6 +1075,7 @@ function openCulture(result = false) {
   // ‘결과 보기’는 같은 날 탭으로 먼저 열었어도 방금 마감한 날의 결과를 보여 준다.
   if (result) ui.cultureShowFromDay = Math.min(ui.cultureShowFromDay!, state.day - 1);
   ui.cultureOpen = true;
+  markOpened('local');
   if (result) ui.flash = null;
   render(true);
   const task = result ? cultureResultTasks(state, config, state.day - 1).find((t) => t.completedDay === state.day - 1) : null;
@@ -1053,6 +1171,7 @@ app.addEventListener('click', (ev) => {
         return queue({ id: newId('CULTURE'), type: 'START_CULTURE_ACTIVITY', activityId: d.activity!, employeeId: d.emp! });
       case 'culture-book':
         ui.cultureBookOpen = !ui.cultureBookOpen;
+        if (ui.cultureBookOpen) markOpened('book');
         render();
         ignoreClicksUntil = Date.now() + 500;
         return;
@@ -1060,7 +1179,10 @@ app.addEventListener('click', (ev) => {
         return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
       case 'detail':
         ui.detailId = ui.detailId === d.emp ? null : d.emp!;
+        if (ui.detailId) markOpened('detail');
         render();
+        if (ui.detailId) revealBelow(app.querySelector<HTMLElement>(`[data-action="train"][data-emp="${ui.detailId}"]`) ?? document.getElementById(`status-train-${ui.detailId}`),
+          app.querySelector<HTMLElement>(`#growth-${ui.detailId} .training h4`));
         ignoreClicksUntil = Date.now() + 500;
         return;
       case 'scout':
@@ -1069,13 +1191,23 @@ app.addEventListener('click', (ev) => {
         return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
       case 'interview':
         ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
+        if (ui.interviewId) markOpened('interview');
         render();
+        if (ui.interviewId) revealBelow(app.querySelector<HTMLElement>(`[data-action="hire"][data-candidate="${ui.interviewId}"]`) ?? document.getElementById(`status-hire-${ui.interviewId}`),
+          document.getElementById(`interview-h-${ui.interviewId}`));
         ignoreClicksUntil = Date.now() + 500;
         return;
       case 'hire':
         return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
       case 'end-day':
         return endDay();
+      case 'queue-jump': {
+        const heading = document.getElementById('queue-h')!;
+        heading.scrollIntoView({ block: 'start' });
+        heading.focus({ preventScroll: true });
+        ignoreClicksUntil = Date.now() + 500;
+        return;
+      }
       case 'accept':
         return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell! });
       case 'accept-fwd':
@@ -1101,6 +1233,7 @@ app.addEventListener('click', (ev) => {
         mapMode = d.mode === 'world' ? 'world' : 'route';
         return render();
       case 'select-card':
+        detailUnder = el.tagName === 'ARTICLE' ? 'card' : 'roster';
         ui.selectedCard = d.emp ?? null;
         render();
         showGrowthControl();
@@ -1154,6 +1287,7 @@ app.addEventListener('keydown', (ev) => {
   const el = ev.target as HTMLElement;
   if (!(el instanceof HTMLButtonElement) && el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
     ev.preventDefault();
+    detailUnder = el.tagName === 'ARTICLE' ? 'card' : 'roster';
     ui.selectedCard = el.dataset.emp ?? null;
     render();
     showGrowthControl();
