@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 9392,
-      "sha256": "8175edbe8b2a8a7a1d4600c9eeffe00710b560c70f8461cd5c4ead9712f9e93c"
+      "size_bytes": 10032,
+      "sha256": "600e08b73d97f92d994663d9fc23209c4bca77957b2055bf392e3a3c42b0c073"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -529,6 +529,16 @@
       "path": "docs/ai/tasks/TASK-0023-report-schedule-settlement-ui.md",
       "size_bytes": 85015,
       "sha256": "890a3d2ded2aad09954df262720fdd7ac24944faa88c2a0e0161fb274583efa6"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0025-route-map-fit.md",
+      "size_bytes": 78340,
+      "sha256": "1e68dc800338576b12a2966643b6adbf3ed44cdd0450c658975587f23dc5f900"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0026-data-chunk-budget.md",
+      "size_bytes": 48635,
+      "sha256": "c562981dafa46be0f2a963edf873dcee8353b0027115dbd9b972a2571d4cf8fe"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
