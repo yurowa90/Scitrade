@@ -241,6 +241,11 @@
       "sha256": "7cff70015da7a9d7fb93961be09dedd4a0df15a81ae3047bbabf8c727bd35076"
     },
     {
+      "path": "docs/ai/design/M2A5-SPEC.md",
+      "size_bytes": 103804,
+      "sha256": "6e0e4dbf47dee57dd72219024cef11c154fdbd088000e0d7add8a1d02801cb68"
+    },
+    {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
       "size_bytes": 34503,
       "sha256": "8a5523d05be90dc12ac1853a00819e675af87a9c3d8ab84214e19503a6335124"
@@ -359,6 +364,281 @@
       "path": "docs/ai/design/layout-ux04-05/t1chip-1366-A.png",
       "size_bytes": 35657,
       "sha256": "c8cf541e2595e5c8390e11ad29ce93ffb3e6555a9db98464e63ed838f976eee0"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/README.md",
+      "size_bytes": 45992,
+      "sha256": "f2fa111c1ac5b00183fa35b08b3e87853e5f09eaeeac4684d22df7ab5dbcb763"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/check_d04.py",
+      "size_bytes": 1125,
+      "sha256": "304681cc1edf31d70ab62d0d4d114d824ca94b86343761aab476cc48d24ce6ec"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/check_paths.py",
+      "size_bytes": 1509,
+      "sha256": "52d801ecb2e3333a12165ef2923280ddcfe3133611766280196305bea929b1d9"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/experiments.py",
+      "size_bytes": 2814,
+      "sha256": "676578b3f4383707c3dd87667701c77975bc0df7c94912ea14c555c06c3d0b2d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/explore.py",
+      "size_bytes": 2614,
+      "sha256": "117b81dd0e212ea6ef733812362fe8ede605700e64d9a78dc37fbe0034b0715d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/explore2.py",
+      "size_bytes": 1487,
+      "sha256": "0218752f3bf318cb8a5e9e55bc17a60ee973582cc21b98cf8bc208b91ce2528d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/fee_band.py",
+      "size_bytes": 1316,
+      "sha256": "79da4a54bf965311cbc972185a6ff46b9e1cc7db8f0b99c25ebf1b28b9c48022"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/final_eval.py",
+      "size_bytes": 2685,
+      "sha256": "4aea6f1c859dfcf091448cb9322feb8a4c958d5cb4372b3c011b77bf00837f84"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/final_eval.txt",
+      "size_bytes": 2586,
+      "sha256": "99e67c7dd80cb70a35447b861b3c1ad90676e16e9ca30e7e47ae83cf97840b3e"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/focus.py",
+      "size_bytes": 2535,
+      "sha256": "97127fb4f003fde2c0f53f08d1e5555f0b7bc02f8c9b2c1a29ee5faf921e001f"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/focus2.py",
+      "size_bytes": 1247,
+      "sha256": "2c00ccfaedc71d24cc5b967da590f131d63f0acbef8f5c935477e36027022499"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/focus3.py",
+      "size_bytes": 675,
+      "sha256": "df1be13b78ad07ca8903b4053fefa4b199ec0867d217bce81c0bdf7a0a1ad715"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/focus4.py",
+      "size_bytes": 615,
+      "sha256": "676f424aed92b9e11b36347011206978b216d7dcd3c7690216f2ae9deeae1c3b"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/focus5.py",
+      "size_bytes": 469,
+      "sha256": "6ac25787cc4d5233928cb4964359938d2ab8dcfbcb77d20ed9bae7066898824f"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/m2a5_model.py",
+      "size_bytes": 94081,
+      "sha256": "ec5b09ec473e8aacb2e5d2c3c90db9e61753864a4126034adb88a11cddb42c61"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/market.py",
+      "size_bytes": 8558,
+      "sha256": "f7036545b98d18f2f9d3a11c26de63d2206d0d5aba94471f1f703c48fc3cd467"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/candidates.md",
+      "size_bytes": 227908,
+      "sha256": "d3399a1b661a0389db8763126bbf4bf6bdd92e17697fbd150ffb6c742013721e"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/fee_band.md",
+      "size_bytes": 2144,
+      "sha256": "1643ac0eea59f0bf3b387aeaaee2a66abe923d34ebb0348fe70e338b321e9690"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/ranking_stage1.md",
+      "size_bytes": 9319,
+      "sha256": "fff3a28c86bb6f78a38706deadb5189a9911951e4aa0213a1533d2e4179f829e"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/ranking_stage2.md",
+      "size_bytes": 12847,
+      "sha256": "6a4ca3cf5fe7ce476bc215f69e7a41e63b06a88cdd80c782563dfd06c08ba389"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/readme_tables.md",
+      "size_bytes": 25080,
+      "sha256": "f20891da4899b4d38620c5709163bdadeff6043169fea9ef3c26b5398ce7106a"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/report.log",
+      "size_bytes": 278,
+      "sha256": "38c4ec5011f01858ff95c1fbd0cf59a94f60e165b92595f3e35bb27c5d17842c"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/search_stage1.log",
+      "size_bytes": 49756,
+      "sha256": "20e6c4159ffb682ec75fd7e6495b044bbe27a74ea9b5f20e082d16b2a1d228d8"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/search_stage2.log",
+      "size_bytes": 46320,
+      "sha256": "0ddbac4dd3b6db0be14c6aefde0fc5521e3b343b7a1af90d3070bee6411e6656"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/selfcheck.txt",
+      "size_bytes": 3122,
+      "sha256": "77ee02b6334f379aff5be3ffe0a756c3065891f9c3038339148dbf23fb5a1fda"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/out/validate_1021.md",
+      "size_bytes": 1844,
+      "sha256": "34b696d437507c3204e8b705b0721b62cbc402ddcbe86f2cb68a624d3e3270f9"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/probe.py",
+      "size_bytes": 1517,
+      "sha256": "8ffa7ac36d0a02f35ec8a75fe9c2ec1fb39d1a8eeccb90289c4cae288da8ccf3"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/readme_tables.py",
+      "size_bytes": 5464,
+      "sha256": "160464f67db1b868e563403d7dbe4076691b89b6f9cc6e99129877d250d69dc7"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/rng.py",
+      "size_bytes": 1639,
+      "sha256": "ae7b0387ab0607407ea11464df1876651e82b936b94054f1f751448b528eaa7f"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/rng_engine_copy.ts",
+      "size_bytes": 1482,
+      "sha256": "4ebe49e70789f0f6aa7fa8fc55890176fe6274b441cfccb98cad7826e34586ab"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/search.py",
+      "size_bytes": 2571,
+      "sha256": "1c717ae9ba8562389e9571d798a52bd441c01dd68cefa367b10fbc987c515fb8"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/shadow.py",
+      "size_bytes": 1322,
+      "sha256": "0c7c33a9452347f439bcd23efc290d22eceacf98af9837a6e23a871aeb7adb3d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/shadow2.py",
+      "size_bytes": 2534,
+      "sha256": "76ee86a34c7f8df0d7d89d79c3e05c0009f33676cb56ea4a46534a56a59c78c9"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/shadow3.py",
+      "size_bytes": 1418,
+      "sha256": "b84544afe9be5ebaf2a019b726c8c2fe5b7b2f74c11ae451aaf53f1b86fedaf8"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/sim.py",
+      "size_bytes": 22177,
+      "sha256": "642db6a2b12ace65016cddbf506f200a506bf793a417faeeac89945e469ccccb"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/trace.py",
+      "size_bytes": 963,
+      "sha256": "0c2c0463b5ce63793977788e03f0aa6ef8789be9c9bdd357e6bb5699ac79de9b"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/trace2.py",
+      "size_bytes": 1035,
+      "sha256": "41e657493502a254b5935995beeafd69ca0da4ae8dd075cd58312c971223749d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-model/trace3.py",
+      "size_bytes": 1244,
+      "sha256": "e8895b7693400202df1225b636180572ca3a31098951cdf06e832f8a5567ffb1"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/CRITIC1.md",
+      "size_bytes": 21655,
+      "sha256": "be34dbfc8833ed80b79f0429f53e0724db7cf215dbf4f45c583ca952abbd8949"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/CRITIC2.md",
+      "size_bytes": 23991,
+      "sha256": "038f5dcd04eeb4845cbf46f882b69eb68fea92bdcb33bafd4b3127338012292d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/README.md",
+      "size_bytes": 1901,
+      "sha256": "fa50d05100bb443f074b9e04fb1eb6112b6364e0fd64da7136d77aacc24fb691"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/SPEC.v1.md",
+      "size_bytes": 85393,
+      "sha256": "37ae472e37752db1c5441d651fa6fdd2fdade110ee48fa06a257ca54e07b5a34"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e1.md",
+      "size_bytes": 1464,
+      "sha256": "423e2433a1b6370e915fd1c9a0c7aa4aabd8a9fd2cb125fc93a7d280686aea79"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e2.md",
+      "size_bytes": 1915,
+      "sha256": "5117f531a6be0c07fbf1f553d8a24437e4c336798e00db4f07d9575371d1c82d"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e2b.md",
+      "size_bytes": 5719,
+      "sha256": "23c0007a9228398741488facd6eebaaf75da732e4aef0c3d533e2640033663de"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e5.md",
+      "size_bytes": 12995,
+      "sha256": "ca6b238a4199378fc1952607551c6c462f6a97cb2bb9a240bd901087f6484540"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e6.md",
+      "size_bytes": 1545,
+      "sha256": "ec8d74b5b8ffca236950ac147e6de936430670cf57f61425c1a111abdd941a1b"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e7.md",
+      "size_bytes": 1265,
+      "sha256": "58ef8d3b2590608657b7983d6bb09638b6553c6ad26c1ed2134784f353070832"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/e8.md",
+      "size_bytes": 1627,
+      "sha256": "005dca94ffcf3e567b872ae90ae60675da94e2f9ec038b3de87298c0eae5f5b0"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/exp.py",
+      "size_bytes": 19371,
+      "sha256": "77fbe69b9a22df591c4770572b5857d30ccdc718192a3f7c90abfc9be63579bc"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic2/ana/hire_by_accept.py",
+      "size_bytes": 1938,
+      "sha256": "47c55bd6d11c88741318c23bb390344a06559c9910f8f94f67910e6f273e3625"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/critic_rng_check.mjs",
+      "size_bytes": 1193,
+      "sha256": "99975ab6a5deda92684fc9cfb51a32f1603069ded1d3a899d9a23a3bf9f9851f"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/exp2_review.txt",
+      "size_bytes": 8767,
+      "sha256": "21fedd9cc8d4db06ebfc004f0ba2a608ed86b6c773ad5599e8f49328c4251b7a"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/b_batches.py",
+      "size_bytes": 803,
+      "sha256": "bff7487f7c5ec8a8ff1b1702e4e906eb84652104db73e8fb908d123166977911"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/spec_check/krw_idle.py",
+      "size_bytes": 1861,
+      "sha256": "d79da8169ac57fcdb8242fea689a337d1a4b70c9c8bb566e64fd6f667c14330d"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -544,6 +824,11 @@
       "path": "docs/ai/tasks/TASK-0026-data-chunk-budget.md",
       "size_bytes": 48635,
       "sha256": "c562981dafa46be0f2a963edf873dcee8353b0027115dbd9b972a2571d4cf8fe"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0027-m2a5-engine.md",
+      "size_bytes": 56510,
+      "sha256": "4cb8f96441f938cc39067c8355212beff4cbdc6a055f1ea93ba79735f0e33669"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
