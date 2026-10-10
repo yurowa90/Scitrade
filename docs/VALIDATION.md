@@ -37,10 +37,10 @@
 |---|---|---|---|
 | 자료 검사 | `python3 tools/validate_data.py` | PASS. 자료 문서 23개, 구조·참조·산술 검사 25,184건(TASK-0022 병합 뒤, 2026-10-09). 인수 명세 26건(거래·운영 18 + 캐릭터·조직 8)의 연결 시험 파일·제목이 있는지까지 본다. 시험을 돌리지는 않는다 | `tools/validate_data.py:1033-1056`(MANIFEST 해시 검사와 출력) |
 | 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 74개 통과 | W2-0b 교과 검사 뒤(2026-10-09) |
-| 엔진·화면 시험 | `npx vitest run` | 39개 파일·1,125개 통과(할 일 1) | TASK-0027 병합 뒤(2026-10-10). TASK-0023 뒤 973 → TASK-0025 1,000 → TASK-0024 1,040 → TASK-0055 1,047 → TASK-0027 1,125 |
+| 엔진·화면 시험 | `npx vitest run` | 40개 파일·1,152개 통과(할 일 1) | TASK-0028 병합 뒤(2026-10-10). TASK-0023 뒤 973 → TASK-0025 1,000 → TASK-0024 1,040 → TASK-0055 1,047 → TASK-0027 1,125 → TASK-0028 1,152 |
 | 그림 도구 시험 | `python3 tools/art/test_pixel_tools.py` | 21개 통과 | TASK-0007 |
 | 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 21개 통과. 원본 재생성 시험 3개는 원본 폴더가 있을 때만 돌고, 없으면 건너뛴다(CI) | `tools/ai/review_checks.sh:49-51`(2026-10-10 다시 셈) |
-| 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 217,073 B·자료 116,163 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 359,790 B(한도 600,000 B)·gzip 105,686 B(한도 140,000 B), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0055 병합 뒤(2026-10-10, 캐릭터 자료는 읽는 칸만 빌드). 수치는 빌드 표시 `dev` 기준 |
+| 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 251,378 B·자료 125,986 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 403,918 B(한도 600,000 B)·gzip 118,558 B(한도 140,000 B, 여유 약 21.4 KB), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0028 병합 검사(2026-10-10). 빌드 표시가 커밋 해시라 `dev` 표시보다 수 B 크다. TASK-0055 병합 뒤(`dev` 표시) 359,790 B / 105,686 B → TASK-0027 403,488 / 118,413 B → TASK-0028 |
 | 크기 검사기 시험 | `node --test tools/check_bundle_size.test.mjs` | 11개 통과 | TASK-0026 |
 
 위 일곱 가지와 타입 검사·빌드·`MANIFEST.json` 재생성·사실 섞임 검사·브라우저 도구 시험 등이 Codex 결과 검수의 자동 검사다. 수정 모드 13종, 확인 모드(`--check`) 14종이다(`tools/ai/review_checks.sh`, TASK-0026 병합 뒤). CI(`.github/workflows/checks.yml`)는 확인 모드를 돈다.
