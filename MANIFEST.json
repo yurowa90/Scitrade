@@ -661,6 +661,11 @@
       "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0026.md",
+      "size_bytes": 16849,
+      "sha256": "9d4a2edc6b6d4426772ef99c2868d45db7e515c1425c98aea5dd1b25f60fc375"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -932,8 +937,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 2562,
-      "sha256": "e927229f72560287231cd25ebd5e54b8f517f4e014fc06af57ac0a3e8b2c1c8b"
+      "size_bytes": 3019,
+      "sha256": "32d1b59c6dbac5b6c2f55587221f72f30661d14ff520903ba6b046feb024b218"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -1029,6 +1034,21 @@
       "path": "tools/build_package.py",
       "size_bytes": 4958,
       "sha256": "f4033de7c0679776ccb52d734d84028fa5c8d305212b352fe85a05443576c46e"
+    },
+    {
+      "path": "tools/bundle-size.mjs",
+      "size_bytes": 6731,
+      "sha256": "24c9daa3388daf24c64eb6bd692fb5dc640c173147e1facfa0cfb97604c7470d"
+    },
+    {
+      "path": "tools/check_bundle_size.mjs",
+      "size_bytes": 928,
+      "sha256": "c699de5d0930ee72f8eae0ce09989b9efeef23f4d2ad3d2c021de27932b4bcc4"
+    },
+    {
+      "path": "tools/check_bundle_size.test.mjs",
+      "size_bytes": 13501,
+      "sha256": "3a8c5689072fa1b67a54579d8c9b2ba4601a7c4e8f84a395c4cde4ddcc6dc1e2"
     },
     {
       "path": "tools/check_fact_mixing.py",
