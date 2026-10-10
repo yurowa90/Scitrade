@@ -52,6 +52,7 @@
 | `src/ui/*`, `tools/browser/*`, 측정 시나리오 | B(TASK-0025는 허브) | A의 화면 지시서는 TASK-0024가 개발 브랜치에 들어간 뒤 그 위에서 쓴다 |
 | `data/sources.json`, `data/curriculum_links.json` | C는 기존 항목, A는 새 항목 추가만 | 같은 항목은 C에 요청 |
 | `tools/check_fact_mixing.py`와 그 시험 | C | 모든 세션 검사에 쓰이므로 병합 때 허브가 알린다 |
+| `src/content/character-fields.ts`(빌드에 싣는 캐릭터 자료 칸) | 새 칸을 읽는 세션 | 캐릭터 자료의 새 칸을 읽는 코드와 같은 커밋에서 `CHARACTER_FIELDS`에 그 칸을 더한다. 빠뜨리면 시험이 실패한다(TASK-0055) |
 | 아래 ‘허브만 쓰는 파일’ | 허브 | 실행 요청에 적고 허락을 받는다 |
 
 - **실행 요청에 적는 것:** `고치는 파일:` 목록을 붙인다.

@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 154822,
-      "sha256": "533afb342101ac622a50da257074b7841e0b96e09b23486e71726b0046c25583"
+      "size_bytes": 156664,
+      "sha256": "55fd64784413a4904f15b70f54e59f5b9e5de5bfa556b2745c746af195eed3a6"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 58470,
-      "sha256": "250426c63f0aa704b3d71bae6c6bd28ba5224ea9a84f851fcae4ec9723eb9985"
+      "size_bytes": 59204,
+      "sha256": "37f6ccb69fefef9300a296069db396e59a14ef6ac29bd659622554924abbee42"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 8739,
-      "sha256": "87738c4018173ca82ca5d91c60568a7ef7dc9f9ba4c8e72d283a943ad5fce95c"
+      "size_bytes": 8826,
+      "sha256": "ec7dab7dc514514cfeecd0e296894d6f75758c4037193f6a8c43dbc6dfa97919"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
-      "size_bytes": 18472,
-      "sha256": "83998bfcb251ebcdfa13ea3e10fab88cfc4c9125a2b43fca905e3ab349714dbd"
+      "size_bytes": 18737,
+      "sha256": "7420761c4adfc0f5fc0a29246503dbdad5d50ef62c8bf03fa2c2d305d3dd5c38"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -927,8 +927,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 11947,
-      "sha256": "df46d7212f4384929f584383d9216db468e12b60631705e52657dee04c0c3ce1"
+      "size_bytes": 11967,
+      "sha256": "974b6b9623f53320b79509e04a331cefd25c2b5290b7f5779972ebac47896952"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1249,6 +1249,11 @@
       "path": "docs/ai/tasks/results/TASK-0026.md",
       "size_bytes": 20902,
       "sha256": "673228a408e105c4097248a354a47acc1ba6e6ffab511c9e28f6ff95f821324a"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0055.md",
+      "size_bytes": 13626,
+      "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
