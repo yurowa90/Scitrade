@@ -1,3 +1,4 @@
+import type { OperationsMetrics } from './operations-metrics';
 import { summarize } from '../ledger';
 import type { Currency } from '../money';
 import { contractReport } from '../reports';
@@ -39,6 +40,7 @@ export interface TimingMetrics {
   completedDays: number[];
 }
 export interface SimMetrics {
+  operations?: OperationsMetrics;
   closedDays: number;
   currencies: Record<string, CurrencyMetrics>;
   contracts: { total: number; directTrade: number; forwarding: number; delivered: number; completed: number; cancelled: number };

@@ -1,15 +1,17 @@
 // 후보·직원·출항편의 원래 배열 순서를 보존한다. 식별자 이름은 선택 기준이 아니다.
+import { decideOperations } from './operations-policy';
+import { parseVariant } from './variants';
 import { listSailings, routeBetween } from '../catalog';
 import { isAvailableFromToday } from '../employees';
 import { planCommands } from '../engine';
 import { forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../reports';
 import { drawUniform, type RngState } from '../rng';
-import type { Command, GameState, ScenarioConfig } from '../types';
+import type { Command, EngineCommand, GameState, ScenarioConfig } from '../types';
 
 const CANCEL_PROBABILITY = 0.05;
 const ACCEPT_PROBABILITY = 0.5;
 
-export interface PolicyDecision { commands: Command[]; rng: RngState }
+export interface PolicyDecision { commands: EngineCommand[]; rng: RngState; rejections?: Record<string, number> }
 export interface SimPolicy {
   id: string;
   labelKo: string;
@@ -40,6 +42,7 @@ function candidates(state: GameState, config: ScenarioConfig): Candidate[] {
 }
 
 function decide(id: string, state: GameState, config: ScenarioConfig, initialRng: RngState): PolicyDecision {
+  if (config.operations) return decideOperations(id, parseVariant(id)!, state, config, initialRng);
   const commands: Command[] = [];
   let rng = initialRng;
   if (id === 'IDLE') return { commands, rng };
@@ -126,4 +129,12 @@ export const SIM_POLICIES: readonly SimPolicy[] = [
   ['SEEDED_RANDOM', '무작위 탐색(시드)'],
 ].map(([id, labelKo]) => ({ id: id!, labelKo: labelKo!, decide: (state, config, rng) => decide(id!, state, config, rng) }));
 
-export function policyById(id: string): SimPolicy | undefined { return SIM_POLICIES.find((p) => p.id === id); }
+export const EXTRA_POLICIES: readonly SimPolicy[] = [['NO_FX', '환전하지 않음'], ['LATE_OK', '늦은 인도도 수락']].map(([id, labelKo]) => ({ id: id!, labelKo: labelKo!,
+  decide: (state, config, rng) => config.operations ? decide(id!, state, config, rng) : decide('MAX_CONTRIBUTION', state, config, rng) }));
+export function policyById(id: string): SimPolicy | undefined {
+  const existing = [...SIM_POLICIES, ...EXTRA_POLICIES].find((p) => p.id === id);
+  if (existing) return existing;
+  const variant = parseVariant(id);
+  return variant ? { id, labelKo: id, decide: (state, config, rng) => config.operations
+    ? decideOperations(id, variant, state, config, rng) : decide('MAX_CONTRIBUTION', state, config, rng) } : undefined;
+}

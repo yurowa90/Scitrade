@@ -23,7 +23,7 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "627d79a8b9f8c675bf4e69125e19cd69590f203319ff0e46cae0ad6b537fbd50"
+      "sha256": "99d0a2f527a9cdd1eafca21b0b8c33e8d9154604a4ddf56985d80d893744f120"
     },
     {
       "path": "README.md",
@@ -1576,6 +1576,26 @@
       "sha256": "bad028e89d879d34503b14023522b8fe6eb9d3bbee2033253d2d2e66dbdf3a8d"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0029-d03-cap30.md",
+      "size_bytes": 6891,
+      "sha256": "ba05de501471b85b95e4e1c60f8b7fe315157f345725a4058f4fc351294303c8"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029-d03-flat200.md",
+      "size_bytes": 7048,
+      "sha256": "dcce30fa83744086f594901443105c20acc5613a26ce8360486c2c45de7b791c"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029-d03.md",
+      "size_bytes": 16844,
+      "sha256": "94c96d177683117a2f5ea79199cd1d19067093d3f7400e1f086e496fca3f67a9"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029.md",
+      "size_bytes": 39839,
+      "sha256": "64814bb032a0b8a4e4d5e4733cd28f6c8467987cf3714b6db78357046c7c8e73"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -1842,8 +1862,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 193452,
-      "sha256": "0fa3a8070e7797d9a75ed5ed4c8c7a8271edbd7ee4d90b5c136b7b1ae06d06a0"
+      "size_bytes": 197568,
+      "sha256": "0ae9115be05682cdec9fa1a35c9b5fde24690e4fcb6025d4bc9937e7459d56df"
     },
     {
       "path": "tests/character_acceptance_cases.json",

@@ -1,3 +1,4 @@
+import { createOperationsCollector } from './operations-metrics';
 import { loadScenario, SCENARIO_IDS } from '../../content/scenario';
 import { commitDay, createGame, openDay } from '../engine';
 import { createRng } from '../rng';
@@ -17,11 +18,11 @@ export interface SimRun {
 }
 export interface SimOutput {
   meta: { tool: 'scitrade-sim'; format: number; engineVersion: string; dataVersion: string;
-    scenarioIds: string[]; policyIds: string[]; seeds: number[] };
+    scenarioIds: string[]; policyIds: string[]; seeds: number[]; lateMode?: import('./variants').LateMode };
   runs: SimRun[];
 }
 
-export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number): { state: GameState; run: SimRun } {
+export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number, observe?: (state: GameState, commands: import('../types').EngineCommand[]) => void): { state: GameState; run: SimRun } {
   const config = { ...baseConfig, seed };
   let day = 1;
   try {
@@ -31,12 +32,16 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
     const counts: SimRun['commands'] = { applied: 0, rejected: 0, duplicate: 0, appliedByType: {
       ACCEPT_FORWARDING: 0, ACCEPT_TRADE: 0, ASSIGN_TASK: 0, BOOK_SAILING: 0, CANCEL_CONTRACT: 0, RESPOND_TO_DELAY: 0,
     } };
+    const operations = config.operations ? createOperationsCollector(config, policy.id) : null;
+    if (operations) Object.assign(counts.appliedByType, { EXCHANGE_CURRENCY: 0, EXPAND_WAREHOUSE: 0, SIGN_SPACE_CONTRACT: 0, SCOUT_SITE: 0, START_RECRUIT_QUEST: 0, HIRE_CANDIDATE: 0 });
     let iterations = 0;
     while (state.phase !== 'ENDED') {
       day = state.day;
       if (++iterations > config.campaignDays + 1) throw new Error('캠페인 실행 고리의 안전 한도를 넘었습니다.');
       const opened = openDay(state, config).state;
-      const { commands, rng } = policy.decide(opened, config, policyRng);
+      operations?.observeOpened(opened);
+      const { commands, rng, rejections } = policy.decide(opened, config, policyRng);
+      observe?.(opened, commands);
       const result = commitDay(opened, config, commands);
       if (result.alreadyClosed) throw new Error('이미 마감한 날을 다시 마감했습니다.');
       const types = new Map(commands.map((c) => [c.id, c.type]));
@@ -48,11 +53,16 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
         } else if (r.status === 'REJECTED') counts.rejected++;
         else counts.duplicate++;
       }
+      operations?.observeClosed(result.state, opened.day, rejections);
       collector.observeClosedDay(result.state, config, opened.day);
       state = result.state;
       policyRng = rng;
     }
-    return { state, run: { scenarioId: config.id, policyId: policy.id, seed, commands: counts, metrics: collector.finish(state, config) } };
+    const metrics = collector.finish(state, config);
+    const ops = operations?.finish(state);
+    return { state, run: { scenarioId: config.id, policyId: policy.id, seed, commands: counts, metrics: { ...metrics,
+      ...(ops ? { operations: { ...ops, staffUtilizationBasisPoints: metrics.staff.availableEmployeeDays
+        ? Math.floor((metrics.staff.availableEmployeeDays - metrics.staff.idleEmployeeDays) * 10000 / metrics.staff.availableEmployeeDays) : 0 } } : {}) } } };
   } catch (error) {
     throw new Error(`[${config.id}/${policy.id}/${seed}/${day}] ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }
