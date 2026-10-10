@@ -279,7 +279,6 @@ function fundsShortfall(
   if (f.available >= needMinor) return null;
   const parts = [`현금 ${formatMoney(currency, f.cash)}`];
   const contractsReserved = f.reserved - f.reservedCommitments;
-  if (config.operations && !f.cash) parts.length = 0;
   if (contractsReserved) parts.push(`다른 계약 예약 ${formatMoney(currency, contractsReserved)}`);
   if (f.reservedCommitments) parts.push(`선복 계약 요금 예약 ${formatMoney(currency, f.reservedCommitments)}`);
   if (f.unpaidObligations) parts.push(`미지급 ${formatMoney(currency, f.unpaidObligations)}`);
@@ -774,7 +773,7 @@ function cancelContract(s: GameState, config: ScenarioConfig, contractId: string
   if (booking && booking.status === 'BOOKED') releaseBooking(s, config, booking, `${contract.id} 출항 전 취소`);
   const compensation = config.terms.customerCancellationCompensationMinor;
   if (compensation > 0) {
-    payOrAccrue(s, contract.currency, compensation, `CANCEL-COMP-${contract.id}`, '고객 취소 보상', contract.id, 'CANCELLATION_EXPENSE');
+    payOrAccrue(s, config, contract.currency, compensation, `CANCEL-COMP-${contract.id}`, '고객 취소 보상', contract.id, 'CANCELLATION_EXPENSE');
   }
   const task = s.tasks.find((t) => t.id === contract.prepTaskId);
   if (task && (task.status === 'QUEUED' || task.status === 'RUNNING')) task.status = 'ABORTED';
@@ -842,7 +841,7 @@ export function commitDay(
   // 6. 수금 → 밀린 지급 → 급여
   processCollections(s);
   settleObligations(s);
-  for (const cost of fixedCostsDue(s, config, day)) payOrAccrue(s, cost.currency, cost.amountMinor, cost.id, cost.reasonKo, undefined, cost.account);
+  for (const cost of fixedCostsDue(s, config, day)) payOrAccrue(s, config, cost.currency, cost.amountMinor, cost.id, cost.reasonKo, undefined, cost.account);
   processPayroll(s, config);
   processPaymentDefault(s, config);
   // 7. 다음 날 견적 갱신 (M2a: 유효기간 만료만)
@@ -1022,7 +1021,7 @@ function processArrivals(s: GameState, config: ScenarioConfig) {
     if (duty === 0) {
       sh.dutyPaid = true;
     } else {
-      const paid = payOrAccrue(s, contract.currency, duty, `DUTY-${sh.id}`, `${sh.id} 수입 관세 (가상 세율)`, contract.id, 'INVENTORY');
+      const paid = payOrAccrue(s, config, contract.currency, duty, `DUTY-${sh.id}`, `${sh.id} 수입 관세 (가상 세율)`, contract.id, 'INVENTORY');
       sh.dutyPaid = paid;
       lot.carryingAmountMinor += duty;
     }
@@ -1080,6 +1079,12 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
       });
     }
     lot.status = 'DELIVERED';
+    if (netSale === 0) {
+      contract.status = 'COMPLETED';
+      contract.completedDay = s.day;
+      log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료. 납기 ${lateDays}일 경과로 계약 금액 ${formatMoney(contract.currency, contract.saleAmountMinor)} 전액이 감액되어 받을 대금이 없습니다.`);
+      continue;
+    }
     const invoiceId = `INV-${contract.id}`;
     const dueDay = Math.max(contract.paymentDueDay, s.day);
     s.invoices.push({
@@ -1138,6 +1143,7 @@ export function applyReceipt(s: GameState, receiptId: string, invoiceId: string)
 /** 필수 지급. 현금이 부족하면 무제한 마이너스 대신 미지급 의무(부채)로 기록한다. */
 function payOrAccrue(
   s: GameState,
+  config: ScenarioConfig,
   currency: Currency,
   amount: number,
   obligationId: string,
@@ -1170,7 +1176,7 @@ function payOrAccrue(
     ],
   });
   s.obligations.push({ id: obligationId, currency, amountMinor: amount, reasonKo, incurredDay: s.day, paidDay: null });
-  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (${s.operations ? '14일 안에 갚지 못하면 경영 실패' : '지급 불이행 유예기간은 아직 확정되지 않음'})`);
+  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (${config.operations ? (s.day + config.operations.paymentDefault.failureAgeDays > config.campaignDays ? `${config.campaignDays}일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다.` : `${config.operations.paymentDefault.failureAgeDays}일 안에 갚지 못하면 경영 실패`) : '지급 불이행 유예기간은 아직 확정되지 않음'})`);
   return false;
 }
 
@@ -1201,7 +1207,7 @@ function processPayroll(s: GameState, config: ScenarioConfig) {
     if (!isAvailableFromToday(s, emp.id)) continue;
     const def = config.employees.find((e) => e.id === emp.id);
     if (!def || def.salaryPerDayMinor === 0) continue;
-    payOrAccrue(s, def.salaryCurrency, def.salaryPerDayMinor, `WAGE-D${pad(s.day)}-${emp.id}`, `${def.nameKo} ${s.day}일 급여`, undefined, 'WAGE_EXPENSE');
+    payOrAccrue(s, config, def.salaryCurrency, def.salaryPerDayMinor, `WAGE-D${pad(s.day)}-${emp.id}`, `${def.nameKo} ${s.day}일 급여`, undefined, 'WAGE_EXPENSE');
   }
 }
 

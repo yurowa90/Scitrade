@@ -25,7 +25,7 @@ describe('P0-M2A5-03 보관 한도', () => {
     const action = c3.actions[0]!, before = atDay(action.day);
     const accepted = planState(before, config, action.commands.slice(0, -1));
     const refused = planState(accepted.state, config, action.commands.slice(-1));
-    expect(refused.results).toEqual([{ commandId: action.commands.at(-1)!.id, status: 'REJECTED', reasonKo: '보관 공간 부족 — 평택 창고 33 / 40 m³, 이 화물 9 m³. 출항하거나 확장하면 공간이 생깁니다.' }]);
+    expect(refused.results).toEqual([{ commandId: action.commands.at(-1)!.id, status: 'REJECTED', reasonKo: c3.test_fixture.rejection_reason }]);
     expect({ ...refused.state, processedCommands: accepted.state.processedCommands }).toEqual(accepted.state);
     expect([storageUsedLiters(accepted.state, config), storageCapacityLiters(accepted.state, config)])
       .toEqual([c3.expected_numeric.accepted_storage, c3.expected_numeric.capacity]);
@@ -53,11 +53,7 @@ describe('P0-M2A5-04 하루 처리 한도', () => {
   it('영입한 3pt 직원과 2pt 직원들의 수요를 출항·계약 순서로 나눈다', () => {
     const p = planned(c4), n = c4.expected_numeric;
     expect(p.results).toEqual(applied(c4.actions.filter((a) => a.variant === 'A').at(-1)!.commands));
-    expect(allocateHandling(p.state, config)).toEqual({ capacityPt: n.capacity, allocations: [
-      { taskId: 'TASK001', contractId: 'CT001', wantPt: 2, gotPt: 2 },
-      { taskId: 'TASK002', contractId: 'CT002', wantPt: 3, gotPt: 3 },
-      { taskId: 'TASK003', contractId: 'CT003', wantPt: 2, gotPt: 1 },
-    ] });
+    expect(allocateHandling(p.state, config)).toEqual(n.allocation);
     expect(commitDay(p.state, config, []).state.operations!.handlingLog.at(-1)).toEqual(n.log);
     expect(fundsPosition(p.state, config, 'USD')).toEqual({ currency: 'USD', cash: n.cash, reserved: n.duty, reservedCommitments: 0, unpaidObligations: 0, available: n.cash - n.duty });
   });
@@ -89,7 +85,7 @@ describe('P0-M2A5-11 선복 장기 계약', () => {
     const b = planState(atDay(action.day, cfg), cfg, [...signed.commands, ...action.commands]);
     expect(b.results).toEqual(applied([...signed.commands, ...action.commands]));
     expect(sailingLoad(b.state, cfg, findSailing(cfg, c11.test_fixture.covered_sailing)!)).toEqual({ sailingId: c11.test_fixture.covered_sailing,
-      massGrams: 3600000, volumeLiters: n.storage, capacityGrams: n.capacity[1], capacityLiters: n.capacity[0] });
+      massGrams: n.mass_grams, volumeLiters: n.storage, capacityGrams: n.capacity[1], capacityLiters: n.capacity[0] });
     expect(sailingLoad(b.state, cfg, findSailing(cfg, c11.test_fixture.early_sailing)!)).toEqual({ sailingId: c11.test_fixture.early_sailing,
       massGrams: 0, volumeLiters: 0, capacityGrams: n.base_capacity[1], capacityLiters: n.base_capacity[0] });
   });
@@ -114,18 +110,10 @@ describe('M2a-5 처리 순서', () => {
   it('뒤 계약의 이른 출항이 앞서고 예약 없는 업무는 납기 순이다', () => {
     const s = planned(c4).state;
     s.bookings[2]!.departureDay = s.bookings[0]!.departureDay - 1;
-    expect(allocateHandling(s, config)).toEqual({ capacityPt: c4.expected_numeric.capacity, allocations: [
-      { taskId: 'TASK003', contractId: 'CT003', wantPt: 2, gotPt: 2 },
-      { taskId: 'TASK001', contractId: 'CT001', wantPt: 2, gotPt: 2 },
-      { taskId: 'TASK002', contractId: 'CT002', wantPt: 3, gotPt: 2 },
-    ] });
+    expect(allocateHandling(s, config)).toEqual(c4.expected_numeric.reordered_allocation);
     s.bookings.forEach((b) => { b.status = 'CANCELLED'; });
     s.contracts[2]!.deliveryDeadlineDay = s.contracts[0]!.deliveryDeadlineDay - 1;
-    expect(allocateHandling(s, config)).toEqual({ capacityPt: c4.expected_numeric.capacity, allocations: [
-      { taskId: 'TASK003', contractId: 'CT003', wantPt: 2, gotPt: 2 },
-      { taskId: 'TASK001', contractId: 'CT001', wantPt: 2, gotPt: 2 },
-      { taskId: 'TASK002', contractId: 'CT002', wantPt: 3, gotPt: 2 },
-    ] });
+    expect(allocateHandling(s, config)).toEqual(c4.expected_numeric.reordered_allocation);
   });
 });
 
@@ -135,19 +123,30 @@ describe('M2a-5 준비 예측과 실제 진행', () => {
     const action = c4.actions.find((a) => a.day === c4.test_fixture.assignment_day)!;
     const s = planState(atDay(action.day, config, script), config, action.commands).state;
     const before = structuredClone(s), days = expanded ? c4.expected_numeric.expanded_ready_days : c4.expected_numeric.ready_days;
-    const expected = s.contracts.map((c, i) => ({ taskId: c.prepTaskId, contractId: c.id, readyDay: days[i],
-      todayPt: i === 0 ? 2 : i === 1 ? 3 : expanded ? 2 : 1, todayWantPt: i === 1 ? 3 : 2, waitDays: !expanded && i === 2 ? 1 : 0 }));
+    const expected = expanded ? c4.expected_numeric.expanded_projection : c4.expected_numeric.projection;
     expect(projectPrepCompletion(s, config)).toEqual(expected); expect(s).toEqual(before);
     const after = runDays(s, config, c4.test_fixture.through_day).state;
     expect(after.tasks.filter((t) => t.contractId !== null).map((t) => ({ taskId: t.id, contractId: t.contractId, readyDay: t.completedDay })))
-      .toEqual(expected.map(({ taskId, contractId, readyDay }) => ({ taskId, contractId, readyDay })));
+      .toEqual(expected.map(({ taskId, contractId, readyDay }: { taskId: string; contractId: string; readyDay: number }) => ({ taskId, contractId, readyDay })));
   });
-  it('대기 배정은 설정 직원 순서를 쓰며 예약된 부재 동안에는 새 배정을 하지 않는다', () => {
+  it('대기 배정은 설정 직원 순서와 날짜별 쉬는 직원을 실제 배정 결과와 대조한다', () => {
     const s: GameState = planned(c4).state;
-    for (const t of s.tasks.filter((t) => t.contractId !== null)) { t.status = 'QUEUED'; t.assignedEmployeeId = null; }
-    const first = projectPrepCompletion(s, config, { assignQueued: true });
-    const blocked = projectPrepCompletion(s, config, { assignQueued: true, blocked: s.employees.filter((e) => e.employmentStatus === 'employed')
-      .map((e) => ({ employeeId: e.id, fromDay: s.day, toDay: config.campaignDays })) });
-    expect(blocked).toEqual(first.map((p) => ({ ...p, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 })));
+    for (const t of s.tasks.filter((t) => t.contractId !== null)) {
+      t.status = 'QUEUED'; t.assignedEmployeeId = null; t.startedDay = null;
+    }
+    const absence = c4.test_fixture.queued_absence;
+    expect(projectPrepCompletion(s, config, { assignQueued: true, blocked: [absence] })).toEqual(c4.expected_numeric.queued_projection);
+    const actual = structuredClone(s);
+    const script = Object.fromEntries(c4.test_fixture.queued_commands.map((a: any) => [a.day, a.commands]));
+    let current = actual;
+    for (const expected of c4.expected_numeric.queued_daily_tasks) {
+      const closed = runDays(current, config, expected.day, script);
+      if (script[expected.day]) expect(closed.results[expected.day]).toEqual(applied(script[expected.day]));
+      current = closed.state;
+      expect(current.tasks.filter((t) => t.contractId !== null)).toEqual(expected.tasks);
+    }
+    expect(projectPrepCompletion(s, config, { assignQueued: true, blocked: s.employees.filter((e) => e.employmentStatus === 'employed')
+      .map((e) => ({ employeeId: e.id, fromDay: s.day, toDay: config.campaignDays })) }))
+      .toEqual(c4.expected_numeric.queued_projection.map((p: any) => ({ ...p, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 })));
   });
 });

@@ -133,8 +133,7 @@ export function lateDeliveryReduction(config: ScenarioConfig, saleAmountMinor: n
 
 export function usdFundsParts(s: GameState, config: ScenarioConfig): string[] {
   const f = fundsPosition(s, config, 'USD');
-  const parts: string[] = [];
-  if (f.cash) parts.push(`현금 ${formatMoney('USD', f.cash)}`);
+  const parts = [`현금 ${formatMoney('USD', f.cash)}`];
   if (f.reserved - f.reservedCommitments) parts.push(`다른 계약 예약 ${formatMoney('USD', f.reserved - f.reservedCommitments)}`);
   if (f.reservedCommitments) parts.push(`선복 계약 요금 예약 ${formatMoney('USD', f.reservedCommitments)}`);
   if (f.unpaidObligations) parts.push(`미지급 ${formatMoney('USD', f.unpaidObligations)}`);
@@ -247,7 +246,7 @@ export function processPaymentDefault(s: GameState, config: ScenarioConfig): voi
       amountMinor: oldest.amountMinor, incurredDay: oldest.incurredDay, dueToSurviveMinor: status.recovery.dueToSurviveMinor,
       lotsToSurvive: status.recovery.lotsToSurvive, lotsToClearAll: status.recovery.lotsToClearAll, usdAvailableMinor: fundsPosition(s, config, 'USD').available };
     ops.defaultEvents.push(e);
-    log(s, `지급 불이행 ${e.level === 'WARNING' ? '경고' : '위험'}: ${oldest.incurredDay}일 ${oldest.reasonKo} ${formatMoney(oldest.currency, oldest.amountMinor)}이 밀렸습니다. ${status.failAtCloseOfDay}일 마감까지 갚지 못하면 경영 실패입니다.`);
+    log(s, `지급 불이행 ${e.level === 'WARNING' ? '경고' : '위험'}: ${oldest.incurredDay}일 ${oldest.reasonKo} ${formatMoney(oldest.currency, oldest.amountMinor)}이 밀렸습니다. ${status.failAtCloseOfDay! > config.campaignDays ? `${config.campaignDays}일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다.` : `${status.failAtCloseOfDay}일 마감까지 갚지 못하면 경영 실패입니다.`}`);
   }
   if (!status.failsAtCloseToday) return;
   const commitments: (FailureRecord['usdCommitmentsSinceIncurred'][number] & { order: number })[] = [];

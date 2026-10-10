@@ -45,7 +45,8 @@ export interface ContractProgress {
 
 export function contractProgress(s: GameState, config: ScenarioConfig, c: Contract): ContractProgress {
   if (c.status === 'CANCELLED') return { nextKo: '취소된 계약', blockers: [] };
-  if (c.status === 'COMPLETED') return { nextKo: `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
+  if (c.status === 'COMPLETED') return { nextKo: c.invoiceId === null && c.priceReductionMinor === c.saleAmountMinor
+    ? `${c.completedDay}일 인도 완료 · 전액 감액으로 종결` : `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
   const blockers: Blocker[] = [];
   const money = (minor: number) => formatMoney(c.currency, minor);
   const late = (days: number) => lateDeliveryReduction(config, c.saleAmountMinor, days);
@@ -70,7 +71,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
     if (shipment.arrivalDay === null) {
       const status = portWaitStatus(s, config, shipment);
       if (status === 'WAITING_RESTRICTION') {
-        blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${config.operations ? `늦은 하루마다 ${money(config.terms.lateDeliveryPriceReductionMinor)}씩, 최대 ${money(applyBasisPoints(c.saleAmountMinor, config.terms.lateDeliveryCapBasisPoints!))}까지` : money(late(1))} 감액됩니다.` });
+        blockers.push({ code: 'WAITING_PORT_RESTRICTION', severity: 'warn', messageKo: `${cityName(config, c.destinationCityId)}항 하역 중단으로 바다에서 대기 중입니다 (${shipment.observedWaitDays}일째). 납기 ${c.deliveryDeadlineDay}일을 넘기면 ${config.terms.lateDeliveryBasis === 'PER_LATE_DAY_CAPPED' && config.terms.lateDeliveryCapBasisPoints !== null ? `늦은 하루마다 ${money(config.terms.lateDeliveryPriceReductionMinor)}씩, 최대 ${money(applyBasisPoints(c.saleAmountMinor, config.terms.lateDeliveryCapBasisPoints!))}까지` : money(late(1))} 감액됩니다.` });
         return { nextKo: '하역 재개 대기', blockers };
       }
       if (status === 'ARRIVING_TODAY') {
