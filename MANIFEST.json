@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 148351,
-      "sha256": "c2102ef259d496c63a6c28815b2823b5bad04dd40a4a919c0ab369dea0e05b4d"
+      "size_bytes": 150684,
+      "sha256": "4c60f66bbc1b703dc50f896ca3caf94ba2e20e6958096f526f19692467536c48"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 56049,
-      "sha256": "05f6e8ce5aad8f1c325692c0937b40e963dd4818c1f445571914eaf97af31e28"
+      "size_bytes": 56743,
+      "sha256": "3102e104f936d626b95545bd1b0db9e8629773c968b556d6e243de5b3fbadc22"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -367,8 +367,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 10718,
-      "sha256": "eedaab669c8c7bb106d5426f50ff108018233fbb59492efad3d4a8160fe0e42c"
+      "size_bytes": 10796,
+      "sha256": "bfb5c77f3074f6bf66234ae89011b387b3fb7f14da6e3a1f09565f1a54d1964e"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -666,6 +666,11 @@
       "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0025.md",
+      "size_bytes": 22920,
+      "sha256": "0f176ac58eb6eb9c6dc0b8b6480db321599c14ae9b6fcfd55a575f27ac86b468"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0026.md",
       "size_bytes": 20902,
       "sha256": "673228a408e105c4097248a354a47acc1ba6e6ffab511c9e28f6ff95f821324a"
@@ -682,8 +687,8 @@
     },
     {
       "path": "docs/art/PIXEL_SPEC.md",
-      "size_bytes": 16298,
-      "sha256": "526a9de91296132ba8bf8d5b66f050e0b21c6b514f9eebacdee465302aef298c"
+      "size_bytes": 17043,
+      "sha256": "25286afa07413a572b2b3027e22f2fc0148da4ea87170b51cf56eb4e43fb22cd"
     },
     {
       "path": "docs/art/PROMPTS.md",
@@ -972,18 +977,18 @@
     },
     {
       "path": "tools/browser/README.md",
-      "size_bytes": 3300,
-      "sha256": "e0dd72fe93564bcfc3181444b2e4adc13677defbd718acea8e1b839a3127bfe9"
+      "size_bytes": 3325,
+      "sha256": "8543b46bdaac5c32470079538bb16c2b503f1a47c3ab7f07028bca573420d0e0"
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 15710,
-      "sha256": "beb59b3b1913a4dedd9ca0f757be3642a7892c96eb9d9d1aec90abbb87d37207"
+      "size_bytes": 16217,
+      "sha256": "3b5b7f30e66de63c6158d604ca142108ffa627f61a0efdc9c58e611dd4d1b7b4"
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 8306,
-      "sha256": "4bc660e1f50c6f6ee5cc7687fcc892b13470fb06e18fce9da5b6425ce6681dc7"
+      "size_bytes": 9118,
+      "sha256": "ab2308fdc1ee0e3cee5d53975c849de15940563791fab02364a1a817e407badd"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -1024,6 +1029,11 @@
       "path": "tools/browser/scenarios/report-contract-link.json",
       "size_bytes": 1196,
       "sha256": "c3eef3def004754295ed889444a7c861435acd83b0628b47a4c05ca06c23bc7f"
+    },
+    {
+      "path": "tools/browser/scenarios/route-map-fit.json",
+      "size_bytes": 5608,
+      "sha256": "4bce25c2037d190dd7a1a2fe16dc415041d9467de377580b406a60574d50e78e"
     },
     {
       "path": "tools/browser/scenarios/schedule-toggle.json",

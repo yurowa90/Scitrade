@@ -129,6 +129,22 @@ describe('main.ts 지도 연결', () => {
     ui.measure(930,1);
     expect(ui.frame().scrollLeft).toBe(535);
   });
+  it('빈 띠가 넓던 폭(315.51·dpr 2)을 재면 한 배율 위 계획으로 다시 그리고, 시나리오를 바꾸면 측정 전 기본 계획으로 돌아간다', async () => {
+    const ui = await start();
+    const before = ui.app.innerHTML;
+    expect(before).toContain('width="620" height="490"');
+    expect(before).toContain('data-map-viewport="2:620:490:116:134"');
+    ui.measure(315.51, 2);
+    expect(ui.frame().innerHTML).toContain('width="315" height="245"');
+    expect(ui.frame().innerHTML).toContain('data-map-viewport="2:630:490:110:134"');
+    expect(ui.frame().dataset.viewportKey).toBe('2:630:490:110:134:2');
+    ui.click({action:'map-mode',mode:'route'});
+    expect(ui.app.innerHTML).toContain('width="315" height="245"');
+    expect(ui.frame().dataset.measured).toBe('true');
+    ui.changeScenario();
+    expect(ui.app.innerHTML).toContain('width="620" height="490"');
+    expect(ui.frame().dataset.measured).toBeUndefined();
+  });
   it('초점 그림자는 끄고 테두리와 가운데 여백 규칙을 유지한다', async () => {
     const { readFileSync } = await vi.importActual<{readFileSync: (path: URL, encoding: string) => string}>('node:fs');
     const css = readFileSync(new URL('./style.css',import.meta.url),'utf8');
