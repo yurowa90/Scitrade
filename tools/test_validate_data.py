@@ -908,5 +908,103 @@ class MainWiringTest(unittest.TestCase):
                 self.assertEqual(ids(call.args[1]['items']), character)
 
 
+class MarketRulesTest(unittest.TestCase):
+    def fixtures(self):
+        documents = {p.stem: json.loads(p.read_text()) for p in (validator.ROOT / 'data').glob('*.json')}
+        tables = {name: {i['id']: i for i in doc['items']} for name, doc in documents.items() if 'items' in doc}
+        return documents, tables
+
+    def errors(self, documents, tables):
+        validator.ERRORS.clear()
+        validator.check_market_rules(documents, tables)
+        return list(validator.ERRORS)
+
+    def test_current_data(self):
+        self.assertEqual(self.errors(*self.fixtures()), [])
+
+    def test_rows(self):
+        for duplicate in (False, True):
+            d, t = self.fixtures()
+            rows = d['market_rules']['rule_sets'][0]['rows']
+            if duplicate:
+                rows[-1] = copy.deepcopy(rows[0])
+            else:
+                rows.pop()
+            self.assertIn('market_rules: 시세표는 6행이어야 함', self.errors(d, t))
+
+    def test_deadline(self):
+        d, t = self.fixtures()
+        item = d['market_rules']['rule_sets'][0]['forwarding']['templates'][0]
+        item['deadline_offset_days'] = 0
+        self.assertIn(f"{item['id']}: 납기가 운송일보다 짧음", self.errors(d, t))
+
+    def test_payment(self):
+        d, t = self.fixtures()
+        item = d['market_rules']['rule_sets'][0]['forwarding']['templates'][0]
+        item['payment_offset_days'] = item['deadline_offset_days'] - 1
+        self.assertIn(f"{item['id']}: 결제일이 납기보다 이름", self.errors(d, t))
+
+    def test_draw_count(self):
+        d, t = self.fixtures()
+        forward = d['market_rules']['rule_sets'][0]['forwarding']
+        for draw in forward['draws']:
+            draw['count'] = len(forward['templates']) + 1
+            self.assertIn(f"market_rules: {draw['service_class']} 뽑기 수가 틀 수보다 많음", self.errors(d, t))
+
+    def test_counterparty(self):
+        for source in ('template', 'trade', 'initial'):
+            d, t = self.fixtures()
+            rule = d['market_rules']['rule_sets'][0]
+            if source == 'template':
+                item = rule['forwarding']['templates'][0]
+                pid, ident = item['counterparty_id'], item['id']
+            elif source == 'trade':
+                item = rule['trade']['goods'][0]
+                pid, ident = item['buy_counterparty_id'], item['good_id']
+            else:
+                item = next(iter(t['market_offers'].values()))
+                pid, ident = item['counterparty_id'], item['id']
+            d['market_rules']['counterparties'] = [p for p in d['market_rules']['counterparties'] if p['id'] != pid]
+            self.assertIn(f'{ident}: 거래처 이름 없음 {pid}', self.errors(d, t))
+
+    def test_prep(self):
+        for grade, value in [('HANDLING', None), ('HANDLING', 1), ('HANDLING', 2.5), ('STANDARD', 2)]:
+            d, t = self.fixtures()
+            item = next(x for x in d['market_rules']['rule_sets'][0]['forwarding']['templates'] if x['service_class'] == grade)
+            item['prep_work_units'] = value
+            self.assertIn(f"{item['id']}: 준비량 칸 오류", self.errors(d, t))
+
+    def test_grace_pointer(self):
+        for pointer in (False, True):
+            d, t = self.fixtures()
+            param = next(p for p in d['parameters']['items'] if 'json_pointer' in p and '/payment_default/' in p['json_pointer'])
+            if pointer:
+                param['json_pointer'] += '/missing'
+            else:
+                param['value'] += 1
+            self.assertIn(f"{param['id']}: 시나리오 값과 다름", self.errors(d, t))
+
+    def test_rule_version(self):
+        d, t = self.fixtures()
+        s = next(s for s in t['scenarios'].values() if 'operations' in s)
+        s['engine_rules'] = copy.deepcopy(t['scenarios'][s['base_scenario_id']]['engine_rules'])
+        self.assertIn(f"{s['id']}: operations는 M2a-rules-2 필요", self.errors(d, t))
+
+    def test_late_cap(self):
+        for cap in (None, 0, 10001, 1.5, True):
+            d, t = self.fixtures()
+            s = next(s for s in t['scenarios'].values() if 'operations' in s)
+            late = s['contract_terms']['late_delivery']
+            if cap is None:
+                del late['cap_basis_points']
+            else:
+                late['cap_basis_points'] = cap
+            self.assertIn(f"{s['id']}: 지연 감액 상한 칸 오류", self.errors(d, t))
+        d, t = self.fixtures()
+        s = next(s for s in t['scenarios'].values() if s.get('contract_terms', {}).get('late_delivery', {}).get('basis') == 'flat_once_regardless_of_late_days')
+        s['contract_terms']['late_delivery']['cap_basis_points'] = 10000
+        self.assertIn(f"{s['id']}: 지연 감액 상한 칸 오류", self.errors(d, t))
+
+
 if __name__ == '__main__':
     unittest.main()

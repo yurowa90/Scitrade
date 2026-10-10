@@ -1,13 +1,14 @@
 // 테스트와 화면 자동 진행에서 함께 쓰는 실행 도우미.
 
 import { commitDay, openDay, planCommands, planState } from './engine';
-import { listSailings, offerOf, routeBetween } from './catalog';
+import { listSailings, routeBetween } from './catalog';
 import { isAvailableFromToday } from './employees';
 import { runningTaskOf } from './reservations';
 import { tradePairs } from './reports';
-import type { Command, CommandResult, GameState, ScenarioConfig } from './types';
+import { offerDef } from './market';
+import type { EngineCommand, Command, CommandResult, GameState, ScenarioConfig } from './types';
 
-export type DayScript = Record<number, Command[]>;
+export type DayScript = Record<number, EngineCommand[]>;
 
 /** 현재 날짜부터 lastDay 마감까지 진행한다. 각 날의 명령은 script에서 가져온다. */
 export function runDays(
@@ -51,7 +52,7 @@ export function acceptAllFeasible(state: GameState, config: ScenarioConfig, idPr
   const selected: Command[] = [];
   const candidates = [
     ...tradePairs(config).map((pair) => ({
-      from: offerOf(config, pair.buyOfferId)!.cityId, to: offerOf(config, pair.sellOfferId)!.cityId,
+      from: offerDef(state, config, pair.buyOfferId)!.cityId, to: offerDef(state, config, pair.sellOfferId)!.cityId,
       command: { type: 'ACCEPT_TRADE' as const, ...pair },
     })),
     ...config.offers.filter((o) => o.kind === 'forwarding').map((o) => ({

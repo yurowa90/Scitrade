@@ -1,3 +1,4 @@
+import { rentDueMinor } from './operations';
 // 화면용 읽기 함수. 사본에 명령을 계획하며 입력 상태·설정을 바꾸지 않는다.
 import { cultureKeys } from './culture';
 import { isAvailableFromToday } from './employees';
@@ -46,7 +47,7 @@ export function payrollRunwayDay(state: GameState, config: ScenarioConfig, extra
         const def = config.employees.find((d) => d.id === e.id);
         return sum + (def?.salaryCurrency === config.payrollCurrency ? def.salaryPerDayMinor : 0);
       }, 0);
-    available -= wages;
+    available -= wages + rentDueMinor(state, config, day);
     if (available < 0) return day - 1;
   }
   return null;

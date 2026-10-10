@@ -1,3 +1,5 @@
+import { OPERATIONS_SCENARIO_IDS } from '../content/scenario';
+import type { OfferDef, OperationsState, MarketBatch, DefaultEvent } from './types';
 import { expect, expectTypeOf, it } from 'vitest';
 import { loadScenario } from '../content/scenario';
 import { createGame } from './engine';
@@ -9,6 +11,9 @@ import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task
 
 it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정은 실행 시점 상수를 공유한다', () => {
   type EnumTypes = {
+    offerKind: OfferDef['kind']; serviceClass: NonNullable<OfferDef['serviceClass']>;
+    marketSide: MarketBatch['rows'][number]['side']; exchangeDirection: OperationsState['exchanges'][number]['direction'];
+    campaignOutcome: OperationsState['outcome']; defaultLevel: DefaultEvent['level'];
     currency: Currency; account: Account; phase: DayPhase; offerStatus: OfferState['status'];
     contractKind: Contract['kind']; contractStatus: Contract['status']; cargoOwner: CargoLot['owner'];
     cargoStatus: CargoLot['status']; bookingStatus: Booking['status']; taskKind: Task['kind'];
@@ -24,6 +29,9 @@ it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정�
   // 불변 조건과 분리해 모든 열거값의 저장 모양 허용·거절을 직접 확인한다.
   const base = createGame(loadScenario('SCENARIO_M2_MULTI_TRADE'));
   const targets = {
+    offerKind: ['operations', 'offers', 0, 'kind'], serviceClass: ['operations', 'offers', 0, 'serviceClass'],
+    marketSide: ['operations', 'batches', 0, 'rows', 0, 'side'], exchangeDirection: ['operations', 'exchanges', 0, 'direction'],
+    campaignOutcome: ['operations', 'outcome'], defaultLevel: ['operations', 'defaultEvents', 0, 'level'],
     cultureReportStatus: ['culture', 'reports', 0, 'status'],
     cultureRelationKind: ['culture', 'relationEvents', 0, 'kind'],
     currency: ['ledger', 'entries', 0, 'currency'], account: ['ledger', 'entries', 0, 'lines', 0, 'account'],
@@ -35,6 +43,12 @@ it('저장 열거 목록 전부가 엔진 타입과 일치하고 통화·계정�
     invoiceStatus: ['invoices', 0, 'status'], noticeKind: ['notices', 0, 'kind'],
     delayChoice: ['delayDecisions', 0, 'choice'], commandStatus: ['processedCommands', 'TEST', 'status'],
   } satisfies Record<keyof EnumTypes, (string | number)[]>;
+  const cfg = loadScenario(OPERATIONS_SCENARIO_IDS[0]);
+  base.operations = createGame(cfg).operations;
+  base.operations!.offers.push({ ...cfg.offers[0]!, serviceClass: 'STANDARD' });
+  base.operations!.exchanges.push({ id: '', day: 1, direction: 'USD_TO_KRW', usdMinor: 1, krwMinor: 1, rateKrwPerUsd: 1, spreadKrwMinor: 1 });
+  base.operations!.defaultEvents.push({ day: 1, level: 'WARNING', obligationId: '', currency: 'KRW', amountMinor: 1,
+    incurredDay: 1, dueToSurviveMinor: 1, lotsToSurvive: 1, lotsToClearAll: 1, usdAvailableMinor: 1 });
   base.culture.reports.push({ key: '', activityId: '', topicId: '', cityId: '', sourceContactIds: [],
     reporterEmployeeId: '', taskId: '', day: 1, contentRevision: '1', status: 'UNVERIFIED' });
   base.culture.relationEvents.push({ key: '', employeeId: '', contactId: '', activityId: '', cityId: '',

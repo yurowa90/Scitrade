@@ -23,7 +23,7 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "1c93643feac83184247fb2b799c31cb8a37b248a7333680bd1c5ef2d4996f3ea"
+      "sha256": "c6f312a0fafb6adaa75a346cef7c9296ebb3846de3cdfe42ae97bcfc127c3b39"
     },
     {
       "path": "README.md",
@@ -96,6 +96,11 @@
       "sha256": "11d98e6ec33084b5422478341b89b1fb2d7dba7c96347f22793292e1c13811d1"
     },
     {
+      "path": "data/market_rules.json",
+      "size_bytes": 11369,
+      "sha256": "7e3d75783fd8ff1d7e48ce298103a98c1711562c2aeadde23811698a5d1b09ac"
+    },
+    {
       "path": "data/observed_fx_sample.json",
       "size_bytes": 4976,
       "sha256": "66f137cfc5c75a97d27895183ea70366a6f4380191fc52072327aa81a09d7124"
@@ -107,8 +112,8 @@
     },
     {
       "path": "data/parameters.json",
-      "size_bytes": 2180,
-      "sha256": "7653f378c97717ce9483c21eddf5106aba242597f7bc6a167f95c7ad9e8c4815"
+      "size_bytes": 2364,
+      "sha256": "b16d5a97c473e2a2773810a33a55f685d19751746ed380e52d9eff14a0970576"
     },
     {
       "path": "data/routes.json",
@@ -117,8 +122,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 17802,
-      "sha256": "c49945f94f042fac2349a014a13e756a95197a17a05593e7432b3eb031eb0406"
+      "size_bytes": 23406,
+      "sha256": "c66f1d432cc95b2f894388c8cdfd72d288c602f9b1cb2ffe92e36553a4fa7b49"
     },
     {
       "path": "data/securities.json",
@@ -1006,6 +1011,11 @@
       "sha256": "673228a408e105c4097248a354a47acc1ba6e6ffab511c9e28f6ff95f821324a"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0027.md",
+      "size_bytes": 19575,
+      "sha256": "68a402b06e1df4fa1a461887259a07bbafded2697ed83790fdad1d6e9b6a7972"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -1206,6 +1216,11 @@
       "sha256": "a67501ccd4050e8cd8c90a91682024b53d68e1210249542cad038e28735a1d67"
     },
     {
+      "path": "schemas/market_rules.schema.json",
+      "size_bytes": 11464,
+      "sha256": "31bc655e47b060ac23902db11b78d64b9acbeeff5f5dd75b312198d47c113246"
+    },
+    {
       "path": "schemas/observed_fx_sample.schema.json",
       "size_bytes": 4833,
       "sha256": "f046406186b039e4c2bca988d01b3d93c90abcae303ef5483a562e894e066bd4"
@@ -1227,8 +1242,8 @@
     },
     {
       "path": "schemas/scenarios.schema.json",
-      "size_bytes": 21394,
-      "sha256": "20a206e81d770d478a2c61becf15d054a6feee790ef6d74323ce6f9305607ecb"
+      "size_bytes": 31407,
+      "sha256": "893a90db3eb7d918c0f56d68e3c6c90624fd442a41d8b54d881f0b49ca70cc57"
     },
     {
       "path": "schemas/securities.schema.json",
@@ -1262,8 +1277,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 46945,
-      "sha256": "db583c383f1dc2f6f000c5bd26389f63ec7eac49774efccb5750b37efb711129"
+      "size_bytes": 100065,
+      "sha256": "3d4b5f68a799495c25406b51c6d7831f54272aba3835acbd7ad4f53b3b2dc2cd"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -1417,13 +1432,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 52229,
-      "sha256": "d17d2fbc1026a7199d19337d9dd4a9ee26f379fa027e00d1cd909763083d602a"
+      "size_bytes": 56992,
+      "sha256": "6179fd93f59e6524b06bd33ab54dd189a428e9c1d7ede06555ad71f3ccb5dfb5"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 67354,
-      "sha256": "d898658b5cbd6537976a0e614206ae53cd28294cde41bcbbd776240fafaeffe7"
+      "size_bytes": 70626,
+      "sha256": "0c59277270ef7fc16d9cdafc29fe0e9cd09a695553fc292d7c1210cdf4c0901e"
     }
   ]
 }

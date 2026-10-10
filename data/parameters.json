@@ -55,9 +55,10 @@
     {
       "id": "PAR_PAYMENT_GRACE_DAYS",
       "unit": "simulation_day",
-      "value": null,
+      "value": 14,
       "basis": "DESIGN",
-      "notes_ko": "필수 지급 불이행 유예기간 미확정. 엔진은 미지급 의무만 기록하고 경영 실패 판정을 하지 않는다. 임의 구현 금지."
+      "notes_ko": "D04 가(2026-10-10). 규칙 2 시나리오(operations.payment_default)에만 적용한다. 가장 오래된 미지급 의무의 발생일 + 14일 마감에 남아 있으면 경영 실패. 규칙 1 시나리오는 실패 판정을 하지 않는다.",
+      "json_pointer": "scenarios.json#/items/7/operations/payment_default/failure_age_days"
     }
   ],
   "$schema": "../schemas/parameters.schema.json"

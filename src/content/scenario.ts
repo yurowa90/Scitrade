@@ -1,3 +1,6 @@
+import marketRules from '../../data/market_rules.json';
+import type { OperationsConfig, Task } from '../engine/types';
+import { applyBasisPoints } from '../engine/money';
 // data/*.json의 DESIGN fixture를 엔진 시나리오 설정으로 변환한다 (M1 거래 한 건, M2a 복수 계약).
 // USD 표시 금액은 여기서 한 번만 cents로 바꾼다. 계약 조건·규칙 판본·지연 사건도 data/scenarios.json에서 읽는다.
 
@@ -38,6 +41,9 @@ export const M1_SCENARIO_IDS = [
 ] as const;
 export const M2_SCENARIO_IDS = ['SCENARIO_M2_MULTI_TRADE'] as const;
 export const SCENARIO_IDS = [...M2_SCENARIO_IDS, ...M1_SCENARIO_IDS] as const;
+export const OPERATIONS_SCENARIO_IDS = ['SCENARIO_M2_OPERATIONS'] as const;
+export const ALL_SCENARIO_IDS = [...SCENARIO_IDS, ...OPERATIONS_SCENARIO_IDS] as const;
+export type AnyScenarioId = (typeof ALL_SCENARIO_IDS)[number];
 export type M1ScenarioId = (typeof M1_SCENARIO_IDS)[number];
 export type ScenarioId = (typeof SCENARIO_IDS)[number];
 
@@ -63,7 +69,7 @@ interface ContractTermsRaw {
     supplier_return: boolean;
     applies_to_missed_sailing: boolean;
   };
-  late_delivery: { price_reduction: MoneyRaw; basis: string };
+  late_delivery: { price_reduction: MoneyRaw; basis: string; cap_basis_points?: number };
   payment_due_rule: string;
   notes_ko?: string[];
 }
@@ -148,6 +154,9 @@ function toOffer(id: string): OfferDef {
     cityId: str(o, 'city_id'),
     goodId: str(o, 'good_id'),
     quantity: num(o, 'quantity'),
+    maxQuantity: num(o, 'quantity'), quantityStep: num(o, 'quantity'),
+    serviceClass: kind === 'forwarding' ? 'STANDARD' : null, publishDay: 1, batchK: 0,
+    templateId: null, titleKo: null, prepWorkUnits: null,
     unitPriceMinor: price?.minor ?? 0,
     serviceFeeMinor: fee?.minor ?? 0,
     declaredCargoValueMinor: declared?.minor ?? null,
@@ -244,17 +253,19 @@ function toRules(id: string, raw: EngineRulesRaw | undefined): ScenarioRules {
 
 const SUPPORTED_PAYMENT_RULES = ['scenario_due_day_not_earlier_than_delivery_day', 'offer_due_day_not_earlier_than_delivery_day'];
 
-export function loadScenario(id: ScenarioId): ScenarioConfig {
+export function loadScenario(id: AnyScenarioId): ScenarioConfig {
   const cfg = (gameConfig as { config: AnyRecord }).config;
   const s = resolveScenarioRecord(id);
   const tradeCurrency = str(cfg, 'trade_currency') as Currency;
   const rules = toRules(id, s.engine_rules as EngineRulesRaw | undefined);
   const growthEnabled = (s.growth as { enabled?: boolean } | undefined)?.enabled === true;
 
+  const operations = toOperations(s, cfg);
+  if ((operations !== null) !== (rules.rulesVersion === 'M2a-rules-2')) throw new Error(`${id}: operations와 규칙 판본이 다릅니다.`);
   const offers = (s.offer_ids as string[]).map(toOffer);
   const routeIds = (s.route_ids as string[] | undefined) ?? [str(s, 'route_id')];
   const routeDefs = routeIds.map(toRoute);
-  const goodIds = [...new Set([...(s.good_id ? [str(s, 'good_id')] : []), ...offers.map((o) => o.goodId)])];
+  const goodIds = [...new Set([...(s.good_id ? [str(s, 'good_id')] : []), ...offers.map((o) => o.goodId), ...(operations?.market.forwarding.templates.map((t) => t.goodId) ?? []), ...(operations?.market.index.goods ?? [])])];
   if (offers.some((o) => o.currency !== tradeCurrency) || routeDefs.some((r) => r.currency !== tradeCurrency)) {
     throw new Error('거래 장부는 단일 거래 통화만 지원합니다 (환전·외화 평가는 이후 단계).');
   }
@@ -281,7 +292,9 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
   if (cancel.supplier_return || !cancel.applies_to_missed_sailing) {
     throw new Error('엔진은 공급자 반품 없음·출항 불참 동일 정산 조건만 지원합니다.');
   }
-  if (terms.late_delivery.basis !== 'flat_once_regardless_of_late_days') {
+  if (terms.late_delivery.basis !== 'flat_once_regardless_of_late_days'
+    && !(terms.late_delivery.basis === 'per_late_day_capped' && Number.isInteger(terms.late_delivery.cap_basis_points)
+      && terms.late_delivery.cap_basis_points! >= 1 && terms.late_delivery.cap_basis_points! <= 10000)) {
     throw new Error(`지원하지 않는 지연 감액 규칙: ${terms.late_delivery.basis}`);
   }
   if (!SUPPORTED_PAYMENT_RULES.includes(terms.payment_due_rule)) throw new Error(`지원하지 않는 결제일 규칙: ${terms.payment_due_rule}`);
@@ -387,6 +400,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
     employees: [...(s.employee_ids as string[]), ...(recruitment?.candidateEmployeeIds ?? [])].map((employeeId) => toEmployee(employeeId, growthEnabled)),
     recruitment,
     culture,
+    operations,
     growth: growthEnabled ? {
       taskCompletionXp: characterRules.task_completion_xp,
       ordinaryTraining: {
@@ -409,6 +423,8 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
       preDepartureCancellationFeeMinor: termMinor(cancel.cancellation_fee),
       customerCancellationCompensationMinor: termMinor(cancel.customer_compensation),
       lateDeliveryPriceReductionMinor: termMinor(terms.late_delivery.price_reduction),
+      lateDeliveryBasis: terms.late_delivery.basis === 'per_late_day_capped' ? 'PER_LATE_DAY_CAPPED' : 'FLAT_ONCE',
+      lateDeliveryCapBasisPoints: terms.late_delivery.cap_basis_points ?? null,
     },
     portRestrictions,
     expectedTimeline: {
@@ -422,7 +438,7 @@ export function loadScenario(id: ScenarioId): ScenarioConfig {
 }
 
 /** 화면의 ‘이 시제품이 가정한 값’에 보여 줄 데이터 메모 (data/scenarios.json). */
-export function assumptionNotes(id: ScenarioId): string[] {
+export function assumptionNotes(id: AnyScenarioId): string[] {
   const s = resolveScenarioRecord(id);
   const notes = [...((s.contract_terms as ContractTermsRaw | undefined)?.notes_ko ?? [])];
   const rules = s.engine_rules as EngineRulesRaw | undefined;
@@ -458,4 +474,65 @@ export function expectedM2(id: (typeof M2_SCENARIO_IDS)[number]): {
   const rejections: Record<string, Record<string, unknown>> = {};
   for (const r of (s.expected_rejections as Record<string, unknown>[] | undefined) ?? []) rejections[String(r.id)] = r;
   return { paths: (s.expected_paths_usd as ExpectedPath[] | undefined) ?? [], rejections };
+}
+
+/** 자료의 표시 단위를 한 번만 정수 최소 단위로 바꾼다. ID로 찾는 자료는 모두 배열이다. */
+function toOperations(s: AnyRecord, cfg: AnyRecord): OperationsConfig | null {
+  const o = s.operations as NonNullable<(typeof scenarios.items)[number]['operations']> | undefined;
+  if (!o) return null;
+  const [file, ruleId] = o.market_rules_ref.split('#');
+  const m = marketRules.rule_sets.find((r) => r.id === ruleId);
+  if (file !== 'market_rules.json' || !m) throw new Error('시장 규칙 묶음을 찾을 수 없습니다.');
+  if (o.fx_exchange.base_rate_ref !== 'game_config.json#/config/fx_krw_per_usd') throw new Error('환율 참조가 기본 설정과 다릅니다.');
+  const counterparties = marketRules.counterparties.map((p) => ({ id: p.id, nameKo: p.name_ko }));
+  const party = (id: string) => { if (!counterparties.some((p) => p.id === id)) throw new Error(`거래처 이름 없음 ${id}`); };
+  for (const id of s.offer_ids as string[]) party(toOffer(id).counterpartyId);
+  for (const t of m.forwarding.templates) {
+    toGood(t.good_id); toCity(t.destination_city_id); party(t.counterparty_id);
+  }
+  for (const g of m.trade.goods) {
+    toGood(g.good_id); party(g.buy_counterparty_id);
+    for (const c of g.sell_counterparties) { toCity(c.city_id); party(c.counterparty_id); }
+  }
+  if (m.forwarding.draws.map((d) => d.service_class).join(',') !== 'STANDARD,HANDLING'
+    || m.forwarding.draws.some((d) => d.count > m.forwarding.templates.filter((t) => t.service_class === d.service_class).length)) {
+    throw new Error('주선 등급 뽑기 순서 또는 수가 올바르지 않습니다.');
+  }
+  const minor = (v: { currency: string; amount: number }) => toMinor(v.currency as Currency, v.amount);
+  const base = num(cfg, 'fx_krw_per_usd');
+  const spread = applyBasisPoints(base, o.fx_exchange.spread_basis_points);
+  return {
+    market: {
+      publish: { firstDay: m.publish.first_day, intervalDays: m.publish.interval_days, lastDay: m.publish.last_day, validDays: m.publish.valid_days },
+      rng: { streamPrefix: m.rng.stream_prefix, streamDigits: m.rng.stream_digits },
+      index: { goods: [...m.index.goods], startBp: m.index.start_bp, minBp: m.index.min_bp, maxBp: m.index.max_bp, stepPct: [...m.index.step_pct] },
+      regionalPct: [...m.regional_pct], counterpartyPct: [...m.counterparty_pct],
+      rows: m.rows.map((r) => ({ cityId: r.city_id, goodId: r.good_id, side: r.side as 'BUY' | 'SELL', basePriceMinor: minor(r.base_price) })),
+      trade: { buyCityId: m.trade.buy_city_id, sellCityIds: [...m.trade.sell_city_ids],
+        goods: m.trade.goods.map((g) => ({ goodId: g.good_id, idTag: g.id_tag, baseLot: g.base_lot, buyCounterpartyId: g.buy_counterparty_id,
+          sellCounterparties: g.sell_counterparties.map((p) => ({ cityId: p.city_id, counterpartyId: p.counterparty_id })) })),
+        maxLotsChoices: [...m.trade.max_lots_choices], sellDeadlineOffsetDays: m.trade.sell_deadline_offset_days,
+        paymentOffsetDays: m.trade.payment_offset_days.map((p) => ({ cityId: p.city_id, days: p.days })) },
+      forwarding: { draws: m.forwarding.draws.map((d) => ({ serviceClass: d.service_class as 'STANDARD' | 'HANDLING', count: d.count })),
+        templates: m.forwarding.templates.map((t) => ({ id: t.id, serviceClass: t.service_class as 'STANDARD' | 'HANDLING',
+          titleKo: t.title_ko, goodId: t.good_id, quantity: t.quantity, destinationCityId: t.destination_city_id,
+          serviceFeeMinor: minor(t.service_fee), currency: t.service_fee.currency as Currency,
+          deadlineOffsetDays: t.deadline_offset_days, paymentOffsetDays: t.payment_offset_days,
+          counterpartyId: t.counterparty_id, prepWorkUnits: t.prep_work_units })) }, counterparties,
+    },
+    prep: { tradeExtraPerLot: o.prep.trade_extra_per_lot, standardLitersPerWorkUnit: Math.round(o.prep.standard_m3_per_work_unit * 1000), minWorkUnits: o.prep.min_work_units },
+    facility: { cityId: o.facility.city_id, storageLiters: Math.round(o.facility.storage_m3 * 1000), handlingWorkUnitsPerDay: o.facility.handling_work_units_per_day,
+      appliesToTaskKinds: o.facility.applies_to_task_kinds as Task['kind'][],
+      expansion: { maxCount: o.facility.expansion.max_count, storageLiters: Math.round(o.facility.expansion.storage_m3 * 1000),
+        handlingWorkUnitsPerDay: o.facility.expansion.handling_work_units_per_day,
+        setupFeeMinor: minor(o.facility.expansion.setup_fee), rentIncreaseMinor: minor(o.facility.expansion.rent_increase), effectiveAfterDays: o.facility.expansion.effective_after_days } },
+    fixedCosts: { rent: { currency: o.fixed_costs.rent.currency as Currency, amountMinor: minor(o.fixed_costs.rent),
+      periodDays: o.fixed_costs.rent.period_days, firstDueDay: o.fixed_costs.rent.first_due_day } },
+    fx: { baseKrwPerUsd: base, spreadBasisPoints: o.fx_exchange.spread_basis_points,
+      buyKrwPerUsd: base - spread, sellKrwPerUsd: base + spread, lotUsdMinor: minor(o.fx_exchange.lot) },
+    spaceContract: { routeIds: [...o.space_contract.route_ids], extraLiters: Math.round(o.space_contract.extra_m3 * 1000),
+      extraGrams: Math.round(o.space_contract.extra_kg * 1000), feeMinor: minor(o.space_contract.fee_per_sailing), currency: o.space_contract.fee_per_sailing.currency as Currency,
+      leadDays: o.space_contract.lead_days, reserveDaysAhead: o.space_contract.reserve_days_ahead, maxPerRoute: o.space_contract.max_per_route },
+    paymentDefault: { warningFromAgeDays: o.payment_default.warning_from_age_days, dangerFromAgeDays: o.payment_default.danger_from_age_days, failureAgeDays: o.payment_default.failure_age_days },
+  };
 }
