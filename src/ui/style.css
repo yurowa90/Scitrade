@@ -544,3 +544,19 @@ main.layout { padding-bottom: 5.5rem; }
 .due-table thead th:not(:first-child) { text-align:right; }
 /* 결산 표 두 개는 위에서부터 같은 순서로 읽히게 높이를 맞추지 않는다. */
 .settlement .books { align-items:start; }
+
+/* 배치 공통(TASK-0024): 카드로 고른 동료의 성장·훈련 상세는 그 카드 바로 아래 한 줄 전체를 쓴다. */
+.crew-cards > .card-detail { grid-column: 1 / -1; min-width: 0; }
+.card-detail .growth-detail { margin-top: 0; }
+
+/* 훈련 단추를 감싼 칸 안의 예정 표시도 단추와 같은 높이를 지킨다. */
+.training > [data-action-slot] > .pill { display: inline-flex; align-items: center; min-height: 34px; }
+@media (any-pointer: coarse) { .training > [data-action-slot] > .pill { min-height: 44px; } }
+
+/* 배치안 A: 고정 막대의 ‘오늘 할 일 N건’. 하루 진행 바로 왼쪽. */
+.queue-chip { margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; padding: .3rem .7rem; font-size: .85rem; white-space: nowrap; border-color: var(--sky-deep); color: var(--sky-deep); background: #f6fbff; }
+.queue-chip b { font-size: 1rem; color: var(--navy); }
+.queue-chip + .day-action { margin-left: 0; }
+
+/* 머리 줄: 빌드 표시를 둘째 줄에 둬 표시 글 길이와 무관하게 1001~1100px에서도 저장·불러오기 묶음이 첫 줄에 남는다. */
+.brand .sub { max-width: 9.5rem; }

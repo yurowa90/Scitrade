@@ -1,0 +1,579 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "card-detail",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/accept28/t24h/base/dist",
+  "dist_index_sha256": "52946f4699435eae4dff9026460cadc0353b5f37b2fb6462aefcf39094a83b7b",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.4,
+        "card_after": -317.8,
+        "detail_btn_from_bar": 547.7,
+        "train_head_from_bar": 834.5,
+        "train_btn_from_bar": 1185,
+        "train_btn_h": 37.3,
+        "pill_from_bar": 291.5,
+        "pill_h": 34,
+        "toast_from_bar": 537.6,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.1,
+        "card_after": -339,
+        "detail_btn_from_bar": 534.5,
+        "train_head_from_bar": 828,
+        "train_btn_from_bar": 1178.5,
+        "train_btn_h": 44,
+        "pill_from_bar": 284,
+        "pill_h": 44,
+        "toast_from_bar": 530.9,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": -180.9,
+        "detail_btn_from_bar": 696.4,
+        "train_head_from_bar": 989.9,
+        "train_btn_from_bar": 1340.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 365.8,
+        "pill_h": 44,
+        "toast_from_bar": 693.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": -232.9,
+        "detail_btn_from_bar": 644.4,
+        "train_head_from_bar": 937.9,
+        "train_btn_from_bar": 1288.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 339.8,
+        "pill_h": 44,
+        "toast_from_bar": 641.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": -256.9,
+        "detail_btn_from_bar": 620.4,
+        "train_head_from_bar": 913.9,
+        "train_btn_from_bar": 1264.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 327.8,
+        "pill_h": 44,
+        "toast_from_bar": 617.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.4,
+        "card_after": -5.8,
+        "detail_btn_from_bar": 859.7,
+        "train_head_from_bar": 1146.5,
+        "train_btn_from_bar": 1497,
+        "train_btn_h": 37.3,
+        "pill_from_bar": 447.5,
+        "pill_h": 34,
+        "toast_from_bar": 849.6,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.1,
+        "card_after": 14.9,
+        "detail_btn_from_bar": 576.3,
+        "train_head_from_bar": 869.7,
+        "train_btn_from_bar": 1102.1,
+        "train_btn_h": 44,
+        "pill_from_bar": 396,
+        "pill_h": 44,
+        "toast_from_bar": 573.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "card_after",
+      "profile": "l1366",
+      "actual": -317.8,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "cb1366t",
+      "actual": -339,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadAirL",
+      "actual": -180.9,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadminiL",
+      "actual": -232.9,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadmini6L",
+      "actual": -256.9,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "l1920",
+      "actual": -5.8,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "card_after",
+      "profile": "t1000",
+      "actual": 14.9,
+      "min": 38,
+      "max": 42,
+      "ok": false
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "l1366",
+      "actual": 547.7,
+      "min": 0,
+      "max": 548.4,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "cb1366t",
+      "actual": 534.5,
+      "min": 0,
+      "max": 535,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadAirL",
+      "actual": 696.4,
+      "min": 0,
+      "max": 697.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadminiL",
+      "actual": 644.4,
+      "min": 0,
+      "max": 645.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 620.4,
+      "min": 0,
+      "max": 621.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "l1920",
+      "actual": 859.7,
+      "min": 0,
+      "max": 860.4,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "t1000",
+      "actual": 576.3,
+      "min": 0,
+      "max": 577.5,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "l1366",
+      "actual": 834.5,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "cb1366t",
+      "actual": 828,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadAirL",
+      "actual": 989.9,
+      "min": 7,
+      "max": 900,
+      "ok": false
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadminiL",
+      "actual": 937.9,
+      "min": 7,
+      "max": 900,
+      "ok": false
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 913.9,
+      "min": 7,
+      "max": 900,
+      "ok": false
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "l1920",
+      "actual": 1146.5,
+      "min": 7,
+      "max": 900,
+      "ok": false
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "t1000",
+      "actual": 869.7,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "l1366",
+      "actual": 1185,
+      "min": 0,
+      "max": 468.4,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "cb1366t",
+      "actual": 1178.5,
+      "min": 0,
+      "max": 455,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadAirL",
+      "actual": 1340.3,
+      "min": 0,
+      "max": 617.5,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadminiL",
+      "actual": 1288.3,
+      "min": 0,
+      "max": 565.5,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 1264.3,
+      "min": 0,
+      "max": 541.5,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "l1920",
+      "actual": 1497,
+      "min": 0,
+      "max": 780.4,
+      "ok": false
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "t1000",
+      "actual": 1102.1,
+      "min": 0,
+      "max": 497.5,
+      "ok": false
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "l1366",
+      "actual": 291.5,
+      "min": 0,
+      "max": 503.6,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "cb1366t",
+      "actual": 284,
+      "min": 0,
+      "max": 486.9,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadAirL",
+      "actual": 365.8,
+      "min": 0,
+      "max": 649.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadminiL",
+      "actual": 339.8,
+      "min": 0,
+      "max": 597.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 327.8,
+      "min": 0,
+      "max": 573.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "l1920",
+      "actual": 447.5,
+      "min": 0,
+      "max": 815.6,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "t1000",
+      "actual": 396,
+      "min": 0,
+      "max": 529.4,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": false
+}

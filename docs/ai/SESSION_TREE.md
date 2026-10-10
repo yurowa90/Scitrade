@@ -57,7 +57,7 @@
 - **실행 요청에 적는 것:** `고치는 파일:` 목록을 붙인다.
 - **한 번에 한 작업만 여는 파일:** `src/ui/main.ts`·`main.test.ts`·`main-testkit.ts`·`style.css`·`growth.ts`, `tools/browser/lib.mjs`·`lib.test.mjs`, `data/sources.json`, `tests/acceptance_cases.json`, `tools/validate_data.py`.
   - 열린 작업(실행 중·검수 중)과 이 파일이 겹치면 허브는 실행을 미룬다. 앞 작업의 `[병합 끝]`이 오면 그때 실행한다.
-- **순서:** TASK-0025 병합 → B의 TASK-0024 → A의 M2a-5 화면.
+- **순서:** TASK-0025 병합 → B의 TASK-0024 → A의 M2a-5 화면. TASK-0025·0024는 병합됐다(2026-10-10).
 - **줄 번호:** 겹치는 파일이 있는 지시서는 앞 작업이 병합된 개발 브랜치를 합친 상태의 줄 번호로 쓴다.
 
 **허브만 쓰는 파일:**
