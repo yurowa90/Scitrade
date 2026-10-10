@@ -242,8 +242,8 @@
     },
     {
       "path": "docs/ai/design/M2A5-SPEC.md",
-      "size_bytes": 103804,
-      "sha256": "6e0e4dbf47dee57dd72219024cef11c154fdbd088000e0d7add8a1d02801cb68"
+      "size_bytes": 105075,
+      "sha256": "49eee6a74b1ac97e14bef055b2179ae564a08d03895ed2b89e4e131d61a63a69"
     },
     {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
@@ -577,8 +577,8 @@
     },
     {
       "path": "docs/ai/design/m2a5-review/REVIEW3.md",
-      "size_bytes": 12837,
-      "sha256": "a45729ca01ce6220c5fdf53c78934b12edcb453097392ccc936dd90c602643b1"
+      "size_bytes": 13096,
+      "sha256": "ce87ffa14915785fb6a7c414e095353dd7b871835e76977decb6f334e0dad326"
     },
     {
       "path": "docs/ai/design/m2a5-review/SPEC.v1.md",
@@ -872,8 +872,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0027-m2a5-engine.md",
-      "size_bytes": 56510,
-      "sha256": "4cb8f96441f938cc39067c8355212beff4cbdc6a055f1ea93ba79735f0e33669"
+      "size_bytes": 53624,
+      "sha256": "55a2d1015f78444a9041b8b67d0131c3ffd7777f33b561cffb0ac856692f4d2f"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0028-m2a5-sim-readers.md",
+      "size_bytes": 8256,
+      "sha256": "a66e24e9e6201cdff7e7ada3fa2e0cc2861aa82cdc0d0783b0b62e6d2c1dfffd"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",

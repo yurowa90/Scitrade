@@ -30,6 +30,7 @@
 | F2·F3·F5 | 고용일 ±1일 안정성, 실제 영입 명령, 사업별 기여이익 비중을 재측정 기준에 넣었다 | 17.3 |
 | F4 3pt 직원 손해 설명 | 창고 대기 pt·업무 수를 읽기 함수와 화면 요구에 넣었다 | 8.4, 14.5, 16 |
 | F6 B의 대금 띠가 아래로 좁음 | 재측정에서 어긋나면 올리는 쪽만 쓴다 | 17.3 |
+| 세션 A 검토(REVIEW3, 2026-10-10) | 실패 기록에 USD 약정 칸(a3), 늦은 인도 감액 두 방식 지원(Q10 대비), 모형 경로를 저장소 경로로. 화면 재료 읽기 함수·비교 실행기는 TASK-0028로 나눔 | 11.2, 4, 부록 A |
 | 후보 선택 | CRITIC2가 고른 후보 B를 사전 조정 출발값으로 둔다. 개정 규칙으로 모형을 다시 돌려 네 판정을 넘었다(17.2) | 6.6, 17 |
 
 ## 1. 결정과 범위
@@ -133,7 +134,7 @@
 | P43 | 경고 시작 | 발생 나이 0일 | `operations.payment_default.warning_from_age_days` | 결정(D04) |
 | P44 | 위험 시작 | 발생 나이 7일 | `danger_from_age_days` | 결정(D04) |
 | P45 | 경영 실패 | 발생 나이 14일인 날 마감에 남아 있으면 | `failure_age_days`, `parameters.json` `PAR_PAYMENT_GRACE_DAYS` = 14 | 결정(D04) |
-| P46 | 늦은 인도 감액(규칙 2 시나리오) | 200 USD 정액 1회 | 새 시나리오 `contract_terms.late_delivery.price_reduction` | 조정(Q10) |
+| P46 | 늦은 인도 감액(규칙 2 시나리오) | Q10 결정값. 명세안 200 USD 정액 1회, 세션 A 권고 하루 50 USD·계약 금액 상한(엔진은 두 방식 모두 지원) | 새 시나리오 `contract_terms.late_delivery.price_reduction` | 조정(Q10) |
 
 그대로 쓰는 기존 값: 일급 80,000·90,000·110,000원(`employees.json`, 바꾸지 않음), 계약금 일급 5일분, 시작 자금 3,000 USD·10,000,000원, 관세 5%, 출항 불참·취소비 50 USD, 노선 ROUTE01(5일·200 USD)·ROUTE02(4일·180 USD)·편당 30 m³·5,000 kg·2일 첫 출항·7일 간격.
 
@@ -415,7 +416,8 @@
 2. `outcome = 'FAILED'`, `failure` 기록(아래).
 3. 7단계(만료·다음 견적)를 건너뛴다. 8단계 불변 조건 검사·마감은 한다. `closedDays`에 실패일, `day = 실패일 + 1`(정상 마감과 같음, `engine.ts:835`), `phase = 'ENDED'`.
 4. 기록 문장: ‘경영 실패: {발생일}일에 생긴 {이유} {금액}을 14일 동안 갚지 못했습니다’.
-- `FailureRecord` = `{ day; obligationId; currency; amountMinor; reasonKo; incurredDay; unpaidByCurrency: { currency; amountMinor; count }[]; cashByCurrency: { currency; amountMinor }[]; warningEvent: DefaultEvent | null; dangerEvent: DefaultEvent | null; optionalKrwSpendBeforeFirstUnpaid: { entryId; day; amountMinor; reasonKo }[] }`.
+- `FailureRecord` = `{ day; obligationId; currency; amountMinor; reasonKo; incurredDay; unpaidByCurrency: { currency; amountMinor; count }[]; cashByCurrency: { currency; amountMinor }[]; warningEvent: DefaultEvent | null; dangerEvent: DefaultEvent | null; optionalKrwSpendBeforeFirstUnpaid: { entryId; day; amountMinor; reasonKo }[]; usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id; day; amountMinor }[] }`.
+  - `usdCommitmentsSinceIncurred`(세션 A 검토 REVIEW3 a3): 원인 의무 발생일부터 실패일까지 새로 묶은 USD 약정. 미지급이 있는 동안 원화 선택 지출은 이미 막히므로, 이 기간에 ‘보류할 수 있었던 지출’은 USD를 묶어 환전할 몫을 줄인 수락·선복 서명뿐이다. 계약 금액은 수락 때 자금 검사의 필요 금액, 선복은 적용 편 수 × 요금. D04 실패 화면의 ‘지출 보류’ 회복 행동 근거다.
   - `warningEvent`·`dangerEvent`: 원인 의무가 경고·위험에 들어간 날의 `defaultEvents` 기록(11.3).
   - `optionalKrwSpendBeforeFirstUnpaid`: 원인 의무 발생일 전 14일(발생일 −14 ~ −1) 동안 원화 선택 지출 분개. ID 접두어 `SIGNING-`·`TRAINING-FEE-`·`CULTURE-FEE-`·`FACILITY-SETUP-`. 없으면 빈 배열(CRITIC1 C2).
 - 실패 뒤 `commitDay`는 지금처럼 오류다(`engine.ts:805-807`). 규칙 2의 `applyCommand`는 `phase === 'ENDED'`면 모든 명령을 ‘캠페인이 끝났습니다(경영 실패).’로 거절한다. 정상 종료면 ‘캠페인이 끝났습니다.’다(반례: 정상 종료에 ‘경영 실패’를 쓰지 않는다).
@@ -595,7 +597,7 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 4. **환전 칸:** 방향, 금액(100 USD 단계), ‘게임용 고정 환율 1,287원(받을 때)·1,313원(살 때)’, 받는/내는 금액, 차감, 쓸 수 있는 USD = 현금 − 예약(계약·선복 요금) − 미지급, 급여 가능일 전/후, ‘자동 환전은 없습니다’, `warningKo`.
 5. **위쪽 막대:** 원화 급여 가능일(임차료 포함), 지급 불이행 단계와 실패까지 남은 날.
 6. **경고·위험 알림:** 원인(통화·이유·금액·발생일), 나이, 실패 마감일, 회복 행동(‘오늘 실패를 피하려면 USD {lotsToSurvive×100}’, ‘밀린 원화를 모두 갚으려면 USD {lotsToClearAll×100}’, 다음 수금일·금액, 보류할 지출). 현실 문구 ‘실제로는 임금을 정한 날 지급해야 하며 하루 늦어도 체불입니다’(조문 번호는 원문 대조 뒤, PACKET D04).
-7. **경영 실패 화면(D04 조건):** 원인 문장, 통화별 미지급·현금(합계 없음), 경고·위험 당시 필요 환전량과 그때 쓸 수 있던 USD, 실패 전 14일 원화 선택 지출, ‘같은 시드로 다시 하기’·‘결산 보기’.
+7. **경영 실패 화면(D04 조건):** 원인 문장, 통화별 미지급·현금(합계 없음), 경고·위험 당시 필요 환전량과 그때 쓸 수 있던 USD, 실패 전 14일 원화 선택 지출, 미지급 뒤 새로 묶은 USD 약정(`usdCommitmentsSinceIncurred`), ‘같은 시드로 다시 하기’·‘결산 보기’.
 8. **고용 면담 칸:** `hiringOutlook` 값. ‘이 직원 하루 일급 90,000원 — 일주일이면 USD 약 {n×100} 환전’, ‘최근 4묶음 작업 견적 {pt} / 처리 {pt} / 직원 부족으로 못 받은 {pt}’, ‘준비 1pt당 기여이익 {x} USD’, ‘고용 뒤 본사 처리 {직원}pt, 창고 한도 {창고}pt → 실제 {usable}pt’.
 9. **일정:** 임차료·선복 요금·밀린 지급 행. 지금 화면은 `FREIGHT` 아닌 행을 관세로 적는다(`src/ui/main.ts:693-694`, `src/ui/schedule.ts:85`). 새 종류를 넣을 때 고친다.
 10. **결산:** `outcome`, 실패 사유, 통화별 고정비·환전 기록, ‘통화 간 이체(환전)’ 행, 끝 미지급. 원화 보고 주석 ‘가상 환율 1,300원/달러는 보고에 쓰지 않습니다’(`src/ui/reports.ts:22-23`)를 ‘환전 명령으로 실제 바꾼 금액만 기록합니다. 통화는 합치지 않습니다.’로 바꾼다.
@@ -605,8 +607,8 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 
 ### 17.1 모형
 
-- 위치: `m2a5/model/`(부록 A). 엔진이 아니다. 이 명세 규칙의 Python 이식이다. 재현은 CRITIC2가 바이트 단위로 확인했다(자료 15개 값, 엔진 규칙 6개 일치).
-- 개정 규칙 확인: `m2a5/spec_check/exp_spec.py`가 모형을 고치지 않고 하위 클래스로 (1) 지급 건너뛰기 규칙 (2) 캠페인 안에 도착하는 편만 요금 (3) 선복 요금 이동 창 예약 (4) 감액 정액 200 USD를 넣는다.
+- 위치: `docs/ai/design/m2a5-model/`(부록 A). 엔진이 아니다. 이 명세 규칙의 Python 이식이다. 재현은 CRITIC2가 바이트 단위로 확인했다(자료 15개 값, 엔진 규칙 6개 일치).
+- 개정 규칙 확인: `docs/ai/design/m2a5-review/spec_check/exp_spec.py`가 모형을 고치지 않고 하위 클래스로 (1) 지급 건너뛰기 규칙 (2) 캠페인 안에 도착하는 편만 요금 (3) 선복 요금 이동 창 예약 (4) 감액 정액 200 USD를 넣는다.
 - 단순화(모형 README 9절): 정책은 탐욕, 영입은 물보리가 H−3~H−1에 맡음, 현지 활동·훈련·사건 없음.
 
 ### 17.2 결과(시드 1001~1020, 간이 모형 추정 — 엔진으로 다시 잰다)
@@ -645,7 +647,7 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 | 3pt 31일 | −3,680 (0) ↓ | −2,727 (2) ↓ | −1,549 (3) ↓ | +262 (13) | +473 (12) |
 | 3pt 50일 | −2,506 (1) ↓ | −2,368 (0) ↓ | −1,654 (1) ↓ | +135 (11) | −350 (8) |
 
-출처: `m2a5/spec_check/out_B_window7.md`(`python3 exp_spec.py table CAND_B flat:20000 window7`).
+출처: `docs/ai/design/m2a5-review/spec_check/out_B_window7.md`(`python3 exp_spec.py table CAND_B flat:20000 window7`).
 
 **정책 185개 판정(`exp_spec.py judge`, 판정 정의는 모형 README 7절):**
 
@@ -770,7 +772,7 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 - 기대 A: 56일 마감 KRW 140,000. 57일 귀솔 지급 → 60,000, 물보리 `WAGE-D057-EMP02` 미지급. 57일 마감 경고(나이 0), 63일 경고(6), 64일 위험(7), 71일 `failsAtCloseToday`.
   - 64일 회복: `lotsToClearAll` = ceil((1,490,000 + 160,000 − 60,000) ÷ 128,700) = 13, `usdAvailableLots` 30.
   - 71일 회복: `dueToSurvive` 80,000 → `lotsToSurvive` = ceil(20,000 ÷ 128,700) = 1. `lotsToClearAll` = ceil((2,610,000 + 160,000 − 60,000) ÷ 128,700) = 22.
-  - 71일 마감: 미지급 2,770,000원(30건). `outcome` FAILED, `failure = { day 71, obligationId WAGE-D057-EMP02, currency KRW, amountMinor 80,000, incurredDay 57, … }`, `cashByCurrency` USD 300,000·KRW 60,000. `warningEvent.day` 57, `dangerEvent.day` 64. `optionalKrwSpendBeforeFirstUnpaid` [](선택 지출 없음). 공개 묶음 11개(1·8·…·71일). `phase` ENDED, `day` 72. 이후 명령은 ‘캠페인이 끝났습니다(경영 실패).’
+  - 71일 마감: 미지급 2,770,000원(30건). `outcome` FAILED, `failure = { day 71, obligationId WAGE-D057-EMP02, currency KRW, amountMinor 80,000, incurredDay 57, … }`, `cashByCurrency` USD 300,000·KRW 60,000. `warningEvent.day` 57, `dangerEvent.day` 64. `optionalKrwSpendBeforeFirstUnpaid` [](선택 지출 없음), `usdCommitmentsSinceIncurred` []. 공개 묶음 11개(1·8·…·71일). `phase` ENDED, `day` 72. 이후 명령은 ‘캠페인이 끝났습니다(경영 실패).’
 - 행동 B: 70일 `EXCHANGE_CURRENCY(USD_TO_KRW, 200,000)` → 60,000 + 2,574,000 = 2,634,000 → 밀린 지급 2,450,000 → 184,000 → 급여 → 24,000원, 미지급 0. 71일 다시 미지급(`WAGE-D071-EMP01` 기준, 85일 실패).
 - 행동 C: 70일 `EXCHANGE_CURRENCY(USD_TO_KRW, 10,000)` → 188,700 → `WAGE-D057-EMP02` → 108,700 → `WAGE-D058-EMP01` → 28,700 → 나머지는 건너뜀. 70일 마감 기준 의무 58일(나이 12). 72일 마감 실패.
 - 반례: 행동 B의 70일 마감에는 새 경고 기록이 없다(미지급 0). 정상 종료 판(P0-M2A5-14 변형)에는 ‘경영 실패’ 문장이 없다.
@@ -844,16 +846,16 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 
 | 위치 | 내용 |
 |---|---|
-| `m2a5/model/m2a5_model.py`·`README.md` | 사전 조정 모형(후보 A·B·C, 정책 185개, 판정 1~4). 재현 명령은 README 2절 |
-| `m2a5/critic2/ana/exp.py` | CRITIC2 변형(감액·영입 절차·고용일) |
-| `m2a5/spec_check/exp_spec.py` | 이 명세 규칙(건너뛰기 지급, 도착 편만 요금, 8일 창 예약, 감액 200) |
-| `m2a5/spec_check/out_B_*.md`, `judge_runs.txt` | 17.2 표 원자료 |
-| `m2a5/spec_check/krw_idle.py` | 18절 06·07·08·09·10 원화 사례(지금 지급 규칙) |
-| `m2a5/spec_check/b_batches.py` | 후보 B의 8·15·78일 묶음(01·03·04 사례) |
+| `docs/ai/design/m2a5-model/m2a5_model.py`·`README.md` | 사전 조정 모형(후보 A·B·C, 정책 185개, 판정 1~4). 재현 명령은 README 2절 |
+| `docs/ai/design/m2a5-review/critic2/ana/exp.py` | CRITIC2 변형(감액·영입 절차·고용일) |
+| `docs/ai/design/m2a5-review/spec_check/exp_spec.py` | 이 명세 규칙(건너뛰기 지급, 도착 편만 요금, 8일 창 예약, 감액 200) |
+| `docs/ai/design/m2a5-review/spec_check/out_B_*.md`, `judge_runs.txt` | 17.2 표 원자료 |
+| `docs/ai/design/m2a5-review/spec_check/krw_idle.py` | 18절 06·07·08·09·10 원화 사례(지금 지급 규칙) |
+| `docs/ai/design/m2a5-review/spec_check/b_batches.py` | 후보 B의 8·15·78일 묶음(01·03·04 사례) |
 
 재현(표준 라이브러리만, 같은 입력이면 같은 출력):
 ```
-cd m2a5/spec_check
+cd docs/ai/design/m2a5-review/spec_check
 PYTHONDONTWRITEBYTECODE=1 python3 b_batches.py
 PYTHONDONTWRITEBYTECODE=1 python3 krw_idle.py
 PYTHONDONTWRITEBYTECODE=1 python3 exp_spec.py table CAND_B flat:20000 window7
