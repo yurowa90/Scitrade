@@ -4273,12 +4273,1664 @@
           "usdAmountMinor": 300000
         }
       }
+    },
+    {
+      "id": "P0-M2A5-18",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "본사·창고 표와 병목 표",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_OPERATIONS",
+      "actions": [
+        {
+          "step": 1,
+          "action": "1일 선복 두 노선과 창고 확장을 계약하고 2일 마감 뒤 3일에 확인한다.",
+          "day": 1,
+          "variant": "invested",
+          "commands": [
+            {
+              "id": "SPACE-1",
+              "type": "SIGN_SPACE_CONTRACT",
+              "routeId": "ROUTE01"
+            },
+            {
+              "id": "SPACE-2",
+              "type": "SIGN_SPACE_CONTRACT",
+              "routeId": "ROUTE02"
+            },
+            {
+              "id": "EXPAND",
+              "type": "EXPAND_WAREHOUSE"
+            }
+          ]
+        }
+      ],
+      "expected_numeric": {
+        "initial": {
+          "storage": {
+            "usedLiters": 0,
+            "capacityLiters": 40000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 6,
+            "plannedUsePtToday": 0,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 0,
+          "demand": {
+            "batchPublishDay": 1,
+            "openVolumeLiters": 33300,
+            "openPrepPt": 10,
+            "recent": []
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 4
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D002",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            },
+            {
+              "sailingId": "ROUTE02-D002",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            }
+          ],
+          "rent": {
+            "amountMinor": 450000,
+            "nextDueDay": 1
+          },
+          "expansion": {
+            "status": "NONE",
+            "effectiveDay": null
+          },
+          "spaceContracts": [],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": null,
+            "otherPtPerWeek": 0,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": null,
+                "after": null
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "STAFF",
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 10,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        },
+        "invested": {
+          "storage": {
+            "usedLiters": 0,
+            "capacityLiters": 60000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 9,
+            "plannedUsePtToday": 0,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 0,
+          "demand": {
+            "batchPublishDay": 1,
+            "openVolumeLiters": 33300,
+            "openPrepPt": 10,
+            "recent": []
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 4
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D009",
+              "usedLiters": 0,
+              "capacityLiters": 40000,
+              "usedGrams": 0,
+              "capacityGrams": 6500000,
+              "spaceContract": true
+            },
+            {
+              "sailingId": "ROUTE02-D009",
+              "usedLiters": 0,
+              "capacityLiters": 40000,
+              "usedGrams": 0,
+              "capacityGrams": 6500000,
+              "spaceContract": true
+            }
+          ],
+          "rent": {
+            "amountMinor": 700000,
+            "nextDueDay": 31
+          },
+          "expansion": {
+            "status": "ACTIVE",
+            "effectiveDay": 2
+          },
+          "spaceContracts": [
+            {
+              "id": "SPC-ROUTE01",
+              "routeId": "ROUTE01",
+              "signedDay": 1,
+              "firstSailingDay": 9,
+              "lastSailingDay": 79,
+              "sailingCount": 11,
+              "feeMinor": 3000,
+              "currency": "USD"
+            },
+            {
+              "id": "SPC-ROUTE02",
+              "routeId": "ROUTE02",
+              "signedDay": 1,
+              "firstSailingDay": 9,
+              "lastSailingDay": 86,
+              "sailingCount": 12,
+              "feeMinor": 3000,
+              "currency": "USD"
+            }
+          ],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": null,
+            "otherPtPerWeek": 0,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": null,
+                "after": null
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 5,
+                "after": 5
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 5,
+                "after": 5
+              },
+              {
+                "constraint": "SAILING",
+                "before": 4,
+                "after": 4
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF"
+              ],
+              "after": [
+                "STAFF"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 10,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        },
+        "hiring": [
+          {
+            "invested": false,
+            "candidate_id": "EMP05",
+            "outlook": {
+              "workUnitsPerDay": 2,
+              "wageKrwPerDay": 90000,
+              "wageUsdLotsPerWeek": 5,
+              "bottleneck": {
+                "unit": "HANDLING_JOBS_PER_WEEK",
+                "demand": null,
+                "otherPtPerWeek": 0,
+                "rows": [
+                  {
+                    "constraint": "DEMAND",
+                    "before": null,
+                    "after": null
+                  },
+                  {
+                    "constraint": "STAFF",
+                    "before": 2,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "WAREHOUSE_HANDLING",
+                    "before": 3,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "STORAGE",
+                    "before": 3,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "SAILING",
+                    "before": 2,
+                    "after": 2
+                  }
+                ],
+                "binding": {
+                  "before": [
+                    "STAFF",
+                    "SAILING"
+                  ],
+                  "after": [
+                    "SAILING"
+                  ]
+                },
+                "usableBefore": 2,
+                "usableAfter": 2,
+                "extraJobsPerWeek": 0,
+                "remainingHandlingBatches": 10,
+                "contributionPerJobMinor": 84000,
+                "wageKrwPerWeek": 630000,
+                "wageUsdLotsPerWeek": 5
+              },
+              "recentHandlingOfferedPt": 0,
+              "recentHandlingAcceptedPt": 0
+            }
+          },
+          {
+            "invested": false,
+            "candidate_id": "EMP03",
+            "outlook": {
+              "workUnitsPerDay": 3,
+              "wageKrwPerDay": 110000,
+              "wageUsdLotsPerWeek": 6,
+              "bottleneck": {
+                "unit": "HANDLING_JOBS_PER_WEEK",
+                "demand": null,
+                "otherPtPerWeek": 0,
+                "rows": [
+                  {
+                    "constraint": "DEMAND",
+                    "before": null,
+                    "after": null
+                  },
+                  {
+                    "constraint": "STAFF",
+                    "before": 2,
+                    "after": 4
+                  },
+                  {
+                    "constraint": "WAREHOUSE_HANDLING",
+                    "before": 3,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "STORAGE",
+                    "before": 3,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "SAILING",
+                    "before": 2,
+                    "after": 2
+                  }
+                ],
+                "binding": {
+                  "before": [
+                    "STAFF",
+                    "SAILING"
+                  ],
+                  "after": [
+                    "SAILING"
+                  ]
+                },
+                "usableBefore": 2,
+                "usableAfter": 2,
+                "extraJobsPerWeek": 0,
+                "remainingHandlingBatches": 10,
+                "contributionPerJobMinor": 84000,
+                "wageKrwPerWeek": 770000,
+                "wageUsdLotsPerWeek": 6
+              },
+              "recentHandlingOfferedPt": 0,
+              "recentHandlingAcceptedPt": 0
+            }
+          },
+          {
+            "invested": true,
+            "candidate_id": "EMP05",
+            "outlook": {
+              "workUnitsPerDay": 2,
+              "wageKrwPerDay": 90000,
+              "wageUsdLotsPerWeek": 5,
+              "bottleneck": {
+                "unit": "HANDLING_JOBS_PER_WEEK",
+                "demand": null,
+                "otherPtPerWeek": 0,
+                "rows": [
+                  {
+                    "constraint": "DEMAND",
+                    "before": null,
+                    "after": null
+                  },
+                  {
+                    "constraint": "STAFF",
+                    "before": 2,
+                    "after": 3
+                  },
+                  {
+                    "constraint": "WAREHOUSE_HANDLING",
+                    "before": 5,
+                    "after": 5
+                  },
+                  {
+                    "constraint": "STORAGE",
+                    "before": 5,
+                    "after": 5
+                  },
+                  {
+                    "constraint": "SAILING",
+                    "before": 4,
+                    "after": 4
+                  }
+                ],
+                "binding": {
+                  "before": [
+                    "STAFF"
+                  ],
+                  "after": [
+                    "STAFF"
+                  ]
+                },
+                "usableBefore": 2,
+                "usableAfter": 3,
+                "extraJobsPerWeek": 1,
+                "remainingHandlingBatches": 10,
+                "contributionPerJobMinor": 84000,
+                "wageKrwPerWeek": 630000,
+                "wageUsdLotsPerWeek": 5
+              },
+              "recentHandlingOfferedPt": 0,
+              "recentHandlingAcceptedPt": 0
+            }
+          },
+          {
+            "invested": true,
+            "candidate_id": "EMP03",
+            "outlook": {
+              "workUnitsPerDay": 3,
+              "wageKrwPerDay": 110000,
+              "wageUsdLotsPerWeek": 6,
+              "bottleneck": {
+                "unit": "HANDLING_JOBS_PER_WEEK",
+                "demand": null,
+                "otherPtPerWeek": 0,
+                "rows": [
+                  {
+                    "constraint": "DEMAND",
+                    "before": null,
+                    "after": null
+                  },
+                  {
+                    "constraint": "STAFF",
+                    "before": 2,
+                    "after": 4
+                  },
+                  {
+                    "constraint": "WAREHOUSE_HANDLING",
+                    "before": 5,
+                    "after": 5
+                  },
+                  {
+                    "constraint": "STORAGE",
+                    "before": 5,
+                    "after": 5
+                  },
+                  {
+                    "constraint": "SAILING",
+                    "before": 4,
+                    "after": 4
+                  }
+                ],
+                "binding": {
+                  "before": [
+                    "STAFF"
+                  ],
+                  "after": [
+                    "STAFF",
+                    "SAILING"
+                  ]
+                },
+                "usableBefore": 2,
+                "usableAfter": 4,
+                "extraJobsPerWeek": 2,
+                "remainingHandlingBatches": 10,
+                "contributionPerJobMinor": 84000,
+                "wageKrwPerWeek": 770000,
+                "wageUsdLotsPerWeek": 6
+              },
+              "recentHandlingOfferedPt": 0,
+              "recentHandlingAcceptedPt": 0
+            }
+          }
+        ],
+        "payments_initial": [
+          {
+            "kind": "RENT",
+            "currency": "KRW",
+            "amountMinor": 450000,
+            "day": 1,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [],
+            "sourceId": "RENT-D001",
+            "labelKo": "평택 창고 1일 임차료"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 1,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D001-KRW",
+            "labelKo": "2명 급여"
+          }
+        ],
+        "payments_invested": [
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 3,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D003-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 4,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D004-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 5,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D005-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 6,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D006-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 7,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D007-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 8,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D008-KRW",
+            "labelKo": "2명 급여"
+          },
+          {
+            "kind": "SPACE_FEE",
+            "currency": "USD",
+            "amountMinor": 3000,
+            "day": 9,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [],
+            "sourceId": "SPACE-ROUTE01-D009",
+            "labelKo": "평택 → 하이퐁 9일 선복 계약 요금"
+          },
+          {
+            "kind": "SPACE_FEE",
+            "currency": "USD",
+            "amountMinor": 3000,
+            "day": 9,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [],
+            "sourceId": "SPACE-ROUTE02-D009",
+            "labelKo": "평택 → 상하이 9일 선복 계약 요금"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 9,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D009-KRW",
+            "labelKo": "2명 급여"
+          }
+        ],
+        "payments_expanded_rent": [
+          {
+            "kind": "RENT",
+            "currency": "KRW",
+            "amountMinor": 700000,
+            "day": 31,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [],
+            "sourceId": "RENT-D031",
+            "labelKo": "평택 창고 31일 임차료"
+          },
+          {
+            "kind": "WAGE",
+            "currency": "KRW",
+            "amountMinor": 160000,
+            "day": 31,
+            "trigger": "AUTO",
+            "contractId": null,
+            "employeeIds": [
+              "EMP01",
+              "EMP02"
+            ],
+            "sourceId": "WAGE-D031-KRW",
+            "labelKo": "2명 급여"
+          }
+        ],
+        "storage": {
+          "storage": {
+            "usedLiters": 33000,
+            "capacityLiters": 40000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 6,
+            "plannedUsePtToday": 4,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 6,
+          "demand": {
+            "batchPublishDay": 15,
+            "openVolumeLiters": 37300,
+            "openPrepPt": 42,
+            "recent": [
+              {
+                "publishDay": 8,
+                "offeredPrepPt": 56,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 15,
+                "offeredPrepPt": 58,
+                "acceptedPrepPt": 16,
+                "handlingOffered": 4,
+                "handlingAccepted": 12
+              }
+            ]
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 0
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D016",
+              "usedLiters": 24000,
+              "capacityLiters": 30000,
+              "usedGrams": 2400000,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            },
+            {
+              "sailingId": "ROUTE02-D016",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            }
+          ],
+          "rent": {
+            "amountMinor": 450000,
+            "nextDueDay": 31
+          },
+          "expansion": {
+            "status": "NONE",
+            "effectiveDay": null
+          },
+          "spaceContracts": [],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 8,
+              "handlingPt": 96,
+              "batches": 2
+            },
+            "otherPtPerWeek": 2,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "STAFF",
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 8,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        },
+        "history_36": {
+          "storage": {
+            "usedLiters": 300,
+            "capacityLiters": 40000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 6,
+            "plannedUsePtToday": 0,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 1,
+          "demand": {
+            "batchPublishDay": 36,
+            "openVolumeLiters": 61300,
+            "openPrepPt": 57,
+            "recent": [
+              {
+                "publishDay": 15,
+                "offeredPrepPt": 58,
+                "acceptedPrepPt": 18,
+                "handlingOffered": 4,
+                "handlingAccepted": 12
+              },
+              {
+                "publishDay": 22,
+                "offeredPrepPt": 58,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 29,
+                "offeredPrepPt": 56,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 36,
+                "offeredPrepPt": 57,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              }
+            ]
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 4
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D037",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            },
+            {
+              "sailingId": "ROUTE02-D037",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            }
+          ],
+          "rent": {
+            "amountMinor": 450000,
+            "nextDueDay": 61
+          },
+          "expansion": {
+            "status": "NONE",
+            "effectiveDay": null
+          },
+          "spaceContracts": [],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 16,
+              "handlingPt": 192,
+              "batches": 4
+            },
+            "otherPtPerWeek": 1,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "STAFF",
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 5,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        },
+        "history_43": {
+          "storage": {
+            "usedLiters": 300,
+            "capacityLiters": 40000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 6,
+            "plannedUsePtToday": 0,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 1,
+          "demand": {
+            "batchPublishDay": 43,
+            "openVolumeLiters": 67300,
+            "openPrepPt": 57,
+            "recent": [
+              {
+                "publishDay": 22,
+                "offeredPrepPt": 58,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 29,
+                "offeredPrepPt": 56,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 36,
+                "offeredPrepPt": 57,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 43,
+                "offeredPrepPt": 57,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              }
+            ]
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 4
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D044",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            },
+            {
+              "sailingId": "ROUTE02-D044",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            }
+          ],
+          "rent": {
+            "amountMinor": 450000,
+            "nextDueDay": 61
+          },
+          "expansion": {
+            "status": "NONE",
+            "effectiveDay": null
+          },
+          "spaceContracts": [],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 16,
+              "handlingPt": 192,
+              "batches": 4
+            },
+            "otherPtPerWeek": 0,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "STAFF",
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 4,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        },
+        "with_trade": {
+          "storage": {
+            "usedLiters": 33300,
+            "capacityLiters": 40000,
+            "heldUnallocatedLiters": 0
+          },
+          "handling": {
+            "capacityPtToday": 6,
+            "plannedUsePtToday": 4,
+            "waits": [],
+            "waitTaskCount": 0,
+            "waitPt": 0
+          },
+          "prepDaysToClear": 6,
+          "demand": {
+            "batchPublishDay": 15,
+            "openVolumeLiters": 37000,
+            "openPrepPt": 40,
+            "recent": [
+              {
+                "publishDay": 8,
+                "offeredPrepPt": 56,
+                "acceptedPrepPt": 0,
+                "handlingOffered": 4,
+                "handlingAccepted": 0
+              },
+              {
+                "publishDay": 15,
+                "offeredPrepPt": 58,
+                "acceptedPrepPt": 18,
+                "handlingOffered": 4,
+                "handlingAccepted": 12
+              }
+            ]
+          },
+          "staff": {
+            "workUnitsPerDay": 4,
+            "idleWorkUnitsToday": 0
+          },
+          "sailings": [
+            {
+              "sailingId": "ROUTE01-D016",
+              "usedLiters": 24000,
+              "capacityLiters": 30000,
+              "usedGrams": 2400000,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            },
+            {
+              "sailingId": "ROUTE02-D016",
+              "usedLiters": 0,
+              "capacityLiters": 30000,
+              "usedGrams": 0,
+              "capacityGrams": 5000000,
+              "spaceContract": false
+            }
+          ],
+          "rent": {
+            "amountMinor": 450000,
+            "nextDueDay": 31
+          },
+          "expansion": {
+            "status": "NONE",
+            "effectiveDay": null
+          },
+          "spaceContracts": [],
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 8,
+              "handlingPt": 96,
+              "batches": 2
+            },
+            "otherPtPerWeek": 3,
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 2
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "STAFF",
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 8,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": null,
+            "wageUsdLotsPerWeek": null
+          }
+        }
+      },
+      "expected_assertions": [
+        "명세에 적은 전체 반환 객체와 일치하며 호출 전후 상태·설정이 같다."
+      ],
+      "human_review_check": "개발용 합성값이며 실제 시세·임금·계약 관행을 뜻하지 않는다. 전체 객체 단언과 문장 반례를 확인한다.",
+      "engine_test_ref": "src/engine/m2a5-readers.test.ts",
+      "engine_test_names": [
+        "P0-M2A5-18 본사·창고 표와 병목 표"
+      ],
+      "test_fixture": {
+        "initial_day": 1,
+        "invested_day": 3,
+        "candidates": [
+          {
+            "id": "EMP05",
+            "rate": 2
+          },
+          {
+            "id": "EMP03",
+            "rate": 3
+          }
+        ],
+        "payment_through_day": 9,
+        "storage_day": 15,
+        "storage_commands": [
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-F1",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-F1",
+            "plan": {
+              "employeeId": "EMP01",
+              "sailingId": "ROUTE01-D016"
+            }
+          },
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-H2",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-H2",
+            "plan": {
+              "employeeId": "EMP02",
+              "sailingId": "ROUTE02-D023"
+            }
+          }
+        ],
+        "history_commands": [
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-F1",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-F1",
+            "plan": {
+              "employeeId": "EMP01",
+              "sailingId": "ROUTE01-D016"
+            }
+          },
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-H2",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-H2",
+            "plan": {
+              "employeeId": "EMP02",
+              "sailingId": "ROUTE02-D023"
+            }
+          },
+          {
+            "id": "HISTORY-TRADE",
+            "type": "ACCEPT_TRADE",
+            "buyOfferId": "MKT-D015-APP-BUY",
+            "sellOfferId": "MKT-D015-APP-SELL",
+            "quantity": 100
+          }
+        ],
+        "history_days": [
+          36,
+          43
+        ]
+      }
+    },
+    {
+      "id": "P0-M2A5-19",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "견적·환전 미리 보기",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_OPERATIONS",
+      "actions": [
+        {
+          "step": 1,
+          "action": "8일 수량 200 견적 미리 보기",
+          "day": 8,
+          "commands": [
+            {
+              "id": "ACCEPT_TRADE-149-MKT-D008-APP-BUY",
+              "type": "ACCEPT_TRADE",
+              "buyOfferId": "MKT-D008-APP-BUY",
+              "sellOfferId": "MKT-D008-APP-SELL",
+              "quantity": 200
+            }
+          ],
+          "variant": "trade"
+        },
+        {
+          "step": 2,
+          "action": "15일 33m³를 수락한 상태에서 9m³ 미리 보기",
+          "day": 15,
+          "commands": [
+            {
+              "id": "ACCEPT_FORWARDING-26-MKT-D015-H3",
+              "type": "ACCEPT_FORWARDING",
+              "offerId": "MKT-D015-H3"
+            }
+          ],
+          "variant": "storage"
+        }
+      ],
+      "expected_numeric": {
+        "trade": {
+          "kind": "DIRECT_TRADE",
+          "routeId": "ROUTE02",
+          "purchase": 198000,
+          "freight": 18000,
+          "duty": 9900,
+          "sale": 281000,
+          "contributionBeforePayroll": 55100,
+          "cashNeed": 225900,
+          "departureDay": 9,
+          "arrivalDay": 13,
+          "deliveryDeadlineDay": 15,
+          "lateOnNextSailing": false,
+          "paymentDueDay": 19,
+          "receiptDay": 19,
+          "schedule": [
+            {
+              "day": 8,
+              "labelKo": "매입 대금 지급",
+              "amount": -198000
+            },
+            {
+              "day": 8,
+              "labelKo": "운임 선지급",
+              "amount": -18000
+            },
+            {
+              "day": 13,
+              "labelKo": "도착·관세 지급",
+              "amount": -9900
+            },
+            {
+              "day": 13,
+              "labelKo": "인도: 매출·채권 인식 (현금 변화 없음)",
+              "amount": 0
+            },
+            {
+              "day": 19,
+              "labelKo": "외상대금 수금",
+              "amount": 281000
+            }
+          ],
+          "allowed": true,
+          "reasonKo": null,
+          "quantity": 200,
+          "maxQuantity": 200,
+          "quantityStep": 100,
+          "prepWorkUnits": 3,
+          "massGrams": 100000,
+          "volumeLiters": 600,
+          "storageAfterLiters": 600,
+          "storageCapacityLiters": 40000,
+          "counterpartySpreadPct": {
+            "buy": -1,
+            "sell": 0
+          },
+          "serviceClass": null,
+          "titleKo": null,
+          "contributionPerPrepPtMinor": 18366,
+          "lateDeliveryReductionMinor": 0,
+          "affectedContracts": []
+        },
+        "storage": {
+          "kind": "FORWARDING",
+          "routeId": "ROUTE01",
+          "purchase": 0,
+          "freight": 20000,
+          "duty": 0,
+          "sale": 104000,
+          "contributionBeforePayroll": 84000,
+          "cashNeed": 20000,
+          "departureDay": 16,
+          "arrivalDay": 21,
+          "deliveryDeadlineDay": 29,
+          "lateOnNextSailing": false,
+          "paymentDueDay": 31,
+          "receiptDay": 31,
+          "schedule": [
+            {
+              "day": 15,
+              "labelKo": "운임 선지급",
+              "amount": -20000
+            },
+            {
+              "day": 21,
+              "labelKo": "도착 (고객 화물: 관세는 수입자 부담)",
+              "amount": 0
+            },
+            {
+              "day": 21,
+              "labelKo": "인도: 주선 매출·채권 인식 (현금 변화 없음)",
+              "amount": 0
+            },
+            {
+              "day": 31,
+              "labelKo": "외상대금 수금",
+              "amount": 104000
+            }
+          ],
+          "allowed": false,
+          "reasonKo": "보관 공간 부족 — 평택 창고 33 / 40 m³, 이 화물 9 m³. 출항하거나 확장하면 공간이 생깁니다.",
+          "quantity": 3000,
+          "maxQuantity": 3000,
+          "quantityStep": 3000,
+          "prepWorkUnits": 12,
+          "massGrams": 1500000,
+          "volumeLiters": 9000,
+          "storageAfterLiters": 42000,
+          "storageCapacityLiters": 40000,
+          "counterpartySpreadPct": {
+            "buy": null,
+            "sell": null
+          },
+          "serviceClass": "HANDLING",
+          "titleKo": "세트 포장 포함 의류",
+          "contributionPerPrepPtMinor": 7000,
+          "lateDeliveryReductionMinor": 0,
+          "affectedContracts": []
+        },
+        "fx": [
+          {
+            "allowed": true,
+            "reasonKo": null,
+            "krwMinor": 1287000,
+            "spreadKrwMinor": 13000,
+            "usdAvailableBefore": 300000,
+            "usdAvailableAfter": 200000,
+            "krwAvailableBefore": 10000000,
+            "krwAvailableAfter": 11287000,
+            "runwayBefore": 56,
+            "runwayAfter": 62,
+            "warningKo": null
+          },
+          {
+            "allowed": true,
+            "reasonKo": null,
+            "krwMinor": 1313000,
+            "spreadKrwMinor": 13000,
+            "usdAvailableBefore": 300000,
+            "usdAvailableAfter": 400000,
+            "krwAvailableBefore": 10000000,
+            "krwAvailableAfter": 8687000,
+            "runwayBefore": 56,
+            "runwayAfter": 48,
+            "warningKo": null
+          },
+          {
+            "allowed": true,
+            "reasonKo": null,
+            "krwMinor": 9716200,
+            "spreadKrwMinor": 96200,
+            "usdAvailableBefore": 300000,
+            "usdAvailableAfter": 1040000,
+            "krwAvailableBefore": 10000000,
+            "krwAvailableAfter": 283800,
+            "runwayBefore": 56,
+            "runwayAfter": 0,
+            "warningKo": "환전 뒤 원화 283,800원으로는 오늘 급여·임차료 610,000원을 다 낼 수 없습니다."
+          },
+          {
+            "allowed": false,
+            "reasonKo": "환전할 수 있는 USD가 부족합니다. 요청 4,000.00 USD, 사용 가능 3,000.00 USD = 현금 3,000.00 USD.",
+            "krwMinor": 5148000,
+            "spreadKrwMinor": 52000,
+            "usdAvailableBefore": 300000,
+            "usdAvailableAfter": 300000,
+            "krwAvailableBefore": 10000000,
+            "krwAvailableAfter": 10000000,
+            "runwayBefore": 56,
+            "runwayAfter": 56,
+            "warningKo": null
+          },
+          {
+            "allowed": false,
+            "reasonKo": "환전은 100 USD 단위입니다. 요청 50.00 USD.",
+            "krwMinor": 64350,
+            "spreadKrwMinor": 650,
+            "usdAvailableBefore": 300000,
+            "usdAvailableAfter": 300000,
+            "krwAvailableBefore": 10000000,
+            "krwAvailableAfter": 10000000,
+            "runwayBefore": 56,
+            "runwayAfter": 56,
+            "warningKo": null
+          }
+        ],
+        "impact_affected": [
+          {
+            "contractId": "CT001",
+            "readyBefore": 16,
+            "readyAfter": 17,
+            "missesSailing": true
+          }
+        ],
+        "impact_storage_after_liters": 17600,
+        "late": {
+          "kind": "DIRECT_TRADE",
+          "routeId": "ROUTE02",
+          "purchase": 198000,
+          "freight": 18000,
+          "duty": 9900,
+          "sale": 276000,
+          "contributionBeforePayroll": 50100,
+          "cashNeed": 225900,
+          "departureDay": 9,
+          "arrivalDay": 13,
+          "deliveryDeadlineDay": 12,
+          "lateOnNextSailing": true,
+          "paymentDueDay": 19,
+          "receiptDay": 19,
+          "schedule": [
+            {
+              "day": 8,
+              "labelKo": "매입 대금 지급",
+              "amount": -198000
+            },
+            {
+              "day": 8,
+              "labelKo": "운임 선지급",
+              "amount": -18000
+            },
+            {
+              "day": 13,
+              "labelKo": "도착·관세 지급",
+              "amount": -9900
+            },
+            {
+              "day": 13,
+              "labelKo": "인도: 매출·채권 인식 (현금 변화 없음)",
+              "amount": 0
+            },
+            {
+              "day": 19,
+              "labelKo": "외상대금 수금",
+              "amount": 276000
+            }
+          ],
+          "allowed": true,
+          "reasonKo": null,
+          "quantity": 200,
+          "maxQuantity": 200,
+          "quantityStep": 100,
+          "prepWorkUnits": 3,
+          "massGrams": 100000,
+          "volumeLiters": 600,
+          "storageAfterLiters": 600,
+          "storageCapacityLiters": 40000,
+          "counterpartySpreadPct": {
+            "buy": -1,
+            "sell": 0
+          },
+          "serviceClass": null,
+          "titleKo": null,
+          "contributionPerPrepPtMinor": 16700,
+          "lateDeliveryReductionMinor": 5000,
+          "affectedContracts": []
+        },
+        "impact_handling": {
+          "capacityPtToday": 6,
+          "plannedUsePtToday": 6,
+          "waits": [
+            {
+              "taskId": "TASK001",
+              "contractId": "CT001",
+              "wantPt": 2,
+              "gotPt": 1
+            }
+          ],
+          "waitTaskCount": 1,
+          "waitPt": 1
+        }
+      },
+      "expected_assertions": [
+        "명세에 적은 전체 반환 객체와 일치하며 호출 전후 상태·설정이 같다."
+      ],
+      "human_review_check": "개발용 합성값이며 실제 시세·임금·계약 관행을 뜻하지 않는다. 전체 객체 단언과 문장 반례를 확인한다.",
+      "engine_test_ref": "src/engine/m2a5-readers.test.ts",
+      "engine_test_names": [
+        "P0-M2A5-19 견적·환전 미리 보기"
+      ],
+      "test_fixture": {
+        "storage_commands": [
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-F1",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-F1",
+            "plan": {
+              "employeeId": "EMP01",
+              "sailingId": "ROUTE01-D016"
+            }
+          },
+          {
+            "id": "ACCEPT_FORWARDING-88-MKT-D015-H2",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D015-H2",
+            "plan": {
+              "employeeId": "EMP02",
+              "sailingId": "ROUTE02-D023"
+            }
+          }
+        ],
+        "fx": [
+          {
+            "direction": "USD_TO_KRW",
+            "usdAmountMinor": 100000
+          },
+          {
+            "direction": "KRW_TO_USD",
+            "usdAmountMinor": 100000
+          },
+          {
+            "direction": "KRW_TO_USD",
+            "usdAmountMinor": 740000
+          },
+          {
+            "direction": "USD_TO_KRW",
+            "usdAmountMinor": 400000
+          },
+          {
+            "direction": "USD_TO_KRW",
+            "usdAmountMinor": 5000
+          }
+        ],
+        "invalid_quantity": 201,
+        "poor_usd": 0,
+        "impact_commands": [
+          {
+            "id": "IMPACT-H",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D008-H4",
+            "plan": {
+              "employeeId": "EMP01",
+              "sailingId": "ROUTE02-D016"
+            }
+          },
+          {
+            "id": "IMPACT-S",
+            "type": "ACCEPT_FORWARDING",
+            "offerId": "MKT-D008-F2",
+            "plan": {
+              "employeeId": "EMP02",
+              "sailingId": "ROUTE01-D009"
+            }
+          }
+        ],
+        "impact_candidate": "EMP03",
+        "impact_required_pt": 18,
+        "late_deadline": 12,
+        "impact_accept_command": {
+          "id": "ACCEPT_TRADE-149-MKT-D008-APP-BUY",
+          "type": "ACCEPT_TRADE",
+          "buyOfferId": "MKT-D008-APP-BUY",
+          "sellOfferId": "MKT-D008-APP-SELL",
+          "quantity": 200,
+          "plan": {
+            "employeeId": "EMP03",
+            "sailingId": "ROUTE02-D009"
+          }
+        }
+      }
     }
   ],
   "review_summary": {
-    "case_count": 34,
+    "case_count": 36,
     "phase_case_counts": {
-      "P0": 29,
+      "P0": 31,
       "P1": 4,
       "P2": 1
     },
@@ -4299,8 +5951,8 @@
       "P0 완료에 P1·P2 기능을 강요하지 않음"
     ],
     "engine_test_pass_claim": false,
-    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.; M2a-5 added P0-M2A5-01..16, total 34 (17 follows in TASK-0028).",
-    "engine_linked_case_count": 29,
+    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.; M2a-5 added P0-M2A5-01..16, total 34 (17 follows in TASK-0029).; TASK-0028 added P0-M2A5-18..19, total 36.",
+    "engine_linked_case_count": 31,
     "ui_linked_case_count": 1
   },
   "human_review_records": []

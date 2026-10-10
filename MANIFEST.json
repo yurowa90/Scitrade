@@ -23,7 +23,7 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "c6f312a0fafb6adaa75a346cef7c9296ebb3846de3cdfe42ae97bcfc127c3b39"
+      "sha256": "627d79a8b9f8c675bf4e69125e19cd69590f203319ff0e46cae0ad6b537fbd50"
     },
     {
       "path": "README.md",
@@ -1571,6 +1571,11 @@
       "sha256": "2e1cb5904603426b1a276ddee62260463c6baa174a089385b4748ab1d36bebbd"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0028.md",
+      "size_bytes": 12736,
+      "sha256": "bad028e89d879d34503b14023522b8fe6eb9d3bbee2033253d2d2e66dbdf3a8d"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -1837,8 +1842,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 145724,
-      "sha256": "9ca60bb3c35be05cc725a00b23999e14541835dbaa7a8b1a438d8a6629cd87ea"
+      "size_bytes": 193452,
+      "sha256": "0fa3a8070e7797d9a75ed5ed4c8c7a8271edbd7ee4d90b5c136b7b1ae06d06a0"
     },
     {
       "path": "tests/character_acceptance_cases.json",

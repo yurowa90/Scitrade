@@ -1,4 +1,4 @@
-import { lateDeliveryReduction, unpaidByCurrency } from './operations';
+import { fixedCostsDue, lateDeliveryReduction, unpaidByCurrency } from './operations';
 import type { OperationsState } from './types';
 // 상태에서 계산하는 보고 값. 별도의 현금·이익을 저장하지 않는다.
 
@@ -82,7 +82,7 @@ export interface QuotePreview {
   schedule: { day: number; labelKo: string; amount: number }[];
 }
 
-function preview(
+export function preview(
   config: ScenarioConfig,
   kind: 'DIRECT_TRADE' | 'FORWARDING',
   fromCityId: string,
@@ -210,7 +210,7 @@ export function onTimeDeliveryRate(s: GameState, filter: DeliveryFilter = {}): O
   return { delivered, onTime, late, rateBasisPoints: delivered ? Math.floor(onTime * 10000 / delivered) : null, pastDeadlineUndelivered };
 }
 
-export type UpcomingPaymentKind = 'OVERDUE' | 'WAGE' | 'FREIGHT' | 'DUTY';
+export type UpcomingPaymentKind = 'OVERDUE' | 'WAGE' | 'FREIGHT' | 'DUTY' | 'RENT' | 'SPACE_FEE';
 
 export interface UpcomingPayment {
   kind: UpcomingPaymentKind;
@@ -245,6 +245,12 @@ export function upcomingPayments(
   const last = Math.min(throughDay, config.campaignDays);
   const rows: UpcomingPayment[] = [];
   for (let day = s.day; day <= last; day++) {
+    for (const cost of fixedCostsDue(s, config, day)) {
+      if (s.ledger.postedIds[cost.id]) continue;
+      rows.push({ kind: cost.account === 'RENT_EXPENSE' ? 'RENT' : 'SPACE_FEE', currency: cost.currency,
+        amountMinor: cost.amountMinor, day, trigger: 'AUTO', contractId: null, employeeIds: [],
+        sourceId: cost.id, labelKo: cost.reasonKo });
+    }
     const wages = new Map<Currency, UpcomingPayment>();
     for (const emp of s.employees) {
       if (emp.employmentStatus !== 'employed' || emp.availableFromDay > day) continue;
@@ -284,7 +290,7 @@ export function upcomingPayments(
       labelKo: reservation.kind === 'FREIGHT' ? `${c.id} 운임 (예약 때 선지급)` : `${c.id} 수입 관세 (도착 때)`,
     });
   }
-  const order = { OVERDUE: 0, WAGE: 1, FREIGHT: 2, DUTY: 3 };
+  const order = { OVERDUE: 0, RENT: 1, SPACE_FEE: 2, WAGE: 3, FREIGHT: 4, DUTY: 5 };
   rows.sort((a, b) => (a.day === null ? Infinity : a.day) - (b.day === null ? Infinity : b.day)
     || order[a.kind] - order[b.kind] || compareText(a.currency, b.currency) || compareText(a.sourceId, b.sourceId));
   return [...overdue, ...rows];
