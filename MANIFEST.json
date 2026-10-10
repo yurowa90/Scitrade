@@ -566,9 +566,19 @@
       "sha256": "038f5dcd04eeb4845cbf46f882b69eb68fea92bdcb33bafd4b3127338012292d"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS.md",
+      "size_bytes": 5598,
+      "sha256": "965fbcbb112a868e92e0beb138192d99720a2a051c6e24bee69c3b88e162ed49"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
-      "size_bytes": 1901,
-      "sha256": "fa50d05100bb443f074b9e04fb1eb6112b6364e0fd64da7136d77aacc24fb691"
+      "size_bytes": 2094,
+      "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
+    },
+    {
+      "path": "docs/ai/design/m2a5-review/REVIEW3.md",
+      "size_bytes": 12837,
+      "sha256": "a45729ca01ce6220c5fdf53c78934b12edcb453097392ccc936dd90c602643b1"
     },
     {
       "path": "docs/ai/design/m2a5-review/SPEC.v1.md",
