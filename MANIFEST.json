@@ -361,6 +361,16 @@
       "sha256": "c8cf541e2595e5c8390e11ad29ce93ffb3e6555a9db98464e63ed838f976eee0"
     },
     {
+      "path": "docs/ai/design/layout-ux04-05/task0024/README.md",
+      "size_bytes": 5580,
+      "sha256": "e92ba32aaabd5a91a081d493759e9c040a805a36c01740434cbe6a95a2b9d8a4"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/proto-c896c8a.patch",
+      "size_bytes": 82785,
+      "sha256": "f02161cc633923e08b3b05dbc9b466a7261d7f89954704d237a1cc1e1a04bc06"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/spec_check/exp_spec.py",
       "size_bytes": 10806,
       "sha256": "bd476ada2f0c509a6cdecd0887729a26a953419d98e7e0725400eaaf47ba03d5"
@@ -569,6 +579,11 @@
       "path": "docs/ai/tasks/TASK-0023-report-schedule-settlement-ui.md",
       "size_bytes": 85015,
       "sha256": "890a3d2ded2aad09954df262720fdd7ac24944faa88c2a0e0161fb274583efa6"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0024-layout-a-esc.md",
+      "size_bytes": 168097,
+      "sha256": "8c9a66fc2acf609566108d32058177cc5d47a37243d90ecb31c138a5b8215ab6"
     },
     {
       "path": "docs/ai/tasks/TASK-0025-route-map-fit.md",
