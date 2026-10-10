@@ -1,3 +1,6 @@
+import { d03Tables, mergeD03, runD03 } from './d03';
+import type { LateMode } from './variants';
+export { mergeD03, runD03 };
 import { compareOutputs, formatCompare, summarizeOutput } from './compare';
 import { runSuite, serializeSimOutput, SIM_FORMAT, SIM_SEEDS, type SimOutput } from './sim';
 
@@ -10,6 +13,8 @@ export interface SimIo {
 }
 const USAGE = `사용법:
   sim run [--scenarios A,B] [--policies X,Y] [--seeds N] [--out PATH]
+  sim d03 [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
+  sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
@@ -32,11 +37,39 @@ function readOutput(path: string, io: SimIo): SimOutput {
   return output;
 }
 
+export function d03Options(args: readonly string[]) {
+  const options = new Map<string, string>();
+  for (let i = 0; i < args.length; i += 2) {
+    const key = args[i]!, value = args[i + 1];
+    if (!['--policies', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
+    options.set(key, value);
+  }
+  const count = integer(options.get('--seeds') ?? '20', 1, 20, '시드 수');
+  // 분할 범위는 고정 시드 목록의 1부터 시작하는 번호다.
+  const from = integer(options.get('--seed-from') ?? '1', 1, count, '시드 시작 번호');
+  const to = integer(options.get('--seed-to') ?? String(count), from, count, '시드 끝 번호');
+  const late = options.get('--late') ?? 'base';
+  if (!['base', 'cap30', 'flat200'].includes(late)) throw new Error(`알 수 없는 감액: ${late}`);
+  return { ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: SIM_SEEDS.slice(from - 1, to), late: late as LateMode,
+    workers: integer(options.get('--workers') ?? '1', 1, 32, '워커 수'), out: options.get('--out'), tablesFrom: options.get('--tables-from')?.split(',') };
+}
+export function writeD03(output: SimOutput, io: SimIo, out?: string) {
+  if (out) io.writeText(out, serializeSimOutput(output));
+  io.out(d03Tables(output));
+}
+
 /** 종료 코드: 성공·같음 0, 비교 결과 다름 1, 사용법·입력·실행 오류 2. */
 export function simMain(argv: readonly string[], io: SimIo): number {
   try {
     const [action, ...args] = argv;
     if ((action === 'help' || action === '--help') && !args.length) { io.out(USAGE); return 0; }
+    if (action === 'd03') {
+      const options = d03Options(args), start = io.now();
+      const output = options.tablesFrom ? mergeD03(options.tablesFrom.map((path) => readOutput(path, io)), options.late) : runD03(options);
+      writeD03(output, io, options.out);
+      io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
+      return 0;
+    }
     if (action === 'run') {
       const options = new Map<string, string>();
       for (let i = 0; i < args.length; i += 2) {

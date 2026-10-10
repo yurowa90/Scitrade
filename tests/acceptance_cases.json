@@ -5925,12 +5925,181 @@
           }
         }
       }
+    },
+    {
+      "id": "P0-M2A5-17",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "비교 실행기",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_OPERATIONS",
+      "actions": [
+        {
+          "step": 1,
+          "action": "정책·고정 시드 실행과 예약 단계 정시 여부 대조"
+        }
+      ],
+      "expected_numeric": {
+        "idle_failure_day": 71,
+        "zero": 0,
+        "first_matching_seed": 1001,
+        "search_seeds": [
+          1001,
+          1002,
+          1003,
+          1004,
+          1005,
+          1006,
+          1007,
+          1008,
+          1009,
+          1010,
+          1011,
+          1012,
+          1013,
+          1014,
+          1015,
+          1016,
+          1017,
+          1018,
+          1019,
+          1020
+        ],
+        "pt_values": [
+          2,
+          3
+        ],
+        "days": [
+          8,
+          29,
+          30,
+          31,
+          50
+        ],
+        "worker_seeds": 2,
+        "cap30_bp": 3000,
+        "flat200_minor": 20000,
+        "j6_rows": [
+          {
+            "extraJobsPerWeek": 0,
+            "usableAfter": 7
+          },
+          {
+            "extraJobsPerWeek": 0,
+            "usableAfter": 8
+          }
+        ],
+        "j6_expected": {
+          "value": 0,
+          "arrow": "↓"
+        },
+        "j6_half_rows": [
+          {
+            "extraJobsPerWeek": 0,
+            "usableAfter": 7
+          },
+          {
+            "extraJobsPerWeek": 1,
+            "usableAfter": 8
+          }
+        ],
+        "j6_half_expected": {
+          "value": 0.5,
+          "arrow": "↑"
+        },
+        "recruit_lead_days": 3
+      },
+      "expected_assertions": [
+        "규칙 1 기본 묶음과 JSON 모양을 보존한다.",
+        "규칙 2 환전·정시 예약·고용·장부 항등식·결정성을 검증한다.",
+        "D03 표와 J1~J7은 측정이며 통과를 보장하지 않는다."
+      ],
+      "human_review_check": "간이 모형과 엔진 측정의 차이·미측정과 실패를 구분한다.",
+      "engine_test_ref": "src/engine/sim/m2a5-sim.test.ts",
+      "engine_test_names": [
+        "P0-M2A5-17 비교 실행기",
+        "M2a-5 실행기 성질"
+      ],
+      "test_fixture": {
+        "policies": [
+          "IDLE",
+          "NO_FX",
+          "MAX_CONTRIBUTION",
+          "LATE_OK"
+        ],
+        "small_policies": [
+          "IDLE",
+          "NO_FX",
+          "MAX_CONTRIBUTION"
+        ],
+        "variant": "MAX_CONTRIBUTION~inv:SE~hire:2pt@30~scout:early",
+        "parsed_variant": {
+          "acceptance": "MAX_CONTRIBUTION",
+          "react": false,
+          "investment": "SE",
+          "hires": [
+            {
+              "pt": 2,
+              "day": 30
+            }
+          ],
+          "early": true
+        },
+        "command_types": [
+          "ACCEPT_FORWARDING",
+          "ACCEPT_TRADE",
+          "ASSIGN_TASK",
+          "BOOK_SAILING",
+          "CANCEL_CONTRACT",
+          "RESPOND_TO_DELAY",
+          "EXCHANGE_CURRENCY",
+          "EXPAND_WAREHOUSE",
+          "SIGN_SPACE_CONTRACT",
+          "SCOUT_SITE",
+          "START_RECRUIT_QUEST",
+          "HIRE_CANDIDATE"
+        ],
+        "table_titles": [
+          "① 기준 표",
+          "② 투자만",
+          "③ 고용 표(보통)",
+          "④ 고용 표(적극)",
+          "⑤ J1~J7",
+          "⑥ 시드별",
+          "⑦ 사업별",
+          "⑧ 계획 고용일"
+        ],
+        "judgements": [
+          "J1",
+          "J2",
+          "J2b",
+          "J3",
+          "J4",
+          "J5",
+          "J6",
+          "J7"
+        ],
+        "daily_command_ranks": {
+          "RESPOND_TO_DELAY": 0,
+          "EXCHANGE_CURRENCY": 1,
+          "EXPAND_WAREHOUSE": 2,
+          "SIGN_SPACE_CONTRACT": 2,
+          "SCOUT_SITE": 3,
+          "START_RECRUIT_QUEST": 3,
+          "HIRE_CANDIDATE": 3,
+          "BOOK_SAILING": 4,
+          "ASSIGN_TASK": 5,
+          "ACCEPT_TRADE": 6,
+          "ACCEPT_FORWARDING": 6
+        }
+      }
     }
   ],
   "review_summary": {
-    "case_count": 36,
+    "case_count": 37,
     "phase_case_counts": {
-      "P0": 31,
+      "P0": 32,
       "P1": 4,
       "P2": 1
     },
@@ -5951,8 +6120,8 @@
       "P0 완료에 P1·P2 기능을 강요하지 않음"
     ],
     "engine_test_pass_claim": false,
-    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.; M2a-5 added P0-M2A5-01..16, total 34 (17 follows in TASK-0029).; TASK-0028 added P0-M2A5-18..19, total 36.",
-    "engine_linked_case_count": 31,
+    "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.; M2a-5 added P0-M2A5-01..16, total 34.; TASK-0028 added P0-M2A5-18..19, total 36.; TASK-0029 added P0-M2A5-17, total 37.",
+    "engine_linked_case_count": 32,
     "ui_linked_case_count": 1
   },
   "human_review_records": []
