@@ -44,7 +44,7 @@ export function selectProfiles(profiles, spec) {
     return p;
   });
 }
-const WHATS = ['top', 'height', 'top-from-bar', 'moved', 'scroll-y-change', 'overflow-x', 'bar-bottom'];
+const WHATS = ['top', 'height', 'top-from-bar', 'moved', 'scroll-y-change', 'overflow-x', 'bar-bottom', 'width', 'left-from-parent'];
 export function validateScenario(obj) {
   const errors = [];
   if (!obj || typeof obj !== 'object') return ['시나리오 객체가 필요합니다'];
@@ -167,6 +167,13 @@ async function step(page, s, scenario, profile, refs, values) {
       const r = el.getBoundingClientRect();
       if (s.what === 'top') return r.top;
       if (s.what === 'height') return r.height;
+      if (s.what === 'width') return r.width;
+      if (s.what === 'left-from-parent') {
+        // 부모 내용 상자(테두리·안쪽 여백 안쪽) 왼쪽 끝에서 요소 왼쪽 끝까지. 가운데 맞춘 지도의 왼쪽 빈 띠다.
+        const p = el.parentElement;
+        if (!p) throw new Error('부모 요소가 없습니다');
+        return r.left - (p.getBoundingClientRect().left + p.clientLeft + parseFloat(getComputedStyle(p).paddingLeft || '0'));
+      }
       if (s.what === 'top-from-bar') return r.top - b.getBoundingClientRect().bottom;
       return r.top - ref.top;
     }, { s, ref: refs[s.ref], bar: scenario.bar_selector });

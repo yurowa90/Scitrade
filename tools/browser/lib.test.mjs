@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { REPO_ROOT, loadProfiles, selectProfiles, validateScenario, loadScenario, resolveDistPath, contentType, fontCacheKey, checkExpectations, isInside } from './lib.mjs';
-const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position', 'report-contract-link', 'schedule-toggle', 'crew-facet', 'campaign-end'];
+const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position', 'report-contract-link', 'schedule-toggle', 'crew-facet', 'campaign-end', 'route-map-fit'];
 const scenarioFile = name => path.join(REPO_ROOT, 'tools/browser/scenarios', `${name}.json`);
 const profiles = loadProfiles().profiles;
 
@@ -44,6 +44,19 @@ test('잘못된 단계와 기대를 거절한다', () => {
   for (const [change, message] of cases) {
     const errors = validateScenario({ ...base, expect: [], ...change });
     assert.ok(errors.some(e => e.includes(message)), `${message}: ${JSON.stringify(errors)}`);
+  }
+});
+test('요소 폭과 부모 안 왼쪽 위치 측정', () => {
+  const base = { ...loadScenario(scenarioFile('smoke')), expect: [] };
+  const steps = [
+    { do: 'measure', name: 'w', what: 'width', selector: '[data-map-frame] > svg' },
+    { do: 'measure', name: 'band', what: 'left-from-parent', selector: '[data-map-frame] > svg' },
+    { do: 'remember', name: 'map', selector: '#world-h' },
+    { do: 'measure', name: 'w_ref', what: 'width', ref: 'map' },
+  ];
+  assert.deepEqual(validateScenario({ ...base, steps, expect: [{ value: 'band', min: 0, max: 1.5 }] }), []);
+  for (const what of ['width', 'left-from-parent']) {
+    assert.deepEqual(validateScenario({ ...base, steps: [{ do: 'measure', name: 'v', what }] }), [`1단계 measure: 선택자 또는 ref가 필요합니다`]);
   }
 });
 test('정적 경로의 상위 이동을 막는다', () => {

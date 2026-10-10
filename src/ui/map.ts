@@ -16,6 +16,9 @@ const WORLD_MAP = mapAsset('MAP_WORLD');
 
 export interface MapViewport { vb: Box; n: number; cssWidth: number; cssHeight: number }
 
+/** 경로 지도에서 받아들이는 양옆 빈 띠 합의 상한(CSS px). 이 이상이면 한 배율 위를 시험한다. */
+export const BLANK_BAND_LIMIT_CSS = 16;
+
 /** 틀을 채우되 바탕의 논리 픽셀은 정수 개의 기기 픽셀로 표시한다. */
 export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: number,
   routeBox: Box, availableWidth: number, dpr: number, mode: MapMode): MapViewport {
@@ -34,9 +37,17 @@ export function planMapViewport(map: { w: number; h: number }, unitsPerPixel: nu
   const requiredH = bottom - top + 24;
   // round(L × 10 / 16) ≥ requiredH를 만족하는 최소 정수 L.
   const minimumL = Math.max(requiredW, Math.ceil((requiredH - 0.5) * 16 / 10));
-  const n = Math.min(cap, Math.max(1, Math.floor(availableWidth * dpr / minimumL)));
-  const logicalW = Math.min(Math.floor(map.w / unitsPerPixel), Math.max(1, Math.floor(availableWidth * dpr / n)));
-  const logicalH = Math.min(Math.floor(map.h / unitsPerPixel), Math.max(1, Math.round(logicalW * 10 / 16)));
+  const mapLW = Math.floor(map.w / unitsPerPixel), mapLH = Math.floor(map.h / unitsPerPixel);
+  let n = Math.min(cap, Math.max(1, Math.floor(availableWidth * dpr / minimumL)));
+  // 16:10 배율 n에서 양옆 빈 띠 합이 16 CSS px 이상이면 한 배율 위를 시험한다.
+  // 그 배율에서 폭은 들어가고 세로만 모자라면 세로를 항로에 필요한 만큼만 늘린다(정사각형까지).
+  let tallH = 0;
+  if (n < cap && availableWidth - n * mapLW / dpr >= BLANK_BAND_LIMIT_CSS) {
+    const nextW = Math.floor(availableWidth * dpr / (n + 1));
+    if (nextW >= requiredW && requiredH <= Math.min(mapLH, nextW)) { n += 1; tallH = requiredH; }
+  }
+  const logicalW = Math.min(mapLW, Math.max(1, Math.floor(availableWidth * dpr / n)));
+  const logicalH = Math.min(mapLH, Math.max(1, Math.round(logicalW * 10 / 16), tallH));
   const w = logicalW * unitsPerPixel, h = logicalH * unitsPerPixel;
   const x = Math.max(0, Math.min(Math.floor((left + right - logicalW) / 2) * unitsPerPixel, Math.max(0, map.w - w)));
   const y = Math.max(0, Math.min(Math.floor((top + bottom - logicalH) / 2) * unitsPerPixel, Math.max(0, map.h - h)));
@@ -170,6 +181,15 @@ export function mapLabelScale(plan: MapViewport, world: boolean, capCssWidth = p
   return plan.vb.w / 620 * Math.min(plan.cssWidth, capCssWidth) / plan.cssWidth * (world ? 0.45 : 1);
 }
 
+/** 경로 지도 거점 이름표(글자 15)의 최소 화면 크기(CSS px). */
+export const LABEL_FLOOR_PX = 11;
+
+/** 거점 이름표 글자와 리본 상자의 배율. 경로 지도에서만 LABEL_FLOOR_PX 아래로 줄이지 않는다. 그 밖의 표시는 mapLabelScale을 쓴다. */
+export function mapRibbonScale(plan: MapViewport, world: boolean, capCssWidth = plan.cssWidth): number {
+  const k = mapLabelScale(plan, world, capCssWidth);
+  return world ? k : Math.max(k, LABEL_FLOOR_PX / 15 * plan.vb.w / plan.cssWidth);
+}
+
 /** 같은 지도·기기 배율에서 틀 폭 946일 때의 지도 표시 폭. */
 export function labelCapCssWidth(config: ScenarioConfig, mode: MapMode, dpr: number): number {
   return worldMapViewport(config, mode, { availableWidth: LABEL_CAP_FRAME_WIDTH, dpr }).cssWidth;
@@ -227,7 +247,9 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   const plan = worldMapViewport(config, mode, { availableWidth: options.availableWidth ?? 620, dpr: options.dpr ?? 1 });
   const vb = plan.vb;
   // 보기 영역이 넓어져도 화면상 글자·휘장 크기가 비슷하게 유지되도록 맞춘다. 세계지도는 거점이 많아 조금 작게.
-  const k = mapLabelScale(plan, world, labelCapCssWidth(config, mode, options.dpr ?? 1));
+  const cap = labelCapCssWidth(config, mode, options.dpr ?? 1);
+  const k = mapLabelScale(plan, world, cap);
+  const kr = mapRibbonScale(plan, world, cap);
 
   // 경위선: 확대 지도 5°, 세계지도 30° 간격.
   const b = map.bounds;
@@ -256,8 +278,8 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
   }
   const view: Box = { x: vb.x + 4 * k, y: vb.y + 4 * k, w: vb.w - 8 * k, h: vb.h - 8 * k };
   const labelFor = (text: string, x: number, y: number, size: number, preferLeft: boolean) => {
-    const w = (text.length * size + 22 * (size / 15)) * k;
-    const h = (size + 9) * k;
+    const w = (text.length * size + 22 * (size / 15)) * kr;
+    const h = (size + 9) * kr;
     const gap = 13 * k;
     const right = { x: x + gap, y: y - h - 4 * k, w, h };
     const left = { x: x - gap - w, y: y - h - 4 * k, w, h };
@@ -284,8 +306,8 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
       <title>${hubTitle(c, status)}</title>
       ${status === 'preview' ? '' : `<circle cx="${p.x}" cy="${p.y}" r="${15 * k}" class="port-glow"/>`}
       <g transform="translate(${p.x} ${p.y}) scale(${k * badgeScale})"><circle r="10" class="port-badge"/><g class="port-anchor">${c.cargoPort ? ANCHOR : BANK}</g>${finance ? '<circle cx="8" cy="-8" r="4" class="finance-coin"/>' : ''}</g>
-      ${box ? `<g class="ribbon"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="${5 * k}"/>
-      <text x="${box.x + box.w / 2}" y="${box.y + box.h * 0.7}" text-anchor="middle" font-size="${size * k}">${c.nameKo}</text></g>` : ''}
+      ${box ? `<g class="ribbon"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="${5 * kr}"/>
+      <text x="${box.x + box.w / 2}" y="${box.y + box.h * 0.7}" text-anchor="middle" font-size="${size * kr}">${c.nameKo}</text></g>` : ''}
     </g>`;
   });
 

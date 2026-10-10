@@ -661,6 +661,11 @@
       "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0025.md",
+      "size_bytes": 18782,
+      "sha256": "6fa3c57b930a52b70c2230fd49502717743497b0fa96187930b6c7d11a18e7ef"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12338,
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
@@ -967,13 +972,13 @@
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 15710,
-      "sha256": "beb59b3b1913a4dedd9ca0f757be3642a7892c96eb9d9d1aec90abbb87d37207"
+      "size_bytes": 16217,
+      "sha256": "3b5b7f30e66de63c6158d604ca142108ffa627f61a0efdc9c58e611dd4d1b7b4"
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 8306,
-      "sha256": "4bc660e1f50c6f6ee5cc7687fcc892b13470fb06e18fce9da5b6425ce6681dc7"
+      "size_bytes": 9118,
+      "sha256": "ab2308fdc1ee0e3cee5d53975c849de15940563791fab02364a1a817e407badd"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -1014,6 +1019,11 @@
       "path": "tools/browser/scenarios/report-contract-link.json",
       "size_bytes": 1196,
       "sha256": "c3eef3def004754295ed889444a7c861435acd83b0628b47a4c05ca06c23bc7f"
+    },
+    {
+      "path": "tools/browser/scenarios/route-map-fit.json",
+      "size_bytes": 5608,
+      "sha256": "4bce25c2037d190dd7a1a2fe16dc415041d9467de377580b406a60574d50e78e"
     },
     {
       "path": "tools/browser/scenarios/schedule-toggle.json",
