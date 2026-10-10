@@ -1436,6 +1436,11 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0031-m2a5-bottleneck-storage.md",
+      "size_bytes": 9995,
+      "sha256": "49cd374749a24c03dbf8974a1fd4295447eb6a2f2128d201008e67a8704227a9"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
