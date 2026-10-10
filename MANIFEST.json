@@ -367,8 +367,8 @@
     },
     {
       "path": "docs/ai/design/layout-ux04-05/task0024/README.md",
-      "size_bytes": 2171,
-      "sha256": "6b26e23dfcc5a67e3165b04cd1e743368a8431b7b0e99cae366e75513cbd703f"
+      "size_bytes": 5580,
+      "sha256": "e92ba32aaabd5a91a081d493759e9c040a805a36c01740434cbe6a95a2b9d8a4"
     },
     {
       "path": "docs/ai/design/layout-ux04-05/task0024/harness/ec/blib.js",
@@ -504,6 +504,11 @@
       "path": "docs/ai/design/layout-ux04-05/task0024/proto-c284e79.patch",
       "size_bytes": 79993,
       "sha256": "d1d925d1d5361d65c70fa90674a811cece7b18cc9e3b32d7f141925ca4e92395"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/proto-c896c8a.patch",
+      "size_bytes": 82785,
+      "sha256": "f02161cc633923e08b3b05dbc9b466a7261d7f89954704d237a1cc1e1a04bc06"
     },
     {
       "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-cb1366t.err",
@@ -1057,8 +1062,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0024-layout-a-esc.md",
-      "size_bytes": 165333,
-      "sha256": "463771ae6e52d4a26719aca1f78aafafb178511dde4bddcd6990ab589f3a23ae"
+      "size_bytes": 168097,
+      "sha256": "8c9a66fc2acf609566108d32058177cc5d47a37243d90ecb31c138a5b8215ab6"
     },
     {
       "path": "docs/ai/tasks/TASK-0025-route-map-fit.md",

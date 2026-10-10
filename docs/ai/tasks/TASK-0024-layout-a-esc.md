@@ -7,15 +7,12 @@
   - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only <BASE> HEAD`를 실행해 결과 보고에 적는다.
   - 지시서를 올린 커밋(`<BASE>`와 그 뒤의 다른 지시서 커밋)이 더한 `docs/ai/tasks/` 지시서·`docs/ai/tasks/README.md`·`MANIFEST.json` 변경은 diff에 나와도 이 작업의 변경으로 치지 않는다. 그 밖의 파일이 다르면 결과 보고에 적는다.
   - 모든 diff·검사 명령의 기준 커밋은 `<BASE>`다.
-  - **줄 번호:** 아래 줄 번호는 개발 브랜치 `c284e79`(TASK-0026 병합 `2de22ca`, 세션 트리 운영) 기준이다. `src/ui/`·`tools/browser/`는 `eeb4f03`과 바이트까지 같고, `src/ui/`는 `e4f7dfa`와도 같다(Claude 확인).
-  - **TASK-0025가 바꾸는 줄:** `<BASE>`에는 TASK-0025가 더 들어 있다. TASK-0025가 고치는 파일 가운데 이 작업이 읽거나 고치는 것은 셋뿐이다.
-    - `tools/browser/lib.mjs`: 47행 측정 종류 목록은 같은 줄에서 두 이름이 늘고, 측정 처리(166행 뒤)에 7줄이 더해진다. 61·120~157행은 그대로이고 231행(단계당 15초 제한)은 238행이 된다(TASK-0025 검수 전 스냅숏 `ed7df9a` 기준, Claude 확인).
-    - `tools/browser/lib.test.mjs`: 8행 `names` 끝에 `'route-map-fit'`이 붙고 49행에 시험 하나(13줄)가 더해진다. 69~90행(금지 문자열)은 82~103행, 99~124행(dry-run)은 112~137행이 된다.
-    - `src/ui/map-integration.test.ts`: 132행 시험 앞에 시험 하나가 더해진다(8~31행 `start()`는 그대로).
-    - `src/ui/main.ts`·`style.css`·`growth.ts`·`main-testkit.ts`·`main.test.ts`는 TASK-0025가 고치지 않는다(TASK-0025 ‘손대지 않을 파일’).
-    - 줄 번호가 다르면 코드가 사실이다. 차이는 결과 보고에 적는다. `<BASE>`에 TASK-0025가 없으면 그대로 진행하고 결과 보고에 적는다.
+  - **줄 번호:** 아래 줄 번호는 개발 브랜치 `c896c8a`(TASK-0025 병합) 기준이다. `docs/` 줄 번호는 이 지시서를 올린 커밋(`claude/ui-layout`) 기준이다.
+    - `src/ui/main.ts`·`style.css`·`growth.ts`·`main-testkit.ts`·`main.test.ts`는 `c284e79`와 바이트까지 같다(TASK-0025가 고치지 않았다, Claude 확인). 그래서 시제품 측정을 `c284e79`·`eeb4f03` 사본에서 한 값을 그대로 쓴다.
+    - TASK-0025가 고친 파일 가운데 이 작업이 읽거나 고치는 것: `tools/browser/lib.mjs`(47행 측정 종류, 238행 단계당 15초 제한), `tools/browser/lib.test.mjs`(8행 `names` 끝이 `'route-map-fit'`, 82~103행 금지 문자열, 112~137행 dry-run), `src/ui/map-integration.test.ts`(8~42행 `start()`, 29행 `window` 흉내).
+    - 줄 번호가 다르면 코드가 사실이다. 차이는 결과 보고에 적는다.
 - 이미 들어온 작업 (그 파일을 건드리지 않는다)
-  - TASK-0025(허브 세션): `src/ui/map.ts`, `src/ui/map-fit.test.ts`, `src/ui/map-integration.test.ts`, `tools/browser/lib.mjs`, 새 `tools/browser/scenarios/route-map-fit.json`. `tools/browser/lib.test.mjs`는 이 작업이 8행 `names` 끝에 이름 다섯 개만 더한다.
+  - TASK-0025(`c896c8a`, 이번 항로 지도 폭 맞춤): `src/ui/map.ts`, `src/ui/map-fit.test.ts`, `src/ui/map-integration.test.ts`, `tools/browser/lib.mjs`, 새 `tools/browser/scenarios/route-map-fit.json`. 이 작업은 `lib.test.mjs` 8행 `names` 끝에 이름 다섯 개, `map-integration.test.ts` 29행 `window` 흉내에 `matchMedia` 하나만 더한다(구현 지시 7).
   - TASK-0026(`2de22ca`, 자료 청크 분리와 빌드 크기 한도): `vite.config.ts`, `tools/bundle-size.mjs`·`tools/check_bundle_size.mjs`·`tools/check_bundle_size.test.mjs`, `tools/ai/review_checks.sh`. 자동 검사 묶음에 크기 한도 검사와 그 시험이 더해져 수정 모드 13종·확인 모드 14종이다. 이 작업의 코드가 크기 한도 검사를 통과해야 한다(‘지켜야 할 것’).
   - 글꼴 내장(D16, `eeb4f03`): `index.html`, `public/**`, `tools/fonts/**`.
   - `vite.config.ts`·`tools/ai/`·`package.json` 등은 허브만 쓰는 파일이다(`docs/ai/SESSION_TREE.md` 63~66행).
@@ -33,7 +30,8 @@
     - 928행: 패널 열고 닫기에도 500ms 두 번 누름 막기를 건다.
     - 895행: 세 열의 Tab 순서 미룬 항목(화면 코드 순서를 바꾸지 않는다).
     - 1113~1118행 ‘자료 청크 분리와 빌드 크기 한도’: 1116행 한도(JS 청크 하나 500,000 B, 첫 화면 JS·CSS 합계 600,000 B·gzip 140,000 B), 1117행 ‘첫 화면 원본 합계의 여유가 약 44 KB라 큰 화면 기능을 더할 때 이 검사가 먼저 걸린다’.
-    - 1120~1132행 ‘세션 트리 운영 (2026-10-10 사용자 결정)’과 `docs/ai/SESSION_TREE.md`: 52행 `src/ui/*`·`tools/browser/*`는 B 세션, 58행 한 번에 한 작업만 여는 파일(`main.ts`·`main.test.ts`·`main-testkit.ts`·`style.css`·`growth.ts`·`lib.mjs`·`lib.test.mjs`), 60행 순서 ‘TASK-0025 병합 → B의 TASK-0024’, 63~66행 허브만 쓰는 파일.
+    - 1120~1134행 ‘이번 항로 지도 폭 맞춤’(TASK-0025): 지도 세로가 늘어 지도 아래 내용이 내려간다(iPad mini 245px). 시제품 측정은 TASK-0025를 얹은 사본에서도 했다(‘사전 측정’ 2절).
+    - 1136행~ ‘세션 트리 운영 (2026-10-10 사용자 결정)’과 `docs/ai/SESSION_TREE.md`: 52행 `src/ui/*`·`tools/browser/*`는 B 세션, 58행 한 번에 한 작업만 여는 파일(`main.ts`·`main.test.ts`·`main-testkit.ts`·`style.css`·`growth.ts`·`lib.mjs`·`lib.test.mjs`), 60행 순서 ‘TASK-0025 병합 → B의 TASK-0024’, 63~66행 허브만 쓰는 파일.
   - `docs/STATUS.md` 461행: 받아들인 대가 ‘한 열(1000×700)에서 Tab이 거꾸로 튀는 곳 증가 — 배치안 결정(B53)과 함께 정한다’.
   - `docs/ai/design/layout-ux04-05/README.md`(배치 시안, `3b60314` 기준으로 만들고 잼)
     - 15~28행 §2 공통·A, 296~304행 §6 장단점(공통·A), 318~329행 §7 권고, 331~355행 §8 ‘Sol 지시서에 넣을 것’.
@@ -42,7 +40,7 @@
   - `docs/ai/design/DECISION-PACKET-2026-10.md` 379~395행 D13(W3C APG 대화 상자 패턴: ‘Escape: Closes the dialog’, ‘focus returns to the element that invoked the dialog’).
   - `docs/UI_SPEC.md` 51행: 키보드 탐색·명확한 포커스.
   - `docs/ai/tasks/results/TASK-0023.md` 167~186행 Tab 순서 표(정적), 373~376행 검수의 받아들인 대가.
-  - `src/ui/pixel.ts` 82행: `typeof window.matchMedia !== 'function'`이면 지도 다시 재기를 걸지 않는다. 구현 지시 7의 확인 호출과 같은 선례다.
+  - `src/ui/pixel.ts` 82행: `typeof window.matchMedia !== 'function'`이면 지도 다시 재기를 걸지 않는다. 이 작업은 이런 확인을 새로 넣지 않고 지도 연결 시험 틀에 `matchMedia`를 더한다(구현 지시 7).
   - Claude 사전 작업(2026-10-10, 저장소 밖 작업 폴더라 찾지 않아도 된다). 결과는 아래 ‘사전 측정’에 옮겨 적었다.
     - 한 열 Tab 순서 시안 넷(O1 격자 문자열, O2 화면 코드 순서, O3a CSS `reading-flow`, O3b 한 열이면 순서를 바꿔 그림)을 7개 프로필로 쟀다. **O3b를 고른다.**
     - `eeb4f03` 사본에 이 지시서의 설계 전체(공통·A·Esc·O3b·머리 줄)를 넣은 시제품을 만들어 시험·변형 시험·측정 시나리오·키보드 측정을 돌렸다. 부록 A·B는 그 시제품의 시험 키트 추가와 시험 파일이다.
@@ -110,6 +108,13 @@
   - vitest 34개 파일·1040개 통과(할 일 1), `lib.test.mjs` 11개 통과, 크기 한도 통과(코드 청크 217,138 B, 첫 화면 561,585 B·gzip 129,679 B), 시나리오 5개 dry-run 종료 코드 0·단계 수 같음.
   - 이 사본 빌드와 TASK-0025만 얹은 빌드(둘 다 `dev`)로 시나리오 5개를 7개 프로필에서 실제로 돌렸다. 값은 아래 표와 같았다. 시제품은 모두 통과, 기준은 `card-detail-low`만 통과, 쪽 오류 0.
   - 단계 시간(부하 평균 약 2~5): 단계 하나의 최장 1.5초(`interview-hire`의 `"end-day", "times": 2`), 프로필 하나의 단계 합 최장 10.9초(`side-anchor`).
+- **`c896c8a`(TASK-0025 병합)에서 다시 확인(세션 B, 2026-10-10):** 이 사본에 시제품 패치를 넣고(충돌은 `lib.test.mjs` 8행 하나) 시험 파일은 부록 B로 바꿨다. 구현 지시 7은 이번 판(존재 확인 없이 `map-integration.test.ts` 29행에 흉내)으로 넣었다.
+  - 기준 `c896c8a`: vitest 33개 파일·1000개 통과(할 일 1), 자료 검사 25,821건, `lib.test.mjs` 11개, `check_bundle_size.test.mjs` 11개, 코드 청크 212,225 B, 첫 화면 556,087 B·gzip 128,091 B.
+  - 시제품: 형 검사 통과. vitest 34개 파일·1040개 통과(할 일 1), `lib.test.mjs` 11개 통과, 크기 한도 통과(코드 청크 217,107 B(+4,882), 첫 화면 561,554 B(+5,467)·gzip 129,673 B). 시나리오 5개 dry-run 종료 코드 0.
+  - 존재 확인만 지우고 흉내를 넣지 않으면 `map-integration.test.ts` 8개가 `TypeError: window.matchMedia is not a function`으로 실패한다. 흉내를 넣으면 `src/ui` 13개 파일·456개 통과.
+  - 변형 33종을 다시 돌렸다(완료 조건 4). M11만 표가 달라 고쳤다.
+  - 창 폭 전환을 Tab 없이 왕복하는 대조를 더 쟀다(ipadAirL, 기준·시제품 모두 `dev`). 세 단계의 초점·위치·`scrollY`가 두 빌드에서 같았다. 아래 ‘창 폭 전환’ 표의 셋째 줄.
+  - `src/ui/map.ts`는 TASK-0025 검수 전 스냅숏 `ed7df9a`와 `c896c8a`가 같다(그 뒤 바뀐 `src`는 `map-fit.test.ts`뿐). 그래서 위 ‘TASK-0025를 얹은 사본’의 시나리오 값을 그대로 쓰고 다시 재지 않았다.
 - 시험: 새 시험 파일 하나에 40개(부록 B). 기존 시험 가운데 바꾼 단언은 1개(아래 ‘바꿔도 되는 기존 단언’)이고, 그것을 바꾸기 전에는 그 1개만 실패했다.
 - HTML: M1 세 열 1일·수락·배정·예약·카드 선택 뒤·2일의 `#app` HTML이 기준과 같다(대기 명령 ID만 지우고 비교). M2 세 열 1일·수락 뒤·2일은 막대의 단추 한 줄만 다르다.
 - 변형 시험: 아래 ‘완료 조건 4’의 M01~M28이 모두 지정한 시험에서 실패했다(`eeb4f03`·`c284e79` 두 사본에서 같은 결과). 검토 때 TASK-0025를 얹은 사본에서 M29~M33을 더해 33종을 다시 돌렸고, 변형마다 실패한 시험이 그 표의 ‘실패해야 하는 시험’과 같았다. 살아남은 변형은 없다.
@@ -172,8 +177,9 @@
 | | 한 열에서 Tab 한 번 → Shift+Tab 한 번 | 지도 단추(아래로 건너뜀) → 일정 단추 | 동료 필터(보이는 다음 칸) → 일정 단추 |
 | | 1180px으로 되돌린 뒤 | 일정 단추 / 532 / 2577 | 일정 단추 / 428 / 2681(처음 자리) |
 | 동료 필터 ‘전체’(맨 위) | 세 단계 모두 | 초점 유지, 1000px 3096 / 0, 되돌린 뒤 −2472 / 2729 | 같음 |
+| 두 초점, Tab 없이 왕복(세션 B, `c896c8a`) | 1180 → 1000 → 1180: 초점 / 단추 위 / scrollY | 일정 단추 428 / 2681 → 264 / 2681 → 428 / 2681, 동료 필터 257 / 0 → 3096 / 0 → 257 / 0 | 같음 |
 
-- 되돌린 뒤 기준 값이 다른 것은 한 열 Tab이 지도 단추로 건너뛰며 쪽을 굴렸기 때문이다. 폭 전환 자체로 생긴 차이는 없다. 쪽 오류 0.
+- 되돌린 뒤 기준 값이 다른 것은 한 열 Tab이 지도 단추로 건너뛰며 쪽을 굴렸기 때문이다. Tab 없이 왕복하면 세 단계 모두 같다(셋째 줄). 폭 전환 자체로 생긴 차이는 없다. 쪽 오류 0.
 
 **UX-23 하루 진행 뒤 읽던 자리(배치 README 3절 방법, Claude 측정기 `ec.js`, 기준 → 시제품):**
 
@@ -235,8 +241,8 @@
 - CSS (`src/ui/style.css`): 61~84행 머리·막대(76~78행 `.brand`·`.sub`), 86~116행 격자(112~116행 한 열), 302~304행 `.crew-cards`, 413~414행 `.training`, 440~446행 터치 크기, 459~460행 `.training > .pill`, 514~516행 건너뛰기, 521~546행 TASK-0023 블록(파일 끝).
 - 시험 틀 (`src/ui/main-testkit.ts` 전체): 12~18행 `window` 흉내, 51~61행 `document`, 64~90행 렌더 요소와 `closest` 흉내, 96~104행 `app`, 111~130행 돌려주는 도우미. 사건 이름마다 수신기 하나를 저장한다(같은 이름을 다시 등록하면 덮어씀).
 - 시험 (`src/ui/main.test.ts`): 80~100행(TASK-0013 막대 비교, 89행), 799~806행(카드 두 번), 831~868행(격자·막대 CSS), 1234~1244행(열고 닫기 두 번), 1265~1274행(건너뛰기 CSS), 1275~1288행(세 열 화면 코드 순서), 1289~1296행(건너뛰기 첫 정지점), 1297~1311행(Shift+Tab 복원), 1318~1322행(결과 보기 Tab 한 번), 1380~1386행(빌드 표시), 1606~1617행(오늘 할 일·보고 칸 자르기), 1658~1670행(새 조작의 영역).
-- `src/ui/map-integration.test.ts` 8~31행 `start()`: 29행 `window` 흉내에 `matchMedia`가 없다(구현 지시 7의 확인 호출 이유). **TASK-0025가 고친 파일이다. 읽기만.**
-- 측정 도구(**읽기만**, `lib.test.mjs` 8행 한 줄만 고침): `tools/browser/lib.mjs`(47행 측정 종류, 61행 단계 종류, 120~137행 `tap` — 누르기 전 560ms·뒤 80ms, 145~151행 `scroll-to`, 152~157행 `remember`는 id가 있어야 함, 231행 단계당 15초 제한), `tools/browser/lib.test.mjs`(8행 `names`, 69~90행 금지 문자열, 99~124행 dry-run), `tools/browser/profiles.json`, 기존 시나리오 8개(TASK-0025 뒤 9개). `<BASE>`에서 `lib.mjs` 231행은 238행, `lib.test.mjs` 69~90·99~124행은 82~103·112~137행이다(머리말 ‘TASK-0025가 바꾸는 줄’).
+- `src/ui/map-integration.test.ts` 8~42행 `start()`: 29행 `window` 흉내에 `matchMedia`가 없다. 이 줄에 흉내 하나만 더한다(구현 지시 7). 11행 `ResizeObserver` 흉내가 있어, 더하면 `pixel.ts` 82행의 조기 반환이 풀린다(Claude 확인: 그래도 `src/ui` 13개 파일·456개 통과).
+- 측정 도구(**읽기만**, `lib.test.mjs` 8행 한 줄만 고침): `tools/browser/lib.mjs`(47행 측정 종류, 61행 단계 종류, 120~137행 `tap` — 누르기 전 560ms·뒤 80ms, 145~151행 `scroll-to`, 152~157행 `remember`는 id가 있어야 함, 238행 단계당 15초 제한), `tools/browser/lib.test.mjs`(8행 `names`, 82~103행 금지 문자열, 112~137행 dry-run), `tools/browser/profiles.json`, 기존 시나리오 9개(TASK-0025의 `route-map-fit` 포함).
 - 크기 한도: `tools/check_bundle_size.mjs`(TASK-0026)와 `tools/ai/review_checks.sh`(빌드 뒤 크기 한도 검사). **읽기만.**
 - 위 ‘결정 근거’의 문서 줄. 특히 배치 README 15~28·296~304·331~355행.
 
@@ -272,6 +278,7 @@
 - `src/ui/growth.ts`: 65행 한 줄만(구현 지시 3).
 - `src/ui/main-testkit.ts`: 흉내와 도우미를 **더하기만** 한다. 기존 흉내의 동작은 바꾸지 않는다(부록 A).
 - `src/ui/main.test.ts`: 89행 단언 하나만 바꾸고, 그 시험 안에 줄을 더한다(아래 ‘바꿔도 되는 기존 단언’). 그 밖에는 손대지 않는다.
+- `src/ui/map-integration.test.ts`: 29행 `window` 흉내 객체 끝에 `matchMedia: () => ({ matches: false, addEventListener: () => undefined })` 하나만 더한다(구현 지시 7). 그 밖에는 손대지 않는다.
 - 새 파일 `src/ui/layout.test.ts`(부록 B).
 - 새 측정 시나리오 5개: `tools/browser/scenarios/queue-chip.json`, `card-detail.json`, `card-detail-low.json`, `interview-hire.json`, `side-anchor.json`.
 - `tools/browser/lib.test.mjs`: 8행 `names` 배열 끝(TASK-0025가 더한 `'route-map-fit'` 뒤)에 위 다섯 이름을 더하는 한 줄만. 배열의 기존 이름은 지우거나 순서를 바꾸지 않는다.
@@ -281,7 +288,7 @@
 ## 손대지 않을 파일
 
 - 위 목록에 없는 모든 파일. 특히:
-  - TASK-0025 파일(허브 세션 소유): `src/ui/map.ts`, `src/ui/map-fit.test.ts`, `src/ui/map-integration.test.ts`, `tools/browser/lib.mjs`, `tools/browser/scenarios/route-map-fit.json`.
+  - TASK-0025 파일: `src/ui/map.ts`, `src/ui/map-fit.test.ts`, `tools/browser/lib.mjs`, `tools/browser/scenarios/route-map-fit.json`. `map-integration.test.ts`는 29행 한 곳만(위 목록).
   - TASK-0026 파일: `vite.config.ts`, `tools/bundle-size.mjs`, `tools/check_bundle_size.mjs`, `tools/check_bundle_size.test.mjs`, `tools/ai/**`(`review_checks.sh` 포함).
   - 글꼴(D16): `index.html`, `public/**`(`public/fonts/**` 포함), `tools/fonts/**`.
   - 허브만 쓰는 저장소 설정(`docs/ai/SESSION_TREE.md` 63~66행): `CLAUDE.md`, `AGENTS.md`, `.github/**`, `tools/ai/**`, `package.json`, `package-lock.json`, `vite.config.ts`, `PACKAGE_STATUS.json`.
@@ -299,7 +306,7 @@
 
 - 커밋·푸시·브랜치 전환을 하지 않는다. git으로 파일을 되돌리거나 stash하지 않는다.
 - 기존 시험의 단언은 ‘바꿔도 되는 기존 단언’의 하나만 바꾼다. 다른 기존 시험이 실패하면 설계가 어긋난 것이다. 원인을 찾고, 못 찾으면 보고한다.
-- **시험 환경을 피하려고 `?.` 선택 호출이나 존재 확인을 새로 넣지 않는다. 시험 틀을 넓힌다(TASK-0014 검수 기록).** 예외는 하나다: `window.matchMedia`가 함수인지 확인하는 줄(구현 지시 7). 지도 연결 시험 틀(`map-integration.test.ts`, TASK-0025가 고친 파일이고 이 작업에서는 손대지 않는다)의 `window`에 `matchMedia`가 없기 때문이다. 같은 확인이 `pixel.ts` 82행에 이미 있다. 이 확인 말고는 `?.`·`typeof … === 'function'`을 시험 때문에 쓰지 않는다. 실제 DOM에서 없을 수 있는 요소(`querySelector` 결과 등)를 다루는 `?.`·`if`는 괜찮다.
+- **시험 환경을 피하려고 `?.` 선택 호출이나 존재 확인을 새로 넣지 않는다. 시험 틀을 넓힌다(TASK-0014 검수 기록).** 예외는 없다. `window.matchMedia`가 없는 지도 연결 시험 틀은 그 틀에 흉내를 더한다(구현 지시 7). 실제 DOM에서 없을 수 있는 요소(`querySelector` 결과 등)를 다루는 `?.`·`if`는 괜찮다.
 - 키보드·초점 시험은 실제 Chromium 순서를 따른다: Tab keydown → (화면 이동) → focusin → Enter keydown → click. Esc는 document의 keydown 하나로 온다(DECISIONS 1036행).
 - 새로 쓰는 시험 줄에 도시·견적·노선·사건·직원·계약·업무·장소 ID와 도시 이름을 쓰지 않는다.
   - 금지 예: `PYEONGTAEK`, `BUSAN`, `HAIPHONG`, `SHANGHAI`, `OFFER_*`, `ROUTE01`, `EVI_*`, `EMP01`, `EMP04`, `CT001`, `TASK001`, `VEN_PORT`, ‘평택’, ‘부산’, ‘하이퐁’, ‘상하이’.
@@ -594,9 +601,8 @@ function closeTopLayer(ev: KeyboardEvent) {
   ```ts
   /** 한 열 배치 조건. style.css 112행 `@media (max-width: 1000px)`와 같은 글자다. */
   const ONE_COLUMN_QUERY = '(max-width: 1000px)';
-  // 지도 연결 시험 틀(map-integration.test.ts)의 window에는 matchMedia가 없다. 그 틀에서만 세 열로 본다.
-  const oneColumnQuery = typeof window.matchMedia === 'function' ? window.matchMedia(ONE_COLUMN_QUERY) : null;
-  function isOneColumn(): boolean { return oneColumnQuery !== null && oneColumnQuery.matches; }
+  const oneColumnQuery = window.matchMedia(ONE_COLUMN_QUERY);
+  function isOneColumn(): boolean { return oneColumnQuery.matches; }
   /** 한 열 여부가 바뀌면(회전·창 크기) 패널 순서를 다시 그린다. 초점은 같은 조작에 그대로 두고 굴리지 않는다. */
   function onColumnChange() {
     const was = document.activeElement as HTMLElement | null;
@@ -607,10 +613,11 @@ function closeTopLayer(ev: KeyboardEvent) {
       .find((el) => el.tagName === key.tag && Object.entries(key.data).every(([k, v]) => el.dataset[k] === v));
     if (again) again.focus({ preventScroll: true });
   }
-  if (oneColumnQuery) oneColumnQuery.addEventListener('change', onColumnChange);
+  oneColumnQuery.addEventListener('change', onColumnChange);
   ```
   - `render(true)`는 기존 초점 복원(931~940행)을 건너뛴다. 기존 복원은 화면 밖 대상을 ‘하루 진행’으로 보낸다(`focusWithoutScroll`). 폭이 바뀌는 순간 초점은 화면 밖일 수 있으므로 쓰지 않는다(O3b → O3b2 수정).
-  - `window.matchMedia` 확인은 ‘지켜야 할 것’의 유일한 예외다. 결과 보고 ‘설계 판단’에 적는다.
+  - `main.ts`는 모듈을 읽을 때 `window.matchMedia`를 부른다. `src/ui/map-integration.test.ts` 29행 `window` 흉내에는 이것이 없어 그 파일의 시험 8개가 `TypeError: window.matchMedia is not a function`으로 실패한다(Claude 확인). 그 줄의 흉내 객체 끝에 `matchMedia: () => ({ matches: false, addEventListener: () => undefined })`를 더한다. 존재 확인(`typeof`)을 넣어 피하지 않는다.
+    - 이 흉내가 생기면 같은 틀의 `ResizeObserver` 흉내(11행)와 함께 `pixel.ts` 82행 조기 반환이 풀려 `applyPixelScale`이 실제로 돈다. Claude 시제품에서 `src/ui` 13개 파일·456개가 그대로 통과했다. 지도 연결 시험이 하나라도 실패하면 흉내를 고치지 말고 결과 보고에 적는다.
 - 883~888행의 여섯 줄을 아래 한 덩어리로 바꾼다. **세 열 HTML은 패널 사이 글자(줄바꿈·공백)까지 지금과 같아야 한다.** 패널 함수들은 `\n  <section …`처럼 줄바꿈으로 시작하므로, 지금 템플릿과 같은 `'\n      '`로 잇는다.
   ```ts
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
@@ -631,7 +638,7 @@ function closeTopLayer(ev: KeyboardEvent) {
 
 ### 9. 측정 시나리오 5개 (시간이 모자라면 뺄 수 있음 1번)
 
-`tools/browser/scenarios/`에 아래 JSON을 그대로 쓴다. 선택자는 화면 속성과 id만 쓴다. 도시·견적·직원 ID가 없다(`lib.test.mjs` 69~90행 검사).
+`tools/browser/scenarios/`에 아래 JSON을 그대로 쓴다. 선택자는 화면 속성과 id만 쓴다. 도시·견적·직원 ID가 없다(`lib.test.mjs` 82~103행 검사).
 
 - `scroll-to`를 두 번 쓰는 이유: 페이지 맨 위에서 한 번 굴리면 머리 영역이 사라져 막대 아래 끝이 위로 올라간다. 첫 굴림 뒤의 막대 기준으로 다시 맞춘다. 세 열에서 동료 칸은 페이지 맨 위에 있어 더 위로 굴릴 수 없으면 맨 위 그대로다(`card_before`가 40보다 크다).
 - 기대의 프로필별 상한은 ‘띠 아래 끝 − 단추 높이’다. 막대 높이 마우스 72.3px·터치 79·79.5px, 단추 높이 마우스 37.3px·터치 44px, 화면 높이는 `profiles.json`이다. 펼침 띠 상한은 72px 예약과 8px 여백을 뺀 ‘화면 높이 − 80 − 단추 높이 − 막대 높이 + 1’이다(+1은 반올림 여유).
@@ -867,7 +874,7 @@ function closeTopLayer(ev: KeyboardEvent) {
   - 다섯 시나리오 `--dry-run` 모두 종료 코드 0. 출력은 `{"dry_run": true, "scenario": "<이름>", "profiles": ["l1366", "cb1366t", "ipadAirL", "ipadminiL", "ipadmini6L", "l1920", "t1000"], "steps": <수>}`이고 `steps`는 queue-chip 13, card-detail 18, card-detail-low 9, interview-hire 20, side-anchor 27.
   - 위 다섯 이름을 넣은 `lib.test.mjs` 10개 통과(금지 문자열 검사 포함). TASK-0025의 측정 종류 두 개는 이 시나리오들이 쓰지 않는다(`top-from-bar`·`height`·`moved`·`overflow-x`만 쓴다).
   - 실제 실행(7개 프로필, 시제품 빌드, 부하 평균 약 10): 7개 프로필 합으로 queue-chip 46초, card-detail 46초, card-detail-low 30초, interview-hire 75초, side-anchor 90초. 프로필 하나에 가장 긴 side-anchor가 약 13초(쪽 열기 포함, 27단계)이고, 단계 하나는 평균 0.5초 안팎이다.
-  - 가장 긴 단계는 `"end-day", "times": 2`(누름 두 번 × 대기 560ms + 80ms, 가려졌으면 +100ms, 하루 처리 포함 약 1.5~2초)다. 단계당 15초 제한(`lib.mjs` 231행)의 1/7 아래다. 부하 평균이 13~38일 때(`eeb4f03` 빌드로 잰 첫 측정)도 side-anchor 7개 프로필 합이 100초(프로필당 약 14초, 단계당 평균 약 0.5초)였다. `end-day`는 한 단계에 2번까지만 쓴다.
+  - 가장 긴 단계는 `"end-day", "times": 2`(누름 두 번 × 대기 560ms + 80ms, 가려졌으면 +100ms, 하루 처리 포함 약 1.5~2초)다. 단계당 15초 제한(`lib.mjs` 238행)의 1/7 아래다. 부하 평균이 13~38일 때(`eeb4f03` 빌드로 잰 첫 측정)도 side-anchor 7개 프로필 합이 100초(프로필당 약 14초, 단계당 평균 약 0.5초)였다. `end-day`는 한 단계에 2번까지만 쓴다.
   - 값은 `eeb4f03` 빌드와 `c284e79` 빌드에서 두 빌드(기준·시제품) 모두 7개 프로필의 모든 값이 같았다.
 
 ### 10. 결과 보고
@@ -986,8 +993,8 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 | 닫은 뒤 500ms 막기는 키보드에 불편하지 않나 | 건다. 패널 열고 닫기의 규칙(DECISIONS 928행)과 같고, 현지 패널은 `closeCulture`가 이미 건다 |
 | Esc로 닫을 때 굴리지 않을까 | 연 단추가 띠 밖이면 최소 거리만 굴린다. 초점은 보여야 한다 |
 | 한 열 판정을 `innerWidth <= 1000`으로 할까 | 하지 않는다. `matchMedia`가 CSS와 같은 판정이다. 소수 폭(확대)에서 어긋나지 않는다 |
-| `matchMedia` 확인 호출은 규칙 위반 아닌가 | 유일한 예외로 허용한다. 지도 연결 시험 틀(TASK-0025가 고친 파일, 이 작업은 손대지 않음)에 흉내가 없다. `pixel.ts` 82행에 같은 확인이 있다. 병합 뒤 Claude가 그 틀에 흉내를 넣고 확인을 지울지 정한다 |
-| `<BASE>`에 TASK-0025가 없다 | 그대로 진행한다. `lib.test.mjs` 8행 `names`는 지금 목록 끝에 다섯 이름을 더한다. 결과 보고에 적는다 |
+| `matchMedia`가 없는 지도 연결 시험 틀은 | 존재 확인을 넣지 않고 그 틀(29행)에 흉내 하나를 더한다. TASK-0025가 병합돼 이 파일을 이 작업이 고칠 수 있다. `pixel.ts` 82행의 옛 확인은 그대로 둔다 |
+| `<BASE>`에 TASK-0025가 없다 | 그럴 수 없다(`<BASE>`는 `c896c8a` 뒤). 없으면 멈추고 결과 보고에 적는다 |
 | `lib.test.mjs` 8행에 TASK-0025의 `'route-map-fit'`이 있다 | 그 뒤에 다섯 이름을 더한다. 기존 이름은 그대로 둔다 |
 | 크기 한도 검사가 실패한다 | 이 작업이 더한 코드에서 원인을 찾는다. `vite.config.ts`·검사기·한도를 고치지 않는다(허브 전용·TASK-0026). 못 줄이면 멈추고 결과 보고에 적는다 |
 | 자동 검사 종 수가 13·14와 다르다 | 출력 끝줄을 그대로 적는다. 검사 스크립트를 고치지 않는다 |
@@ -1013,31 +1020,32 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
      node --test tools/check_bundle_size.test.mjs
      npm run --silent build && node tools/check_bundle_size.mjs dist
      ```
-     - Claude 확인값(`c284e79`, TASK-0025 전): vitest 32개 파일·973개 통과(할 일 1), 자료 검사 25,817건, `lib.test.mjs` 10개, `check_bundle_size.test.mjs` 11개, 코드 청크 212,001 B·첫 화면 합계 555,863 B(gzip 127,974 B).
-     - `<BASE>`에는 TASK-0025가 들어 있어 vitest 파일·시험, `lib.test.mjs` 시험, 자료 검사 건수, 코드 청크가 위보다 많다. 시작 값은 직접 잰 값을 쓴다.
+     - Claude 확인값(`c896c8a`): vitest 33개 파일·1000개 통과(할 일 1), 자료 검사 25,821건, `lib.test.mjs` 11개, `check_bundle_size.test.mjs` 11개, 코드 청크 212,225 B·첫 화면 합계 556,087 B(gzip 128,091 B).
+     - `<BASE>`의 자료 검사 건수는 지시서·MANIFEST 커밋 때문에 위와 다를 수 있다. 시작 값은 직접 잰 값을 쓴다.
    - 끝내기 전에 결과 보고 파일을 먼저 만든 뒤 아래를 순서대로 실행한다.
      ```
      bash tools/ai/review_checks.sh <BASE>
      bash tools/ai/review_checks.sh --check <BASE>
      ```
      - 수정 모드 13종, 확인 모드 14종이 모두 통과해야 한다(TASK-0026의 크기 한도 검사와 그 시험 포함). 종 수가 다르면 출력 끝줄을 그대로 적는다.
-     - vitest: 시작 값 + 파일 1개(`layout.test.ts`) + 시험 40개, 모두 통과(할 일 1). Claude 시제품은 `c284e79`에서 32개 파일·973개 → 33개 파일·1013개였다.
+     - vitest: 시작 값 + 파일 1개(`layout.test.ts`) + 시험 40개, 모두 통과(할 일 1). Claude 시제품은 `c896c8a`에서 33개 파일·1000개 → 34개 파일·1040개였다.
      - 자료 검사 PASS, 시작 값 + 12건(시나리오 5개 + 결과 보고 1개가 MANIFEST에 든다. `src/`는 MANIFEST에 없다). 다르면 새로 든 파일 목록을 보고에 적는다.
      - 파이썬 시험: 그림 도구 21개, 지도 21개(3개 건너뜀), 자료 검사기 74개, 사실 섞임 20개 그대로. 사실 섞임 검사 PASS.
      - node 시험: `lib.test.mjs`는 시작 값 그대로(이름만 늘어남), `check_bundle_size.test.mjs` 11개 통과.
-     - 크기 한도 검사 통과. 결과 보고에 `node tools/check_bundle_size.mjs dist` 출력 전체를 붙이고, 코드 청크와 첫 화면 합계의 시작 값 대비 증가를 적는다(Claude 시제품 +4,914 B·+5,499 B).
+     - 크기 한도 검사 통과. 결과 보고에 `node tools/check_bundle_size.mjs dist` 출력 전체를 붙이고, 코드 청크와 첫 화면 합계의 시작 값 대비 증가를 적는다(Claude 시제품 `c896c8a` 기준 +4,882 B·+5,467 B).
    - 시나리오 5개 `node tools/browser/measure.mjs --dist dist --scenario tools/browser/scenarios/<이름>.json --dry-run`이 종료 코드 0이고, 출력의 `profiles`가 7개 이름(`l1366`·`cb1366t`·`ipadAirL`·`ipadminiL`·`ipadmini6L`·`l1920`·`t1000`), `steps`가 구현 지시 9의 수와 같다.
 3. **바꾼 범위 확인** (출력을 결과 보고에 붙인다)
    - `git diff --name-only <BASE>`와 `git status --short --untracked-files=all`의 파일이 모두 ‘고칠 수 있는 파일’ 안에 있다.
    - 다음 출력이 비어 있다:
      ```
-     git diff <BASE> -- src/engine src/content data tests schemas scripts vite.config.ts index.html public package.json package-lock.json tsconfig.json CLAUDE.md AGENTS.md .github PACKAGE_STATUS.json src/ui/session.ts src/ui/recruitment.ts src/ui/culture.ts src/ui/card.ts src/ui/focus.ts src/ui/reports.ts src/ui/schedule.ts src/ui/map.ts src/ui/map-fit.test.ts src/ui/map-integration.test.ts src/ui/pixel.ts tools/browser/lib.mjs tools/browser/measure.mjs tools/browser/profiles.json tools/browser/README.md tools/ai tools/bundle-size.mjs tools/check_bundle_size.mjs tools/check_bundle_size.test.mjs tools/fonts docs/USABILITY_TEST_M2A.md docs/STATUS.md docs/DECISIONS.md docs/ai/SESSION_TREE.md docs/ai/WORKFLOW.md
+     git diff <BASE> -- src/engine src/content data tests schemas scripts vite.config.ts index.html public package.json package-lock.json tsconfig.json CLAUDE.md AGENTS.md .github PACKAGE_STATUS.json src/ui/session.ts src/ui/recruitment.ts src/ui/culture.ts src/ui/card.ts src/ui/focus.ts src/ui/reports.ts src/ui/schedule.ts src/ui/map.ts src/ui/map-fit.test.ts src/ui/pixel.ts tools/browser/lib.mjs tools/browser/measure.mjs tools/browser/profiles.json tools/browser/README.md tools/ai tools/bundle-size.mjs tools/check_bundle_size.mjs tools/check_bundle_size.test.mjs tools/fonts docs/USABILITY_TEST_M2A.md docs/STATUS.md docs/DECISIONS.md docs/ai/SESSION_TREE.md docs/ai/WORKFLOW.md
      git diff <BASE> -- tools/browser/scenarios ':!tools/browser/scenarios/queue-chip.json' ':!tools/browser/scenarios/card-detail.json' ':!tools/browser/scenarios/card-detail-low.json' ':!tools/browser/scenarios/interview-hire.json' ':!tools/browser/scenarios/side-anchor.json'
      ```
    - 지운 줄 확인. 각 출력의 줄 수가 괄호 안과 같다:
      ```
      git diff <BASE> -- src/ui/main.test.ts | grep '^-[^-]'          # 1줄(89행)
      git diff <BASE> -- tools/browser/lib.test.mjs | grep '^-[^-]'   # 1줄(8행)
+     git diff <BASE> -- src/ui/map-integration.test.ts | grep -c '^[-+][^-+]'   # 2(29행을 지우고 같은 줄 끝에 matchMedia 흉내를 더한 줄)
      git diff <BASE> -- src/ui/growth.ts | grep '^-[^-]'             # 1줄(65행)
      git diff <BASE> -- src/ui/style.css | grep '^-[^-]'             # 0줄
      git diff <BASE> -- src/ui/main-testkit.ts | grep '^-[^-]'       # 결과 보고에 모두 적고 이유를 단다(더하기만이 원칙)
@@ -1071,7 +1079,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
    | M08 Esc 고정 순서 | `closeTopLayer`의 `reduce(…)` → `layers[0]!` | 28 |
    | M09 Esc 초점 복귀 없음 | `revealOpener(…)` 줄 지움 | 24 |
    | M10 Esc 뒤 500ms 없음 | `closeTopLayer`의 `ignoreClicksUntil` 줄 지움 | 24 |
-   | M11 열린 칸이 없어도 기본 동작 막음 | `ev.preventDefault()`를 `if (!layers.length) return;` 앞으로 | 24, 29 |
+   | M11 열린 칸이 없어도 기본 동작 막음 | `ev.preventDefault()`를 `if (!layers.length) return;` 앞으로 | 29 |
    | M12 반복 Esc 허용 | `!ev.repeat &&` 지움 | 30 |
    | M13 한 열 분기 제거 | `isOneColumn() ?` → `false ?` | 37, 38 |
    | M14 한 열 보고·지도 순서 바꿈 | 한 열 배열의 `reportPanel, worldMap` → `worldMap, reportPanel` | 37 |
@@ -1095,7 +1103,8 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
    | M32 현지 패널을 열 때 순번 없음 | `openCulture`의 `markOpened('local');` 지움 | 28 |
    | M33 기록장을 열 때 순번 없음 | `if (ui.cultureBookOpen) markOpened('book');` 지움 | 27 |
 
-   - M29~M33은 검토(2026-10-10) 때 더했다. M29~M31은 처음 판 부록 B에서 살아남아 시험 24·26·28에 단언을 더했다. 33종 모두 지금 부록 B로 지정한 시험에서 실패한다(TASK-0025를 얹은 사본에서 확인).
+   - M29~M33은 검토(2026-10-10) 때 더했다. M29~M31은 처음 판 부록 B에서 살아남아 시험 24·26·28에 단언을 더했다. 33종 모두 지금 부록 B로 지정한 시험에서 실패한다.
+   - 세션 B가 `c896c8a` 사본(부록 A·B, 구현 지시 7의 시험 틀 흉내)에서 33종을 다시 돌렸다. 실패한 시험이 표와 모두 같았다. M11은 초안 표에 ‘24, 29’였으나 실제로는 29만 실패해 표를 고쳤다(시험 24의 Esc는 언제나 열린 칸이 있을 때라 `preventDefault` 위치와 무관하다).
    - Claude도 검수 때 이 표를 다시 돌린다.
 5. **Claude가 잴 것 (Codex는 하지 않는다).** Chromium 7개 프로필. 시나리오는 `tools/browser/measure.mjs`(실제 배율, `docs/ai/WORKFLOW.md` 119~121행), 키보드·읽던 자리·UX-23·창 폭 전환은 Claude 측정기(저장소 밖)로 잰다. `<BASE>` 빌드와 이 작업 빌드를 같은 명령으로, 둘 다 저장소 밖 `git archive` 사본에서 빌드해 빌드 표시를 `dev`로 맞춰 잰다(DECISIONS 1065행). 괄호 안은 Claude 시제품 값이다(‘사전 측정’).
    - **키보드(현지 패널 이름 보정 판정):**
@@ -1104,7 +1113,10 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
      - Shift+Tab으로 고정 영역에 갈 때 마지막 튐 0±8px(0). 가려진 정지점 수가 `<BASE>`와 같다.
      - 하루 진행 뒤 ‘결과 보기’까지 Tab 1번, Enter 뒤 초점이 결과 카드 제목(같음).
    - **한 열 위치:** t1000 1일 ‘오늘 할 일’ 페이지 y 2680±1, T1 뒤 띠 아래 133.5±1px, 하루 진행에서 오늘 할 일까지 Tab 10·15·14(1일·T1·2일). 세 열 6개 프로필은 `<BASE>`와 같은 값(26·31·30).
-   - **창 폭 전환(1180×820 → 1000×700 → 1180×820):** 일정 단추·동료 필터 ‘전체’에 초점을 둔 두 경우 모두, 1000px으로 바꾼 직후 초점이 같은 조작에 있고 그 단추 위치·`scrollY`가 `<BASE>`와 같다(264 / 2681, 3096 / 0). 한 열에서 Tab 한 번은 일정 단추 → 동료 필터로 간다. 1180px으로 되돌린 뒤에도 초점이 같은 조작에 있다. 쪽 오류 0.
+   - **창 폭 전환(1180×820 → 1000×700 → 1180×820):** 일정 단추·동료 필터 ‘전체’에 초점을 둔 두 경우를 잰다.
+     - Tab 없이 왕복: 세 단계 모두 초점이 같은 조작에 있고 그 단추 위치·`scrollY`가 `<BASE>`와 같다(일정 단추 428 / 2681 → 264 / 2681 → 428 / 2681, 동료 필터 257 / 0 → 3096 / 0 → 257 / 0).
+     - 한 열에서 Tab 한 번 → Shift+Tab 한 번을 끼우면: 1000px으로 바꾼 직후 값은 위와 같고, Tab 한 번은 일정 단추 → 동료 필터로 간다. 1180px으로 되돌린 뒤에도 초점이 같은 조작에 있다. 되돌린 뒤 위치는 `<BASE>`와 다를 수 있다(`<BASE>`의 Tab이 지도 단추로 건너뛰며 쪽을 굴린다). 기록만 한다.
+     - 쪽 오류 0.
    - **읽던 자리 32사례(TASK-0012 측정기):** `<BASE>`보다 1px 넘게 나빠진 곳 0(7개 프로필). 키보드 4사례는 ‘하루 진행’ 바로 앞 정지점에서 Tab 한다.
    - **UX-23(배치 README 3절 방법, 현지 패널을 연 채 그 칸 위에서 굴려 읽다 하루 진행):**
      - RQ·RQB·RR: 읽던 제목 이동이 세 열 6개 프로필에서 ±1px(−0.3~0.4).
@@ -1131,7 +1143,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 `docs/ai/tasks/results/TASK-0024.md`에 머리말 형식(`CODEX_PREAMBLE.md`)으로 쓴다. 다음 절을 꼭 넣는다.
 
 - **바꾼 파일**
-- **설계 판단:** 지시서에 없던 결정과 이유. `matchMedia` 확인 호출(구현 지시 7)을 여기 적는다.
+- **설계 판단:** 지시서에 없던 결정과 이유.
 - **실행한 검증과 결과:** 시작 HEAD 해시와 `git diff --name-only <BASE> HEAD` 출력, `<BASE>`에 TASK-0025가 들어 있는지(`git log --oneline -3 -- src/ui/map.ts`). 시작 전 기준 값(vitest 파일·시험, 자료 검사 건수, node 시험 두 묶음의 수, 코드 청크·첫 화면 합계). 명령별 통과·실패와 개수, `review_checks.sh` 두 모드의 끝줄. `node tools/check_bundle_size.mjs dist` 출력 전체와 시작 값 대비 증가. 시나리오 `--dry-run` 출력 다섯 개.
 - **완료 조건 대조:** 조건마다 충족·미충족과 근거. 뺀 항목은 ‘미충족(시간)’.
 - **바꾼 기존 단언:** 89행 하나. 완료 조건 3의 `grep '^-[^-]'` 출력을 붙인다.
@@ -1143,7 +1155,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
   - 면담 제목(`recruitment.ts` 97행)에 `tabindex="-1"`이 없어 제목으로 초점을 옮길 수 없다. 이 작업은 면담 단추로 초점을 돌려주므로 필요 없었는지.
   - 한 열에서 현지 패널을 연 채 자원 예약을 읽다 견적이 만료되는 날 하루를 진행하면 자원 제목이 크게 움직이는 것(‘반례와 대가’)이 시험 틀로 재현되는지.
   - 세로 태블릿 폭(768~840px)에서 고정 막대가 두 줄로 접히는 폭.
-  - `window.matchMedia` 확인을 지울 수 있게 지도 연결 시험 틀에 넣을 흉내(한 줄 제안).
+  - `map-integration.test.ts`에 `matchMedia` 흉내를 더한 뒤 `pixel.ts` 82행의 조기 반환이 풀려 그 시험들이 새로 지나는 코드가 있는지(있으면 무엇인지 한두 줄).
 - **질문:** 기본값으로 처리했지만 Claude의 확인이 필요한 것. 없으면 ‘없음’. 적어도 Esc 대상 확대(일정 펼침·`<details>`) 의견과 세로 태블릿 막대 의견을 적는다.
 
 브라우저 측정은 하지 않는다. 했다면 실제 배율 방식(WORKFLOW 119~121행)인지 적는다.
