@@ -1,3 +1,4 @@
+import { operationsProblems } from './operations-invariants';
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
 
 import { cultureProblems } from './culture-invariants';
@@ -12,7 +13,7 @@ import type { GameState, ScenarioConfig } from './types';
 export class InvariantError extends Error {}
 
 export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { closing?: boolean } = {}): void {
-  const problems = cultureProblems(s, config, opts.closing ?? false);
+  const problems = [...cultureProblems(s, config, opts.closing ?? false), ...operationsProblems(s, config, opts.closing ?? false)];
   if (new Set(s.tasks.map((task) => task.id)).size !== s.tasks.length) problems.push('업무 ID는 유일해야 합니다');
   if (new Set(s.employees.map((emp) => emp.id)).size !== s.employees.length) problems.push('직원 ID는 유일해야 합니다');
   if (new Set(s.contracts.map((c) => c.id)).size !== s.contracts.length) problems.push('계약 ID는 유일해야 합니다');

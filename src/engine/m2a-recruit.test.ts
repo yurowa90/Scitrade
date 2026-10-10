@@ -323,8 +323,8 @@ describe('저장 이관·기준 경로·불변 조건', () => {
     for (const e of file.state.employees) delete e.availableFromDay;
     for (const t of file.state.tasks) delete t.subjectId;
     const restored = deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
-    expect(SAVE_FORMAT_VERSION).toBe(5);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(5);
+    expect(SAVE_FORMAT_VERSION).toBe(6);
+    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(restored).toEqual(original);
     for (const currency of ['KRW', 'USD'] as const) {
       expect(summarize(restored.ledger, currency)).toEqual(summarize(original.ledger, currency));

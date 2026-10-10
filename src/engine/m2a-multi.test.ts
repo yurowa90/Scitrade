@@ -10,7 +10,7 @@ import { summarize } from './ledger';
 import { toMinor } from './money';
 import { companyReport, contractReport, forwardingPreview, tradePairs, tradePreview } from './reports';
 import { cashReservations, fundsPosition } from './reservations';
-import { SaveError, deserializeSave, serializeSave } from './save';
+import { SaveError, deserializeSave, serializeSave, SAVE_FORMAT_VERSION } from './save';
 import { runDays, standardDayOneCommands, type DayScript } from './testkit';
 import type { Command, GameState, ScenarioConfig } from './types';
 
@@ -272,7 +272,7 @@ describe('저장 판본 2와 이관', () => {
     for (const l of v1.state.cargoLots) delete l.ownerPartyId;
     const migrated = deserializeSave(JSON.stringify(v1), { dataVersion: m1.dataVersion, rulesVersion: 'M1-rules-1' });
     expect(migrated).toEqual(atDay3);
-    expect(JSON.parse(serializeSave(migrated)).formatVersion).toBe(5);
+    expect(JSON.parse(serializeSave(migrated)).formatVersion).toBe(SAVE_FORMAT_VERSION);
     for (const currency of ['USD', 'KRW'] as const) {
       expect(summarize(migrated.ledger, currency)).toEqual(summarize(atDay3.ledger, currency));
     }

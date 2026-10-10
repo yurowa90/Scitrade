@@ -1,3 +1,5 @@
+import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
+import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
 // openDay: 당일 사건을 한 번 적용·공개하고 입력을 기다린다.
 // commitDay: 명령 검증·실행부터 운송·인도·결제·마감까지 고정 순서로 처리한다.
@@ -10,7 +12,6 @@ import {
   findSailing,
   goodOf,
   listSailings,
-  offerOf,
   routeBetween,
   routeOf,
   unitKo,
@@ -24,7 +25,7 @@ import {
   ENGINE_VERSION,
   EngineError,
   type Booking,
-  type Command,
+  type EngineCommand,
   type CommandResult,
   type CommitPlan,
   type Contract,
@@ -97,6 +98,7 @@ export function createGame(config: ScenarioConfig): GameState {
       scoutedVenueIds: [],
     },
     culture: { reports: [], experiences: [], relationEvents: [] },
+    operations: config.operations ? { batches: [batchZero(config)], offers: [], expansions: [], handlingLog: [], spaceContracts: [], exchanges: [], defaultEvents: [], outcome: 'IN_PROGRESS', failure: null } : null,
     invoices: [],
     obligations: [],
     notices: [],
@@ -159,7 +161,7 @@ export function openDay(state: GameState, config: ScenarioConfig): { state: Game
 // ── 명령 ──
 
 /** 상태를 바꾸지 않고 같은 날 대기 중인 명령들을 누적 검증한다. */
-export function planCommands(state: GameState, config: ScenarioConfig, commands: Command[]): CommandResult[] {
+export function planCommands(state: GameState, config: ScenarioConfig, commands: EngineCommand[]): CommandResult[] {
   return planState(state, config, commands).results;
 }
 
@@ -170,19 +172,26 @@ export function planCommands(state: GameState, config: ScenarioConfig, commands:
 export function planState(
   state: GameState,
   config: ScenarioConfig,
-  commands: Command[],
+  commands: EngineCommand[],
 ): { state: GameState; results: CommandResult[] } {
   const s = clone(state);
   const results = commands.map((cmd) => applyCommand(s, config, cmd));
   return { state: s, results };
 }
 
-function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): CommandResult {
+function applyCommand(s: GameState, config: ScenarioConfig, cmd: EngineCommand): CommandResult {
   if (s.processedCommands[cmd.id]) {
     return { commandId: cmd.id, status: 'DUPLICATE', reasonKo: '이미 처리한 명령 ID입니다. 다시 실행하지 않습니다.' };
   }
   let rejection: string | null;
-  switch (cmd.type) {
+  if (config.operations && s.phase !== 'AWAITING_INPUT') {
+    rejection = s.phase === 'ENDED' ? (s.operations?.outcome === 'FAILED' ? '캠페인이 끝났습니다(경영 실패).' : '캠페인이 끝났습니다.') : '하루를 연 뒤에 명령을 실행할 수 있습니다.';
+  } else switch (cmd.type) {
+    case 'EXCHANGE_CURRENCY':
+    case 'EXPAND_WAREHOUSE':
+    case 'SIGN_SPACE_CONTRACT':
+      rejection = applyOperationsCommand(s, config, cmd);
+      break;
     case 'START_CULTURE_ACTIVITY':
       rejection = startCultureActivity(s, config, cmd.activityId, cmd.employeeId);
       break;
@@ -190,7 +199,7 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: Command): Comma
       rejection = startTraining(s, config, cmd.employeeId);
       break;
     case 'ACCEPT_TRADE':
-      rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId));
+      rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId, cmd.quantity));
       break;
     case 'ACCEPT_FORWARDING':
       rejection = withPlan(s, config, cmd.plan, (t) => acceptForwarding(t, config, cmd.offerId));
@@ -269,7 +278,10 @@ function fundsShortfall(
   const f = fundsPosition(s, config, currency, exclude);
   if (f.available >= needMinor) return null;
   const parts = [`현금 ${formatMoney(currency, f.cash)}`];
-  if (f.reserved) parts.push(`다른 계약 예약 ${formatMoney(currency, f.reserved)}`);
+  const contractsReserved = f.reserved - f.reservedCommitments;
+  if (config.operations && !f.cash) parts.length = 0;
+  if (contractsReserved) parts.push(`다른 계약 예약 ${formatMoney(currency, contractsReserved)}`);
+  if (f.reservedCommitments) parts.push(`선복 계약 요금 예약 ${formatMoney(currency, f.reservedCommitments)}`);
   if (f.unpaidObligations) parts.push(`미지급 ${formatMoney(currency, f.unpaidObligations)}`);
   return `사용 가능 자금이 부족합니다. 필요 ${formatMoney(currency, needMinor)}(${breakdownKo}), 사용 가능 ${formatMoney(currency, f.available)} = ${parts.join(' − ')}. 체결한 계약의 남은 운임·관세는 미리 묶어 둡니다.`;
 }
@@ -279,20 +291,26 @@ function nextContractIds(s: GameState) {
   return { contractId: `CT${pad(n)}`, lotId: `LOT${pad(n)}`, taskId: `TASK${pad(n)}` };
 }
 
-function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string): string | null {
-  const buy = offerOf(config, buyOfferId);
-  const sell = offerOf(config, sellOfferId);
+function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string, requestedQuantity?: number): string | null {
+  const buy = offerDef(s, config, buyOfferId);
+  const sell = offerDef(s, config, sellOfferId);
   if (!buy || !sell || buy.kind !== 'supplier' || sell.kind !== 'customer') return '이 시나리오에 없는 견적입니다.';
   for (const offer of [buy, sell]) {
     const closed = offerOpen(s, offer);
     if (closed) return closed;
   }
-  if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity) return '같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다 (분할 거래는 이후 단계).';
+  const quantity = requestedQuantity ?? buy.quantity;
+  if (config.operations) {
+    if (buy.goodId !== sell.goodId || buy.publishDay !== sell.publishDay) return '같은 묶음·같은 상품의 매입·판매만 묶을 수 있습니다.';
+    if (!Number.isSafeInteger(quantity) || quantity < buy.quantityStep || quantity > Math.min(buy.maxQuantity, sell.maxQuantity) || quantity % buy.quantityStep !== 0) {
+      return `수량은 ${buy.quantityStep}${unitKo(goodOf(config, buy.goodId))} 단위로 ${buy.quantityStep} ~ ${Math.min(buy.maxQuantity, sell.maxQuantity)}${unitKo(goodOf(config, buy.goodId))}까지 고를 수 있습니다.`;
+    }
+  } else if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity || quantity !== buy.quantity) return '같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다 (분할 거래는 이후 단계).';
   if (buy.currency !== sell.currency) return '매입과 판매의 통화가 다릅니다.';
   const route = routeBetween(config, buy.cityId, sell.cityId);
   if (!route) return '두 항구를 잇는 노선이 없습니다.';
 
-  const purchase = buy.unitPriceMinor * buy.quantity;
+  const purchase = buy.unitPriceMinor * quantity;
   if (config.rules.fundsCheck === 'IMMEDIATE_CASH') {
     const cash = balance(s.ledger, buy.currency, 'CASH');
     if (cash < purchase) {
@@ -310,6 +328,8 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     if (short) return short;
   }
 
+  const storage = storageShortfall(s, config, buy.goodId, quantity);
+  if (storage) return storage;
   const good = goodOf(config, buy.goodId);
   const { contractId, lotId, taskId } = nextContractIds(s);
   const contract: Contract = {
@@ -322,9 +342,9 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     supplierId: buy.counterpartyId,
     customerId: sell.counterpartyId,
     goodId: buy.goodId,
-    quantity: buy.quantity,
+    quantity: quantity,
     purchaseAmountMinor: purchase,
-    saleAmountMinor: sell.unitPriceMinor * sell.quantity,
+    saleAmountMinor: sell.unitPriceMinor * quantity,
     currency: buy.currency,
     originCityId: buy.cityId,
     destinationCityId: sell.cityId,
@@ -348,7 +368,7 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     owner: 'COMPANY',
     ownerPartyId: null,
     goodId: buy.goodId,
-    quantity: buy.quantity,
+    quantity: quantity,
     originCountryCode: buy.originCountryCode ?? config.cities.find((c) => c.id === buy.cityId)?.countryCode ?? 'UNKNOWN',
     carryingAmountMinor: purchase,
     currency: buy.currency,
@@ -363,7 +383,7 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     contractId,
     subjectId: null,
     cityId: buy.cityId,
-    requiredWorkUnits: config.terms.prepWorkUnits,
+    requiredWorkUnits: prepWorkUnitsFor(config, buy, quantity),
     progressWorkUnits: 0,
     status: 'QUEUED',
     assignedEmployeeId: null,
@@ -374,20 +394,20 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     id: `PURCHASE-${contractId}`,
     currency: buy.currency,
     contractId,
-    reason: `${good.nameKo} ${buy.quantity}${unitKo(good)} 매입 (현금 → 재고)`,
+    reason: `${good.nameKo} ${quantity}${unitKo(good)} 매입 (현금 → 재고)`,
     lines: [
       { account: 'INVENTORY', amount: purchase },
       { account: 'CASH', amount: -purchase },
     ],
   });
   for (const st of s.offers) if (st.id === buy.id || st.id === sell.id) st.status = 'ACCEPTED';
-  log(s, `계약 ${contractId} 체결: ${good.nameKo} ${buy.quantity}${unitKo(good)} 매입 ${formatMoney(buy.currency, purchase)} 현금 지급, 판매 ${formatMoney(sell.currency, contract.saleAmountMinor)} (납기 ${contract.deliveryDeadlineDay}일)`);
+  log(s, config.operations ? `계약 ${contractId} 체결: ${config.operations.market.counterparties.find((p) => p.id === buy.counterpartyId)!.nameKo} → ${config.operations.market.counterparties.find((p) => p.id === sell.counterpartyId)!.nameKo}, ${good.nameKo} ${quantity}${unitKo(good)} 매입 ${formatMoney(buy.currency, purchase)} 현금 지급, 판매 ${formatMoney(sell.currency, contract.saleAmountMinor)} (납기 ${contract.deliveryDeadlineDay}일)` : `계약 ${contractId} 체결: ${good.nameKo} ${quantity}${unitKo(good)} 매입 ${formatMoney(buy.currency, purchase)} 현금 지급, 판매 ${formatMoney(sell.currency, contract.saleAmountMinor)} (납기 ${contract.deliveryDeadlineDay}일)`);
   return null;
 }
 
 function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string): string | null {
   if (!config.rules.forwardingEnabled) return '이 시나리오에서는 운송 주선을 받지 않습니다 (M2 기능).';
-  const offer = offerOf(config, offerId);
+  const offer = offerDef(s, config, offerId);
   if (!offer || offer.kind !== 'forwarding' || !offer.destinationCityId) return '이 시나리오에 없는 운송 주선 의뢰입니다.';
   const closed = offerOpen(s, offer);
   if (closed) return closed;
@@ -399,6 +419,8 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
     if (short) return short;
   }
 
+  const storage = storageShortfall(s, config, offer.goodId, offer.quantity);
+  if (storage) return storage;
   const good = goodOf(config, offer.goodId);
   const { contractId, lotId, taskId } = nextContractIds(s);
   s.contracts.push({
@@ -452,7 +474,7 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
     contractId,
     subjectId: null,
     cityId: offer.cityId,
-    requiredWorkUnits: config.terms.forwardingPrepWorkUnits,
+    requiredWorkUnits: prepWorkUnitsFor(config, offer, offer.quantity),
     progressWorkUnits: 0,
     status: 'QUEUED',
     assignedEmployeeId: null,
@@ -460,7 +482,7 @@ function acceptForwarding(s: GameState, config: ScenarioConfig, offerId: string)
     completedDay: null,
   });
   for (const st of s.offers) if (st.id === offer.id) st.status = 'ACCEPTED';
-  log(s, `계약 ${contractId} 체결 (운송 주선): ${offer.counterpartyId}의 ${good.nameKo} ${offer.quantity}${unitKo(good)}을(를) ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)} 운송. 서비스 대금 ${formatMoney(offer.currency, offer.serviceFeeMinor)} (납기 ${offer.deliveryDeadlineDay}일). 고객 화물이므로 매입·재고가 없습니다`);
+  log(s, config.operations ? `계약 ${contractId} 체결(운송 주선): ${config.operations.market.counterparties.find((p) => p.id === offer.counterpartyId)!.nameKo} 화물 ${good.nameKo} ${offer.quantity}${unitKo(good)}, ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)}` : `계약 ${contractId} 체결 (운송 주선): ${offer.counterpartyId}의 ${good.nameKo} ${offer.quantity}${unitKo(good)}을(를) ${cityName(config, offer.cityId)} → ${cityName(config, offer.destinationCityId)} 운송. 서비스 대금 ${formatMoney(offer.currency, offer.serviceFeeMinor)} (납기 ${offer.deliveryDeadlineDay}일). 고객 화물이므로 매입·재고가 없습니다`);
   return null;
 }
 
@@ -796,7 +818,7 @@ export interface CommitResult {
 export function commitDay(
   state: GameState,
   config: ScenarioConfig,
-  commands: Command[],
+  commands: EngineCommand[],
   closingDay: number = state.day,
 ): CommitResult {
   if (state.closedDays.includes(closingDay) || closingDay !== state.day) {
@@ -820,29 +842,47 @@ export function commitDay(
   // 6. 수금 → 밀린 지급 → 급여
   processCollections(s);
   settleObligations(s);
+  for (const cost of fixedCostsDue(s, config, day)) payOrAccrue(s, cost.currency, cost.amountMinor, cost.id, cost.reasonKo, undefined, cost.account);
   processPayroll(s, config);
+  processPaymentDefault(s, config);
   // 7. 다음 날 견적 갱신 (M2a: 유효기간 만료만)
+  if (s.operations?.outcome !== 'FAILED') {
   for (const st of s.offers) {
-    const def = offerOf(config, st.id);
+    const def = offerDef(s, config, st.id);
     if (def && st.status === 'OPEN' && def.validUntilDay < day + 1) {
       st.status = 'EXPIRED';
       log(s, `견적 ${st.id} 유효기간 만료`);
     }
   }
+  if (s.operations && config.operations) {
+    const pub = config.operations.market.publish, next = day + 1;
+    if (next <= pub.lastDay && (next - pub.firstDay) % pub.intervalDays === 0) {
+      const generated = generateBatch(s.rng.seed, (next - pub.firstDay) / pub.intervalDays, s.operations.batches.at(-1)!.index, config);
+      s.operations.batches.push(generated.batch); s.operations.offers.push(...generated.offers);
+      s.offers.push(...generated.offers.map((o) => ({ id: o.id, status: 'OPEN' as const })));
+    }
+  }
+  }
   // 8. 불변 조건 검사·마감
-  checkInvariants(s, config, { closing: true });
   s.closedDays.push(day);
   s.day = day + 1;
-  s.phase = s.day > config.campaignDays ? 'ENDED' : 'PENDING_OPEN';
+  s.phase = s.day > config.campaignDays || s.operations?.outcome === 'FAILED' ? 'ENDED' : 'PENDING_OPEN';
+  if (s.operations && s.operations.outcome !== 'FAILED' && s.phase === 'ENDED') s.operations.outcome = 'COMPLETED';
+  // 종료 표시까지 반영한 상태를 검증한다. 기존 검사는 마감 날짜를 유지한다.
+  const checking = { ...s, day };
+  checkInvariants(checking, config, { closing: true });
   return { state: s, results, alreadyClosed: false };
 }
 
 function progressTasks(s: GameState, config: ScenarioConfig) {
+  const allocation = config.operations ? allocateHandling(s, config) : null;
+  if (allocation && s.operations) s.operations.handlingLog.push({ day: s.day, capacityPt: allocation.capacityPt,
+    usedPt: allocation.allocations.reduce((sum, a) => sum + a.gotPt, 0), waits: allocation.allocations.filter((a) => a.gotPt < a.wantPt) });
   for (const task of s.tasks) {
     if (task.status !== 'RUNNING' || !task.assignedEmployeeId || !isAvailableFromToday(s, task.assignedEmployeeId)) continue;
     const def = config.employees.find((e) => e.id === task.assignedEmployeeId);
     if (!def) continue;
-    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + (isDayBasedTask(task.kind) ? 1 : def.workUnitsPerDay));
+    task.progressWorkUnits = Math.min(task.requiredWorkUnits, task.progressWorkUnits + (allocation?.allocations.find((a) => a.taskId === task.id)?.gotPt ?? (isDayBasedTask(task.kind) ? 1 : def.workUnitsPerDay)));
     if (task.progressWorkUnits >= task.requiredWorkUnits) {
       task.status = 'DONE';
       task.completedDay = s.day;
@@ -997,7 +1037,7 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
     if (lot.status !== 'ARRIVED_RELEASING') continue;
     const contract = contractOf(s, sh.contractId);
     const lateDays = Math.max(0, s.day - contract.deliveryDeadlineDay);
-    const reduction = lateDays > 0 ? config.terms.lateDeliveryPriceReductionMinor : 0;
+    const reduction = lateDeliveryReduction(config, contract.saleAmountMinor, lateDays);
     const netSale = contract.saleAmountMinor - reduction;
     contract.deliveredDay = s.day;
     contract.lateDays = lateDays;
@@ -1005,7 +1045,7 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
     const forwarding = contract.kind === 'FORWARDING';
     const what = forwarding ? '서비스' : '판매';
 
-    postOrThrow(s, {
+    if (netSale > 0) postOrThrow(s, {
       id: `SALE-${contract.id}`,
       currency: contract.currency,
       contractId: contract.id,
@@ -1072,7 +1112,7 @@ function processCollections(s: GameState) {
 export function applyReceipt(s: GameState, receiptId: string, invoiceId: string): boolean {
   const inv = s.invoices.find((i) => i.id === invoiceId);
   if (!inv || inv.status === 'PAID' || inv.receiptIds.includes(receiptId)) return false;
-  const posted = post(s.ledger, {
+  const posted = inv.amountMinor === 0 || post(s.ledger, {
     id: `RECEIPT-${receiptId}`,
     day: s.day,
     currency: inv.currency,
@@ -1103,7 +1143,7 @@ function payOrAccrue(
   obligationId: string,
   reasonKo: string,
   contractId: string | undefined,
-  debitAccount: 'INVENTORY' | 'CANCELLATION_EXPENSE' | 'WAGE_EXPENSE',
+  debitAccount: 'INVENTORY' | 'CANCELLATION_EXPENSE' | 'WAGE_EXPENSE' | 'RENT_EXPENSE' | 'SPACE_CONTRACT_EXPENSE',
 ): boolean {
   const cash = balance(s.ledger, currency, 'CASH');
   if (cash >= amount) {
@@ -1130,7 +1170,7 @@ function payOrAccrue(
     ],
   });
   s.obligations.push({ id: obligationId, currency, amountMinor: amount, reasonKo, incurredDay: s.day, paidDay: null });
-  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (지급 불이행 유예기간은 아직 확정되지 않음)`);
+  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (${s.operations ? '14일 안에 갚지 못하면 경영 실패' : '지급 불이행 유예기간은 아직 확정되지 않음'})`);
   return false;
 }
 
@@ -1184,4 +1224,9 @@ function contractOf(s: GameState, id: string): Contract {
 
 function log(s: GameState, textKo: string) {
   s.log.push({ day: s.day, textKo });
+}
+
+/** 시작 조건을 보존하고 시장 시드만 현재 저장에서 가져온다. */
+export function restartWithSameSeed(state: GameState, config: ScenarioConfig): GameState {
+  return createGame({ ...config, seed: state.rng.seed });
 }

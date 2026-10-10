@@ -1,3 +1,4 @@
+import { SAVE_FORMAT_VERSION } from './save';
 import { describe, expect, it } from 'vitest';
 import { loadScenario, M1_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
 import rules from '../../data/character_rules.json';
@@ -49,8 +50,8 @@ describe('평택 자료 판본의 저장과 이전 자료 거절', () => {
 
   it('0.5.0 실제 저장은 전체 상태를 왕복한다', () => {
     expect(currentFixture.dataVersion).toBe('0.5.0');
-    expect(load(currentFixture)).toEqual(currentFixture.state);
-    expect(JSON.parse(serializeSave(load(currentFixture)))).toEqual(currentFixture);
+    expect(load(currentFixture)).toEqual({ ...currentFixture.state, operations: null });
+    expect(JSON.parse(serializeSave(load(currentFixture)))).toEqual({ ...currentFixture, formatVersion: SAVE_FORMAT_VERSION, state: { ...currentFixture.state, operations: null } });
   });
   it('경험치·지급 기록·진행 업무와 culture 이외의 전체 상태를 그대로 복원한다', () => {
     expect(fixture.formatVersion).toBe(4);
@@ -66,7 +67,8 @@ describe('평택 자료 판본의 저장과 이전 자료 거절', () => {
     for (const key of ['xpAwards', 'xpAwardAmounts', 'tasks', 'ledger', 'recruitment', 'processedCommands'] as const) {
       expect(restored[key], key).toEqual(fixture.state[key]);
     }
-    const { culture, ...originalFields } = restored;
+    const { culture, operations, ...originalFields } = restored;
+    expect(operations).toBeNull();
     expect(originalFields).toEqual(fixture.state);
     expect(culture).toEqual(emptyCulture);
   });
@@ -119,7 +121,7 @@ describe('판본 5와 이전 판본 읽기', () => {
     const s = createGame(cfg);
     expect(s.culture).toEqual(emptyCulture);
     const text = serializeSave(s);
-    expect(JSON.parse(text).formatVersion).toBe(5);
+    expect(JSON.parse(text).formatVersion).toBe(SAVE_FORMAT_VERSION);
     expect(deserializeSave(text, { dataVersion: cfg.dataVersion, config: cfg })).toEqual(s);
   });
 
@@ -146,7 +148,7 @@ describe('판본 5와 이전 판본 읽기', () => {
     expect(deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion })).toEqual(s);
   });
 
-  it.each([0, 6, '5', 5.5])('허용 목록 밖 판본 %s는 거절한다', version => {
+  it.each([0, 7, '5', 5.5])('허용 목록 밖 판본 %s는 거절한다', version => {
     const file = freshFile();
     file.formatVersion = version;
     reject(file, '지원하지 않는 저장 형식 판본');

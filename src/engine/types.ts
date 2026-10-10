@@ -11,7 +11,7 @@ export const ENGINE_VERSION = '0.2.0';
  * 엔진이 아는 경제 규칙 판본. 판본은 시나리오가 정하고(data/scenarios.json의 engine_rules) 저장 파일에 남는다.
  * 규칙이 바뀌면 새 판본을 더하고, 다른 판본의 저장은 조용히 이어 쓰지 않는다.
  */
-export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1'] as const;
+export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1', 'M2a-rules-2'] as const;
 export type RulesVersion = (typeof SUPPORTED_RULES_VERSIONS)[number];
 
 // ── 정적 시나리오 설정 (data/*.json에서 만들어지며 상태에 저장하지 않는다) ──
@@ -70,6 +70,14 @@ export interface OfferDef {
   deliveryDeadlineDay: number | null;
   paymentDueDay: number | null;
   originCountryCode: string | null;
+  maxQuantity: number;
+  quantityStep: number;
+  serviceClass: 'STANDARD' | 'HANDLING' | null;
+  publishDay: number;
+  batchK: number;
+  templateId: string | null;
+  titleKo: string | null;
+  prepWorkUnits: number | null;
 }
 
 export interface EmployeeDef {
@@ -126,6 +134,8 @@ export interface ScenarioTerms {
   customerCancellationCompensationMinor: number;
   /** 납기 경과 인도 시 사전 계약 조건에 따른 판매대금 감액 (최소 단위, 1회). */
   lateDeliveryPriceReductionMinor: number;
+  lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED';
+  lateDeliveryCapBasisPoints: number | null;
 }
 
 /** 시나리오별 경제 규칙. M1 검산 규칙을 바꾸지 않고 M2 규칙을 별도로 켠다. */
@@ -159,6 +169,7 @@ export interface ScenarioConfig {
   employees: EmployeeDef[];
   recruitment: RecruitmentDef | null;
   culture: CultureConfig | null;
+  operations: OperationsConfig | null;
   growth: {
     taskCompletionXp: number;
     ordinaryTraining: { durationDays: number; feeMinor: number; currency: Currency; xpOnCompletion: number };
@@ -467,6 +478,7 @@ export interface GameState {
   employees: EmployeeState[];
   recruitment: { candidates: CandidateState[]; scoutedVenueIds: string[] };
   culture: CultureState;
+  operations: OperationsState | null;
   invoices: Invoice[];
   obligations: Obligation[];
   notices: Notice[];
@@ -497,7 +509,7 @@ export type Command =
   | { id: string; type: 'SCOUT_SITE'; venueId: string; employeeId: string }
   | { id: string; type: 'START_RECRUIT_QUEST'; candidateId: string; employeeId: string }
   | { id: string; type: 'HIRE_CANDIDATE'; candidateId: string }
-  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; plan?: CommitPlan }
+  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; quantity?: number; plan?: CommitPlan }
   | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string; plan?: CommitPlan }
   | { id: string; type: 'ASSIGN_TASK'; taskId: string; employeeId: string }
   | { id: string; type: 'BOOK_SAILING'; contractId: string; sailingId: string }
@@ -509,3 +521,74 @@ export interface CommandResult {
   status: 'APPLIED' | 'REJECTED' | 'DUPLICATE';
   reasonKo: string;
 }
+
+// ── 반복 시장·본사 운영 (규칙 2) ──
+export type ServiceClass = 'STANDARD' | 'HANDLING';
+export type MarketSide = 'BUY' | 'SELL';
+export type ExchangeDirection = 'USD_TO_KRW' | 'KRW_TO_USD';
+export interface OperationsConfig {
+  market: {
+    publish: { firstDay: number; intervalDays: number; lastDay: number; validDays: number };
+    rng: { streamPrefix: string; streamDigits: number };
+    index: { goods: string[]; startBp: number; minBp: number; maxBp: number; stepPct: number[] };
+    regionalPct: number[]; counterpartyPct: number[];
+    rows: { cityId: string; goodId: string; side: MarketSide; basePriceMinor: number }[];
+    trade: { buyCityId: string; sellCityIds: string[];
+      goods: { goodId: string; idTag: string; baseLot: number; buyCounterpartyId: string;
+        sellCounterparties: { cityId: string; counterpartyId: string }[] }[];
+      maxLotsChoices: number[]; sellDeadlineOffsetDays: number; paymentOffsetDays: { cityId: string; days: number }[] };
+    forwarding: { draws: { serviceClass: ServiceClass; count: number }[];
+      templates: { id: string; serviceClass: ServiceClass; titleKo: string | null; goodId: string; quantity: number;
+        destinationCityId: string; serviceFeeMinor: number; currency: Currency; deadlineOffsetDays: number;
+        paymentOffsetDays: number; counterpartyId: string; prepWorkUnits: number | null }[] };
+    counterparties: { id: string; nameKo: string }[];
+  };
+  facility: { cityId: string; storageLiters: number; handlingWorkUnitsPerDay: number; appliesToTaskKinds: Task['kind'][];
+    expansion: { maxCount: number; storageLiters: number; handlingWorkUnitsPerDay: number;
+      setupFeeMinor: number; rentIncreaseMinor: number; effectiveAfterDays: number } };
+  fixedCosts: { rent: { currency: Currency; amountMinor: number; periodDays: number; firstDueDay: number } };
+  fx: { baseKrwPerUsd: number; spreadBasisPoints: number; buyKrwPerUsd: number; sellKrwPerUsd: number; lotUsdMinor: number };
+  spaceContract: { routeIds: string[]; extraLiters: number; extraGrams: number; feeMinor: number; currency: Currency;
+    leadDays: number; reserveDaysAhead: number; maxPerRoute: number };
+  paymentDefault: { warningFromAgeDays: number; dangerFromAgeDays: number; failureAgeDays: number };
+  prep: { tradeExtraPerLot: number; standardLitersPerWorkUnit: number; minWorkUnits: number };
+}
+export interface MarketBatch {
+  k: number; publishDay: number;
+  index: { goodId: string; bp: number; stepPct: number | null }[];
+  destinations: { goodId: string; cityId: string }[] | null;
+  rows: { cityId: string; goodId: string; side: MarketSide; basePriceMinor: number; regionalPct: number }[];
+  counterpartyPct: { goodId: string; side: MarketSide; pct: number }[] | null;
+  maxLots: { goodId: string; lots: number }[] | null;
+  templateIds: string[]; offerIds: string[]; drawCount: number;
+}
+export interface DefaultEvent {
+  day: number; level: 'WARNING' | 'DANGER'; obligationId: string; currency: Currency; amountMinor: number;
+  incurredDay: number; dueToSurviveMinor: number; lotsToSurvive: number | null;
+  lotsToClearAll: number | null; usdAvailableMinor: number;
+}
+export interface FailureRecord {
+  day: number; obligationId: string; currency: Currency; amountMinor: number; reasonKo: string; incurredDay: number;
+  unpaidByCurrency: { currency: Currency; amountMinor: number; count: number }[];
+  cashByCurrency: { currency: Currency; amountMinor: number }[];
+  warningEvent: DefaultEvent | null; dangerEvent: DefaultEvent | null;
+  optionalKrwSpendBeforeFirstUnpaid: { entryId: string; day: number; amountMinor: number; reasonKo: string }[];
+  usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id: string; day: number; amountMinor: number }[];
+}
+export interface HandlingAllocation { taskId: string; contractId: string; wantPt: number; gotPt: number }
+export interface OperationsState {
+  batches: MarketBatch[]; offers: OfferDef[];
+  expansions: { id: string; orderedDay: number; effectiveDay: number }[];
+  handlingLog: { day: number; capacityPt: number; usedPt: number; waits: HandlingAllocation[] }[];
+  spaceContracts: { id: string; routeId: string; signedDay: number; firstSailingDay: number; lastSailingDay: number;
+    sailingCount: number; feeMinor: number; currency: Currency }[];
+  exchanges: { id: string; day: number; direction: ExchangeDirection; usdMinor: number; krwMinor: number;
+    rateKrwPerUsd: number; spreadKrwMinor: number }[];
+  defaultEvents: DefaultEvent[];
+  outcome: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED'; failure: FailureRecord | null;
+}
+export type OperationsCommand =
+  | { id: string; type: 'EXCHANGE_CURRENCY'; direction: ExchangeDirection; usdAmountMinor: number }
+  | { id: string; type: 'EXPAND_WAREHOUSE' }
+  | { id: string; type: 'SIGN_SPACE_CONTRACT'; routeId: string };
+export type EngineCommand = Command | OperationsCommand;

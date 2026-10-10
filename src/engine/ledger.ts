@@ -20,7 +20,12 @@ export type Account =
   | 'WAGE_EXPENSE'
   | 'RECRUITMENT_EXPENSE'
   | 'TRAINING_EXPENSE'
-  | 'CULTURE_EXPENSE';
+  | 'CULTURE_EXPENSE'
+  | 'RENT_EXPENSE'
+  | 'FACILITY_SETUP_EXPENSE'
+  | 'SPACE_CONTRACT_EXPENSE'
+  | 'FX_SPREAD_EXPENSE'
+  | 'CURRENCY_TRANSFER';
 
 type AccountKind = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
 
@@ -42,6 +47,11 @@ export const ACCOUNT_KIND: Record<Account, AccountKind> = {
   RECRUITMENT_EXPENSE: 'expense',
   TRAINING_EXPENSE: 'expense',
   CULTURE_EXPENSE: 'expense',
+  RENT_EXPENSE: 'expense',
+  FACILITY_SETUP_EXPENSE: 'expense',
+  SPACE_CONTRACT_EXPENSE: 'expense',
+  FX_SPREAD_EXPENSE: 'expense',
+  CURRENCY_TRANSFER: 'equity',
 };
 
 /** amount > 0 은 차변, amount < 0 은 대변. */
@@ -142,6 +152,11 @@ export interface BookSummary {
   recruitmentExpense: number;
   trainingExpense: number;
   cultureExpense: number;
+  rentExpense: number;
+  facilitySetupExpense: number;
+  spaceContractExpense: number;
+  fxSpreadExpense: number;
+  currencyTransferNet: number;
   profit: number;
   openingEquity: number;
 }
@@ -162,6 +177,11 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
   const recruitmentExpense = b('RECRUITMENT_EXPENSE');
   const trainingExpense = b('TRAINING_EXPENSE');
   const cultureExpense = b('CULTURE_EXPENSE');
+  const rentExpense = b('RENT_EXPENSE');
+  const facilitySetupExpense = b('FACILITY_SETUP_EXPENSE');
+  const spaceContractExpense = b('SPACE_CONTRACT_EXPENSE');
+  const fxSpreadExpense = b('FX_SPREAD_EXPENSE');
+  const currencyTransferNet = b('CURRENCY_TRANSFER');
   return {
     currency,
     cash,
@@ -180,7 +200,12 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
     recruitmentExpense,
     trainingExpense,
     cultureExpense,
-    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense,
+    rentExpense,
+    facilitySetupExpense,
+    spaceContractExpense,
+    fxSpreadExpense,
+    currencyTransferNet,
+    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense - rentExpense - facilitySetupExpense - spaceContractExpense - fxSpreadExpense,
     openingEquity: b('OPENING_EQUITY'),
   };
 }

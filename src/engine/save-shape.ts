@@ -1,4 +1,5 @@
-// 저장은 외부 입력이다. 이관한 판본 5의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
+import type { OfferDef, MarketBatch, OperationsState, DefaultEvent } from './types';
+// 저장은 외부 입력이다. 이관한 판본 6의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
 import { ACCOUNT_KIND } from './ledger';
 import { MINOR_PER_MAJOR } from './money';
 import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task,
@@ -6,6 +7,12 @@ import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task
 
 // 실행 시점 상수가 없는 열거형도 전수 목록을 요구해 타입에 값이 늘면 컴파일에서 확인한다.
 export const SAVE_ENUMS = {
+  offerKind: { supplier: true, customer: true, forwarding: true } satisfies Record<OfferDef['kind'], true>,
+  serviceClass: { STANDARD: true, HANDLING: true } satisfies Record<NonNullable<OfferDef['serviceClass']>, true>,
+  marketSide: { BUY: true, SELL: true } satisfies Record<MarketBatch['rows'][number]['side'], true>,
+  exchangeDirection: { USD_TO_KRW: true, KRW_TO_USD: true } satisfies Record<OperationsState['exchanges'][number]['direction'], true>,
+  campaignOutcome: { IN_PROGRESS: true, COMPLETED: true, FAILED: true } satisfies Record<OperationsState['outcome'], true>,
+  defaultLevel: { WARNING: true, DANGER: true } satisfies Record<DefaultEvent['level'], true>,
   cultureReportStatus: { UNVERIFIED: true } satisfies Record<CultureReport['status'], true>,
   cultureRelationKind: { SHARED_ACTIVITY: true } satisfies Record<CultureRelationEvent['kind'], true>,
   currency: MINOR_PER_MAJOR,
@@ -53,7 +60,34 @@ const enumShape = (name: keyof typeof SAVE_ENUMS) => oneOf(...Object.keys(SAVE_E
 const nullable = (shape: Shape): Shape => (v, path) => { if (v !== null) shape(v, path); };
 const optional = (shape: Shape): Shape => (v, path) => { if (v !== undefined) shape(v, path); };
 const ns = nullable(str), ni = nullable(int), strings = array(str), currency = enumShape('currency');
+const defaultEvent = obj({ day: int, level: enumShape('defaultLevel'), obligationId: str, currency,
+  amountMinor: int, incurredDay: int, dueToSurviveMinor: int, lotsToSurvive: ni, lotsToClearAll: ni, usdAvailableMinor: int });
+const unpaid = array(obj({ currency, amountMinor: int, count: int }));
 const stateShape = obj({
+  operations: nullable(obj({
+    batches: array(obj({ k: int, publishDay: int, index: array(obj({ goodId: str, bp: int, stepPct: ni })),
+      destinations: nullable(array(obj({ goodId: str, cityId: str }))),
+      rows: array(obj({ cityId: str, goodId: str, side: enumShape('marketSide'), basePriceMinor: int, regionalPct: int })),
+      counterpartyPct: nullable(array(obj({ goodId: str, side: enumShape('marketSide'), pct: int }))),
+      maxLots: nullable(array(obj({ goodId: str, lots: int }))), templateIds: strings, offerIds: strings, drawCount: int })),
+    offers: array(obj({ id: str, kind: enumShape('offerKind'), counterpartyId: str, cityId: str, goodId: str,
+      quantity: int, unitPriceMinor: int, serviceFeeMinor: int, declaredCargoValueMinor: ni, currency,
+      validUntilDay: int, destinationCityId: ns, deliveryDeadlineDay: ni, paymentDueDay: ni, originCountryCode: ns,
+      maxQuantity: int, quantityStep: int, serviceClass: nullable(enumShape('serviceClass')),
+      publishDay: int, batchK: int, templateId: ns, titleKo: ns, prepWorkUnits: ni } satisfies Record<keyof OfferDef, Shape>)),
+    expansions: array(obj({ id: str, orderedDay: int, effectiveDay: int })),
+    handlingLog: array(obj({ day: int, capacityPt: int, usedPt: int,
+      waits: array(obj({ taskId: str, contractId: str, wantPt: int, gotPt: int })) })),
+    spaceContracts: array(obj({ id: str, routeId: str, signedDay: int, firstSailingDay: int, lastSailingDay: int,
+      sailingCount: int, feeMinor: int, currency })),
+    exchanges: array(obj({ id: str, day: int, direction: enumShape('exchangeDirection'), usdMinor: int, krwMinor: int, rateKrwPerUsd: int, spreadKrwMinor: int })),
+    defaultEvents: array(defaultEvent), outcome: enumShape('campaignOutcome'),
+    failure: nullable(obj({ day: int, obligationId: str, currency, amountMinor: int, reasonKo: str, incurredDay: int,
+      unpaidByCurrency: unpaid, cashByCurrency: array(obj({ currency, amountMinor: int })),
+      warningEvent: nullable(defaultEvent), dangerEvent: nullable(defaultEvent),
+      optionalKrwSpendBeforeFirstUnpaid: array(obj({ entryId: str, day: int, amountMinor: int, reasonKo: str })),
+      usdCommitmentsSinceIncurred: array(obj({ kind: oneOf('CONTRACT', 'SPACE_CONTRACT'), id: str, day: int, amountMinor: int })) })),
+  } satisfies Record<keyof OperationsState, Shape>)),
   meta: obj({ engineVersion: str, rulesVersion: str, dataVersion: str, scenarioId: str }),
   day: scalar((v) => Number.isSafeInteger(v) && (v as number) >= 1),
   phase: enumShape('phase'),

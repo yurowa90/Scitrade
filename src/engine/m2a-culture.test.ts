@@ -53,7 +53,7 @@ describe('자료·키·기존 판본', () => {
       expect(Object.values(a.reportKo!).every((text) => text.length > 0)).toBe(true);
       expect(a.topic.contentRevision).toBe('1');
     }
-    expect([config.dataVersion, config.rules.rulesVersion, SAVE_FORMAT_VERSION]).toEqual(['0.5.0', 'M2a-rules-1', 5]);
+    expect([config.dataVersion, config.rules.rulesVersion, SAVE_FORMAT_VERSION]).toEqual(['0.5.0', 'M2a-rules-1', 6]);
   });
 
   // 문장을 수정할 때 자료와 이 표를 함께 갱신한다.

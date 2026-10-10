@@ -1,3 +1,4 @@
+import { coveredSailings, spaceCovered, spaceEntryId } from './operations';
 // 하나의 예약 체계: 자금(체결한 계약이 앞으로 낼 돈), 직원 시간(진행 중 업무), 선복(출항편의 무게·부피).
 // 예약은 상태에서 매번 계산하며 따로 저장하지 않는다. 같은 돈·직원·공간을 두 곳에 기록하지 않기 위해서다.
 
@@ -41,6 +42,7 @@ export interface FundsPosition {
   cash: number;
   /** 다른 계약을 위해 묶어 둔 돈. */
   reserved: number;
+  reservedCommitments: number;
   /** 이미 생긴 미지급 의무. 현금이 들어오면 먼저 갚는다. */
   unpaidObligations: number;
   /** 새 지출에 쓸 수 있는 돈 = 현금 − 예약 − 미지급. 음수일 수 있다. */
@@ -58,13 +60,14 @@ export function fundsPosition(
   exclude: (r: CashReservation) => boolean = () => false,
 ): FundsPosition {
   const cash = balance(s.ledger, currency, 'CASH');
-  const reserved = cashReservations(s, config)
+  const reservedCommitments = commitmentReservations(s, config).filter((r) => r.currency === currency).reduce((sum, r) => sum + r.amountMinor, 0);
+  const reserved = reservedCommitments + cashReservations(s, config)
     .filter((r) => r.currency === currency && !exclude(r))
     .reduce((acc, r) => acc + r.amountMinor, 0);
   const unpaidObligations = s.obligations
     .filter((o) => o.currency === currency && o.paidDay === null)
     .reduce((acc, o) => acc + o.amountMinor, 0);
-  return { currency, cash, reserved, unpaidObligations, available: cash - reserved - unpaidObligations };
+  return { currency, cash, reserved, reservedCommitments, unpaidObligations, available: cash - reserved - unpaidObligations };
 }
 
 /** 일반 훈련은 기존 규칙대로 현금에서 미지급 의무만 뺀다. 계약 자금 예약은 차감하지 않는다. */
@@ -101,8 +104,8 @@ export function sailingLoad(s: GameState, config: ScenarioConfig, sailing: Saili
     sailingId: sailing.id,
     massGrams,
     volumeLiters,
-    capacityGrams: Math.round(route.capacityKg * 1000),
-    capacityLiters: Math.round(route.capacityM3 * 1000),
+    capacityGrams: Math.round(route.capacityKg * 1000) + (spaceCovered(s, config, sailing) ? config.operations!.spaceContract.extraGrams : 0),
+    capacityLiters: Math.round(route.capacityM3 * 1000) + (spaceCovered(s, config, sailing) ? config.operations!.spaceContract.extraLiters : 0),
   };
 }
 
@@ -135,4 +138,13 @@ export const fmtM3 = (liters: number) => `${(liters / 1000).toLocaleString('ko-K
 export function runningTaskOf(s: GameState, employeeId: string): Task | undefined {
   if (!isAvailableFromToday(s, employeeId)) return undefined;
   return s.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === employeeId);
+}
+
+/** 해지할 수 없는 선복 계약 가운데 이동 창 안에 든 출항편만 예약한다. */
+export function commitmentReservations(s: GameState, config: ScenarioConfig) {
+  if (!s.operations || !config.operations) return [];
+  return s.operations.spaceContracts.flatMap((c) => coveredSailings(config, c.routeId, c.signedDay)
+    .filter((v) => s.day <= v.departureDay && v.departureDay <= s.day + config.operations!.spaceContract.reserveDaysAhead
+      && !s.ledger.postedIds[spaceEntryId(c.routeId, v.departureDay)])
+    .map((v) => ({ spaceContractId: c.id, sailingId: v.id, day: v.departureDay, currency: c.currency, amountMinor: c.feeMinor })));
 }
