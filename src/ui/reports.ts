@@ -52,22 +52,39 @@ export function cargoListKo(config: ScenarioConfig, items: { goodId: string; qua
   return items.map((item) => qtyKo(config, item.goodId, item.quantity)).join(' · ') || '없음';
 }
 
+/** 날짜를 정하지 못한 지급. 금액은 통화마다 따로 둔다. */
+export interface UndatedPayments { count: number; amounts: { currency: Currency; amountMinor: number }[] }
+
 export function upcomingSummary(rows: UpcomingPayment[], config: ScenarioConfig): {
   currencies: Currency[];
   lines: { kind: UpcomingPaymentKind; labelKo: string; amounts: (number | null)[] }[];
-  undated: number;
+  /** 실을 자리가 남은 출항편이 없어 운임 날짜가 없는 계약의 지급. */
+  noSailing: UndatedPayments;
+  /** 운송편을 아직 예약하지 않아 관세 날짜가 없는 지급. */
+  unbooked: UndatedPayments;
 } {
   const currencies = [...new Set([config.tradeCurrency, config.payrollCurrency, ...rows.map((r) => r.currency).sort()])];
   const labels: [UpcomingPaymentKind, string][] = [
     ['OVERDUE', '밀린 지급 (현금이 들어오면 먼저 갚음)'], ['WAGE', '급여 (하루 진행 때 자동)'],
     ['FREIGHT', '운임 (운송편을 예약할 때)'], ['DUTY', '관세 (도착할 때 자동)'],
   ];
+  // 기간 표에는 날짜가 정해진 지급만 넣는다.
+  const dated = rows.filter((r) => r.day !== null);
+  const noSailingContracts = new Set(rows.filter((r) => r.kind === 'FREIGHT' && r.day === null).map((r) => r.contractId));
+  const undated = (pick: (r: UpcomingPayment) => boolean): UndatedPayments => {
+    const chosen = rows.filter((r) => r.day === null && pick(r));
+    return { count: chosen.length, amounts: currencies.flatMap((currency) => {
+      const matching = chosen.filter((r) => r.currency === currency);
+      return matching.length ? [{ currency, amountMinor: matching.reduce((sum, r) => sum + r.amountMinor, 0) }] : [];
+    }) };
+  };
   return { currencies, lines: labels.map(([kind, labelKo]) => ({ kind, labelKo,
     amounts: currencies.map((currency) => {
-      const matching = rows.filter((r) => r.kind === kind && r.currency === currency);
+      const matching = dated.filter((r) => r.kind === kind && r.currency === currency);
       return matching.length ? matching.reduce((sum, r) => sum + r.amountMinor, 0) : null;
     }),
-  })), undated: rows.filter((r) => r.day === null).length };
+  })), noSailing: undated((r) => noSailingContracts.has(r.contractId)),
+  unbooked: undated((r) => !noSailingContracts.has(r.contractId)) };
 }
 
 export function workloadLinesKo(summary: WorkloadSummary, config: ScenarioConfig): string[] {
@@ -96,7 +113,7 @@ export function bottlenecks(s: GameState, config: ScenarioConfig): {
   for (const currency of new Set([config.tradeCurrency, config.payrollCurrency])) {
     const unpaid = fundsPosition(s, config, currency).unpaidObligations;
     if (unpaid > 0) groups[0]!.items.push({ contractId: null,
-      textKo: `미지급 ${formatMoney(currency, unpaid)}이 있습니다. 현금이 들어오면 먼저 갚습니다.` });
+      textKo: `미지급금이 ${formatMoney(currency, unpaid)} 있습니다. 현금이 들어오면 먼저 갚습니다.` });
   }
   const available = fundsPosition(s, config, config.tradeCurrency).available;
   if (config.rules.fundsCheck === 'COMMITTED_OUTLAYS' && available < 0) groups[0]!.items.push({ contractId: null,
@@ -106,6 +123,11 @@ export function bottlenecks(s: GameState, config: ScenarioConfig): {
     if (blocker.severity !== 'info' && kind !== null) groups.find((g) => g.kind === kind)!.items.push({ contractId: c.id, textKo: blocker.messageKo });
   }
   return groups;
+}
+
+/** 결산의 남은 미지급 한 줄. 급여 이유에는 이미 날짜가 있어 앞에 다시 붙이지 않는다. */
+export function obligationLineKo(o: { incurredDay: number; reasonKo: string }): string {
+  return new RegExp(`(^|[^0-9])${o.incurredDay}일`).test(o.reasonKo) ? o.reasonKo : `${o.incurredDay}일 ${o.reasonKo}`;
 }
 
 export function settlementRows(st: CurrencyStanding, config: ScenarioConfig): [string, number, boolean][] {

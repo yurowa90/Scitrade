@@ -112,7 +112,7 @@ export function scheduleBlock(s: GameState, config: ScenarioConfig, opts: {
     const changed = prev === null ? '' : !(i.key in prev) ? ' <span class="tag">새 일정</span>'
       : prev[i.key] !== i.day && !i.key.startsWith('PAY:WAGE:') && !i.key.startsWith('PAY:OVERDUE:')
         ? ` <span class="tag">날짜 바뀜 (원래 ${prev[i.key] ?? '날짜 미정'}${prev[i.key] === null ? '' : '일'})</span>` : '';
-    return `<li>${i.contractId ? opts.link(i.contractId) + ' ' : ''}${esc(i.textKo)}${i.money ? ` <b>${i.money.amountMinor > 0 ? '+' : ''}${esc(formatMoney(i.money.currency, i.money.amountMinor))}</b>` : ''}${i.estimate ? ' <span class="tag">예상</span>' : ''}${changed}</li>`;
+    return `<li>${i.contractId ? opts.link(i.contractId) + ' ' : ''}${esc(i.textKo)}${i.money ? ` <b>${i.money.amountMinor > 0 ? '+' : ''}${esc(formatMoney(i.money.currency, i.money.amountMinor))}</b>` : ''}${i.estimate ? ' <span class="tag tag-estimate">예상</span>' : ''}${changed}</li>`;
   };
   const groups = new Map<string, ScheduleItem[]>();
   for (const i of items) {

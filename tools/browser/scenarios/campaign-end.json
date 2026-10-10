@@ -11,7 +11,39 @@
   "steps": [
     {
       "do": "end-day",
-      "times": 90
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
+    },
+    {
+      "do": "end-day",
+      "times": 10
     },
     {
       "do": "wait",

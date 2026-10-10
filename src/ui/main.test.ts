@@ -6,10 +6,11 @@ import { isAvailableFromToday } from '../engine/employees';
 import { formatMoney } from '../engine/money';
 import { campaignSummary, companyReport, onTimeDeliveryRate, tradePairs, upcomingPayments } from '../engine/reports';
 import { fundsPosition } from '../engine/reservations';
-import type { Command, GameState } from '../engine/types';
+import type { Command, Contract, GameState } from '../engine/types';
 import { attributeKo, roleKo, taskName } from './card';
 import { crewEntries, crewFacetOptions } from './recruitment';
 import { bottlenecks, cargoListKo, heldCargoByGood, rateKo, settlementRows, upcomingSummary, workloadLinesKo } from './reports';
+import { contractProgress } from '../engine/progress';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import legacySave from '../engine/fixtures/save-v4-m2.json';
 import { assumptionNotes, loadScenario } from '../content/scenario';
@@ -1414,10 +1415,14 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const paymentRows = upcomingPayments(s, cfg);
     const summary = upcomingSummary(paymentRows, cfg);
     const table = html.match(/<table class="money due-table">[\s\S]*?<\/table>/)![0];
+    // 통화를 섞은 합계 줄·칸은 속성이 붙어 있어도 줄·칸 수에서 드러난다.
+    expect(table.match(/<tr[\s>]/g)).toHaveLength(1 + summary.lines.filter((l) => s.phase !== 'ENDED' || l.kind === 'OVERDUE').length);
+    expect(table.match(/<td[\s>]/g)).toHaveLength((table.match(/<tr[\s>]/g)!.length - 1) * summary.currencies.length);
+    expect(table.match(/<th[\s>]/g)).toHaveLength(1 + summary.currencies.length + table.match(/<tr[\s>]/g)!.length - 1);
     expect([...table.matchAll(/<th scope="col">(.*?)<\/th>/g)].map((m) => m[1])).toEqual(['항목', ...summary.currencies]);
     const values = [...table.matchAll(/<td>(.*?)<\/td>/g)].map((m) => m[1]);
     expect(values).toEqual(summary.lines.flatMap((l) => summary.currencies.map((currency) => {
-      const matching = paymentRows.filter((r) => r.kind === l.kind && r.currency === currency);
+      const matching = paymentRows.filter((r) => r.day !== null && r.kind === l.kind && r.currency === currency);
       return matching.length ? esc(formatMoney(currency, matching.reduce((a, r) => a + r.amountMinor, 0))) : '—';
     })));
     values.forEach((value, i) => expect(value).toMatch(i % summary.currencies.length === 0 ? /^(?:—|.*USD)$/ : /^(?:—|.*원)$/));
@@ -1511,6 +1516,8 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(settlement.match(/<caption>결산 · /g)).toHaveLength(sum.byCurrency.length);
     for (const st of sum.byCurrency) {
       const table = book(settlement, `결산 · ${st.currency}`), rows = settlementRows(st, config);
+      expect(table.match(/<tr[\s>]/g)).toHaveLength(rows.length);
+      expect(table.match(/<th[\s>]/g)).toHaveLength(rows.length); expect(table.match(/<td[\s>]/g)).toHaveLength(rows.length);
       expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m) => m[1])).toEqual(rows.map((r) => esc(r[0])));
       expect([...table.matchAll(/<td>(.*?)<\/td>/g)].map((m) => m[1])).toEqual(rows.map((r) => formatMoney(st.currency, r[1])));
       const unpaid = sum.unpaidObligations.filter((o) => o.currency === st.currency);
@@ -1569,6 +1576,11 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     await restore(ui, how);
     expect(ui.app.innerHTML).toContain('aria-expanded="false" aria-controls="schedule-body"');
     ui.click({ action: 'schedule-toggle' });
+    expect(panel(ui.app.innerHTML, 'queue')).not.toContain('>새 일정<');
+    expect(panel(ui.app.innerHTML, 'queue')).not.toContain('날짜 바뀜');
+    // 되돌린 뒤 대기 명령으로 새 줄을 만들어도 이전 판의 비교 기준이 남아 있지 않다.
+    ui.click({ action: 'accept' });
+    expect(panel(ui.app.innerHTML, 'queue')).toContain('data-action="goto-contract"');
     expect(panel(ui.app.innerHTML, 'queue')).not.toContain('>새 일정<');
     expect(panel(ui.app.innerHTML, 'queue')).not.toContain('날짜 바뀜');
   });
@@ -1670,6 +1682,290 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(panel(ui.app.innerHTML, 'report')).toContain(linkHtml(assigned.contracts[0]!.id));
     expect(panel(ui.app.innerHTML, 'queue')).toContain(esc(bad));
     expect(ui.app.innerHTML.split('<div class="crew-facets"')[1]!.split('</div>')[0]).toContain(esc(bad));
+  });
+  // ── Claude 검수 수정 ──
+  const firstTrade = (id = 'FIRST-TRADE'): Command => ({ id, type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! });
+  /** 관세를 즉시 현금으로만 내게 하고 세율을 높여 거래 통화 미지급을 만든다. */
+  const dutyShort = () => {
+    const cfg = structuredClone(config); cfg.rules.fundsCheck = 'IMMEDIATE_CASH'; cfg.terms.dutyRateBasisPoints = 20000;
+    return cfg;
+  };
+  const moneyKo = (rows: { currency: string; amountMinor: number }[], cfg = config) => [...new Set([cfg.tradeCurrency, cfg.payrollCurrency])]
+    .flatMap((currency) => { const m = rows.filter((r) => r.currency === currency); return m.length ? [formatMoney(currency, m.reduce((a, r) => a + r.amountMinor, 0))] : []; }).join(' · ');
+  it('끝난 캠페인에서는 새 명령을 거절하고 숨은 대기 명령을 만들지 않는다', async () => {
+    const end = runToCampaignEnd(initial(), config, { 1: [firstTrade()] }).state, id = end.contracts[0]!.id;
+    const ui = await startUi(); await ui.importText(serializeSave(end));
+    const notice = `${config.campaignDays}일 캠페인이 끝나 새 명령을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.`;
+    for (const dataset of [{ action: 'cancel', contract: id }, { action: 'assign' }] as Record<string, string>[]) {
+      ui.click(dataset);
+      expect(ui.app.innerHTML).toContain(`<div class="flash-toast flash warn">${notice}</div>`);
+      expect(panel(ui.app.innerHTML, 'queue')).toContain(`<p class="flash warn">${notice}</p>`);
+      expect(ui.app.innerHTML).not.toContain('오늘 할 일에 넣었습니다');
+      expect(ui.app.innerHTML).toContain(`id="contract-h-${id}"`);
+      expect(ui.app.innerHTML).not.toContain('data-action="unqueue"');
+    }
+    const ev = { preventDefault: vi.fn(), returnValue: '원래' }; ui.fireWindow('beforeunload', ev);
+    expect(ev.preventDefault).not.toHaveBeenCalled(); expect(ev.returnValue).toBe('원래');
+  });
+  it('일정 표시·지급 표·결산 표 CSS는 표시 상자·순번 없음·통화 열 정렬·위 맞춤을 둔다', async () => {
+    const {readFileSync}=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
+    const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
+    expect(css).toMatch(/\.schedule-block \.tag\s*\{[^}]*display:\s*inline-block;[^}]*border:\s*1px solid var\(--line\);[^}]*font-size:\s*12px;/);
+    expect(css).toMatch(/\.schedule-block \.tag:not\(\.tag-estimate\)\s*\{[^}]*border-color:\s*var\(--navy-soft\);[^}]*color:\s*var\(--navy-soft\);/);
+    expect(css).toMatch(/\.schedule-days\s*\{\s*list-style:\s*none;\s*padding-left:\s*0;\s*\}/);
+    expect(css).toMatch(/\.schedule-days > li \+ li\s*\{\s*margin-top:\s*10px;\s*\}/);
+    expect(css).toMatch(/\.due-table thead th:not\(:first-child\)\s*\{\s*text-align:\s*right;\s*\}/);
+    expect(css).toMatch(/\.settlement \.books\s*\{\s*align-items:\s*start;\s*\}/);
+    // 터치 크기는 any-pointer로만 건다. 주 입력이 마우스인 터치 노트북에서도 44px가 되어야 한다.
+    expect(css).not.toMatch(/\(\s*pointer\s*:\s*coarse\s*\)/);
+    expect(css).toMatch(/@media \(any-pointer: coarse\)\s*\{[^}]*#schedule-toggle[^}]*min-height:\s*44px/);
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' }); ui.click({ action: 'schedule-toggle' });
+    const q = panel(ui.app.innerHTML, 'queue');
+    expect(q).toContain(' <span class="tag tag-estimate">예상</span>');
+    expect(q).not.toContain('<span class="tag">예상</span>');
+  });
+  it('앞으로 낼 돈은 날짜 미정 지급을 원인별 문장으로 표 밖에 적는다', async () => {
+    const ui = await startUi();
+    const c = planState(initial(), config, [firstTrade()]).state.contracts[0]!;
+    const route = routeBetween(config, c.originCityId, c.destinationCityId)!;
+    const lastDeparture = Math.max(...listSailings(config, route.id).map((sailing) => sailing.departureDay));
+    const unbooked = '운송편을 아직 예약하지 않아 관세 낼 날을 정하지 못한 지급이';
+    const noSailing = '캠페인 안에 실을 자리가 남은 출항편이 없어 날짜를 정하지 못한 지급이';
+    // 예약 전 2일: 관세만 날짜가 없다.
+    const day2 = savedAt(initial().day + 1, [firstTrade()]), nulls2 = upcomingPayments(day2, config).filter((r) => r.day === null);
+    expect(nulls2.map((r) => r.kind)).toEqual(['DUTY']);
+    await ui.importText(serializeSave(day2));
+    let report = panel(ui.app.innerHTML, 'report');
+    expect(report).toContain(`<p class="muted small">${unbooked} ${nulls2.length}건(${moneyKo(nulls2)}) 있습니다. 위 표에는 넣지 않았습니다.</p>`);
+    expect(report).not.toContain(noSailing); expect(report).not.toContain('실을 편이 없어');
+    assertDue(report, day2);
+    // 그 노선의 마지막 출항일: 남은 출항편이 없어 운임·관세 모두 날짜가 없다.
+    const ended = savedAt(lastDeparture, [firstTrade()]), nullsEnd = upcomingPayments(ended, config).filter((r) => r.day === null);
+    expect(nullsEnd.map((r) => r.kind).sort()).toEqual(['DUTY', 'FREIGHT']);
+    await ui.importText(serializeSave(ended));
+    report = panel(ui.app.innerHTML, 'report');
+    expect(report).toContain(`<p class="muted small">${noSailing} ${nullsEnd.length}건(${moneyKo(nullsEnd)}) 있습니다. 위 표에는 넣지 않았습니다.</p>`);
+    expect(report).not.toContain(unbooked);
+    assertDue(report, ended);
+  });
+  it('끝난 결산의 정시 인도율은 끝난 상태 문장으로 한 번만 보인다', async () => {
+    const end = runToCampaignEnd(initial(), config, { 1: [firstTrade()] }).state, r = onTimeDeliveryRate(end);
+    expect(r.delivered).toBe(0); expect(r.pastDeadlineUndelivered).toBeGreaterThan(0);
+    const ui = await startUi(); await ui.importText(serializeSave(end));
+    const report = panel(ui.app.innerHTML, 'report');
+    const links = end.contracts.filter((c) => c.status !== 'CANCELLED' && c.deliveredDay === null && c.deliveryDeadlineDay < end.day).map((c) => linkHtml(c.id)).join(', ');
+    const lines = `<p>정시 인도율: 인도한 계약이 없습니다.</p><p>납기 안에 인도하지 못하고 캠페인이 끝난 계약: ${links} (인도하지 않아 정시 인도율에 넣지 않았습니다)</p>`;
+    expect(report.split(lines).length - 1).toBe(1);
+    expect(report.split('<div class="settlement">')[1]!.split('\n    <div class="books">')[0]).toContain(lines);
+    expect(report.split('<div class="report-ops">')[1]).not.toContain('정시 인도율');
+    for (const old of ['아직 인도한 계약이 없습니다', '인도하면 정시 인도율에 들어갑니다', '납기가 지났는데']) expect(report).not.toContain(old);
+  });
+  it('결산의 남은 미지급 목록은 이유 글에 없는 발생일만 앞에 붙인다', async () => {
+    const cfg = dutyShort(), end = runToCampaignEnd(initial(cfg), cfg, { 1: acceptAllFeasible(initial(cfg), cfg) }).state;
+    const unpaid = campaignSummary(end, cfg).unpaidObligations;
+    const duty = unpaid.filter((o) => o.currency === cfg.tradeCurrency), wages = unpaid.filter((o) => o.currency === cfg.payrollCurrency);
+    expect(duty.length).toBeGreaterThan(0); expect(wages.length).toBeGreaterThan(0);
+    for (const o of duty) expect(o.reasonKo).not.toMatch(/\d일/);
+    for (const o of wages) expect(o.reasonKo).toContain(`${o.incurredDay}일`);
+    const ui = await startUi(cfg); await ui.importText(serializeSave(end));
+    const list = panel(ui.app.innerHTML, 'report').split(`<summary>남은 미지급 목록 (${unpaid.length}건)</summary><ul>`)[1]!.split('</ul>')[0]!;
+    expect(list).toBe(unpaid.map((o) => `<li>${o.currency === cfg.tradeCurrency ? `${o.incurredDay}일 ` : ''}${esc(o.reasonKo)} ${formatMoney(o.currency, o.amountMinor)}</li>`).join(''));
+  });
+  it('거래 통화 미지급은 USD 표·밀린 지급 줄·막힌 곳에 USD로만 보인다', async () => {
+    const cfg = dutyShort(), cmds = acceptAllFeasible(initial(cfg), cfg);
+    let s = initial(cfg);
+    for (let day = s.day + 1; day <= cfg.campaignDays && !fundsPosition(s, cfg, cfg.tradeCurrency).unpaidObligations; day++) s = savedAt(day, cmds, cfg);
+    const unpaid = fundsPosition(s, cfg, cfg.tradeCurrency).unpaidObligations, ap = companyReport(s, cfg).trade.accountsPayable;
+    expect(unpaid).toBeGreaterThan(0); expect(ap).toBeGreaterThan(0);
+    expect(fundsPosition(s, cfg, cfg.payrollCurrency).unpaidObligations).toBe(0);
+    const ui = await startUi(cfg); await ui.importText(serializeSave(s));
+    const report = panel(ui.app.innerHTML, 'report');
+    const rows = [...book(ui.app.innerHTML, '거래 장부 · USD').matchAll(/<tr[^>]*><th>(.*?)<\/th><td>(.*?)<\/td><\/tr>/g)];
+    expect(rows[rows.findIndex((r) => r[1] === '자산 합계') + 1]!.slice(1, 3)).toEqual(['미지급금', formatMoney(cfg.tradeCurrency, ap)]);
+    const usdRows = s.obligations.filter((o) => o.paidDay === null && o.currency === cfg.tradeCurrency), first = Math.min(...usdRows.map((o) => o.incurredDay));
+    const list = report.split('<ul class="due-list">')[1]!.split('</ul>')[0]!;
+    expect(list.startsWith(`<li><span>${first}일부터</span>밀린 지급 ${usdRows.length}건 (현금이 들어오면 먼저 갚음) <b>${formatMoney(cfg.tradeCurrency, -unpaid)}</b></li>`)).toBe(true);
+    expect(list.match(/밀린 지급/g)).toHaveLength(1);
+    expect(report).toContain(`<li><b>돈</b> `);
+    expect(report).toContain(`<li>미지급금이 ${formatMoney(cfg.tradeCurrency, unpaid)} 있습니다. 현금이 들어오면 먼저 갚습니다.</li>`);
+    assertDue(report, s, cfg);
+  });
+  it('거래 이익이 없고 원화 급여가 밀리면 이유 줄과 막힌 곳은 금액 뒤 조사 없이 쓴다', async () => {
+    const p = poor(), r = companyReport(p.s, p.cfg);
+    expect(r.trade.profit).toBeLessThanOrEqual(0); expect(r.payroll.accountsPayable).toBeGreaterThan(0);
+    const ui = await startUi(p.cfg); await ui.importText(serializeSave(p.s));
+    const report = panel(ui.app.innerHTML, 'report');
+    expect(report).toContain(`<li>${esc(`원화 미지급 급여가 ${formatMoney(p.cfg.payrollCurrency, r.payroll.accountsPayable)} 있습니다. 달러 현금 ${formatMoney(p.cfg.tradeCurrency, r.trade.cash)}로는 원화 급여를 낼 수 없습니다. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`)}</li>`);
+    expect(report).toContain(`<li>미지급금이 ${formatMoney(p.cfg.payrollCurrency, fundsPosition(p.s, p.cfg, p.cfg.payrollCurrency).unpaidObligations)} 있습니다. 현금이 들어오면 먼저 갚습니다.</li>`);
+    for (const wrong of ['원가 있습니다', '원이 있습니다', 'USD이 있습니다']) expect(report).not.toContain(wrong);
+  });
+  it('경영 보고는 대기 명령이 있어도 확정 상태만 읽는다', async () => {
+    const ui = await startUi(), before = panel(ui.app.innerHTML, 'report');
+    expect(before).toContain(`<ul class="workload">${workloadLinesKo(workloadSummary(initial(), config), config).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>`);
+    expect(before).toContain('<ul class="bottleneck"><li><b>돈</b> 없음</li><li><b>시간</b> 없음</li><li><b>사람</b> 없음</li><li><b>선복</b> 없음</li></ul>');
+    ui.click({ action: 'accept' });
+    expect(ui.app.innerHTML).toContain('data-action="cancel"');
+    expect(panel(ui.app.innerHTML, 'report')).toBe(before);
+    // 2일: 확정된 계약에 배정·예약을 대기열에 넣어도 보고는 그대로다.
+    ui.click({ action: 'end-day' });
+    const day2 = panel(ui.app.innerHTML, 'report');
+    ui.click({ action: 'assign' }); ui.click({ action: 'book' });
+    expect(ui.app.innerHTML.match(/data-action="unqueue"/g)).toHaveLength(2);
+    expect(panel(ui.app.innerHTML, 'report')).toBe(day2);
+  });
+  it('보고와 일정의 7일 창은 캠페인 마지막 날에서 자른다', async () => {
+    const ui = await startUi();
+    for (const day of [initial().day + 1, config.campaignDays - 5, config.campaignDays - 4, config.campaignDays]) {
+      await ui.importText(serializeSave(savedAt(day, [])));
+      const to = Math.min(config.campaignDays, day + 6);
+      expect(panel(ui.app.innerHTML, 'report')).toContain(`<caption>앞으로 낼 돈 (${day === to ? day : `${day}~${to}`}일)</caption>`);
+      expect(panel(ui.app.innerHTML, 'queue')).toContain(`aria-controls="schedule-body">앞으로 ${to - day + 1}일 일정 (`);
+      expect(ui.app.innerHTML).not.toContain(`${config.campaignDays + 1}일`);
+    }
+  });
+  it('결산 표의 행 이름·값·합계 줄과 결산 문장은 정한 순서와 같다', async () => {
+    const ui = await startUi();
+    for (const s of [runToCampaignEnd(initial(), config, { 1: acceptAllFeasible(initial(), config) }).state, runToCampaignEnd(initial(), config).state]) {
+      await ui.importText(serializeSave(s));
+      const sum = campaignSummary(s, config), report = panel(ui.app.innerHTML, 'report');
+      const settlement = report.split('<div class="settlement">')[1]!.split('\n    <div class="books">')[0]!;
+      expect(settlement.startsWith(`<h3 id="settlement-h" tabindex="-1">${config.campaignDays}일 결산</h3><p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books"><table class="money"><caption>결산 · `)).toBe(true);
+      expect([...settlement.matchAll(/<caption>결산 · (.*?)<\/caption>/g)].map((m) => m[1])).toEqual([config.tradeCurrency, config.payrollCurrency]);
+      for (const st of sum.byCurrency) {
+        const trade = st.currency === config.tradeCurrency;
+        if (!trade) expect([st.inventory, st.prepaidFreight, st.forwardingWip, st.accountsReceivable, st.contractContribution]).toEqual([0, 0, 0, 0, 0]);
+        const expected: [string, number, boolean][] = [['현금', st.cash, false],
+          ...(trade ? [['재고', st.inventory, false], ['선급운임', st.prepaidFreight, false], ['주선 진행원가', st.forwardingWip, false], ['매출채권', st.accountsReceivable, false]] as [string, number, boolean][] : []),
+          ['자산 합계', st.totalAssets, true], ['미지급금', st.accountsPayable, false], ['순자산 (자산 − 미지급금)', st.netAssets, true],
+          ['시작 자본', st.openingEquity, false], ['손익', st.profit, false],
+          ...(trade ? [['계약 기여이익 합계', st.contractContribution, false]] as [string, number, boolean][] : [])];
+        const table = book(settlement, `결산 · ${st.currency}`);
+        expect([...table.matchAll(/<tr( class="total")?><th>(.*?)<\/th><td>(.*?)<\/td><\/tr>/g)].map((m) => [m[2], m[3], Boolean(m[1])]))
+          .toEqual(expected.map(([label, value, total]) => [label, formatMoney(st.currency, value), total]));
+      }
+      const r = onTimeDeliveryRate(s);
+      const rate = r.delivered ? `<p>정시 인도율 ${rateKo(r.rateBasisPoints!)} — 인도 ${r.delivered}건 중 납기 안 ${r.onTime}건</p>` : '<p>정시 인도율: 인도한 계약이 없습니다.</p>';
+      expect(settlement).toContain(rate); expect(report.split(rate).length - 1).toBe(1);
+    }
+  });
+  it('동료 필터에서 고른 값은 다시 그린 뒤에도 선택된 채 남는다', async () => {
+    const ui = await startUi(), role = config.employees[0]!.role, attr = config.employees[0]!.character.attribute!;
+    const select = (action: string) => ui.app.innerHTML.split(`data-action="${action}"`)[1]!.split('</select>')[0]!;
+    ui.change({ action: 'crew-role' }, role);
+    expect(select('crew-role')).toContain(`<option value="${role}" selected>`); expect(select('crew-role')).not.toContain('<option value="" selected>');
+    ui.click({ action: 'map-mode', mode: 'world' });
+    expect(select('crew-role')).toContain(`<option value="${role}" selected>`);
+    ui.change({ action: 'crew-role' }, ''); ui.change({ action: 'crew-attr' }, attr);
+    expect(select('crew-attr')).toContain(`<option value="${attr}" selected>`); expect(select('crew-attr')).not.toContain('<option value="" selected>');
+    expect(select('crew-role')).toContain('<option value="" selected>전체</option>');
+  });
+  it('인도를 마친 다음 날 보고의 재고와 맡은 화물은 없음이다', async () => {
+    const commands = acceptAllFeasible(initial(), config), end = runToCampaignEnd(initial(), config, { 1: commands }).state;
+    const s = savedAt(Math.max(...end.contracts.map((c) => c.deliveredDay!)) + 1, commands);
+    for (const owner of ['COMPANY', 'CUSTOMER']) expect(s.cargoLots.some((l) => l.owner === owner && l.status === 'DELIVERED')).toBe(true);
+    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const report = panel(ui.app.innerHTML, 'report');
+    expect(report).toContain('<th>재고 (없음)</th>');
+    expect(report).toContain('맡은 고객 화물 없음 — 회사 자산이 아니라 표에 넣지 않습니다.');
+  });
+  it('끝나는 하루 진행 직후 500ms 안의 누름은 무시하고 그 뒤에는 받는다', async () => {
+    const ui = await startUi(); await ui.importText(serializeSave(savedAt(config.campaignDays, [firstTrade()])));
+    ui.click({ action: 'end-day' });
+    ui.scrollIds.length = 0; ui.clickNow({ action: 'skip-to', target: 'settlement-h' });
+    expect(ui.scrollIds).toEqual([]);
+    vi.advanceTimersByTime(501); ui.clickNow({ action: 'skip-to', target: 'settlement-h' });
+    expect(ui.scrollIds).toEqual(['settlement-h']);
+  });
+  it('마지막 날 거절된 명령이 있으면 종료 알림은 경고로 거절 이유를 앞에 둔다', async () => {
+    const cfg = structuredClone(config); cfg.campaignDays = initial().day;
+    const ui = await startUi(cfg);
+    ui.click({ action: 'accept' });
+    const assign = ui.rendered({ action: 'assign' }).dataset;
+    ui.click({ action: 'assign', task: assign.task!, emp: assign.emp! });
+    ui.click({ action: 'unqueue', command: ui.rendered({ action: 'unqueue' }).dataset.command! });
+    const reason = panel(ui.app.innerHTML, 'queue').match(/<li class="bad">.*? — (.*?)<button/)![1]!;
+    ui.scrollIds.length = 0; const count = ui.announcements.length;
+    ui.click({ action: 'end-day' });
+    const text = `실행하지 못한 명령: ${reason} ${cfg.campaignDays}일 캠페인이 끝났습니다. 경영 보고의 ${cfg.campaignDays}일 결산에서 통화별 결과를 확인하세요.`;
+    expect(ui.app.innerHTML).toContain(`<div class="flash-toast flash warn">${text}</div>`);
+    expect(ui.scrollIds).toEqual(['settlement-h']);
+    expect(ui.announcements.slice(count)).toEqual([text]);
+  });
+  it('막힌 곳 목록은 묶음마다 건수와 계약 막힘 문장을 정한 순서로 보인다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const s = savedAt(initial().day + 1, [firstTrade()]), c = s.contracts[0]!, blockers = contractProgress(s, config, c).blockers;
+    expect(blockers.map((b) => b.code)).toEqual(['TASK_UNASSIGNED', 'NO_BOOKING', 'NEXT_SAILING_LATE']);
+    const one = (code: string) => `1건<ul><li>${linkHtml(c.id)} ${esc(blockers.find((b) => b.code === code)!.messageKo)}</li></ul>`;
+    const notPeople = blockers.filter((b) => ['NO_BOOKING', 'NEXT_SAILING_LATE'].includes(b.code)).length;
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<ul class="bottleneck"><li><b>돈</b> 없음</li><li><b>시간</b> ${one('NEXT_SAILING_LATE')}</li><li><b>사람</b> ${one('TASK_UNASSIGNED')}</li><li><b>선복</b> ${one('NO_BOOKING')}</li></ul><p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${notPeople}건은 풀리지 않습니다.</p>`);
+  });
+  it('운임·관세 목록 줄·매출채권 이유 줄·끝난 표와 종료 안내는 전체 문장으로 보인다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const s = savedAt(initial().day + 1, [firstTrade()]);
+    const [freight, duty] = upcomingPayments(s, config).filter((r) => r.kind === 'FREIGHT' || r.kind === 'DUTY');
+    expect([freight!.kind, freight!.day !== null, duty!.kind, duty!.day]).toEqual(['FREIGHT', true, 'DUTY', null]);
+    let report = panel(ui.app.innerHTML, 'report');
+    expect(report.split('<ul class="due-list">')[1]!.split('</ul>')[0]).toBe(
+      `<li><span>${freight!.day}일까지</span>${linkHtml(freight!.contractId!)} 운송편 예약 때 운임 선지급 <b>${formatMoney(freight!.currency, -freight!.amountMinor)}</b></li>`
+      + `<li><span>날짜 미정</span>${linkHtml(duty!.contractId!)} 도착 때 수입 관세 <b>${formatMoney(duty!.currency, -duty!.amountMinor)}</b></li>`);
+    expect(report).toContain('</table><p class="muted small">통화가 달라 USD와 KRW를 더하지 않습니다.</p>');
+    // 끝난 표는 밀린 지급 한 줄이고 오늘 할 일은 종료 안내를 쓴다.
+    await ui.importText(serializeSave(runToCampaignEnd(initial(), config, { 1: acceptAllFeasible(initial(), config) }).state));
+    report = panel(ui.app.innerHTML, 'report');
+    const table = report.match(/<table class="money due-table">[\s\S]*?<\/table>/)![0];
+    expect(table.match(/<tr[\s>]/g)).toHaveLength(2);
+    expect([...table.matchAll(/<th scope="row">(.*?)<\/th>/g)].map((m) => m[1])).toEqual(['밀린 지급 (현금이 들어오면 먼저 갚음)']);
+    expect(panel(ui.app.innerHTML, 'queue')).toContain('<p class="muted">캠페인이 끝났습니다. 결산은 경영 보고에 있습니다.</p><button class="link" data-action="skip-to" data-target="settlement-h">결산 보기</button>');
+    // 인도했지만 수금 전: 매출채권 이유 줄의 계약 ID는 링크다.
+    const cfg = structuredClone(config); cfg.terms.paymentDueDay = cfg.campaignDays;
+    const commands = acceptAllFeasible(initial(cfg), cfg), end = runToCampaignEnd(initial(cfg), cfg, { 1: commands }).state;
+    const waiting = savedAt(end.contracts[0]!.deliveredDay! + 1, commands, cfg);
+    const open = waiting.invoices.filter((i) => i.status !== 'PAID').sort((a, b) => a.dueDay - b.dueDay);
+    expect(open.length).toBeGreaterThan(0);
+    for (const i of open) expect(['ACTIVE', 'IN_PROGRESS']).toContain(waiting.contracts.find((c) => c.id === i.contractId)!.status);
+    const ui2 = await startUi(cfg); await ui2.importText(serializeSave(waiting));
+    expect(panel(ui2.app.innerHTML, 'report')).toContain(`<li>매출 ${formatMoney(cfg.tradeCurrency, companyReport(waiting, cfg).trade.accountsReceivable)}는 이미 이익에 들어갔지만 현금은 나중에 들어옵니다 (매출채권: ${open.map((i) => `${linkHtml(i.contractId)} ${i.dueDay}일 ${formatMoney(i.currency, i.amountMinor)}`).join(', ')}).</li>`);
+  });
+  it('동료 필터 선택지 글은 직무·속성의 한국어 이름이다', async () => {
+    const roles: Record<string, string> = { sales: '영업', operations: '운영' };
+    const attributes: Record<string, string> = { water: '물', fire: '불', wind: '바람', earth: '대지', light: '빛', shadow: '그림자', none: '속성 미정' };
+    const ui = await startUi(), options = crewFacetOptions(initial(), config);
+    const facets = ui.app.innerHTML.split('<div class="crew-facets"')[1]!.split('</div>')[0]!;
+    expect(options.roles.length).toBeGreaterThan(1); expect(options.attributes.length).toBeGreaterThan(1);
+    for (const role of options.roles) expect(facets).toContain(`<option value="${role}" >${roles[role]}</option>`);
+    for (const a of options.attributes) expect(facets).toContain(`<option value="${a}" >${attributes[a]}</option>`);
+  });
+  it('정시 인도율 목록은 마감일 인도를 정시로 보고 오늘 납기·취소 계약을 넣지 않는다', async () => {
+    const l = late(), s = structuredClone(savedAt(l.receipt + 1, l.commands)), base = s.contracts.find((c) => c.id === l.c.id)!;
+    expect(base.deliveredDay! > base.deliveryDeadlineDay).toBe(true);
+    const add = (suffix: string, patch: Partial<Contract>) => { const c = { ...structuredClone(base), ...patch, id: `${base.id}-${suffix}` }; s.contracts.push(c); return c; };
+    add('ONTIME', { deliveredDay: base.deliveryDeadlineDay });
+    const past = add('PAST', { status: 'ACTIVE', deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day - 1 });
+    add('TODAY', { status: 'ACTIVE', deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day });
+    add('CANCEL', { status: 'CANCELLED', cancelledDay: s.day - 3, deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day - 2 });
+    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const r = onTimeDeliveryRate(s);
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>정시 인도율 ${rateKo(r.rateBasisPoints!)} — 인도 ${r.delivered}건 중 납기 안 ${r.onTime}건</p><p>납기를 넘겨 인도한 계약: ${esc(l.c.id)}</p><p>납기가 지났는데 아직 인도하지 못한 계약: ${linkHtml(past.id)} (인도하면 정시 인도율에 들어갑니다)</p>`);
+  });
+  it('정시 인도율의 납기 지난 목록은 실제로 취소한 계약을 넣지 않는다', async () => {
+    const forwarding: Command = { id: 'KEEP-FWD', type: 'ACCEPT_FORWARDING', offerId: config.offers.filter((o) => o.kind === 'forwarding')[0]!.id };
+    const planned = planState(initial(), config, [firstTrade(), forwarding]).state;
+    const cancelled = planned.contracts.find((c) => c.kind === 'DIRECT_TRADE')!, kept = planned.contracts.find((c) => c.id !== cancelled.id)!;
+    const deadline = Math.max(...planned.contracts.map((c) => c.deliveryDeadlineDay));
+    const s = openDay(runDays(initial(), config, deadline + 1, { 1: [firstTrade(), forwarding],
+      2: [{ id: 'CANCEL', type: 'CANCEL_CONTRACT', contractId: cancelled.id }] }).state, config).state;
+    expect(s.contracts.find((c) => c.id === cancelled.id)!.status).toBe('CANCELLED');
+    const ui = await startUi(); await ui.importText(serializeSave(s));
+    expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>납기가 지났는데 아직 인도하지 못한 계약: ${linkHtml(kept.id)} (인도하면 정시 인도율에 들어갑니다)</p>`);
+  });
+  it('하루 진행 전에 대기 명령으로 보던 일정은 다음 날 새 일정이 아니다', async () => {
+    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' });
+    ui.click({ action: 'schedule-toggle' });
+    expect(panel(ui.app.innerHTML, 'queue')).toContain('data-action="goto-contract"');
+    ui.click({ action: 'end-day' });
+    const q = panel(ui.app.innerHTML, 'queue');
+    expect(q).toContain('id="schedule-body"'); expect(q).toContain('data-action="goto-contract"');
+    expect(q).not.toContain('>새 일정<');
   });
 });
 

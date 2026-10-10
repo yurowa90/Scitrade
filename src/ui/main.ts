@@ -19,7 +19,7 @@ import { attributeKo, roleKo, taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, crewFacetOptions, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
 import { initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
 import { cancellationPreviewKo } from './trade';
-import { bottlenecks, cargoListKo, heldCargoByGood, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo } from './reports';
+import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
 import { taskSubjectKo } from '../engine/tasks';
 import { employeeDetail, growthMessages, growthStatus, payrollRunwayKo } from './growth';
@@ -161,7 +161,10 @@ function queue(cmd: Command) {
   const slotEl = activation?.element.closest<HTMLElement>('[data-action-slot]');
   const anchor = slotEl ? { slot: slotEl.dataset.actionSlot!, top: slotEl.getBoundingClientRect().top } : null;
   if (anchor && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
-  const result = tryCommand(cmd);
+  // 끝난 캠페인에는 하루 진행이 없어 넣은 명령이 실행되지 않는다. 엔진 검증 전에 거절한다.
+  const result: CommandResult = state.phase === 'ENDED'
+    ? { commandId: cmd.id, status: 'REJECTED', reasonKo: `${config.campaignDays}일 캠페인이 끝나 새 명령을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.` }
+    : tryCommand(cmd);
   if (result.status !== 'APPLIED') {
     ui.flash = { kind: 'warn', text: result.reasonKo };
   } else {
@@ -662,10 +665,15 @@ function contractLink(id: string): string {
 
 function deliveryRateBlock(): string {
   const r = onTimeDeliveryRate(state);
+  // 끝난 캠페인에는 더 인도할 날이 없다. 앞으로 할 일처럼 안내하지 않는다.
+  const ended = state.phase === 'ENDED';
   const links = (late: boolean) => state.contracts.filter((c) => c.status !== 'CANCELLED' && (late
     ? c.deliveredDay !== null && c.deliveredDay > c.deliveryDeadlineDay
     : c.deliveredDay === null && c.deliveryDeadlineDay < state.day)).map((c) => contractLink(c.id)).join(', ');
-  return `<p>${r.delivered === 0 ? '정시 인도율: 아직 인도한 계약이 없습니다.' : `정시 인도율 ${rateKo(r.rateBasisPoints!)} — 인도 ${r.delivered}건 중 납기 안 ${r.onTime}건`}</p>${r.late ? `<p>납기를 넘겨 인도한 계약: ${links(true)}</p>` : ''}${r.pastDeadlineUndelivered ? `<p>납기가 지났는데 아직 인도하지 못한 계약: ${links(false)} (인도하면 정시 인도율에 들어갑니다)</p>` : ''}`;
+  const none = ended ? '정시 인도율: 인도한 계약이 없습니다.' : '정시 인도율: 아직 인도한 계약이 없습니다.';
+  const past = ended ? `납기 안에 인도하지 못하고 캠페인이 끝난 계약: ${links(false)} (인도하지 않아 정시 인도율에 넣지 않았습니다)`
+    : `납기가 지났는데 아직 인도하지 못한 계약: ${links(false)} (인도하면 정시 인도율에 들어갑니다)`;
+  return `<p>${r.delivered === 0 ? none : `정시 인도율 ${rateKo(r.rateBasisPoints!)} — 인도 ${r.delivered}건 중 납기 안 ${r.onTime}건`}</p>${r.late ? `<p>납기를 넘겨 인도한 계약: ${links(true)}</p>` : ''}${r.pastDeadlineUndelivered ? `<p>${past}</p>` : ''}`;
 }
 
 function upcomingBlock(): string {
@@ -685,13 +693,21 @@ function upcomingBlock(): string {
     const date = p.day === null ? '날짜 미정' : `${p.day}${p.kind === 'FREIGHT' ? '일까지' : '일'}`;
     list.push(`<li><span>${date}</span>${contractLink(p.contractId!)} ${p.kind === 'FREIGHT' ? '운송편 예약 때 운임 선지급' : '도착 때 수입 관세'} <b>${esc(formatMoney(p.currency, -p.amountMinor))}</b></li>`);
   }
-  return `<table class="money due-table"><caption>${ended ? '남은 미지급 (캠페인 종료)' : `앞으로 낼 돈 (${from === to ? from : `${from}~${to}`}일)`}</caption><thead><tr><th scope="col">항목</th>${summary.currencies.map((c) => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${summary.lines.filter((line) => !ended || line.kind === 'OVERDUE').map((line) => `<tr><th scope="row">${esc(line.labelKo)}</th>${line.amounts.map((amount, i) => `<td>${amount === null ? '—' : esc(formatMoney(summary.currencies[i]!, amount))}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="muted small">통화가 달라 USD와 KRW를 더하지 않습니다.</p>${summary.undated ? `<p class="muted small">실을 편이 없어 날짜를 정하지 못한 지급이 ${summary.undated}건 있습니다.</p>` : ''}${list.length ? `<ul class="due-list">${list.join('')}</ul>` : ''}`;
+  return `<table class="money due-table"><caption>${ended ? '남은 미지급 (캠페인 종료)' : `앞으로 낼 돈 (${from === to ? from : `${from}~${to}`}일)`}</caption><thead><tr><th scope="col">항목</th>${summary.currencies.map((c) => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${summary.lines.filter((line) => !ended || line.kind === 'OVERDUE').map((line) => `<tr><th scope="row">${esc(line.labelKo)}</th>${line.amounts.map((amount, i) => `<td>${amount === null ? '—' : esc(formatMoney(summary.currencies[i]!, amount))}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="muted small">통화가 달라 USD와 KRW를 더하지 않습니다.</p>${undatedKo(summary.unbooked, '운송편을 아직 예약하지 않아 관세 낼 날을')}${undatedKo(summary.noSailing, '캠페인 안에 실을 자리가 남은 출항편이 없어 날짜를')}${list.length ? `<ul class="due-list">${list.join('')}</ul>` : ''}`;
+}
+
+/** 날짜를 정하지 못한 지급은 기간 표 밖에 원인별로 적는다. 금액은 통화마다 따로 쓴다. */
+function undatedKo(u: UndatedPayments, cause: string): string {
+  if (!u.count) return '';
+  const amounts = u.amounts.map((a) => formatMoney(a.currency, a.amountMinor)).join(' · ');
+  return `<p class="muted small">${esc(`${cause} 정하지 못한 지급이 ${u.count}건(${amounts}) 있습니다. 위 표에는 넣지 않았습니다.`)}</p>`;
 }
 
 function operationsBlock(): string {
   const groups = bottlenecks(state, config);
   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
-  return `<div class="report-ops"><h3>운영 지표</h3>${deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+  // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
+  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
 }
 
 function settlementBlock(): string {
@@ -705,7 +721,7 @@ function settlementBlock(): string {
     const first = Math.min(...rows.map((o) => o.incurredDay)), last = Math.max(...rows.map((o) => o.incurredDay));
     unpaid.push(`<p>남은 미지급 ${esc(standing.currency)}: ${esc(formatMoney(standing.currency, rows.reduce((a, o) => a + o.amountMinor, 0)))} — ${rows.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
   }
-  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.campaignDays}일 결산</h3><p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${o.incurredDay}일 ${esc(o.reasonKo)} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
+  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.campaignDays}일 결산</h3><p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
 }
 
 function reportPanel(): string {
@@ -729,7 +745,7 @@ function reportPanel(): string {
   if (t.profit > 0) {
     const runway = state.phase === 'ENDED' ? '' : `(원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(state, config), state.day, config.campaignDays)})`;
     why.push(esc(`거래 손익 ${usd(t.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${krw(p.cash)}에서만 나갑니다${runway}. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`));
-  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여 ${krw(p.accountsPayable)}가 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`));
+  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여가 ${krw(p.accountsPayable)} 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`));
   if (!why.length) why.push(esc('지금은 현금과 장부가 같은 이야기를 하고 있습니다. 거래를 진행하며 차이가 생기는 순간을 확인해 보세요.'));
   const neg = (minor: number, fmt: (m: number) => string) => (minor === 0 ? fmt(0) : '−' + fmt(minor));
   const row = (k: string, v: string, cls = '') => `<tr class="${esc(cls)}"><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
@@ -823,12 +839,13 @@ function commandLabel(c: Command): string {
 
 function queuePanel(): string {
   const plan = planCommands(state, config, ui.pending);
+  const pending = ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '';
   return `
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.phase === 'ENDED' ? `${config.campaignDays}일 · 캠페인 종료` : `${state.day}일 · 하루 진행 때 이 순서로 실행`}</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? '<p class="muted small amount-basis-note">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>' : ''}
-    ${state.phase === 'ENDED' ? '<p class="muted">캠페인이 끝났습니다. 결산은 경영 보고에 있습니다.</p><button class="link" data-action="skip-to" data-target="settlement-h">결산 보기</button>' : ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
+    ${state.phase === 'ENDED' ? `<p class="muted">캠페인이 끝났습니다. 결산은 경영 보고에 있습니다.</p><button class="link" data-action="skip-to" data-target="settlement-h">결산 보기</button>${pending}` : pending || '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
     ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay)}
     ${state.phase === 'ENDED' ? '' : scheduleBlock(view, config, { open: ui.scheduleOpen, prev: ui.schedulePrev, link: contractLink })}
   </section>`;

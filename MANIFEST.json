@@ -642,8 +642,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0023.md",
-      "size_bytes": 28199,
-      "sha256": "32c51f243e50a56786fa5cbbf075750ae5ded2caedb1edc2b2669d1908aba739"
+      "size_bytes": 33079,
+      "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -952,8 +952,8 @@
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 8172,
-      "sha256": "a0eac400a3d65762844e9b79300eb06214b17ffb798937ee76d6d020bc7dc8c7"
+      "size_bytes": 8306,
+      "sha256": "4bc660e1f50c6f6ee5cc7687fcc892b13470fb06e18fce9da5b6425ce6681dc7"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -967,8 +967,8 @@
     },
     {
       "path": "tools/browser/scenarios/campaign-end.json",
-      "size_bytes": 1029,
-      "sha256": "e437df30b87019e4c5fdc2e0ba2cc51db5c86e104eeafa819f40c022146f7e5f"
+      "size_bytes": 1461,
+      "sha256": "4db93cbc1c09665c30a75ec9e6df433cc75219a68d6e559cb54061f3f5d7661e"
     },
     {
       "path": "tools/browser/scenarios/crew-facet.json",

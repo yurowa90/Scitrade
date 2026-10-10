@@ -3,7 +3,9 @@ import { loadScenario } from '../content/scenario';
 import { cityName, listSailings, routeBetween } from '../engine/catalog';
 import { commitDay, createGame, openDay, planState } from '../engine/engine';
 import { isAvailableFromToday } from '../engine/employees';
+import { formatMoney } from '../engine/money';
 import { fundsPosition } from '../engine/reservations';
+import { taskSubjectKo } from '../engine/tasks';
 import { tradePairs, upcomingPayments } from '../engine/reports';
 import { acceptAllFeasible, runDays, runToCampaignEnd } from '../engine/testkit';
 import type { Command, GameState, ScenarioConfig } from '../engine/types';
@@ -208,5 +210,70 @@ describe('일정 표시 경계', () => {
     const emptyCfg = structuredClone(config); emptyCfg.employees.forEach((e) => { e.salaryPerDayMinor = 0; });
     const empty = opened(emptyCfg), days = scheduleWindow(empty, emptyCfg);
     expect(block(empty, emptyCfg)).toContain(`<p class="muted">앞으로 ${days.to - days.from + 1}일 동안 정해진 일이 없습니다.</p>`);
+  });
+  it('일정 창은 캠페인 마지막 날에서 자르고 단추 건수는 창 안 일정만 센다', () => {
+    for (const day of [opened().day, config.campaignDays - 4, config.campaignDays]) {
+      const s = { ...opened(), day }, w = scheduleWindow(s, config);
+      expect(w).toEqual({ from: day, to: Math.min(config.campaignDays, day + 6) });
+      expect(w.to).toBeLessThanOrEqual(config.campaignDays);
+    }
+    const s = planState(opened(), config, acceptAllFeasible(opened(), config)).state, w = scheduleWindow(s, config);
+    expect(scheduleItems(s, config, config.campaignDays).filter((i) => i.day !== null && i.day > w.to).length).toBeGreaterThan(0);
+    expect(block(s)).toContain(`<button class="link" id="schedule-toggle" data-action="schedule-toggle" aria-expanded="true" aria-controls="schedule-body">앞으로 ${w.to - w.from + 1}일 일정 (${scheduleItems(s, config).length}건)</button>`);
+    expect(block(opened())).toContain(`<li><b>${opened().day}일 (오늘)</b><ul>`);
+  });
+  it('일정 줄은 수금 부호·예상 표시·조사 대상 글을 전체 문장으로 쓴다', () => {
+    const cmds = acceptAllFeasible(opened(), config), end = runToCampaignEnd(opened(), config, { 1: cmds }).state;
+    const c = end.contracts[0]!;
+    // 인도 전이고 수금 예상일이 창 안에 든 첫날
+    let s = opened(), receipt: ReturnType<typeof scheduleItems>[number] | undefined;
+    for (let day = opened().day; day <= c.deliveredDay! && !receipt; day++) {
+      s = atDay(config, day, cmds);
+      receipt = scheduleItems(s, config).find((i) => i.key === `RCV:${c.id}` && i.estimate);
+    }
+    expect(receipt!.money!.amountMinor).toBeGreaterThan(0);
+    const lineOf = (html: string, start: string) => html.split('<li>').find((l) => l.startsWith(start))!.split('</li>')[0]!;
+    expect(lineOf(block(s), `${esc(c.id)} 수금`)).toBe(`${esc(c.id)} 수금 <b>+${esc(formatMoney(receipt!.money!.currency, receipt!.money!.amountMinor))}</b> <span class="tag tag-estimate">예상</span>`);
+    const planned = planState(opened(), config, cmds).state;
+    const task = scheduleItems(planned, config).find((i) => i.kind === 'TASK_DONE' && i.contractId !== null)!;
+    expect(lineOf(block(planned), `${esc(task.contractId!)} ${esc(task.textKo)}`)).toBe(`${esc(task.contractId!)} ${esc(task.textKo)} <span class="tag tag-estimate">예상</span>`);
+    const site = config.recruitment!.scoutSites[0]!, emp = config.employees[1]!;
+    const scouting = planState(opened(), config, [{ id: 'SCOUT', type: 'SCOUT_SITE', venueId: site.venueId, employeeId: emp.id }]).state;
+    const scoutTask = scouting.tasks.find((t) => t.kind === 'SCOUT')!;
+    expect(scheduleItems(scouting, config).find((i) => i.key === `TASK:${scoutTask.id}`)!.textKo).toBe(`${taskSubjectKo(config, scoutTask)} 현장 조사 완료 — ${emp.nameKo}`);
+  });
+  it('출항일 아침의 예약 출항은 오늘 일정에 남는다', () => {
+    const cmds = acceptAllFeasible(opened(), config), end = runToCampaignEnd(opened(), config, { 1: cmds }).state;
+    const sh = end.shipments[0]!, s = atDay(config, sh.departureDay, cmds);
+    expect(s.bookings.find((b) => b.id === sh.bookingId)!.status).toBe('BOOKED');
+    expect(scheduleItems(s, config).find((i) => i.key === `DEP:${sh.bookingId}`)!.day).toBe(s.day);
+  });
+  it('날짜 바뀜은 앞당겨진 날·원래 미정을 적고 밀린 지급의 첫날 변화는 적지 않는다', () => {
+    const planned = planState(opened(), config, acceptAllFeasible(opened(), config)).state;
+    const task = scheduleItems(planned, config).find((i) => i.kind === 'TASK_DONE')!;
+    const lineOf = (html: string, start: string) => html.split('<li>').find((l) => l.startsWith(start))!.split('</li>')[0]!;
+    const start = `${esc(task.contractId!)} ${esc(task.textKo)}`;
+    const prev = scheduleKeys(planned, config);
+    prev[task.key] = task.day! + 2;
+    expect(lineOf(block(planned, config, prev), start)).toBe(`${start} <span class="tag tag-estimate">예상</span> <span class="tag">날짜 바뀜 (원래 ${task.day! + 2}일)</span>`);
+    prev[task.key] = null;
+    expect(lineOf(block(planned, config, prev), start)).toBe(`${start} <span class="tag tag-estimate">예상</span> <span class="tag">날짜 바뀜 (원래 날짜 미정)</span>`);
+    delete prev[task.key];
+    expect(lineOf(block(planned, config, prev), start)).toBe(`${start} <span class="tag tag-estimate">예상</span> <span class="tag">새 일정</span>`);
+    const cfg = structuredClone(config);
+    cfg.startingCash[cfg.payrollCurrency] = cfg.employees.filter((e) => isAvailableFromToday(opened(cfg), e.id))
+      .reduce((sum, e) => sum + e.salaryPerDayMinor, 0) - 1;
+    const poor = openDay(runDays(opened(cfg), cfg, 2).state, cfg).state;
+    const overdue = scheduleItems(poor, cfg).find((i) => i.key === `PAY:OVERDUE:${cfg.payrollCurrency}`)!;
+    const moved = scheduleKeys(poor, cfg); moved[overdue.key] = overdue.day! - 1;
+    expect(lineOf(block(poor, cfg, moved), esc(overdue.textKo))).toBe(`${esc(overdue.textKo)} <b>${esc(formatMoney(cfg.payrollCurrency, overdue.money!.amountMinor))}</b>`);
+  });
+  it('끝난 캠페인은 진행 중으로 남은 계약이 있어도 밀린 지급만 읽는다', () => {
+    const s = runToCampaignEnd(opened(), config, { 1: [{ id: 'ENDED-ACTIVE', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }] }).state;
+    // 전제: 정리되지 않은 지난 납기 계약이 남아 있다.
+    expect(s.contracts.some((c) => c.status === 'ACTIVE' && c.deliveredDay === null && c.deliveryDeadlineDay < s.day)).toBe(true);
+    const items = scheduleItems(s, config, config.campaignDays);
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((i) => i.key.startsWith('PAY:OVERDUE:'))).toBe(true);
   });
 });

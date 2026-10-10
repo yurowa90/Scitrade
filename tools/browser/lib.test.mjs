@@ -113,7 +113,8 @@ test('명령줄 dry-run과 저장소 안 쓰기 경로 거절', () => {
     for (const name of names) {
       const result = run(['--scenario', scenarioFile(name)]);
       assert.equal(result.status, 0, result.stderr);
-      assert.equal(JSON.parse(result.stdout).profiles.length, 7);
+      const expected = selectProfiles(profiles, JSON.parse(fs.readFileSync(scenarioFile(name), 'utf8')).profiles).map(p => p.id);
+      assert.deepEqual(JSON.parse(result.stdout).profiles, expected);
     }
     assert.equal(run(['--out', path.join(REPO_ROOT, 'inside.json')]).status, 2);
     assert.equal(run(['--font-cache', path.join(REPO_ROOT, 'inside-cache')]).status, 2);
