@@ -146,8 +146,12 @@ export function d03Tables(output: SimOutput): string {
       for (const [id, count] of wins) if (count) lines.push(`| ${id} | ${count} |`);
       lines.push('', `가장 강한 정책: ${strongest?.[0] ?? '미측정'} (${strongest?.[1] ?? 0}/${n}시드에서 1위와 300 USD 안). 실패 실행도 순자산 그대로 포함한다.`, '', '## ⑦ 사업별 기여이익 비중', '', '| 사업 | USD 기여이익 중앙 | 시드별 비중 중앙 |', '|---|---:|---:|');
       for (const [field, share, label] of [['directTrade', 'direct', '직접 무역'], ['handlingForwarding', 'handling', '작업 포함 주선'], ['standardForwarding', 'standard', '일반 주선']] as const) lines.push(`| ${label} | ${dollars(median(baseline.map((r) => r.metrics.operations!.currencies.USD!.business[field])))} | ${median(shares.map((s) => s[share])).toFixed(2)}% |`);
-      lines.push('', '## ⑧ 계획 고용일과 실제 고용일이 다른 실행 수', '', '| 정책 | 다른 실행 / 고용 실행 | 실제 고용일 (null=미고용) |', '|---|---:|---|');
-      for (const id of ids.filter((id) => parseVariant(id)!.hires.length)) { const rs = get(id); lines.push(`| ${id} | ${rs.filter((r) => r.metrics.operations!.actualHires.some((h) => h.actualDay !== h.plannedDay)).length}/${rs.length} | ${[...new Set(rs.map((r) => r.metrics.operations!.actualHires.map((h) => h.actualDay ?? 'null').join('+')))].join(', ')} |`); }
+    }
+    {
+      lines.push('', '## ⑧ 계획 고용일과 실제 고용일이 다른 실행 수', '', '| 정책 | 고용일이 다른 실행 / 전체 실행 | 실제 고용일 (null=미고용) | 예측 불일치 계약 합계 |', '|---|---:|---|---:|');
+      for (const id of ids) { const rs = get(id); lines.push(`| ${id} | ${rs.filter((r) => r.metrics.operations!.actualHires.some((h) => h.actualDay !== h.plannedDay)).length}/${rs.length} | ${[...new Set(rs.map((r) => r.metrics.operations!.actualHires.map((h) => h.actualDay ?? 'null').join('+')))].join(', ') || '—'} | ${rs.reduce((sum, r) => sum + r.metrics.operations!.projectionMisses, 0)} |`); }
+    }
+    if (mode === 'base') {
       lines.push('', '### 진단·조사 선행 비교', '', '| 정책 | 대응 기준 대비 USD |', '|---|---:|');
       for (const id of ids.filter((id) => { const v = parseVariant(id)!; return v.early || v.hires.length > 1; })) lines.push(`| ${id} | ${display(stats(id))} |`);
     }

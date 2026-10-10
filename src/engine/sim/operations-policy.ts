@@ -8,18 +8,19 @@ import { fundsPosition, runningTaskOf, spaceShortfall } from '../reservations';
 import { drawUniform, type RngState } from '../rng';
 import type { EngineCommand, GameState, ScenarioConfig } from '../types';
 import { candidateFor, type Variant } from './variants';
-import type { PolicyDecision } from './policies';
+import type { PolicyDecision, ProjectionBooking } from './policies';
 
 export const rejectionCounts = () => ({ funds: 0, storage: 0, handling: 0, sailing: 0, staff: 0, onTime: 0 });
 export function decideOperations(id: string, v: Variant, state: GameState, config: ScenarioConfig, initialRng: RngState): PolicyDecision {
-  const commands: EngineCommand[] = [], rejections = rejectionCounts();
+  const commands: EngineCommand[] = [], rejections = rejectionCounts(), projectionBookings: ProjectionBooking[] = [];
   let current = state, rng = initialRng;
-  if (v.acceptance === 'IDLE') return { commands, rng, rejections };
+  if (v.acceptance === 'IDLE') return { commands, rng, rejections, projectionBookings };
   const nextId = () => `SIM-${id}-D${state.day}-${commands.length + 1}`;
   const trial = (cmd: EngineCommand) => planState(current, config, [cmd]);
   const add = (cmd: EngineCommand) => {
     const p = trial(cmd);
     if (p.results[0]!.status !== 'APPLIED') return false;
+    if (cmd.type === 'BOOK_SAILING') recordProjections(p.state);
     commands.push(cmd); current = p.state; return true;
   };
   const recruiter = config.employees.filter((e) => !config.recruitment?.candidateEmployeeIds.includes(e.id)).at(-1);
@@ -32,17 +33,24 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
     // 미래는 예정일을 쓰고, 지연되면 아침마다 연장한다. 고용 당일도 비워 둔다.
     return [{ employeeId: recruiter.id, fromDay: h.day - 3, toDay: c.hiredDay ?? Math.max(h.day, state.day) }];
   }) : [];
-  const available = () => config.employees.filter((e) => isAvailableFromToday(current, e.id)
+  const available = (remainingPt: number) => config.employees.filter((e) => isAvailableFromToday(current, e.id)
     && current.employees.find((x) => x.id === e.id)?.locationCityId === config.homeCityId && !runningTaskOf(current, e.id)
-    && !blocks().some((b) => b.employeeId === e.id && b.fromDay <= state.day && state.day <= b.toDay));
-  const projectionSafe = (s: GameState) => {
-    const blocked = blocks();
-    return projectPrepCompletion(s, config, { assignQueued: true, blocked }).every((p) => {
-      const b = s.bookings.find((b) => b.contractId === p.contractId && b.status === 'BOOKED');
-      const task = s.tasks.find((t) => t.id === p.taskId)!;
-      return (!b || (p.readyDay !== null && p.readyDay <= b.departureDay))
-        && !blocked.some((w) => w.employeeId === task.assignedEmployeeId && state.day < w.fromDay && (p.readyDay ?? Infinity) >= w.fromDay);
-    });
+    && !blocks().some((b) => b.employeeId === e.id && state.day <= b.toDay
+      && (state.day >= b.fromDay || Math.ceil(remainingPt / e.workUnitsPerDay) > b.fromDay - state.day)));
+  const projections = (s: GameState) => projectPrepCompletion(s, config, { assignQueued: true, blocked: blocks() });
+  const projectionSafe = (s: GameState) => projections(s).every((p) => {
+    const b = s.bookings.find((b) => b.contractId === p.contractId && b.status === 'BOOKED');
+    return !b || (p.readyDay !== null && p.readyDay <= b.departureDay);
+  });
+  const recordProjections = (s: GameState) => {
+    const added = s.bookings.filter((b) => b.status === 'BOOKED' && !current.bookings.some((old) => old.id === b.id));
+    if (!added.length) return;
+    const predicted = projections(s);
+    for (const b of added) {
+      const p = predicted.find((p) => p.contractId === b.contractId);
+      const readyDay = p ? p.readyDay : s.day;
+      if (readyDay !== null && readyDay <= b.departureDay) projectionBookings.push({ bookingId: b.id, contractId: b.contractId, readyDay, departureDay: b.departureDay });
+    }
   };
   for (const d of state.delayDecisions) if (d.choice === null) add({ id: nextId(), type: 'RESPOND_TO_DELAY', noticeId: d.noticeId, shipmentId: d.shipmentId, choice: 'KEEP_SHIPMENT_BOOKING' });
   const ops = config.operations!;
@@ -94,7 +102,7 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
     }
   }
   for (const t of handlingOrder(current, current.tasks.filter((t) => t.status === 'QUEUED' && t.contractId !== null))) {
-    for (const e of available()) {
+    for (const e of available(t.requiredWorkUnits - t.progressWorkUnits)) {
       const cmd: EngineCommand = { id: nextId(), type: 'ASSIGN_TASK', taskId: t.id, employeeId: e.id };
       const p = trial(cmd);
       if (p.results[0]!.status === 'APPLIED' && projectionSafe(p.state)) { commands.push(cmd); current = p.state; break; }
@@ -128,17 +136,18 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
       if (!late && daysLate > 0) continue;
       if (c.contribution - lateDeliveryReduction(config, c.sale, daysLate) <= 0) continue;
       if (spaceShortfall(current, config, s, offer.goodId, c.quantity)) { reason = 'sailing'; continue; }
-      const employees = available();
+      const employees = available(prep);
       for (const employee of employees.length ? employees : [undefined]) {
         const cmd: Acceptance = { ...c.command, id: nextId(), plan: { ...(employee ? { employeeId: employee.id } : {}), sailingId: s.id } };
         const p = trial(cmd), result = p.results[0]!;
         if (result.status !== 'APPLIED') { reason = result.reasonKo.includes('보관') ? 'storage' : result.reasonKo.includes('직원') ? 'staff' : 'funds'; continue; }
         if (prep > 0 && !projectionSafe(p.state)) { reason = 'handling'; continue; }
+        recordProjections(p.state);
         commands.push(cmd); current = p.state; accepted = true; break;
       }
       if (accepted) break;
     }
     if (!accepted) rejections[reason]++;
   }
-  return { commands, rng, rejections };
+  return { commands, rng, rejections, projectionBookings };
 }
