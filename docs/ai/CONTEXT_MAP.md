@@ -20,6 +20,7 @@
 | 평택 본사 전환(2026-10-09) | ../DECISIONS.md ‘평택 본사 전환’·‘평택 노선 재설계 승인’, [TASK-0015 지시서](tasks/TASK-0015-pyeongtaek-hq.md), [노선 근거표](design/PYEONGTAEK-route-basis.md), [부산판 승인 문장 보관](design/BUSAN-approved-texts.md) | world, routes, scenarios, market_offers, culture_activities, contacts, characters, venues, game_config. 구현은 TASK-0015(`548c53c` 반영), 검수는 결과 보고 ‘검수’ 절 |
 | 대항해시대 근거 추적 | [DK 적용표](../RESEARCH_APPLICATION.md) ‘대항해시대 IV 적용표’, ../../references/REFERENCE_REVIEW.md | `references/dk4_reference.json`(매뉴얼 관찰 DK4-O), `references/playthrough_research_2026-10-05/Scitrade_playthrough_research.json`(영상 관찰 DK4-V··-O·교차 결론 DK4-F), 같은 폴더 `dk4.json`(영상 목록·개발 제안) |
 | 그림·지도(픽셀아트) | [픽셀 규격](../art/PIXEL_SPEC.md), [제작 절차](../art/PROMPTS.md), [제작 목록](../art/ASSET_BACKLOG.md), ../ART_DIRECTION.md 맨 위 절 | `src/assets/palette.json`, `src/assets/manifest.json`, `scripts/build_map.py`(+`test_build_map.py`), `tools/art/*`, `src/ui/pixel.ts`·`map.ts` |
+| 웹 글꼴(D16) | [글꼴 출처·라이선스](../art/FONT_LICENSES.md) | `public/fonts/`(fonts.css·WOFF2·OFL 사본), `index.html`, `tools/fonts/subset_gowun_dodum.py`(Gowun Dodum 조각 재생성·확인), `tools/browser/lib.mjs`(글꼴 판정 `fonts.local`) |
 | Codex 작업 지시·검수 | [작업 지시서 목록](tasks/README.md), [공통 머리말](tasks/CODEX_PREAMBLE.md), WORKFLOW.md ‘역할 분담’ | `tools/ai/codex_task.sh`(실행), `tools/ai/review_checks.sh`(검수 자동 검사), `docs/ai/tasks/results/`(결과 보고) |
 
 표의 데이터 이름은 저장소 루트 `data/<이름>.json`, 레퍼런스 이름은 `references/<이름>.json`이다. tests 경로는 저장소 루트 기준이다.
