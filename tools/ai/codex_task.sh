@@ -43,13 +43,10 @@ echo "기준 브랜치: $base → 작업 브랜치: $branch (모델 $model, 추�
 
 log_dir="${CODEX_LOG_DIR:-${TMPDIR:-/tmp}/scitrade-codex}"
 mkdir -p "$log_dir"
-prompt="$(cat docs/ai/tasks/CODEX_PREAMBLE.md)
-
----
-
-작업 ID: ${id}
-
-$(cat "$task")"
+# 프롬프트는 파일로 써서 표준 입력으로 넘긴다. 인수 하나는 128 KiB를 넘을 수 없어 긴 지시서(TASK-0024, 168 KB)가
+# 'Argument list too long'으로 실패했다(2026-10-10).
+prompt_file="$log_dir/$id.prompt.md"
+{ cat docs/ai/tasks/CODEX_PREAMBLE.md; printf '\n---\n\n작업 ID: %s\n\n' "$id"; cat "$task"; } >"$prompt_file"
 
 # --search(웹 검색)는 exec가 아니라 codex 전체 옵션이라 exec 앞에 둔다.
 global=()
@@ -57,7 +54,7 @@ global=()
 args=(exec -m "$model" -c "model_reasoning_effort=\"$effort\"" --sandbox "${CODEX_SANDBOX:-workspace-write}" -C "$root" -o "$log_dir/$id.last.md" --json)
 
 set +e
-codex "${global[@]}" "${args[@]}" "$prompt" >"$log_dir/$id.jsonl" 2>"$log_dir/$id.stderr.log" </dev/null
+codex "${global[@]}" "${args[@]}" - >"$log_dir/$id.jsonl" 2>"$log_dir/$id.stderr.log" <"$prompt_file"
 status=$?
 set -e
 
