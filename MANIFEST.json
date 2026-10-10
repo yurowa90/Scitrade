@@ -361,6 +361,526 @@
       "sha256": "c8cf541e2595e5c8390e11ad29ce93ffb3e6555a9db98464e63ed838f976eee0"
     },
     {
+      "path": "docs/ai/design/layout-ux04-05/task0024/O3-NOTES.txt",
+      "size_bytes": 3278,
+      "sha256": "735f3dc6538aee8d1bf1197e950210b025beedc88c7b9b0016ac6a958d322830"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/README.md",
+      "size_bytes": 2171,
+      "sha256": "6b26e23dfcc5a67e3165b04cd1e743368a8431b7b0e99cae366e75513cbd703f"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/ec/blib.js",
+      "size_bytes": 5979,
+      "sha256": "69bd1a6054bf7abc5567396c25f24e3bfc798ab821da4e961dd29cd6246f93d0"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/ec/ec.js",
+      "size_bytes": 7254,
+      "sha256": "3733b6077805b7293dc852254f4c035c5e58799427c5cfdc3c75d0be8c661e82"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/ec/run.sh",
+      "size_bytes": 213,
+      "sha256": "22909c0384dbe86a3eef042d2926246ca3ee7148fc521d99b13ddd758567535a"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/ec/slib.js",
+      "size_bytes": 6478,
+      "sha256": "bd16a7188824a70c297afa01202874a78b01fcc2b0005f6e3058a5a0dbfce9ac"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/blib.js",
+      "size_bytes": 6131,
+      "sha256": "840a7acc5f72a4848d13b99cab1f6fb5ed5b6ceac8f0bb66f6c42e6aadc180da"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/c1.js",
+      "size_bytes": 3952,
+      "sha256": "ffe31e60a511de9d98a7801afddc1f914a95d6857ae669c0507f195cb1b3014f"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/c3.js",
+      "size_bytes": 3023,
+      "sha256": "849d662eff33c0a01cfd3b8332396f95eacf0ab128e8f9164ee2fa7d9a59e743"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/c4.js",
+      "size_bytes": 3445,
+      "sha256": "708defd45697d59888b56e1c4caefb742df04931d09efab4b692c4abd3b8b1cc"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/f1.js",
+      "size_bytes": 3994,
+      "sha256": "a2a71afb0926d67b82de4c2c42bca3d26a8bb40dc523ebd5366077b630e340ac"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/f2.js",
+      "size_bytes": 4911,
+      "sha256": "ffc681146d46f332ccd1207fa087438361c51697c66ac59f5dc2044d4a110968"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/f2n.js",
+      "size_bytes": 2878,
+      "sha256": "4dc4201e1b75e5a8a2b23848af0c24bbae9bf47562a7e126281875c8d69a5c45"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/k1.js",
+      "size_bytes": 2825,
+      "sha256": "4379d5db8584a6a67c91f11f72a0a311a415ff87227c60fa773470e8d321bdf6"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/k1b.js",
+      "size_bytes": 3021,
+      "sha256": "273bef742d94c086849071109630ad83795bfa033853c5b0f250114b99c61820"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/k90.js",
+      "size_bytes": 5438,
+      "sha256": "fd3c129c8f540068d4e119f804f1ceada08f6d419ac5aa5e5a9670854ac1b09c"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/kb.js",
+      "size_bytes": 11829,
+      "sha256": "db135183993a07c26bd12d895ff5ccff56b838bfc6a7f20d0fd6844ff823b2df"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/kb23.js",
+      "size_bytes": 13782,
+      "sha256": "0eba2f5b684b9c56053262ad560c99360f232d30c8a839c12a44105ffa5f3174"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/kbcore.js",
+      "size_bytes": 7748,
+      "sha256": "0917f571b1bce22acb198021becff3f586e8f8b966b880fb05539b5a055294db"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/kbtoast.js",
+      "size_bytes": 2011,
+      "sha256": "63f82e9b2580a09d8febc4d633e1cab6949211d1eabfc22a859aef3910b008a9"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/m.js",
+      "size_bytes": 2167,
+      "sha256": "25486bdad9a600a6bc12c54cf36923d12115c53f777ae92614c0b9b1d18a6daf"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/mq.js",
+      "size_bytes": 2467,
+      "sha256": "b1748fdceb18cdd873b294caf0610b54635231bda18688d2fd7b07a1013c20ab"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/qpos.js",
+      "size_bytes": 4089,
+      "sha256": "643a6bc54c94211d273a35b89b6d0c64cad53e63568175a319577d9956eb2ac0"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/runall.sh",
+      "size_bytes": 1474,
+      "sha256": "f9f4d5ff1629d3a68cbdfb944de39240eb2f6e734c08476ed1cc374e2d5c7b5f"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/runk1b.sh",
+      "size_bytes": 223,
+      "sha256": "211d2ccbc05e4f54e2010ef415c598d3a268a545c3ee2507167082c7fb2833f1"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/sum.py",
+      "size_bytes": 10279,
+      "sha256": "6227afb7c97b6d1304fbbacd9e14461ded2f2f8d27a0dd24367ec4dd2f34fcef"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/harness/kb/t1.js",
+      "size_bytes": 3650,
+      "sha256": "ad181fcb113b2e11ffb9bdc9d771d2d8e5a016df9551c674cc691f65bf556186"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/o3b2.patch",
+      "size_bytes": 7306,
+      "sha256": "50480ad2cc703e1a8317342115a7692d49c37bab1a5436a65d1571cea4c6ce3b"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/proto-c284e79.patch",
+      "size_bytes": 79993,
+      "sha256": "d1d925d1d5361d65c70fa90674a811cece7b18cc9e3b32d7f141925ca4e92395"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-cb1366t.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-cb1366t.jsonl",
+      "size_bytes": 3015,
+      "sha256": "35b0a5fbcdf0616a769f5f3475bf6d2aa19bbd91967f3c0f326e141e3625a823"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadAirL.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadAirL.jsonl",
+      "size_bytes": 3020,
+      "sha256": "8ab2aa7e9d84faffd9a0e76464dd50ece43dce22e3a288b065fd64cfdc29c33c"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadmini6L.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadmini6L.jsonl",
+      "size_bytes": 3024,
+      "sha256": "64eea6338f0d5d1ff2c4a11a28fff62df068fed6934d214b114d8a77dea3a5f5"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadminiL.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-ipadminiL.jsonl",
+      "size_bytes": 3049,
+      "sha256": "45c85a654b4bf952e7e5cdb2215b517adc60af81374e9b25ac7938ccf985a79c"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-l1366.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-l1366.jsonl",
+      "size_bytes": 3010,
+      "sha256": "1abf0ab8b396317dacc5dd1298aa0813ef548657e9dee67ab9fe2a7295e56e31"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-l1920.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-l1920.jsonl",
+      "size_bytes": 3010,
+      "sha256": "9a232352b7702c4362286e487415baacd24ea4e17ea4ea5a99371a331f9ce4ab"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-t1000.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/ec-t1000.jsonl",
+      "size_bytes": 2961,
+      "sha256": "728c8b35ca5ad9c8b13c4d86a068aae277fec902ef56e6ed4e3858eecae19279"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/ec-out/run.done",
+      "size_bytes": 177,
+      "sha256": "bbf429c6603f55d5e7bd9e81ad3290483860605731b46ec70f43c5d3781eca41"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-cb1366t.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-cb1366t.jsonl",
+      "size_bytes": 1969,
+      "sha256": "b2111eb88cf7e761296a358b9f58eef320c08d03bcecb805e865d2d8fc07edee"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadAirL.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadAirL.jsonl",
+      "size_bytes": 1989,
+      "sha256": "ea219fe83ddc8bf363c80747bdf55e0fec4d186d7f9d4aaab1f68c1ff8d828f2"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadmini6L.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadmini6L.jsonl",
+      "size_bytes": 2009,
+      "sha256": "ca76334a95cdc92541103fa192fc449b17877584dcbae386751e69a19cebb06e"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadminiL.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-ipadminiL.jsonl",
+      "size_bytes": 1959,
+      "sha256": "6899af063d7e66481b5e4fc5108c9832631ad26d273bba7d94449fadb91c779d"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-l1366.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-l1366.jsonl",
+      "size_bytes": 1949,
+      "sha256": "81181cae88181d25e5866492178168687e06e488c48d9fbcb802320d46fc9685"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-l1920.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-l1920.jsonl",
+      "size_bytes": 1879,
+      "sha256": "4fb09d26cfaf0f483107cc280a5a8de6b5a40d1369e42d31e1ffd0ea58a4eb55"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-t1000.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/k1b-t1000.jsonl",
+      "size_bytes": 1949,
+      "sha256": "480ca0491ea4f8f36b251aab8535a3ab013804741f7c72a2fea43fa28e60c2d9"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/mq.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/mq.jsonl",
+      "size_bytes": 1987,
+      "sha256": "198abc8113cfc05e59fde464f505ec3be8cbe4992b7fda0694ba8c22f484b0b3"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/mq2.err",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/mq2.jsonl",
+      "size_bytes": 1987,
+      "sha256": "198abc8113cfc05e59fde464f505ec3be8cbe4992b7fda0694ba8c22f484b0b3"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/kb-out3/run.done",
+      "size_bytes": 189,
+      "sha256": "8d3812a75f1f9b02319d8f998aa59a573f849c41d3cd9562a02fee41670d66a9"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/build-base.log",
+      "size_bytes": 409,
+      "sha256": "5612f8d2333a2481d05c9fd1a19dad86b2d37dc9d6c9437f5c3eed2c294ad5a6"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/build-proto.log",
+      "size_bytes": 409,
+      "sha256": "21c01b43dfa9b65854a5dc2447d2a94493c874caa7f6e651d934e88553afbb53"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/dry-card-detail-low.json",
+      "size_bytes": 194,
+      "sha256": "408fa30cce3e3cc799cd3bb8427a4b24ced2df50f54431a5160dc5120f8522b1"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/dry-card-detail.json",
+      "size_bytes": 191,
+      "sha256": "cf818bcc29f019c01e18837d3a46553f06291a815f554b387bac997bd786deb6"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/dry-interview-hire.json",
+      "size_bytes": 194,
+      "sha256": "c94d05c62095ce965de33ee4076479265a9816cb089446e6797bed6549a3632d"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/dry-queue-chip.json",
+      "size_bytes": 190,
+      "sha256": "ca859cb75e114c1f66876e55720877767405f7cf32de70f4c55c3f1e87f09770"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/dry-side-anchor.json",
+      "size_bytes": 191,
+      "sha256": "8ddff75363bd7caf77172053832bf0f22b944d984b3e0973d4a6bd1f8ef0c1d3"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/libtest-base.log",
+      "size_bytes": 1797,
+      "sha256": "60b035c37a3cdff153be14f041113f306acf7c09e9d50f6b7835618ce61dbfb4"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/libtest-proto.log",
+      "size_bytes": 1799,
+      "sha256": "d629e1d2b10b811629f4d3fa17e60c18987ce6c372685435d7559b9344a771d2"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/mut.log",
+      "size_bytes": 5047,
+      "sha256": "5cab0462cea9d4e32226547e84fcc8ad591e08eae61463868783b4f0bdf0f849"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/rc-base",
+      "size_bytes": 51,
+      "sha256": "3a52b801a80cd9e1b7a96dd5f9c4673c2e3a4f9b5eb1103ad35125da656a1e22"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/rc-proto",
+      "size_bytes": 51,
+      "sha256": "3a52b801a80cd9e1b7a96dd5f9c4673c2e3a4f9b5eb1103ad35125da656a1e22"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/size-base.log",
+      "size_bytes": 430,
+      "sha256": "2f82d7117bdca571ef04efd9e2f4db282b785fa95057ce8adfb9482701de6dde"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/size-proto.log",
+      "size_bytes": 430,
+      "sha256": "5ded367a2b8622be3e79280b227ab4404e0bdd4eb007838745ee0df8200a0c99"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/sizetest-base.log",
+      "size_bytes": 2688,
+      "sha256": "303ae69e89a70a1256547e6399fabc2ad6fc8ac123a03f03723b84fe1fd72528"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/sizetest-proto.log",
+      "size_bytes": 2686,
+      "sha256": "4f63fa947c79a3f9132021f85f150782f6872b7ce63fac6f9eb274145a6c1007"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/tsc-base.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/tsc-proto.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/vitest-base.log",
+      "size_bytes": 464,
+      "sha256": "7cab1dae86c498819cf0265b44262f066a44488a14e0184c15201251ddc83cc3"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/logs/vitest-proto.log",
+      "size_bytes": 467,
+      "sha256": "a8054cd6cc381018bf32e1fce999a5028887c86bd4de377d7c942d0e8a58e190"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-base.json",
+      "size_bytes": 11785,
+      "sha256": "655857b7ffd2aaf50a02e93b7a1f61159a23b56b5d494ea8a9c6afcdd8468ba4"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-base.log",
+      "size_bytes": 1830,
+      "sha256": "86db6dcd330730c168a6befdad58bbb3c169759ddc089242b6f5f8d26a9f44b7"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-low-base.json",
+      "size_bytes": 6567,
+      "sha256": "291377e5d1db1c9d9f46bc99dc2eaad6f80759798ed8ff8837a21e26f35e43be"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-low-base.log",
+      "size_bytes": 1146,
+      "sha256": "c80001b4a6f7c9d61e69ee4bbe2e79370a4a6243ae585431112514d80b960e4b"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-low-proto.json",
+      "size_bytes": 6561,
+      "sha256": "208cbed6f7beb9ce391334c3a4a6e3357511467cdeed152762e0e201ec7a21c4"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-low-proto.log",
+      "size_bytes": 1141,
+      "sha256": "c1bff8ba46807ff16af5142c8c5c0bc1d093863b9b80df6448ce94886b4a8dab"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-proto.json",
+      "size_bytes": 11723,
+      "sha256": "3a395ad95e96b90f0e074dcb44e576ae1de699c03194729810b7db94c3e72ade"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/card-detail-proto.log",
+      "size_bytes": 1808,
+      "sha256": "a24f51e9374c0908b6ac5ffd492c60f5b1da20e08528e7f077bd15220cf29110"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/interview-hire-base.json",
+      "size_bytes": 9884,
+      "sha256": "56789d3925f46addd47c13f0681cf886dd1412043d1d5fd0cabe9bea94eb18ef"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/interview-hire-base.log",
+      "size_bytes": 1260,
+      "sha256": "4a24bd85dd11eca5f651eb592f47d757446e4b9cda483124a76f243fc01a0c70"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/interview-hire-proto.json",
+      "size_bytes": 9874,
+      "sha256": "511a9ccd802c5d3c24aec67e575b8b0bcfc3d28034a9739745239484e8519dda"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/interview-hire-proto.log",
+      "size_bytes": 1260,
+      "sha256": "94e6d411b5548136cc377c43153c7a1fdd0d410a40ec5f3b667a50e1294e8239"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/queue-chip-base.json",
+      "size_bytes": 9409,
+      "sha256": "74c5a7541b5e504f64693bbdd149045d370663ef5d0ee6a8811ba2e866eec397"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/queue-chip-base.log",
+      "size_bytes": 1092,
+      "sha256": "807726e70806c150010cfd9e30087025f5ad7d6e797a58980a51ef4db5a55265"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/queue-chip-proto.json",
+      "size_bytes": 8948,
+      "sha256": "d64ae55b8b7cf61f3736285bf1da1c0a9f9e53a1787b93a0abfa8da5e2bc896f"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/queue-chip-proto.log",
+      "size_bytes": 1371,
+      "sha256": "f7a0bbe644461ed63909f3ee25b948182afc13ff134c882f656cb21099aecacd"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/run.done",
+      "size_bytes": 408,
+      "sha256": "921528ec033953f802ddba190d066b4d34c96af94e4e40d53a770d6aa32691b3"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/side-anchor-base.json",
+      "size_bytes": 7883,
+      "sha256": "f79352b7d46b81f4bd97b68ef0f59fe974e6d033c5ea5c8e062bba052c0f54a2"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/side-anchor-base.log",
+      "size_bytes": 820,
+      "sha256": "817d986929a412490fa216c11715cc2ccff1aa1f7fd954e8003c22adc068a332"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/side-anchor-proto.json",
+      "size_bytes": 7829,
+      "sha256": "a0907f9638a61dffd5fef5eaf0d1971ec5d488539e5eff93e5d9de9981f4a827"
+    },
+    {
+      "path": "docs/ai/design/layout-ux04-05/task0024/results/out/side-anchor-proto.log",
+      "size_bytes": 796,
+      "sha256": "81c9a642f01a6ba347f8d2c8abeeb2c249e628d71a603c14a7595776c94b17b6"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
@@ -534,6 +1054,11 @@
       "path": "docs/ai/tasks/TASK-0023-report-schedule-settlement-ui.md",
       "size_bytes": 85015,
       "sha256": "890a3d2ded2aad09954df262720fdd7ac24944faa88c2a0e0161fb274583efa6"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0024-layout-a-esc.md",
+      "size_bytes": 165333,
+      "sha256": "463771ae6e52d4a26719aca1f78aafafb178511dde4bddcd6990ab589f3a23ae"
     },
     {
       "path": "docs/ai/tasks/TASK-0025-route-map-fit.md",

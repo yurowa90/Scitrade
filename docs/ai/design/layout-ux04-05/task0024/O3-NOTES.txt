@@ -1,0 +1,35 @@
+한 열 Tab 순서 시안 측정 (2026-10-10, 기준 e4f7dfa, 빌드 표시 dev로 통일)
+
+폴더
+- src-head, src-o1, src-o2, src-o3a, src-o3b, src-o3b2 : HEAD 보관본(git archive) 위 시안. node_modules는 wt0012 링크.
+- dist-* : 위 빌드(라벨 'dev'). o3b2는 o3b + 회전 때 초점 유지 + 시험 키트 matchMedia + 시험 2개.
+- o1.patch o2.patch o3a.patch o3b.patch o3b2.patch : HEAD에 git apply 되는 시안 코드(합치지 않음).
+- logs/ : tsc·build·vitest 기록(vitest-<시안>.log).
+- h/ : 측정 스크립트(accept24/remeas2에서 복사, DISTS만 바꿈) + qpos.js(오늘 할 일 위치·Tab 수) + mq.js(1180↔1000 창 크기 바꿈) + sum.py(요약).
+  h/out/*.jsonl 원자료, h/out/sum.txt 요약 출력. h2/ 는 ipadmini6L 줄(같은 스크립트 링크, 출력만 따로) → h/out으로 복사함.
+
+시안
+- O1  style.css 한 열 격자만 화면 코드 순서로: "trade" "crew" "resources" "queue" "world" "report" "log".
+- O2  main.ts 패널 화면 코드 순서를 한 열 보이는 순서로: 거래 → 오늘 할 일 → 동료 → 자원 → 보고 → 지도 → 기록(세 열 격자는 그대로).
+- O3a style.css .layout에 reading-flow: grid-rows (Chromium 137+만. 측정 Chromium 141).
+- O3b main.ts가 matchMedia('(max-width: 1000px)')로 한 열이면 O2 순서, 아니면 지금 순서로 그림. 바뀌면 다시 그림.
+- O3b2 O3b + 다시 그릴 때 같은 조작에 초점 유지(preventScroll). 권고안 코드.
+
+다시 재기
+  cd h && DS=head,o1,o2,o3a,o3b ./runall.sh <프로필...>   # kb·kb23(2일)·kbtoast·k90·qpos·읽던 자리 17스크립트(32사례)
+  node mq.js head,o3b2                                       # 회전 흉내
+  python3 sum.py [-v] > out/sum.txt
+
+판정 주의
+- kbcore.judge(한 열)는 현지 패널 영역 이름이 'panel local', 정지점 영역 이름이 'culture'라서 알림 상태에서 culture-close → culture-tab을
+  거꾸로 튐 1건으로 센다(모든 빌드 공통, 측정기 문제). sum.py는 원래 판정과 이름 보정 판정을 [ ]로 함께 적는다.
+
+결과(요약은 h/out/sum.txt, 상세 h/out/sum-v.txt)
+- 거꾸로 Tab 1일/수락/2일/알림/90일(보정 판정): head t1000 1/1/2/2/2, 세 열 6개 0. O1·O3a·O3b t1000 0/0/0/0/0, 세 열 0.
+  O2 t1000 0이지만 세 열 6개 모두 1/1/2/2/2(오늘 할 일→동료, 보고→지도).
+- 한 열 ‘오늘 할 일’ 1일 페이지 y: head·O2·O3a·O3b 2680, O1 5057(+2377). T1 뒤 띠 아래: 133.5 → O1 2508.5px.
+- 하루 진행 → 오늘 할 일 Tab 수(1일·T1·2일) t1000: head·O1 26·31·30, O2·O3a·O3b 10·15·14. 세 열은 O2만 10·15·14.
+- 읽던 자리 32사례: 4개 시안 × 7개 프로필 모두 head와 1px 넘게 다른 곳 0. Shift+Tab far·walk, 결과 보기까지 Tab, 가림 정지점 수 head와 같음.
+- vitest: head 973 통과. O1 1 실패(main.test.ts:834 한 열 격자 문자열). O2 2 실패(1276 화면 코드 순서, 1606 일정·보고 칸 split). O3a·O3b 0 실패.
+  O3b2(시험 키트 matchMedia + 새 시험 2개) 975 통과.
+- 창 크기 1180↔1000(mq.js): O3b는 다시 그릴 때 화면 밖 초점을 하루 진행으로 옮김(기존 focusWithoutScroll 규칙) → O3b2에서 같은 조작에 초점 유지, head와 같은 초점·위치.
