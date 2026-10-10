@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
-      "size_bytes": 18335,
-      "sha256": "bf4be0f685288ec125d13fca17d913f5d8aa77f94763d7c86d87c64949dd92b5"
+      "size_bytes": 18427,
+      "sha256": "742873fa6158369735bffaa5eedc9c41dc56f87948bee31b6ee86ae799a0cb67"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -367,8 +367,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 10796,
-      "sha256": "bfb5c77f3074f6bf66234ae89011b387b3fb7f14da6e3a1f09565f1a54d1964e"
+      "size_bytes": 11528,
+      "sha256": "64dfd9a164bf5b2304a70631c7fa49d1ac009ab1f69a1f504f5702d092a324d2"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
