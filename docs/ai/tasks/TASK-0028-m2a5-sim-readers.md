@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- **상태: 초안.** TASK-0027이 개발 브랜치에 병합된 뒤 세션 A가 그 머리의 행 번호로 확인하고 실행을 요청한다. 아래 행 번호는 `claude/m2a5-engine` `71dc20c`(TASK-0027 R1 검수 통과 상태) 기준이다.
+- 아래 행 번호는 개발 브랜치 `afdf728`(TASK-0027 병합) 기준이다. 다르면 코드가 사실이다.
 - 선행 작업: 개발 브랜치 `<BASE>`(TASK-0027 병합 뒤, 이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0028-m2a5-sim-readers.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
 - 분할: 원래 TASK-0028 초안의 비교 실행기·D03 재측정은 **TASK-0029**로 옮겼다(`docs/ai/tasks/TASK-0029-m2a5-d03.md`). 한 번에 맡기는 크기를 줄이려는 것이다(TASK-0027이 1차에 끝나지 못한 교훈). 이 작업은 `src/engine/sim/**`를 고치지 않는다.
 - 결정 근거: `docs/DECISIONS.md` ‘M2a-5 사용자 결정 Q1·Q10·Q12 (2026-10-10)’의 Q12 가(주간 병목 표), 223행(표시와 결과 일치). 설계 근거 `docs/ai/design/m2a5-review/REVIEW3.md` b1.
@@ -100,6 +100,7 @@
 
 ## 지켜야 할 것
 
+- **캐릭터 자료 칸 규칙(TASK-0055, SESSION_TREE):** 캐릭터 자료의 새 칸을 읽는 코드는 같은 커밋에서 `src/content/character-fields.ts`의 `CHARACTER_FIELDS`에 그 칸을 더한다. 이 작업은 직원 처리량·일급을 `ScenarioConfig.employees`에서만 읽으므로 새 칸을 읽지 않을 것이다. 읽게 되면 이 규칙을 따르고 결과 보고에 적는다(`src/content/character-fields.ts`는 그 경우에만 고칠 수 있다).
 - TASK-0027의 ‘지켜야 할 것’이 모두 적용된다(규칙 1 불변, 화면 0줄, 설정에 ID 키 금지, 결정적, 통화 분리, 새 문장마다 반례, 전체 객체 `toEqual`, 새 시험에 자료 ID 금지, JSON 형식).
 - 읽기 함수는 상태를 바꾸지 않는다. 시험마다 호출 전후 `structuredClone` 비교를 넣는다.
 - 미리 보기·병목 표의 거절 문장과 수치는 명령 경로와 같은 함수에서 나온다(DECISIONS:223).
