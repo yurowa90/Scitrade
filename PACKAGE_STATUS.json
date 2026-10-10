@@ -8,7 +8,7 @@
   "art_assets_created": false,
   "data_documents": 24,
   "data_schemas": 24,
-  "core_acceptance_specifications": 36,
+  "core_acceptance_specifications": 37,
   "character_acceptance_specifications": 8,
   "design_path": "docs/DESIGN_v0.4.md",
   "change_scope": "Integrate design v0.4 into Scitrade; shared Claude/Codex guidance, current status, staged plan, portable validated development package; no game engine implementation.",

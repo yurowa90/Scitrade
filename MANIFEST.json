@@ -23,7 +23,7 @@
     {
       "path": "PACKAGE_STATUS.json",
       "size_bytes": 717,
-      "sha256": "627d79a8b9f8c675bf4e69125e19cd69590f203319ff0e46cae0ad6b537fbd50"
+      "sha256": "99d0a2f527a9cdd1eafca21b0b8c33e8d9154604a4ddf56985d80d893744f120"
     },
     {
       "path": "README.md",
@@ -1101,6 +1101,11 @@
       "sha256": "965fbcbb112a868e92e0beb138192d99720a2a051c6e24bee69c3b88e162ed49"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS2.md",
+      "size_bytes": 3068,
+      "sha256": "73775d42c93b4ec974353ed8fbb13f4e45955cf7e46855a90fc049fe1c47c7fd"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
       "size_bytes": 2094,
       "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
@@ -1422,8 +1427,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0029-m2a5-d03.md",
-      "size_bytes": 8127,
-      "sha256": "391c897aeb2f6a09b20e52908660cb803fb86f957ba11f49072a954385b717f0"
+      "size_bytes": 17946,
+      "sha256": "3d1c567dd432bbc2a2fd29fc81ea8730fa77eda00c7d36e32f420bd4c0d75fcc"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0030-m2a5-blocked-remeasure.md",
+      "size_bytes": 7308,
+      "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1574,6 +1584,26 @@
       "path": "docs/ai/tasks/results/TASK-0028.md",
       "size_bytes": 12736,
       "sha256": "bad028e89d879d34503b14023522b8fe6eb9d3bbee2033253d2d2e66dbdf3a8d"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029-d03-cap30.md",
+      "size_bytes": 6891,
+      "sha256": "ba05de501471b85b95e4e1c60f8b7fe315157f345725a4058f4fc351294303c8"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029-d03-flat200.md",
+      "size_bytes": 7048,
+      "sha256": "dcce30fa83744086f594901443105c20acc5613a26ce8360486c2c45de7b791c"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029-d03.md",
+      "size_bytes": 16844,
+      "sha256": "94c96d177683117a2f5ea79199cd1d19067093d3f7400e1f086e496fca3f67a9"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0029.md",
+      "size_bytes": 41801,
+      "sha256": "f8365122026eeec5d85056b91676eb5ace1c6ecaa186fb15369c62d5d210e447"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
@@ -1842,8 +1872,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 193452,
-      "sha256": "0fa3a8070e7797d9a75ed5ed4c8c7a8271edbd7ee4d90b5c136b7b1ae06d06a0"
+      "size_bytes": 197568,
+      "sha256": "0ae9115be05682cdec9fa1a35c9b5fde24690e4fcb6025d4bc9937e7459d56df"
     },
     {
       "path": "tests/character_acceptance_cases.json",
