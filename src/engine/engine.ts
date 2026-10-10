@@ -1176,7 +1176,7 @@ function payOrAccrue(
     ],
   });
   s.obligations.push({ id: obligationId, currency, amountMinor: amount, reasonKo, incurredDay: s.day, paidDay: null });
-  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (${config.operations ? (s.day + config.operations.paymentDefault.failureAgeDays > config.campaignDays ? `${config.campaignDays}일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다.` : `${config.operations.paymentDefault.failureAgeDays}일 안에 갚지 못하면 경영 실패`) : '지급 불이행 유예기간은 아직 확정되지 않음'})`);
+  log(s, `지급 불가: ${reasonKo} ${formatMoney(currency, amount)} → 미지급 의무로 기록 (${config.operations ? (s.day + config.operations.paymentDefault.failureAgeDays > config.campaignDays ? `${config.campaignDays}일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝남` : `${config.operations.paymentDefault.failureAgeDays}일 안에 갚지 못하면 경영 실패`) : '지급 불이행 유예기간은 아직 확정되지 않음'})`);
   return false;
 }
 

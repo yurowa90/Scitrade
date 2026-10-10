@@ -5,7 +5,7 @@ import { balance, post, type LedgerEntry } from './ledger';
 import { applyBasisPoints, formatMoney, MINOR_PER_MAJOR, type Currency } from './money';
 import { fundsPosition, cashLessUnpaidMinor } from './reservations';
 import { isDayBasedTask } from './tasks';
-import type { DefaultEvent, FailureRecord, GameState, HandlingAllocation, OperationsCommand, ScenarioConfig, Task } from './types';
+import type { DefaultEvent, ExchangeDirection, FailureRecord, GameState, HandlingAllocation, OperationsCommand, ScenarioConfig, Task } from './types';
 
 const pad = (n: number) => String(n).padStart(3, '0');
 const log = (s: GameState, textKo: string) => s.log.push({ day: s.day, textKo });
@@ -139,6 +139,14 @@ export function usdFundsParts(s: GameState, config: ScenarioConfig): string[] {
   if (f.unpaidObligations) parts.push(`미지급 ${formatMoney('USD', f.unpaidObligations)}`);
   return parts;
 }
+/** 환전 명령과 미리 보기가 공유하는 두 통화 금액. */
+export function exchangeAmounts(config: ScenarioConfig, direction: ExchangeDirection, usd: number) {
+  const fx = config.operations?.fx;
+  const rate = fx ? direction === 'USD_TO_KRW' ? fx.buyKrwPerUsd : fx.sellKrwPerUsd : 0;
+  const base = usd * (fx?.baseKrwPerUsd ?? 0) / MINOR_PER_MAJOR.USD;
+  const krw = usd * rate / MINOR_PER_MAJOR.USD;
+  return { rate, base, krw, spread: Math.abs(base - krw) };
+}
 export function applyOperationsCommand(s: GameState, config: ScenarioConfig, cmd: OperationsCommand): string | null {
   const o = config.operations, state = s.operations;
   if (!o || !state) return '이 시나리오에서는 할 수 없습니다(M2a-5 기능).';
@@ -149,9 +157,8 @@ export function applyOperationsCommand(s: GameState, config: ScenarioConfig, cmd
     case 'EXCHANGE_CURRENCY': {
       const usd = cmd.usdAmountMinor;
       if (!Number.isSafeInteger(usd) || usd <= 0 || usd % o.fx.lotUsdMinor !== 0) return `환전은 ${o.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위입니다. 요청 ${formatMoney('USD', usd)}.`;
-      const toKrw = cmd.direction === 'USD_TO_KRW', rate = toKrw ? o.fx.buyKrwPerUsd : o.fx.sellKrwPerUsd;
-      const base = usd * o.fx.baseKrwPerUsd / MINOR_PER_MAJOR.USD;
-      const krw = usd * rate / MINOR_PER_MAJOR.USD, spread = Math.abs(base - krw);
+      const toKrw = cmd.direction === 'USD_TO_KRW';
+      const { rate, base, krw, spread } = exchangeAmounts(config, cmd.direction, usd);
       const usdFunds = fundsPosition(s, config, 'USD'), krwFunds = fundsPosition(s, config, 'KRW');
       if (toKrw && usdFunds.available < usd) return `환전할 수 있는 USD가 부족합니다. 요청 ${formatMoney('USD', usd)}, 사용 가능 ${formatMoney('USD', usdFunds.available)} = ${usdFundsParts(s, config).join(' − ')}.`;
       if (!toKrw && krwFunds.available < krw) return `환전할 수 있는 원화가 부족합니다. 필요 ${formatMoney('KRW', krw)}, 사용 가능 ${formatMoney('KRW', krwFunds.available)} = 현금 ${formatMoney('KRW', krwFunds.cash)}${krwFunds.unpaidObligations ? ` − 미지급 ${formatMoney('KRW', krwFunds.unpaidObligations)}` : ''}.`;
@@ -202,10 +209,14 @@ export function unpaidByCurrency(s: GameState, config: ScenarioConfig): FailureR
     return { currency, amountMinor: obs.reduce((sum, o) => sum + o.amountMinor, 0), count: obs.length };
   });
 }
-function dailyKrwDue(s: GameState, config: ScenarioConfig, day: number): number {
+export function dailyKrwDue(s: GameState, config: ScenarioConfig, day: number): number {
   const wage = config.employees.filter((e) => e.salaryCurrency === 'KRW' && s.employees.some((x) => x.id === e.id && x.employmentStatus === 'employed' && x.availableFromDay <= day))
     .filter((e) => !s.ledger.postedIds[`WAGE-D${pad(day)}-${e.id}`]).reduce((sum, e) => sum + e.salaryPerDayMinor, 0);
   return wage + (s.ledger.postedIds[rentEntryId(day)] ? 0 : rentDueMinor(s, config, day));
+}
+/** USD 한 묶음을 원화로 바꿀 때 받는 금액. 임금 조달과 미지급 회복에 함께 쓴다. */
+export function usdLotKrw(config: ScenarioConfig): number {
+  return config.operations ? config.operations.fx.lotUsdMinor * config.operations.fx.buyKrwPerUsd / MINOR_PER_MAJOR.USD : 0;
 }
 export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day = s.day) {
   const cfg = config.operations?.paymentDefault;
@@ -217,7 +228,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
   const krwUnpaid = unpaid.find((u) => u.currency === 'KRW')?.amountMinor ?? 0;
   const krwCash = balance(s.ledger, 'KRW', 'CASH');
   const usdAvailableMinor = fundsPosition(s, config, 'USD').available;
-  const lotKrw = config.operations ? config.operations.fx.lotUsdMinor * config.operations.fx.buyKrwPerUsd / MINOR_PER_MAJOR.USD : 0;
+  const lotKrw = usdLotKrw(config);
   const dueToSurviveMinor = cfg ? s.obligations.filter((o) => o.paidDay === null && o.currency === 'KRW' && o.incurredDay + cfg.failureAgeDays <= day).reduce((sum, o) => sum + o.amountMinor, 0) : 0;
   const usdOldest = oldest?.currency === 'USD';
   const nextReceipt = s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID').sort((a, b) => a.dueDay - b.dueDay)[0];

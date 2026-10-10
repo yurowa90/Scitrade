@@ -405,13 +405,13 @@ describe('M2a-5 문장 반례', () => {
     expect(completedState().log.find((l) => l.textKo.startsWith('지급 불이행 위험:'))!.textKo)
       .toBe('지급 불이행 위험: 79일 귀솔 79일 급여 80,000원이 밀렸습니다. 90일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다.');
     expect(completedState().log.find((l) => l.textKo.startsWith('지급 불가:'))!.textKo)
-      .toBe('지급 불가: 귀솔 79일 급여 80,000원 → 미지급 의무로 기록 (90일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다.)');
+      .toBe('지급 불가: 귀솔 79일 급여 80,000원 → 미지급 의무로 기록 (90일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝남)');
     expect(completedState().log.map((l) => l.textKo).join('\n')).not.toContain('93일 마감');
     expect(failedState().log.find((l) => l.textKo.startsWith('지급 불이행 경고:'))!.textKo)
       .toBe('지급 불이행 경고: 57일 물보리 57일 급여 80,000원이 밀렸습니다. 71일 마감까지 갚지 못하면 경영 실패입니다.');
     expect(failedState().log.find((l) => l.textKo.startsWith('지급 불이행 위험:'))!.textKo)
       .toBe('지급 불이행 위험: 57일 물보리 57일 급여 80,000원이 밀렸습니다. 71일 마감까지 갚지 못하면 경영 실패입니다.');
-    expect(failedState().log.map((l) => l.textKo).join('\n')).not.toContain('미지급을 남기고 끝납니다');
+    expect(failedState().log.map((l) => l.textKo).join('\n')).not.toContain('미지급을 남기고 끝남');
   });
   it('S23 현금 0도 부족 설명에 남기고 미지급만 뺀다', () => {
     for (const f of c7.test_fixture.zero_cash) {
