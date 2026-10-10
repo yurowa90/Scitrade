@@ -662,8 +662,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0026.md",
-      "size_bytes": 16849,
-      "sha256": "9d4a2edc6b6d4426772ef99c2868d45db7e515c1425c98aea5dd1b25f60fc375"
+      "size_bytes": 20902,
+      "sha256": "673228a408e105c4097248a354a47acc1ba6e6ffab511c9e28f6ff95f821324a"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -1042,13 +1042,13 @@
     },
     {
       "path": "tools/check_bundle_size.mjs",
-      "size_bytes": 928,
-      "sha256": "c699de5d0930ee72f8eae0ce09989b9efeef23f4d2ad3d2c021de27932b4bcc4"
+      "size_bytes": 1208,
+      "sha256": "988dc3f79880e49c38c7158e0f5f517e379eeff88ecc9af4b5e3eadf684e5ce2"
     },
     {
       "path": "tools/check_bundle_size.test.mjs",
-      "size_bytes": 13501,
-      "sha256": "3a8c5689072fa1b67a54579d8c9b2ba4601a7c4e8f84a395c4cde4ddcc6dc1e2"
+      "size_bytes": 15191,
+      "sha256": "69c37d5bab4c766702a257848f35dde8ee09f6cce1cf9788d9bf29f43f737b09"
     },
     {
       "path": "tools/check_fact_mixing.py",

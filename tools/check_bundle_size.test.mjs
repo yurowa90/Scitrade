@@ -142,17 +142,26 @@ test('fonts/ 스타일시트는 글꼴 줄로 따로 세고 첫 화면 합계에
   assert.ok(lines.includes(`글꼴: 스타일시트 1개 ${formatBytes(cssLength)} + 글꼴 파일 2개 3,000 B = ${formatBytes(cssLength + 3000)} (한도 5,000,000 B). 첫 화면 합계에 넣지 않는다`));
   assert.ok(!lines.some(line => line.startsWith('외부 참조')));
   assert.ok(!lines.includes('글꼴: index.html이 fonts/ 스타일시트를 부르지 않는다'));
-  write(dist, 'index.html', '<link href="https://fonts.googleapis.com/css2?family=X" rel="stylesheet" /><script src="./assets/index.js"></script>');
+  write(dist, 'assets/index.css', 300);
+  write(dist, 'index.html', '<link href="https://fonts.googleapis.com/css2?family=X" rel="stylesheet" /><link href="https://e.com/y.css" rel="stylesheet" /><script src="./assets/index.js"></script><link rel="stylesheet" href="./assets/index.css">');
   const before = collectDist(dist), beforeLines = formatReport(before, evaluateBudget(before));
   assert.ok(beforeLines.includes('글꼴: index.html이 fonts/ 스타일시트를 부르지 않는다'));
-  assert.ok(beforeLines.includes('외부 참조 1개(크기를 재지 않는다): https://fonts.googleapis.com/css2?family=X'));
+  // 청크 1개, 첫 화면 2개(JS+CSS)라 두 개수가 다르다. 외부 참조는 공백 하나로 잇는다(Claude 검수).
+  assert.ok(beforeLines.some(line => line.startsWith('첫 화면 JS·CSS 2개: 800 B ')));
+  assert.ok(beforeLines.includes('외부 참조 2개(크기를 재지 않는다): https://fonts.googleapis.com/css2?family=X https://e.com/y.css'));
   assert.ok(!beforeLines.some(line => line.startsWith('글꼴: 스타일시트')));
   assert.ok(isFontSheet({ kind: 'stylesheet', href: 'fonts/fonts.css', external: false }));
   for (const ref of [
     { kind: 'script', href: 'fonts/a.js', external: false },
     { kind: 'stylesheet', href: 'fonts/fonts.css', external: true },
     { kind: 'stylesheet', href: 'assets/fonts.css', external: false },
+    { kind: 'stylesheet', href: 'assets/fonts/x.css', external: false },
   ]) assert.equal(isFontSheet(ref), false);
+  // 같은 스타일시트를 두 번 불러도, 두 스타일시트가 같은 글꼴 파일을 가리켜도 한 번만 센다(Claude 검수).
+  write(dist, 'fonts/more.css', '@font-face{src:url(a/x.woff2)}');
+  write(dist, 'index.html', '<link rel="stylesheet" href="./fonts/fonts.css" /><link rel="stylesheet" href="./fonts/fonts.css?v=2" /><link rel="stylesheet" href="./fonts/more.css" /><script src="./assets/index.js"></script>');
+  const twice = evaluateBudget(collectDist(dist)).fonts;
+  assert.deepEqual([twice.stylesheets, twice.files], [2, 2]);
 });
 
 test('참조한 파일이 없으면 missing에 적는다', () => {
@@ -164,6 +173,9 @@ test('참조한 파일이 없으면 missing에 적는다', () => {
   assert.deepEqual(collectDist(path.join(tmp, '없는 폴더')), { missing: ['index.html'], chunks: [], firstScreen: [], lazy: [], fonts: emptyFonts(), external: [] });
   fs.mkdirSync(path.join(dist, 'assets', 'gone.js'), { recursive: true });
   assert.deepEqual(collectDist(dist).missing, ['assets/gone.js', 'fonts/x.woff2']);
+  // 글꼴 스타일시트 자체가 없을 때도 missing에 적는다(Claude 검수).
+  const noSheet = fakeDist('없는 글꼴 시트', { 'index.html': '<link rel="stylesheet" href="./fonts/gone.css" /><script src="./assets/a.js"></script>', 'assets/a.js': 10 });
+  assert.deepEqual(collectDist(noSheet).missing, ['fonts/gone.css']);
 });
 
 test('CLI: 한도 안이면 종료 0이고 판정 줄을 쓴다(한글·공백 경로, 링크 폴더)', () => {
@@ -197,6 +209,12 @@ test('CLI: dist/index.html이 없으면 종료 2다(한글·공백 경로, 링�
     assert.equal(r.status, 2);
     assert.equal(r.stdout, '');
     assert.equal(r.stderr, `없음: index.html\n${dist}에서 읽을 파일이 없습니다. 먼저 빌드하세요\n`);
+    const loop = path.join(tmp, '고리 링크');
+    if (!fs.existsSync(loop)) { fs.mkdirSync(loop); fs.symlinkSync('index.html', path.join(loop, 'index.html')); }
+    const broken = cliRun(cli, [loop]);
+    assert.equal(broken.status, 2);
+    assert.equal(broken.stdout, '');
+    assert.match(broken.stderr, /^읽을 수 없음: ELOOP/);
     for (const args of [[dist, dist], ['-x']]) {
       const invalid = cliRun(cli, args);
       assert.equal(invalid.status, 2);
