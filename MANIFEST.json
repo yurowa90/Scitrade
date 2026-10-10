@@ -286,6 +286,86 @@
       "sha256": "5a1b8dfbc8260cd577a89a1a6c3f9fa918bce02874ec4b4cf4e127bab600e24b"
     },
     {
+      "path": "docs/ai/design/integration-3/README.md",
+      "size_bytes": 2323,
+      "sha256": "da36b4a7092079355f6bdaf4031f9461297b6ebd6fb72807f36a5d0230cbe976"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/campaign-end.json",
+      "size_bytes": 2688,
+      "sha256": "f335855a9cdcacdb3ddb333bd553dccecd0cb837da9d78575f33c1f5d613e774"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/card-detail-low.json",
+      "size_bytes": 6546,
+      "sha256": "e10e8267aa8d2c4a1bf63b7b6c4b8fbc87854e69e7845db5aa2f391c4e59ffad"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/card-detail.json",
+      "size_bytes": 11708,
+      "sha256": "de66a7f8e1747f1585c4ac0cc32bad526891e5b045d307a1ad9de9c2e8c886ac"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/crew-facet.json",
+      "size_bytes": 5873,
+      "sha256": "8695dea21cce65265c5abf9cdb15c5f29499f41b880f29afe2584162d2824add"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/culture-result-flow3.json",
+      "size_bytes": 4337,
+      "sha256": "271b222cf08869128af153f34b3f0fc744be8b27bc4584fb64c448865b81bc45"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/day-anchor.json",
+      "size_bytes": 4801,
+      "sha256": "525c819d1a971f3806530e0ddbb2905e57b6d1be6e3f36564588319765767157"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/interview-hire.json",
+      "size_bytes": 9859,
+      "sha256": "0a705e097235aa2a61be4a4a7da0382ab49aedb5ca5fd2bec6d473a11f98a270"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/local-tab-position.json",
+      "size_bytes": 4908,
+      "sha256": "14599035573624b041db6dc00b27e981968b0a83d04776a3908f01a58ed9aa57"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/queue-chip.json",
+      "size_bytes": 8933,
+      "sha256": "fc9d9005925858a94700f502ca14ed7dea137819e8eb2f8efeff918a1454f6ae"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/report-contract-link.json",
+      "size_bytes": 5745,
+      "sha256": "8c0b87967bb32d32c09516e86dbbc218f9b24b757185b3e408541fa8a7d8fcb8"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/route-map-fit.json",
+      "size_bytes": 14432,
+      "sha256": "783df976fabca6bea8c09485be0e939c8bc3a08161e731f8dd0c9787ec7dc711"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/schedule-toggle.json",
+      "size_bytes": 5654,
+      "sha256": "e0038969d37c96c1ec803cb46c2d7cb8d301c08ba8cae13e39d663bb7324f8a6"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/side-anchor.json",
+      "size_bytes": 7814,
+      "sha256": "7633adfb9ded8d85d0e04f4537bd2a96e553b396ba8e540de392d04e22652283"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/smoke-hash.json",
+      "size_bytes": 5988,
+      "sha256": "d42eeb39ebed7c0769bc302a0019fc25355f5466257d53345c721297829d6ed2"
+    },
+    {
+      "path": "docs/ai/design/integration-3/raw/smoke.json",
+      "size_bytes": 5987,
+      "sha256": "bbc2fdeb924bb826f69ab54a86883e0973a90bc8dbd6991058b5a593e280ae4a"
+    },
+    {
       "path": "docs/ai/design/layout-ux04-05/README.md",
       "size_bytes": 39972,
       "sha256": "ac4a04868e7905b68642d7daafc160b89f69794619da4080df70bf0b21cb4f14"

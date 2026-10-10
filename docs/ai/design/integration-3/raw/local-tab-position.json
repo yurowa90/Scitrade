@@ -1,0 +1,250 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "local-tab-position",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/i3/dist",
+  "dist_index_sha256": "02baa14df2159b1d5e4a5d67d8c4d0bf56309ed46a5ed8c3439be5e3778c7850",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 175.6,
+        "tab_height": 44,
+        "bar_bottom": 149.8
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 191.6,
+        "tab_height": 44,
+        "bar_bottom": 165.8
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 192.6,
+        "tab_height": 44,
+        "bar_bottom": 166.3
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 192.6,
+        "tab_height": 44,
+        "bar_bottom": 166.3
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 192.6,
+        "tab_height": 44,
+        "bar_bottom": 166.3
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 175.6,
+        "tab_height": 44,
+        "bar_bottom": 149.8
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "tab_top": 192.6,
+        "tab_height": 44,
+        "bar_bottom": 166.3
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "tab_top",
+      "profile": "l1366",
+      "actual": 175.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "cb1366t",
+      "actual": 191.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "ipadAirL",
+      "actual": 192.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "ipadminiL",
+      "actual": 192.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "ipadmini6L",
+      "actual": 192.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "l1920",
+      "actual": 175.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    },
+    {
+      "value": "tab_top",
+      "profile": "t1000",
+      "actual": 192.6,
+      "min": 174,
+      "max": 247,
+      "ok": true
+    }
+  ],
+  "ok": true
+}
