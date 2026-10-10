@@ -1437,8 +1437,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0031-m2a5-bottleneck-storage.md",
-      "size_bytes": 9995,
-      "sha256": "49cd374749a24c03dbf8974a1fd4295447eb6a2f2128d201008e67a8704227a9"
+      "size_bytes": 12422,
+      "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1627,8 +1627,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0030.md",
-      "size_bytes": 39251,
-      "sha256": "5eb6a165fd669d8ccbfde5dda51b987c2fc36dec43a50f158135b420be65fee2"
+      "size_bytes": 39873,
+      "sha256": "d58ac6dff97af1900d19aac14361c7ace9bee63c62be0d1e248d96b2921fc0cc"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
