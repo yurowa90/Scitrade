@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 150684,
-      "sha256": "4c60f66bbc1b703dc50f896ca3caf94ba2e20e6958096f526f19692467536c48"
+      "size_bytes": 153392,
+      "sha256": "32cd2da177ded5e6ec94a45d1584a078ea11ae8733036c9ae72295ba79c43988"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1512,8 +1512,8 @@
     },
     {
       "path": "tools/ai/codex_task.sh",
-      "size_bytes": 3543,
-      "sha256": "827d69fea462e99262ac7280216655e5d1b9d7b0b6572f993fad038bdfa65f7c"
+      "size_bytes": 3810,
+      "sha256": "761aa7e7a4f1f271b173f4edff555c4ac6f6d023d9c370fc677c879eeb12169d"
     },
     {
       "path": "tools/ai/review_checks.sh",
