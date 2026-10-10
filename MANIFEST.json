@@ -927,8 +927,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 11537,
-      "sha256": "8e09decacf2bba22a5bb33b43028556f61e26e6b1ab0d5486824289db8c9d18e"
+      "size_bytes": 11947,
+      "sha256": "df46d7212f4384929f584383d9216db468e12b60631705e52657dee04c0c3ce1"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1109,6 +1109,11 @@
       "path": "docs/ai/tasks/TASK-0026-data-chunk-budget.md",
       "size_bytes": 48635,
       "sha256": "c562981dafa46be0f2a963edf873dcee8353b0027115dbd9b972a2571d4cf8fe"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0055-character-projection.md",
+      "size_bytes": 63473,
+      "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
