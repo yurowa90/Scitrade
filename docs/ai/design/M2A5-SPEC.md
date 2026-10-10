@@ -26,7 +26,7 @@
 | B6 77일 이후 미지급은 실패로 안 이어짐 | `COMPLETED` + 끝 미지급 표시. 이름은 Q11 | 11.2, 20 |
 | B7 분석값(÷1,313) 불필요 | 지웠다. 확정 기준은 통화별이다. 모형에서 두 기준 판정이 같았다 | 10.4, 17 |
 | C1~C12 | 각 절에 넣었다(부록 D 대조표) | — |
-| CRITIC2 F1 정액 50 USD 감액 구멍 | 규칙 2 시나리오만 정액 200 USD. 사용자 확인 필요(Q10). 실행기에 ‘늦어도 받기’ 정책을 더하고 두 수락 방식 모두에서 판정 | 4, 17.3, 20 |
+| CRITIC2 F1 정액 50 USD 감액 구멍 | (개정 2 당시) 규칙 2 시나리오만 정액 200 USD. **사용자 결정 Q10으로 하루 50 USD·상한 100%로 바뀜(P46).** 실행기에 ‘늦어도 받기’ 정책을 더하고 두 수락 방식 모두에서 판정 | 4, 17.3, 20 |
 | F2·F3·F5 | 고용일 ±1일 안정성, 실제 영입 명령, 사업별 기여이익 비중을 재측정 기준에 넣었다 | 17.3 |
 | F4 3pt 직원 손해 설명 | 창고 대기 pt·업무 수를 읽기 함수와 화면 요구에 넣었다 | 8.4, 14.5, 16 |
 | F6 B의 대금 띠가 아래로 좁음 | 재측정에서 어긋나면 올리는 쪽만 쓴다 | 17.3 |
@@ -69,7 +69,7 @@
 | C15 | `PAR_PAYMENT_GRACE_DAYS` = null(`data/parameters.json:56-60`, DESIGN:358-359) | D04 가 | 14로 정하고 경고 0일·위험 7일을 함께 둔다 |
 | C16 | 초안 정책 모형은 자동 환전(DRAFT §7.3) | D01 덧붙임: 자동 환전 없음 | 엔진에는 자동 환전이 없다. 비교 실행기 정책만 환전 명령을 넣는다(17.3) |
 | C17 | 선복 요금은 예약 밖(개정 1의 9절) | ‘체결한 계약의 운임·관세는 미리 묶어 둔다’(`engine.ts:274`). ‘예약은 확정된 지출만 묶는다’(DECISIONS:152) | 해지할 수 없는 확정 지출이므로 묶는다. 다만 남은 요금 전부가 아니라 ‘오늘부터 7일 뒤까지 출항하는 적용 편’만 묶는다(9절). 근거는 17.2 |
-| C18 | 늦은 인도 감액 정액 50 USD(`scenarios.json:337-341`, `engine.ts:1000`) | 결정 없음 | 규칙 2 시나리오만 정액 200 USD 1회(사전 조정). 규칙 1은 그대로. **Q10 사용자 확인** |
+| C18 | 늦은 인도 감액 정액 50 USD(`scenarios.json:337-341`, `engine.ts:1000`) | 사용자 결정 Q10 | 규칙 2 시나리오만 늦은 하루마다 50 USD, 합계는 계약 금액 100%까지(`basis: per_late_day_capped`, `cap_basis_points: 10000`). 규칙 1은 그대로 |
 | C19 | 개정 1은 `package_version`을 올렸다 | 올리면 판본 5 저장이 이관 전에 거절된다(`scenario.ts:419`, `save.ts:109-111`). M2a-4도 자료 판본을 올리지 않았다(DECISIONS:717) | 0.5.0을 그대로 둔다. 저장 형식만 6으로 올린다. 기존 시나리오 동작은 바뀌지 않는다 |
 
 ## 3. 판본·시나리오·자료 파일
@@ -150,7 +150,7 @@
   - **자료 ID를 객체 키로 쓰지 않는다.** 모두 `id` 칸이 있는 배열이다. 비교 실행기 이름 바꾸기 시험(`sim.test.ts:42-49`)은 JSON 값만 바꾸고 키는 그대로 둔다. 키에 ID가 있으면 그 시험이 깨진다.
   - 환율은 로더가 `buy = base − applyBasisPoints(base, spread)` = 1,287, `sell = base + applyBasisPoints(base, spread)` = 1,313으로 미리 계산한다(`money.ts:36-41`).
 - `OfferDef`(`types.ts:50-73`)에 더하는 칸(모두 필수, 1일 묶음은 로더가 채움): `maxQuantity`, `quantityStep`, `serviceClass: 'STANDARD' | 'HANDLING' | null`, `publishDay`, `batchK`, `templateId: string | null`, `titleKo: string | null`, `prepWorkUnits: number | null`(작업 포함 틀만). 1일 묶음: `maxQuantity = quantityStep = quantity`, `publishDay = 1`, `batchK = 0`, 주선은 `serviceClass = 'STANDARD'`.
-- `ScenarioTerms`·`ScenarioRules`는 그대로 둔다. 규칙 2 값은 `operations`에만 있다.
+- `ScenarioRules`는 그대로 둔다. `ScenarioTerms`에는 늦은 인도 감액 방식 두 칸만 더한다: `lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED'`, `lateDeliveryCapBasisPoints: number | null`(규칙 1은 `FLAT_ONCE`·null). 그 밖의 규칙 2 값은 `operations`에만 있다.
 
 ### 5.2 동적 상태(`GameState`, `types.ts:450-481`)
 
@@ -513,6 +513,12 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 - 같은 날 재마감은 아무것도 바꾸지 않는다(`engine.ts:802-804`).
 - 화면 열기·미리 보기·저장 불러오기는 시간을 진행하지 않는다.
 
+### 13.1 늦은 인도 감액(규칙 2, 사용자 결정 Q10)
+
+- 감액 = `min(하루 금액 × 늦은 날 수, applyBasisPoints(판매액, cap_basis_points))`. 판매액은 직접 무역의 판매 대금, 주선의 서비스 대금이다. 하루 금액 50 USD, 상한 10,000 bp(100%).
+- 한 함수 `lateDeliveryReduction(config, saleAmountMinor, lateDays)`를 인도(`engine.ts:1000`), 견적 미리 보기(`reports.ts:101`), 진행 막힘(`progress.ts:49`)이 함께 쓴다.
+- 진행 막힘 문장(규칙 2): `BOOKED_SAILING_LATE`·`NEXT_SAILING_LATE`의 ‘(감액 {금액})’은 그 늦은 날 수로 계산한 금액이다. 하역 대기(`progress.ts:71`, 늦은 날 수 미정)는 ‘{도시}항 하역 중단으로 바다에서 대기 중입니다 ({n}일째). 납기 {d}일을 넘기면 늦은 하루마다 {하루 금액}씩, 최대 {상한 금액}까지 감액됩니다.’ 금액은 `formatMoney`로 적는다. 규칙 1 문장은 그대로다.
+
 ## 14. 읽기 함수·보고
 
 모두 상태를 바꾸지 않는다. 규칙 1에서는 기존 결과·칸을 그대로 낸다.
@@ -594,7 +600,7 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
 모든 금액은 통화 표시를 붙이고 통화끼리 더하지 않는다. 색만으로 상태를 구분하지 않는다(UI_SPEC:50). 새 문장마다 반례 상태를 적고 시험한다.
 
 1. **시세표:** 6행. 기준가(USD/단위), 지수(‘돈이 아님’), 관측일·‘N일 전 관측’, 다음 관측일, 이번 묶음 견적 있음. 79일 뒤 ‘새 관측 없음’.
-2. **견적 카드:** 수량 고르기. 수량마다 매입·판매·운임·관세·기여이익·필요 자금·준비 pt·부피·보관 후 사용량/한도. H 견적은 이름과 ‘준비 12pt — 직원 시간이 많이 듭니다’, ‘준비 1pt당 기여이익 70 USD’. 늦은 인도 감액 200 USD. 기존 계약 출항을 밀어내면 그 계약 이름(`affectedContracts`).
+2. **견적 카드:** 수량 고르기. 수량마다 매입·판매·운임·관세·기여이익·필요 자금·준비 pt·부피·보관 후 사용량/한도. H 견적은 이름과 ‘준비 12pt — 직원 시간이 많이 듭니다’, ‘준비 1pt당 기여이익 70 USD’. 늦은 인도 감액(하루 50 USD, 최대 계약 금액). 기존 계약 출항을 밀어내면 그 계약 이름(`affectedContracts`).
 3. **본사·창고 글자 표:** 읽는 순서 수요 → 직원 → 창고 처리 → 보관 → 선복(CL:40). 창고 대기 pt·업무 수. 한도가 바뀌면 ‘한도가 40 → 60 m³로 늘어 사용률이 내려갔습니다’.
 4. **환전 칸:** 방향, 금액(100 USD 단계), ‘게임용 고정 환율 1,287원(받을 때)·1,313원(살 때)’, 받는/내는 금액, 차감, 쓸 수 있는 USD = 현금 − 예약(계약·선복 요금) − 미지급, 급여 가능일 전/후, ‘자동 환전은 없습니다’, `warningKo`.
 5. **위쪽 막대:** 원화 급여 가능일(임차료 포함), 지급 불이행 단계와 실패까지 남은 날.
@@ -777,6 +783,7 @@ DESIGN:336-342의 8단계. 굵은 글씨가 새로 하거나 바뀌는 곳이다
   - 71일 마감: 미지급 2,770,000원(30건). `outcome` FAILED, `failure = { day 71, obligationId WAGE-D057-EMP02, currency KRW, amountMinor 80,000, incurredDay 57, … }`, `cashByCurrency` USD 300,000·KRW 60,000. `warningEvent.day` 57, `dangerEvent.day` 64. `optionalKrwSpendBeforeFirstUnpaid` [](선택 지출 없음), `usdCommitmentsSinceIncurred` []. 공개 묶음 11개(1·8·…·71일). `phase` ENDED, `day` 72. 이후 명령은 ‘캠페인이 끝났습니다(경영 실패).’
 - 행동 B: 70일 `EXCHANGE_CURRENCY(USD_TO_KRW, 200,000)` → 60,000 + 2,574,000 = 2,634,000 → 밀린 지급 2,450,000 → 184,000 → 급여 → 24,000원, 미지급 0. 71일 다시 미지급(`WAGE-D071-EMP01` 기준, 85일 실패).
 - 행동 C: 70일 `EXCHANGE_CURRENCY(USD_TO_KRW, 10,000)` → 188,700 → `WAGE-D057-EMP02` → 108,700 → `WAGE-D058-EMP01` → 28,700 → 나머지는 건너뜀. 70일 마감 기준 의무 58일(나이 12). 72일 마감 실패.
+- 행동 D(실패 기록의 USD 약정): 행동 A에 60일 `SIGN_SPACE_CONTRACT(ROUTE02)`만 더한다. 적용 편 72·79·86일(60 + 7 ≤ d, d + 4 ≤ 90) 3편, 합계 90.00 USD. 실패일·원인은 행동 A와 같다(71일, `WAGE-D057-EMP02`). `failure.usdCommitmentsSinceIncurred` = `[{ kind: 'SPACE_CONTRACT', id: 'SPC-ROUTE02', day: 60, amountMinor: 9,000 }]`. 72일 편 요금은 실패 뒤라 분개가 없다.
 - 반례: 행동 B의 70일 마감에는 새 경고 기록이 없다(미지급 0). 정상 종료 판(P0-M2A5-14 변형)에는 ‘경영 실패’ 문장이 없다.
 
 **P0-M2A5-10 창고 확장(DK-11)**
@@ -962,7 +969,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 exp_spec.py judge CAND_B flat:20000 window7 10
   "engine_rules": { "rules_version": "M2a-rules-2", "funds_check": "committed_outlays", "forwarding_enabled": true,
     "note_ko": "매주 새 견적이 공개되고, 창고 보관·처리 한도와 원화 고정비가 있다. 원화는 환전 명령으로만 마련하며 미지급이 14일 남으면 경영 실패다." },
   "contract_terms": { "...": "SCENARIO_M2_MULTI_TRADE의 contract_terms를 모두 다시 적고 아래만 바꾼다",
-    "late_delivery": { "price_reduction": { "currency": "USD", "amount": 200 }, "basis": "flat_once_regardless_of_late_days" },
+    "late_delivery": { "price_reduction": { "currency": "USD", "amount": 50 }, "basis": "per_late_day_capped", "cap_basis_points": 10000 },
     "notes_ko": ["규칙 2 값으로 다시 쓴 문장(준비량 규칙, 하루 50 USD 감액·상한, 고정비·환전·실패)"] },
   "operations": {
     "market_rules_ref": "market_rules.json#M2A5_PYEONGTAEK",

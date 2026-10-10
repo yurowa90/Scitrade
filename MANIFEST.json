@@ -242,8 +242,8 @@
     },
     {
       "path": "docs/ai/design/M2A5-SPEC.md",
-      "size_bytes": 105857,
-      "sha256": "aac934e81dab47a7a670ca4fdf74add6278b31940c82def9adb067686d7e7e27"
+      "size_bytes": 107603,
+      "sha256": "297e8530d03f8213351bb635f332e4007615a67ee8727611e2718537778a3891"
     },
     {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
@@ -872,8 +872,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0027-m2a5-engine.md",
-      "size_bytes": 53952,
-      "sha256": "28ca9e71ba6242622f8b287c2fd667738de3da2817ac5abe1c3e932a77c975e0"
+      "size_bytes": 55024,
+      "sha256": "b7864fd00375e2f7e114c4ddce53a7811d13f99d186ebe96c625de2b3d84828d"
     },
     {
       "path": "docs/ai/tasks/TASK-0028-m2a5-sim-readers.md",

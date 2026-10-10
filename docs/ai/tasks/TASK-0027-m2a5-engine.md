@@ -13,7 +13,7 @@
 - 결정 근거:
   - `docs/DECISIONS.md` 1068~1103행 ‘사용자 결정 일괄 채택’: D01 가(1074), D02 ①~⑤(1075, ③ 가), D03 나(1076), D04 가(1077).
   - `docs/DECISIONS.md` 717행: 기능을 더할 때 자료 판본을 올리지 않고 저장 형식만 올린 선례(M2a-4). 57행: 필수 지급 미지급 규칙. 152행: 예약은 확정 지출만. 316행: 선택 지출은 미지급을 만들지 않음. 54행: 통화 합산 금지. 223행: 표시와 결과 일치.
-  - `docs/ai/design/M2A5-SPEC.md`(이하 ‘명세’). 이 작업의 규칙·숫자·문장은 모두 명세가 기준이다. 명세 0.1절은 비판 반영 대조다.
+  - `docs/ai/design/M2A5-SPEC.md`(이하 ‘명세’). 이 작업의 규칙·숫자·문장은 모두 명세가 기준이다. 명세 0.1절은 비판 반영 대조다. **명세와 이 지시서가 다르면 이 지시서가 우선이다.** 특히 늦은 인도 감액(지시 1·11), `ScenarioTerms` 새 칸(지시 11), 비교 실행기(명세 3절의 `sim.ts:66`, 부록 B의 비교 실행기 줄과 `m2a5-sim.test.ts`는 TASK-0028).
   - `docs/CLASSIC_GAME_INSIGHTS.md` 38~40행(CL-01~03), 54·79행(채용이 불필요한 상황도 유효한 판단).
   - `docs/ai/design/DECISION-PACKET-2026-10.md` 41~51행(일관성 점검), 54~178행(D01~D04).
   - 사전 조정 모형 `docs/ai/design/m2a5-model/`(명세 부록 A). 참고 자료다. 이 작업에서 돌리지 않아도 된다.
@@ -44,11 +44,11 @@
   - `src/engine/save.ts`: 19·97·109~111·114·119~123행. `src/engine/save-shape.ts`: 8~29행, 56~105행. `src/engine/invariants.ts`: 107~117행.
   - `src/engine/rng.ts` 33~40행, `src/engine/money.ts` 36~41행, `src/engine/growth.ts` 8~23행, `src/engine/testkit.ts` 50~70행.
 - 로더: `src/content/scenario.ts` 34~42행(목록), 129~134행(상속), 136~161행(`toOffer`), 247~422행(`loadScenario`, 258·284·288·387·419행).
-- 비교 실행기: `src/engine/sim/sim.ts`(10·31~33·61~83행), `policies.ts`(23~40행 후보, 42~119행 결정, 79~82행 배정, 91~96행 정렬, 100~101행 정시 거르기, 104~106행 준비량, 121~129행 정책 목록), `metrics.ts`(41~48·77~142행), `cli.ts`(11~17·40~61행), `compare.ts`, `sim.test.ts`(22·42~55·57~182행).
+- 비교 실행기(읽기만, 회귀 확인용. 고치지 않는다): `src/engine/sim/sim.ts`, `metrics.ts`(120~130행: 지표는 정해 둔 칸만 고르므로 `BookSummary` 칸이 늘어도 출력이 같다), `cli.ts`(11~17·40~61행), `compare.ts`, `sim.test.ts`(22·42~55·57~182행).
 - 자료: `data/scenarios.json` 269~517행(`SCENARIO_M2_MULTI_TRADE`), `data/market_offers.json`, `data/parameters.json` 56~61행, `data/goods.json`, `data/routes.json`, `data/employees.json`, `schemas/scenarios.schema.json`(항목 `required`: `id`·`securities_enabled`·`source_refs`·`stage`. `contract_terms`는 `additionalProperties: false`), `PACKAGE_STATUS.json`.
 - 검사기: `tools/validate_data.py` 77~89행, 805~860행(816행 `expected_counts`), 960~995행. `tools/test_validate_data.py`.
 - 인수 명세: `tests/acceptance_cases.json`(`P0-M2A-04` 항목 형식, `review_summary`).
-- 시험(읽기, 부록 B 허용 줄만 고침): `save-v5.test.ts`, `m2a-growth.test.ts`, `m2a-recruit.test.ts`, `m2a-multi.test.ts`, `m2a-culture.test.ts`, `save-shape.test.ts`, `campaign-end.test.ts`(76행), `progress.test.ts`, `sim/sim.test.ts`.
+- 시험(읽기, 부록 B 허용 줄만 고침): `save-v5.test.ts`, `m2a-growth.test.ts`, `m2a-recruit.test.ts`, `m2a-multi.test.ts`, `m2a-culture.test.ts`, `save-shape.test.ts`, `campaign-end.test.ts`(76행), `progress.test.ts`. `sim/sim.test.ts`는 읽기만(고치지 않음).
 - 화면(읽기만): `src/ui/main.ts` 300·805~838·1208행, `src/ui/session.ts` 27행, `src/ui/reports.ts` 102~106행, `src/ui/trade-reports.test.ts` 114~117행.
 
 ## 범위
@@ -100,7 +100,7 @@
 ## 지켜야 할 것
 
 - **규칙 1 불변:** 규칙 1 시나리오의 상태·장부·기록 문장·보고 칸·읽기 함수 결과·비교 실행기 출력이 작업 전과 같아야 한다. 규칙 2 기능은 `config.operations !== null`(능력)로 고른다. **시나리오 ID로 고르지 않는다**(`sim.test.ts:169-182`).
-- **화면 0줄:** `git diff --stat <BASE> -- src/ui`의 출력이 없어야 한다. 화면이 쓰는 형·함수의 서명을 바꾸지 않는다: `Command`(선택 칸 `quantity?`만 더함), `BlockerCode`, `CashReservation`, `tradePairs(config)`, `tradePreview`, `forwardingPreview`, `offerOf`, `UpcomingPaymentKind`(값만 더함), `CampaignSummary`(규칙 1 칸 목록), `SCENARIO_IDS`·`ScenarioId`.
+- **화면 0줄:** `git diff --stat <BASE> -- src/ui`의 출력이 없어야 한다. 화면이 쓰는 형·함수의 서명을 바꾸지 않는다: `Command`(선택 칸 `quantity?`만 더함), `BlockerCode`, `CashReservation`, `tradePairs(config)`, `tradePreview`, `forwardingPreview`, `offerOf`, `UpcomingPaymentKind`(바꾸지 않음), `CampaignSummary`(규칙 1 칸 목록), `SCENARIO_IDS`·`ScenarioId`.
 - **설정에 ID 키 금지:** `ScenarioConfig.operations`의 모든 목록은 `id`·`cityId`·`goodId` 칸이 있는 배열이다. 자료 ID를 객체 키로 쓰지 않는다(`sim.test.ts:42-49` 이름 바꾸기 시험은 값만 바꾼다).
 - **결정적 난수:** 시장 생성은 묶음마다 새 지역 상태 `{ seed: state.rng.seed, cursors: {} }`로 `drawUniform`(흐름 `MARKET-B{kk}`)을 부른다. `state.rng.cursors`를 읽거나 쓰지 않는다. 비교 실행기 정책 난수는 지금처럼 정책 흐름만 쓴다. `Math.random`·`Date.now`·`new Date`·현재 시각 금지.
 - **돈:** 통화별 정수 최소 단위. 환율 13·128,700·131,300을 코드에 쓰지 않고 설정(`fx`)에서 계산한다. 두 통화를 더한 값을 어떤 반환값·지표·기록에도 만들지 않는다.
@@ -141,7 +141,7 @@
   5. `"운송 주선 화물의 수입 관세는 수입자(고객)가 부담하는 것으로 단순화한다."`
   6. `"임차료·창고 확장비·환전 차감은 원화, 선복 계약 요금은 USD다. 원화는 환전 명령으로만 마련하고 자동 환전은 없다. 가장 오래된 미지급이 14일 남은 날 마감에 경영 실패다."`
   7. `"모든 값은 현실 계약 관행이나 운임 시세가 아닌 개발용 가정이다."`
-- `schemas/scenarios.schema.json`: 항목 `properties`에 `operations`(객체, 하위 `required`는 부록 C의 키)를 더한다. `contract_terms`의 허용 키는 그대로다. 단 `late_delivery.basis`의 `enum`에 `per_late_day_capped`를 더하고, 선택 칸 `cap_basis_points`(정수 1~10,000)를 더한다. 검사: `basis`가 `per_late_day_capped`면 `cap_basis_points`가 있어야 하고, 아니면 없어야 한다(스키마 `if`/`then` 또는 검사기).
+- `schemas/scenarios.schema.json`: 항목 `properties`에 `operations`(객체, 하위 `required`는 부록 C의 키)를 더한다. `contract_terms`의 허용 키는 그대로다. 단 `late_delivery.basis`의 `enum`에 `per_late_day_capped`를 더하고, 선택 칸 `cap_basis_points`(정수 1~10,000)를 더한다. 이 조건(방식과 상한 칸의 짝)은 스키마 `if`/`then`으로 쓰지 않는다(`validate_data.py`의 `shape()`가 해석하지 않는다). 검사기 지시 16에서 본다.
 
 **`data/parameters.json`**: `PAR_PAYMENT_GRACE_DAYS`의 `value` 14, 객체 끝에 `"json_pointer": "scenarios.json#/items/7/operations/payment_default/failure_age_days"`, `notes_ko`를 `"D04 가(2026-10-10). 규칙 2 시나리오(operations.payment_default)에만 적용한다. 가장 오래된 미지급 의무의 발생일 + 14일 마감에 남아 있으면 경영 실패. 규칙 1 시나리오는 실패 판정을 하지 않는다."`로 바꾼다. (7은 새 시나리오의 `items` 위치다. 다르면 실제 위치를 쓴다.)
 
@@ -160,6 +160,7 @@
 - 목록(명세 3절): `OPERATIONS_SCENARIO_IDS = ['SCENARIO_M2_OPERATIONS'] as const`, `ALL_SCENARIO_IDS = [...SCENARIO_IDS, ...OPERATIONS_SCENARIO_IDS] as const`, `AnyScenarioId`. `SCENARIO_IDS`·`ScenarioId`·`M2_SCENARIO_IDS`는 그대로. `loadScenario(id: AnyScenarioId)`, `assumptionNotes(id: AnyScenarioId)`.
 - `toOffer`(136~161행): 새 `OfferDef` 칸을 1일 묶음 값으로 채운다(명세 5.1).
 - `operations`: 레코드에 `operations`가 있으면 `market_rules.json`의 `market_rules_ref` 규칙 묶음을 읽어 `OperationsConfig`로 바꾼다. 금액은 `toMinor`로 한 번만. 부피는 L 정수(`Math.round(m3 × 1000)`), 무게 g 정수.
+- `scenario.ts:284-286`의 감액 방식 검사를 넓힌다: `flat_once_regardless_of_late_days`는 지금대로, `per_late_day_capped`는 `cap_basis_points`가 1~10,000 정수일 때만 받는다. 그 밖은 지금 오류 문장 그대로. 로더가 `ScenarioTerms.lateDeliveryBasis`·`lateDeliveryCapBasisPoints`를 채운다.
 - 검사(실패하면 오류): `operations`가 있으면 `rules_version`이 `M2a-rules-2`이고, 없으면 `M2a-rules-2`가 아니다. `fx_exchange.base_rate_ref`가 `game_config.json` `config.fx_krw_per_usd`와 맞다. 템플릿의 `good_id`·`destination_city_id`·거래처 ID가 있다. `draws`의 등급 순서는 STANDARD → HANDLING이고 각 수 ≤ 그 등급 틀 수.
 - 규칙 1 레코드는 `operations: null`. 반환 객체의 다른 칸은 지금과 같다.
 
@@ -208,7 +209,7 @@
 ### 11. 지급·지급 불이행·결산
 
 - 지급 순서는 지금 규칙(명세 10.3, `engine.ts:1099-1157`). 6c 고정비를 6b와 6d 사이에 넣는다.
-- **늦은 인도 감액(5단계, `engine.ts:1000`):** `ScenarioTerms`에 `lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED'`와 `lateDeliveryCapBasisPoints: number | null`을 더한다(로더가 채움, 규칙 1 시나리오는 `FLAT_ONCE`·null). `FLAT_ONCE`면 지금 식 그대로. `PER_LATE_DAY_CAPPED`면 `min(금액 × lateDays, applyBasisPoints(contract.saleAmountMinor, cap))`(`money.ts:36-41`). `saleAmountMinor`는 직접 무역의 판매액, 주선의 서비스 대금이다. 이 계산은 새 함수 `lateDeliveryReduction(config, contract, lateDays)` 하나로 두고 `engine.ts:1000`, `reports.ts:101`, `progress.ts:49`가 함께 쓴다(지금 세 곳이 정액 값을 직접 읽는다). 규칙 2 `contractProgress` 문장: `progress.ts:110`·`:125`의 ‘(감액 {금액})’은 그 늦은 날 수로 계산한 금액이다. `:71`(하역 대기, 늦은 날 수 미정)은 규칙 2에서 ‘납기 {d}일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 {계약 금액}까지 감액됩니다.’로 쓴다(금액은 설정에서). 규칙 1 문장은 그대로. 화면의 같은 읽기(`src/ui/schedule.ts:67`, `src/ui/main.ts:598`)는 고치지 않고 ‘범위 밖 발견’에 적는다(규칙 1 화면 결과는 같다). 규칙 1의 결과·기록 문장은 바뀌지 않는다. 화면이 `ScenarioTerms`를 읽으므로 새 칸은 더하기만 한다.
+- **늦은 인도 감액(5단계, `engine.ts:1000`):** `ScenarioTerms`에 `lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED'`와 `lateDeliveryCapBasisPoints: number | null`을 더한다(로더가 채움, 규칙 1 시나리오는 `FLAT_ONCE`·null). `FLAT_ONCE`면 지금 식 그대로. `PER_LATE_DAY_CAPPED`면 `min(금액 × lateDays, applyBasisPoints(contract.saleAmountMinor, cap))`(`money.ts:36-41`). `saleAmountMinor`는 직접 무역의 판매액, 주선의 서비스 대금이다. 이 계산은 새 함수 `lateDeliveryReduction(config, saleAmountMinor, lateDays)` 하나로 두고(`reports.ts:101` 견적 미리 보기에는 계약이 없고 판매액만 있다) `engine.ts:1000`, `reports.ts:101`, `progress.ts:49`가 함께 쓴다(지금 세 곳이 정액 값을 직접 읽는다). 규칙 2 `contractProgress` 문장: `progress.ts:110`·`:125`의 ‘(감액 {금액})’은 그 늦은 날 수로 계산한 금액이다. `:71`(하역 대기, 늦은 날 수 미정)은 규칙 2에서 ‘납기 {d}일을 넘기면 늦은 하루마다 {하루 금액}씩, 최대 {상한 금액}까지 감액됩니다.’로 쓴다. 두 금액은 설정에서 계산하고 `formatMoney(contract.currency, …)`로 적는다(지금 `money(...)` 표기와 같음). 상한 금액 = `applyBasisPoints(contract.saleAmountMinor, cap)`. 문장은 명세 13.1. 규칙 1 문장은 그대로. 화면의 같은 읽기(`src/ui/schedule.ts:67`, `src/ui/main.ts:598`)는 고치지 않고 ‘범위 밖 발견’에 적는다(규칙 1 화면 결과는 같다). 규칙 1의 결과·기록 문장은 바뀌지 않는다. 화면이 `ScenarioTerms`를 읽으므로 새 칸은 더하기만 한다.
 - **실패 기록의 USD 약정(D04 ‘지출 보류’, REVIEW3 a3):** `FailureRecord`에 `usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id; day; amountMinor }[]`를 더한다. 원인 의무 발생일부터 실패일까지 수락한 USD 계약(금액 = 수락 때 자금 검사에 쓴 필요 금액: 직접 무역은 매입 + 운임 + 관세, 주선은 운임)과 선복 계약 서명(금액 = 적용 편 수 × 편당 요금)을 날짜·명령 순서로 담는다. 없으면 빈 배열. 명세 11.2에 같은 칸을 더했다.
 - 규칙 2의 미지급 기록 문장(1133행 대신): `지급 불가: ${reasonKo} ${금액} → 미지급 의무로 기록 (14일 안에 갚지 못하면 경영 실패)`. 규칙 1은 그대로.
 - 6e: 명세 11.1~11.3. 단계 기록(`defaultEvents`), 실패 검사, `FailureRecord`(경고·위험 기록, 실패 전 14일 원화 선택 지출).
@@ -279,6 +280,7 @@
   - HANDLING 틀의 `prep_work_units`가 2 미만 정수가 아니거나 STANDARD 틀에 값이 있음 → `{id}: 준비량 칸 오류`
   - `PAR_PAYMENT_GRACE_DAYS`의 값과 `json_pointer`가 가리키는 값이 다름 → `PAR_PAYMENT_GRACE_DAYS: 시나리오 값과 다름`
   - `operations`가 있는 시나리오의 `engine_rules.rules_version`이 `M2a-rules-2`가 아님(상속 풀어서) → `{sid}: operations는 M2a-rules-2 필요`
+  - 모든 시나리오(상속 풀어서)의 `contract_terms.late_delivery`: `basis`가 `per_late_day_capped`인데 `cap_basis_points`가 없거나 1~10,000 정수가 아님, 또는 `flat_once_regardless_of_late_days`인데 `cap_basis_points`가 있음 → `{sid}: 지연 감액 상한 칸 오류`
 - `tools/test_validate_data.py`: 새 클래스 `MarketRulesTest`. 현재 자료 오류 0건, 위 문구마다 사본을 고쳐 `assertIn`으로 정확한 문구 확인. 기존 74개 시험은 그대로 통과. 새 시험에 자료 ID 금지(템플릿·시나리오는 자료에서 고른다).
 
 ### 17. 인수 명세(`tests/acceptance_cases.json`)
@@ -302,7 +304,7 @@
 
 ### 19. 기존 시험 허용 수정
 
-명세 부록 B 표의 줄만 고친다. Claude 실험(판본 6 + `operations: null`)에서 정확히 이 14개 시험(5개 파일)이 실패했다.
+명세 부록 B 표의 줄만 고친다. Claude 실험(판본 6 + `operations: null`)에서 정확히 이 14개 시험(아래 6개 파일)이 실패했다.
 - `save-v5.test.ts`: 52~53행 → `expect(load(currentFixture)).toEqual({ ...currentFixture.state, operations: null });`와 `expect(JSON.parse(serializeSave(load(currentFixture)))).toEqual({ ...currentFixture, formatVersion: SAVE_FORMAT_VERSION, state: { ...currentFixture.state, operations: null } });`. 69~71행 → `const { culture, operations, ...originalFields } = restored;` 뒤에 `expect(operations).toBeNull();`를 더한다. 122행 → `.toBe(SAVE_FORMAT_VERSION)`. 150행 → `it.each([0, 7, '5', 5.5])`. 12행 가져오기에 `SAVE_FORMAT_VERSION`.
 - `m2a-growth.test.ts:333-334`, `m2a-recruit.test.ts:326-327` → `expect(SAVE_FORMAT_VERSION).toBe(6);`, `.toBe(SAVE_FORMAT_VERSION)`.
 - `m2a-multi.test.ts:275` → `.toBe(SAVE_FORMAT_VERSION)`(13행 가져오기에 더함).
@@ -360,7 +362,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 | 늦은 인도 감액 | 자료값은 Q10 결정값(하루 50 USD, 상한 100%)이다. 엔진은 두 방식(정액 1회, 하루 비례·상한)을 모두 지원한다(지시 11). 자료에 없는 방식을 만들지 않는다 |
 | 규칙 2에서 1일 묶음 주선 준비량 | 일반 주선 부피 규칙(가구 4pt, 명세 C05). 규칙 1은 2pt 그대로 |
 | 작업 포함 견적 경험치 | 지금처럼 업무 1건당 10(명세 7절) |
-| `operations`를 `undefined`로 둘까 null로 둘까 | 상태·설정 모두 null. 비교 실행기 지표만 `undefined`(직렬화에서 빠짐) |
+| `operations`를 `undefined`로 둘까 null로 둘까 | 상태·설정 모두 null |
 | 실패 마감 뒤 `state.day` | 실패일 + 1(정상 마감과 같음) |
 | 90일 마감에 나이 14 미만 미지급 | `COMPLETED` + `arrearsAtEnd`(이름은 명세 Q11) |
 | 계약 기록에 거래처 이름이 자료에 없을 때 | 로더가 오류를 낸다(지시 3 검사) |
@@ -368,17 +370,17 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 | 부록 B 밖 기존 시험이 깨지면 | 고치지 않고 원인을 찾는다. 남으면 ‘질문’ |
 | 시험 이름에 ‘판본 5’가 남아 낡을 때 | 이름은 바꾸지 않는다. ‘범위 밖 발견’에 적는다 |
 | 인수 명세의 `actions`를 문장만 둘까 | 문장 + 기계가 읽는 `day`·`commands`. 시험은 `commands`를 그대로 실행한다 |
-| 새 시험이 느릴 때(90일 실행 반복) | 실행 결과를 파일 안에서 한 번만 만들어 재사용한다. 비교 실행기 시험은 시드 1개만 |
+| 새 시험이 느릴 때(90일 실행 반복) | 실행 결과를 파일 안에서 한 번만 만들어 재사용한다 |
 | 모형(`docs/ai/design/m2a5-model/`)을 돌려야 하나 | 돌리지 않아도 된다. 결과 비교는 명세 17.2 표와 한다 |
 
 ## 완료 조건
 
 1. 구현 지시 0~17·19가 반영되었다(18·20은 TASK-0028).
 2. **검증**
-   - 순서: 결과 보고 두 파일을 먼저 끝까지 쓴다. 그다음 `python3 tools/build_package.py --manifest-only`. 그 뒤에 보고를 고치면 생성 명령과 아래 검사를 다시 돌린다.
+   - 순서: 결과 보고 파일을 먼저 끝까지 쓴다. 그다음 `python3 tools/build_package.py --manifest-only`. 그 뒤에 보고를 고치면 생성 명령과 아래 검사를 다시 돌린다.
    - `bash tools/ai/review_checks.sh <BASE>` → `검사 13종, 실패 0종 (모드: 수정)`.
    - `bash tools/ai/review_checks.sh --check <BASE>` → `검사 14종, 실패 0종 (모드: 확인)`(Claude 확인: `c896c8a`에서 14종 통과).
-   - vitest: 시작 33개 파일·1000개 통과·할 일 1에서 새 파일 5개와 새 시험만 늘었다. 시작 시험은 모두 통과(부록 B의 14개는 고친 뒤 통과).
+   - vitest: 시작 33개 파일·1000개 통과·할 일 1에서 새 파일 4개와 새 시험만 늘었다. 시작 시험은 모두 통과(부록 B의 14개는 고친 뒤 통과).
    - `python3 tools/test_validate_data.py`: 기존 74개 + 새 시험 통과.
    - `python3 tools/validate_data.py` 첫 줄이 `PASS: 24 data documents; …`.
    - **회귀:** `node src/engine/sim/run.mjs run --out /tmp/TASK-0027-sim-after.json` 뒤 `node src/engine/sim/run.mjs compare /tmp/TASK-0027-sim-before.json /tmp/TASK-0027-sim-after.json` → 종료 0, 첫 줄 `비교 결과: 같음 (실행 400회, 지표 차이 0건)`. 이어서 `cmp /tmp/TASK-0027-sim-before.json /tmp/TASK-0027-sim-after.json`이 종료 0(바이트 같음).
@@ -457,7 +459,8 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
    | 실패한 날에도 7단계(다음 묶음 공개) 실행 | `P0-M2A5-09 지급 불이행 단계·경영 실패` |
    | `restartWithSameSeed`가 시드 + 1 | `P0-M2A5-14 결산과 같은 시드 다시` |
    | 하루 비례 감액에서 상한을 빼거나 정액으로 계산 | `M2a-5 늦은 인도 감액` |
-   | 실패 기록에서 선복 계약 서명 약정을 뺌 | `P0-M2A5-09 지급 불이행 단계·경영 실패` |
+   | 실패 기록에서 선복 계약 서명 약정을 뺌 | `P0-M2A5-09 지급 불이행 단계·경영 실패`(행동 D) |
+   | 검사기: 지연 감액 상한 칸 검사 제거 | `MarketRulesTest`의 해당 시험 |
    | 정상 완료에도 ‘경영 실패’ 거절 문장 | `M2a-5 문장 반례`(S12) |
    | 규칙 1 미지급 문장을 규칙 2 문장으로 통일 | `M2a-5 규칙 1 불변` |
    | `migrateV5toV6` 호출 제거 | `P0-M2A5-13 저장 판본 6과 재현` |
@@ -481,7 +484,6 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 - **문장 반례 표:** S1~S14·S16~S20마다 시험 이름과 반례 상태.
 - **변형 시험 표**
 - **범위 밖 발견:** 고치지 않은 문제. 최소한:
-  - 화면이 새 지급 종류(`RENT`·`SPACE_FEE`)를 관세로 적는 곳(`src/ui/main.ts:693-694`, `src/ui/schedule.ts:85`).
   - 원화 보고 주석 ‘가상 환율 1,300원/달러는 보고에 쓰지 않습니다’(`src/ui/reports.ts:22-23`)와 결산 행(`src/ui/reports.ts:133-142`)에 통화 간 이체 행이 없음.
   - 이름에 ‘판본 5’가 남은 시험.
   - 화면이 늦은 인도 감액을 정액 값으로 직접 읽는 곳(`src/ui/schedule.ts:67`, `src/ui/main.ts:598`). 규칙 2 화면 작업 때 `lateDeliveryReduction`으로 바꾼다.
