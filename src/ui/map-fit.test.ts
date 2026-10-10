@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadScenario, SCENARIO_IDS } from '../content/scenario';
-import { loadRouteWaypoints } from '../content/map';
+import { loadMapCities, loadRouteWaypoints } from '../content/map';
 import { createGame, openDay } from '../engine/engine';
 import { acceptAllFeasible, runDays } from '../engine/testkit';
 import type { ScenarioConfig } from '../engine/types';
@@ -142,6 +142,13 @@ describe('경로 지도 이름표 하한', () => {
       `stroke-width="${7 * k}"`, `stroke-width="${2.6 * k}"`, `<g class="graticule" stroke-width="${0.8 * k}">`, `font-size="${12 * k}"`]) expect(out).toContain(part);
     expect(out).not.toContain(`font-size="${15 * k}"`);
     expect(plan.n).toBe(2);
+    // k를 그대로 쓰는 나머지 자리: 나침반 위치, 관문 표시, 항로 점선, 폭풍 위치, 경위도 글자 위치(Claude 검수).
+    const map = mapAsset('MAP_EAST_ASIA')!;
+    const storm = project(loadMapCities().find((c) => c.id === cfg.routes[0]!.toCityId)!, map.bounds, map.width, map.height);
+    for (const part of [`translate(${(plan.vb.x + plan.vb.w - 52 * k).toFixed(1)} ${(plan.vb.y + plan.vb.h - 60 * k).toFixed(1)})" aria-hidden="true"`,
+      `width="${10 * k}" height="${10 * k}" transform="rotate(45`, `stroke-dasharray="${10 * k} ${8 * k}"`,
+      `translate(${(storm.x + 30 * k).toFixed(1)} ${(storm.y + 40 * k).toFixed(1)}) scale(${k * 0.8})`,
+      `y="${plan.vb.y + 16 * k}" font-size="${12 * k}"`]) expect(out).toContain(part);
     // 리본 자리: 휘장에서 띄우는 간격 13과 위아래 4는 k를 쓴다(크기만 kr).
     const placed = out.split('<g class="port ').slice(1).filter((c) => c.includes('<g class="ribbon">')).map((chunk) => {
       const t = chunk.match(/translate\(([-\d.]+) ([-\d.]+)\)/)!;
@@ -162,6 +169,12 @@ describe('경로 지도 이름표 하한', () => {
     const world = scales(M2, 930, 1.5, true);
     expect(world.kr).toBe(world.k);
     expect(renderWorldMap(createGame(M2), M2, 'world', { availableWidth: 930, dpr: 1.5 })).toContain(`font-size="${15 * world.k}"`);
+    // 946 상한 아래 넓은 틀: 그린 리본 글자와 휘장이 상한을 쓴 k를 쓴다(Claude 검수).
+    for (const width of [1154.33, 1600]) {
+      const s = scales(M2, width, 1), out = html(M2, width, 1);
+      expect(out).toContain(`font-size="${15 * s.k}"`);
+      expect(out).toContain(`scale(${s.k})"><circle r="10" class="port-badge"`);
+    }
   });
 
   it('320 CSS px 휴대폰(폭 259.22·dpr 2)에서는 1장 예정 거점 이름표 하나가 빠지고 이번 시나리오 거점 이름표는 남는다', () => {
@@ -185,6 +198,15 @@ describe('경로 지도 이름표 하한', () => {
         sizes.set(key, screen);
         if (mode === 'route') expect(15 * screen).toBeGreaterThanOrEqual(11 - 1e-9);
       }
+    }
+    if (mode === 'route') {
+      // 같은 키의 두 폭을 실제로 그려, 렌더의 리본 크기가 키 밖의 틀 폭에 기대지 않는지 본다(Claude 검수).
+      const ribbonSizes = (width: number) => [...html(M2, width, 2).matchAll(/<g class="ribbon"><rect [^>]*\/>\s*<text [^>]*font-size="([\d.e-]+)"/g)].map((m) => Number(m[1]));
+      const a = worldMapViewport(M2, 'route', { availableWidth: 274, dpr: 2 }), b = worldMapViewport(M2, 'route', { availableWidth: 288.9, dpr: 2 });
+      expect(mapViewportKey(a, 2)).toBe(mapViewportKey(b, 2));
+      expect(ribbonSizes(274).length).toBeGreaterThan(0);
+      expect(ribbonSizes(288.9)).toEqual(ribbonSizes(274));
+      expect(Math.max(...ribbonSizes(274)) * a.cssWidth / a.vb.w).toBeGreaterThanOrEqual(11 - 1e-9);
     }
   });
 
