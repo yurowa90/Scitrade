@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 143037,
-      "sha256": "daf9a71b69b44ba72c4aec9b7c4b1ce4e2cf1291be816f9b1fa09eb8367165f2"
+      "size_bytes": 144349,
+      "sha256": "6932d4471958eb24667ad814d2cb5e2198e1430def9c2d61798ed3be3db42cfb"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 54359,
-      "sha256": "58505ad067d522f16fc9444bae82171d3556d5aa82c5414ebf6db059074d24a6"
+      "size_bytes": 54622,
+      "sha256": "fa5baab581d78db5c7773d3c68726b434c94dc976fa230c0e3f746482485e386"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -202,8 +202,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 31234,
-      "sha256": "a2a560f695a73dec6221980c36cf96b77eccfad56844e3516aaae587cc960bb3"
+      "size_bytes": 31487,
+      "sha256": "e4525964ad1ffdcebaac474624cd3541ef866791d6c451455f561faff9d087be"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -217,8 +217,8 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 5241,
-      "sha256": "f6a9577605bdfff06b073e54b72198c89b98ebe442d5cbdfd30a3ad3ecd21e0b"
+      "size_bytes": 5509,
+      "sha256": "3da619cd4eb0e5e203564e2fafbd710e146da2b90cca1ccf3ac993e8c3660a1f"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -656,6 +656,11 @@
       "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
     },
     {
+      "path": "docs/art/FONT_LICENSES.md",
+      "size_bytes": 17210,
+      "sha256": "4056a5b0b7757bb12a3b1f4857149300107051752a305ba90737b66d0325e703"
+    },
+    {
       "path": "docs/art/PIXEL_SPEC.md",
       "size_bytes": 16298,
       "sha256": "526a9de91296132ba8bf8d5b66f050e0b21c6b514f9eebacdee465302aef298c"
@@ -947,13 +952,13 @@
     },
     {
       "path": "tools/browser/README.md",
-      "size_bytes": 2728,
-      "sha256": "4136f2128831fb228e6fb884f9b35993499d19db1f1c5f29d73ba0e419143ca5"
+      "size_bytes": 3300,
+      "sha256": "e0dd72fe93564bcfc3181444b2e4adc13677defbd718acea8e1b839a3127bfe9"
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 15277,
-      "sha256": "66e60a1c08066188595e8db070040d05535c2dd05e0d2c65acd134ddb4752197"
+      "size_bytes": 15710,
+      "sha256": "beb59b3b1913a4dedd9ca0f757be3642a7892c96eb9d9d1aec90abbb87d37207"
     },
     {
       "path": "tools/browser/lib.test.mjs",
@@ -1024,6 +1029,11 @@
       "path": "tools/deploy/prepare_static.sh",
       "size_bytes": 3268,
       "sha256": "fcd503a7a893454f8c5a2744789c4f7da2c393367a5f88b57714529b035f6bb8"
+    },
+    {
+      "path": "tools/fonts/subset_gowun_dodum.py",
+      "size_bytes": 3491,
+      "sha256": "90a555e6693d844666359de7e574077372c136a64baca680d9c6112a3e074341"
     },
     {
       "path": "tools/test_check_fact_mixing.py",

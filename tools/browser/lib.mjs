@@ -174,7 +174,7 @@ async function step(page, s, scenario, profile, refs, values) {
   }
 }
 export async function runProfile({ distDir, scenario, profile, chromePadPx, fontCaches, offlineFonts }) {
-  const result = { profile: profile.id, inner: { width: null, height: null }, dpr: null, coarse: null, size_ok: false, fonts: { cache: 0, network: 0, failed: 0 }, fonts_ok: false, blocked_hosts: [], values: {}, page_errors: [], status: 'error', error: null };
+  const result = { profile: profile.id, inner: { width: null, height: null }, dpr: null, coarse: null, size_ok: false, fonts: { cache: 0, network: 0, failed: 0, local: 0 }, fonts_ok: false, blocked_hosts: [], values: {}, page_errors: [], status: 'error', error: null };
   let browser;
   const blocked = new Set();
   let version = null;
@@ -189,9 +189,13 @@ export async function runProfile({ distDir, scenario, profile, chromePadPx, font
       const url = new URL(route.request().url());
       if (url.origin === 'http://scitrade.local') {
         const file = resolveDistPath(distDir, url.pathname);
-        if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) return route.fulfill({ status: 404, body: '파일이 없습니다' });
+        // 빌드에 넣은 글꼴(D16, public/fonts)은 빌드 폴더에서 주고 local로 센다. 없는 글꼴 파일은 실패로 센다.
+        const font = path.extname(url.pathname) === '.woff2';
+        if (!file || !fs.existsSync(file) || !fs.statSync(file).isFile()) { if (font) result.fonts.failed++; return route.fulfill({ status: 404, body: '파일이 없습니다' }); }
+        if (font) result.fonts.local++;
         return route.fulfill({ contentType: contentType(file), body: fs.readFileSync(file) });
       }
+      // Google Fonts 가로채기는 글꼴 내장 전 빌드(외부 글꼴 링크)를 비교해 잴 때만 쓰인다.
       if (url.protocol === 'https:' && ['fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.hostname)) {
         try {
           const key = fontCacheKey(url.href, ua);
@@ -231,7 +235,7 @@ export async function runProfile({ distDir, scenario, profile, chromePadPx, font
     result.status = 'ok';
   } catch (error) { result.error = error.message; }
   finally { if (browser) await browser.close().catch(() => {}); }
-  result.fonts_ok = result.fonts.failed === 0 && result.fonts.cache + result.fonts.network > 0;
+  result.fonts_ok = result.fonts.failed === 0 && result.fonts.cache + result.fonts.network + result.fonts.local > 0;
   result.blocked_hosts = [...blocked].sort();
   // 판정 객체의 직렬화 키는 고정하고 버전은 별도 비열거 속성으로 전달한다.
   Object.defineProperty(result, 'chromium', { value: version });

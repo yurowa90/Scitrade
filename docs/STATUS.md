@@ -108,7 +108,7 @@ M1 구현 범위와 엔진 결정은 `docs/DECISIONS.md`의 ‘M1 엔진 구현 
 - 지연 감액은 지연 일수와 무관한 1회 50 USD로 정했다(사용자 검토). 일수 비례가 필요하면 `late_delivery.basis`를 확장한다.
 - 출항 후 취소, 대체편 예약, 납기 협상은 화면에서 비활성화했다 (M3 사건 시스템).
 - 캐릭터 그림은 이름·속성·모티프 문장만 표시하는 자리표시자다. M2 시나리오는 레벨·6능력을 계산해 보여 주지만 표시 전용이다(처리량은 LEGACY_FIXED). 시너지는 계산하지 않는다. M1은 성장을 켜지 않는다.
-- 웹 글꼴은 Google Fonts에서 불러온다. 연결되지 않는 환경에서는 시스템 글꼴로 대체된다.
+- 웹 글꼴(Gowun Dodum·IBM Plex Sans KR)은 빌드에 넣어 같은 사이트의 `fonts/`에서 불러온다(D16, 2026-10-10, `public/fonts/`). 외부 글꼴 요청은 없다. 출처·라이선스·크기는 `docs/art/FONT_LICENSES.md`에 있다. 부산 3판(`a8ffa35`)까지의 빌드는 Google Fonts에서 불러왔고, 연결되지 않으면 시스템 글꼴로 대체됐다.
 
 그림: 마지막에 일괄 제작한다(사용자 결정). 그 전까지 자리표시자로 개발하고, 필요한 그림·모션은 `docs/art/ASSET_BACKLOG.md`에 쌓는다. 제작 시에는 `docs/art/PROMPTS.md` 절차로 만들고 `src/assets/manifest.json`에 등록해 교체한다.
 
