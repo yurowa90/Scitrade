@@ -76,3 +76,6 @@ export function crewCard(def: EmployeeDef, state: GameState, selected: boolean, 
 export function taskName(kind: Task['kind']): string {
   return { EXPORT_PREP: '수출 준비', FORWARDING_PREP: '주선 준비', SCOUT: '현장 조사', RECRUIT_QUEST: '영입 의뢰', CULTURE: '현지 활동', TRAINING: '일반 훈련' }[kind];
 }
+
+export function roleKo(role: string): string { return ROLE_KO[role] ?? role; }
+export function attributeKo(attribute: string | null): string { return (attribute ? ATTRIBUTE[attribute]?.ko : undefined) ?? '속성 미정'; }

@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 8080,
-      "sha256": "0af9b5c06083947ececedd052e6c58a4ee350b86c8bc65cfcc21dc2af8cf370a"
+      "size_bytes": 8037,
+      "sha256": "e224b0b210e2d933f545e4aa3489b07b94d26ee28df2944e17361e47ccbd4cf2"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -232,8 +232,8 @@
     },
     {
       "path": "docs/ai/design/DECISION-PACKET-2026-10.md",
-      "size_bytes": 83337,
-      "sha256": "d8590f5fa783bf2784d4294bad921b57819302248e207469103678c930888145"
+      "size_bytes": 83532,
+      "sha256": "6aa4eda5c8f924a4030fe54b4810efb75570f794b71cbcc5cc164cf230710f27"
     },
     {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
@@ -272,8 +272,8 @@
     },
     {
       "path": "docs/ai/design/layout-ux04-05/README.md",
-      "size_bytes": 39209,
-      "sha256": "8f7e71306b604622af585a154eab11eb038ac199eea19c1cf995791fa7e3b109"
+      "size_bytes": 39972,
+      "sha256": "ac4a04868e7905b68642d7daafc160b89f69794619da4080df70bf0b21cb4f14"
     },
     {
       "path": "docs/ai/design/layout-ux04-05/card-1366-A.png",
@@ -362,8 +362,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 9277,
-      "sha256": "ef7f07584d197409d0d129fb61631051e257699f13af3cc2c78b12ef47e2b93d"
+      "size_bytes": 9392,
+      "sha256": "8175edbe8b2a8a7a1d4600c9eeffe00710b560c70f8461cd5c4ead9712f9e93c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -644,6 +644,11 @@
       "path": "docs/ai/tasks/results/TASK-0022.md",
       "size_bytes": 23241,
       "sha256": "5da58f3232c3a049e0e6e3d829e18c1777cc7c4615087341134ea11eecd5f982"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0023.md",
+      "size_bytes": 33079,
+      "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -952,8 +957,8 @@
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 8099,
-      "sha256": "9212075c300f2b1ea712905a6b7c706827674c9396c25531b5d1e2fe96e33b47"
+      "size_bytes": 8306,
+      "sha256": "4bc660e1f50c6f6ee5cc7687fcc892b13470fb06e18fce9da5b6425ce6681dc7"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -964,6 +969,16 @@
       "path": "tools/browser/profiles.json",
       "size_bytes": 1077,
       "sha256": "df48d956bdf09594e625767c0f3ee64ce18e1ba7ca621d16e62d192b30e8acff"
+    },
+    {
+      "path": "tools/browser/scenarios/campaign-end.json",
+      "size_bytes": 1461,
+      "sha256": "4db93cbc1c09665c30a75ec9e6df433cc75219a68d6e559cb54061f3f5d7661e"
+    },
+    {
+      "path": "tools/browser/scenarios/crew-facet.json",
+      "size_bytes": 1204,
+      "sha256": "34ddbeff767c7ae4cb3c7aaad24a6d84cda728e92a75e2fbc945fbe431c53bef"
     },
     {
       "path": "tools/browser/scenarios/culture-result-flow3.json",
@@ -979,6 +994,16 @@
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/report-contract-link.json",
+      "size_bytes": 1196,
+      "sha256": "c3eef3def004754295ed889444a7c861435acd83b0628b47a4c05ca06c23bc7f"
+    },
+    {
+      "path": "tools/browser/scenarios/schedule-toggle.json",
+      "size_bytes": 1191,
+      "sha256": "5cbbc0ef1ce4383737f45c59674a1bb5ceda87bced5bbad107f7237045cec29d"
     },
     {
       "path": "tools/browser/scenarios/smoke.json",

@@ -51,7 +51,7 @@ const signingFeeRule = (e: EmployeeDef, c: CandidateState, config: ScenarioConfi
 export type CrewFilter = 'all' | 'free' | 'busy' | 'candidate';
 
 /** 카드와 운영표가 동일한 목록을 사용한다. 미발견 후보는 모든 필터에서 제외한다. */
-export function crewEntries(s: GameState, config: ScenarioConfig, filter: CrewFilter) {
+export function crewEntries(s: GameState, config: ScenarioConfig, filter: CrewFilter, facets: { role?: string | null; attribute?: string | null } = {}) {
   const workingIds = new Set(employedDefs(s, config).map((e) => e.id));
   return config.employees.flatMap((def) => {
     const hired = workingIds.has(def.id);
@@ -60,7 +60,8 @@ export function crewEntries(s: GameState, config: ScenarioConfig, filter: CrewFi
     const visible = filter === 'candidate' ? Boolean(candidate)
       : filter === 'all' ? hired || Boolean(candidate)
       : hired && ((filter === 'busy') === Boolean(task));
-    return visible ? [{ def, candidate, task }] : [];
+    return visible && (!facets.role || def.role === facets.role)
+      && (!facets.attribute || (def.character.attribute ?? 'none') === facets.attribute) ? [{ def, candidate, task }] : [];
   });
 }
 
@@ -151,4 +152,10 @@ export function crewEntryCard(entry: ReturnType<typeof crewEntries>[number], s: 
   const { def, candidate, task } = entry;
   return candidate ? candidateCard(def, s, candidate, selected, config)
     : crewCard(def, s, selected, config, task ? taskSchedule(task, config) : undefined);
+}
+
+export function crewFacetOptions(s: GameState, config: ScenarioConfig): { roles: string[]; attributes: string[] } {
+  const visible = crewEntries(s, config, 'all');
+  return { roles: [...new Set(visible.map(({ def }) => def.role))],
+    attributes: [...new Set(visible.map(({ def }) => def.character.attribute ?? 'none'))] };
 }

@@ -517,3 +517,30 @@ main.layout { padding-bottom: 5.5rem; }
 .file-btn:has(> input:focus-visible) { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
 .roster-pick { border: 0; background: none; padding: 0; text-align: left; font: inherit; color: inherit; }
 .card-picked { font-size: 12px; }
+
+/* 보고와 일정은 기존 칸 안에서만 늘어난다. */
+.report-ops, .settlement, .schedule-block { margin-top:12px; min-width:0; }
+.report-ops h4 { margin:14px 0 6px; }
+.due-table { width:100%; table-layout:fixed; }
+.due-table th, .due-table td { overflow-wrap:anywhere; }
+.due-list, .workload, .bottleneck, .schedule-days { padding-left:20px; }
+.due-list li, .workload li, .bottleneck li, .schedule-days li { margin:6px 0; overflow-wrap:anywhere; }
+.due-list span { display:inline-block; margin-right:8px; }
+.schedule-days ul, .bottleneck ul { padding-left:18px; }
+.crew-facets { display:flex; flex-wrap:wrap; gap:6px 12px; margin:4px 0; }
+.crew-facets label { display:flex; align-items:center; gap:6px; }
+.crew-facets select { min-width:72px; }
+.settlement { padding:12px; border:1px solid var(--line); }
+@media (any-pointer: coarse) {
+  .crew-facets select, #schedule-toggle, .report [data-action="goto-contract"], .queue [data-target="settlement-h"] { min-height:44px; }
+}
+/* 일정 표시는 글자 상자로 본문과 나눈다. 새 일정·날짜 바뀜은 예상보다 진하게 둔다. */
+.schedule-block .tag { display:inline-block; padding:0 6px; border:1px solid var(--line); border-radius:4px; font-size:12px; line-height:1.4; }
+.schedule-block .tag:not(.tag-estimate) { border-color:var(--navy-soft); color:var(--navy-soft); }
+/* 날짜 묶음에는 순번을 붙이지 않는다. 순번과 날짜 숫자가 붙어 읽히기 때문이다. */
+.schedule-days { list-style:none; padding-left:0; }
+.schedule-days > li + li { margin-top:10px; }
+/* 통화 열 머리는 금액 칸과 같이 오른쪽에 맞춘다. */
+.due-table thead th:not(:first-child) { text-align:right; }
+/* 결산 표 두 개는 위에서부터 같은 순서로 읽히게 높이를 맞추지 않는다. */
+.settlement .books { align-items:start; }
