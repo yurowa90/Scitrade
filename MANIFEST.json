@@ -1231,6 +1231,11 @@
       "sha256": "4586d9369e7d9aa3e8b67818b95c4c49ce25508d2e305675db12861263893e29"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0024.md",
+      "size_bytes": 40422,
+      "sha256": "426108e56e90548c65ef4cd9bf592ca97566f3ef9bcd7c218ced27c246c05afc"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0025.md",
       "size_bytes": 22920,
       "sha256": "0f176ac58eb6eb9c6dc0b8b6480db321599c14ae9b6fcfd55a575f27ac86b468"
@@ -1552,8 +1557,8 @@
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 9118,
-      "sha256": "ab2308fdc1ee0e3cee5d53975c849de15940563791fab02364a1a817e407badd"
+      "size_bytes": 9199,
+      "sha256": "5eadc73b5696ff2f6e0d4f1ebf44734264945c3b7d5b25bd174e5b2b6ec0dae7"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -1571,6 +1576,16 @@
       "sha256": "4db93cbc1c09665c30a75ec9e6df433cc75219a68d6e559cb54061f3f5d7661e"
     },
     {
+      "path": "tools/browser/scenarios/card-detail-low.json",
+      "size_bytes": 2436,
+      "sha256": "4da20b208facb2ad2b0ad8e9517fc619240097d27aae3a972bb48b1190dcf317"
+    },
+    {
+      "path": "tools/browser/scenarios/card-detail.json",
+      "size_bytes": 5538,
+      "sha256": "afb56b715ea41cf36e4c93a3cc597ee85385c4454e1f0641dcfb0fa6e6c27ad3"
+    },
+    {
       "path": "tools/browser/scenarios/crew-facet.json",
       "size_bytes": 1204,
       "sha256": "34ddbeff767c7ae4cb3c7aaad24a6d84cda728e92a75e2fbc945fbe431c53bef"
@@ -1586,9 +1601,19 @@
       "sha256": "be75b2d16d39dfc5b40ef447ab9d8346b56eac5762d18c8fa8def4be4be855cf"
     },
     {
+      "path": "tools/browser/scenarios/interview-hire.json",
+      "size_bytes": 4523,
+      "sha256": "7ea98c3fe3fefc1dff34053845368ab07f1671c41614610bde24e02862e7acc4"
+    },
+    {
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/queue-chip.json",
+      "size_bytes": 1992,
+      "sha256": "9842a522ba12d98e3978b83814d04f7a00864504aba1286232a4f399c97d3b78"
     },
     {
       "path": "tools/browser/scenarios/report-contract-link.json",
@@ -1604,6 +1629,11 @@
       "path": "tools/browser/scenarios/schedule-toggle.json",
       "size_bytes": 1191,
       "sha256": "5cbbc0ef1ce4383737f45c59674a1bb5ceda87bced5bbad107f7237045cec29d"
+    },
+    {
+      "path": "tools/browser/scenarios/side-anchor.json",
+      "size_bytes": 2487,
+      "sha256": "1d2724ac0cb142c0994dc13a8d49e2a1900a1e777f79eb8766dce69885784d07"
     },
     {
       "path": "tools/browser/scenarios/smoke.json",

@@ -26,7 +26,7 @@ async function start(outsideRegion = false) {
     querySelectorAll:()=>[],
     querySelector: (selector: string) => selector === '.statusbar' ? {getBoundingClientRect:()=>({height:80})} : selector === '[data-map-frame]' || (selector === '.map-frame.is-world' && html.includes('class="map-frame is-world"')) ? frame : null,
   };
-  vi.stubGlobal('window', { innerHeight: 800, scrollX: 0, scrollY: 0, scrollBy: () => undefined, scrollTo: () => undefined, addEventListener: () => undefined, requestAnimationFrame: () => 0 });
+  vi.stubGlobal('window', { innerHeight: 800, scrollX: 0, scrollY: 0, scrollBy: () => undefined, scrollTo: () => undefined, addEventListener: () => undefined, requestAnimationFrame: () => 0, matchMedia: () => ({ matches: false, addEventListener: () => undefined }) });
   vi.stubGlobal('document',{querySelector:()=>app,activeElement:null,addEventListener:()=>undefined,body:{insertAdjacentHTML:()=>undefined},getElementById:(id:string)=>id==='live-status' ? {textContent:''} : null,documentElement:{style:{setProperty:()=>undefined}}});
   await import('./main');
   const click = (dataset: Record<string,string>) => listeners.click!({target:{closest:()=>({dataset,closest:()=>null})}});

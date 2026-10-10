@@ -62,7 +62,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
     <p>원화 급여 지급 가능일: 지금 ${runway(before)}${training ? '' : ` → 훈련하면 ${runway(after)}`}</p>
     ${unpaid ? `<p class="reason">⚠ ${already ? '지금도' : '이 훈련비를 내면'} 오늘(${state.day}일) 급여 일부가 미지급으로 남습니다.</p>` : ''}
-    ${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}
+    <div data-action-slot="train-${esc(def.id)}">${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}</div>
     ${training ? trainingQueued
       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
       : ''
