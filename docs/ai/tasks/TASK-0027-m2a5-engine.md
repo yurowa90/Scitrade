@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- **실행 전 조건:** 사용자 결정 Q1·Q10(`docs/ai/design/m2a5-review/QUESTIONS.md`)이 반영되어 아래 `<Q10-…>` 자리표시가 모두 값으로 바뀌어야 한다. 하나라도 남아 있으면 허브는 실행하지 않는다.
+- 사용자 결정: `docs/DECISIONS.md` ‘M2a-5 사용자 결정 Q1·Q10·Q12 (2026-10-10)’. 이 작업에 닿는 것은 Q10(하루 50 USD, 상한 계약 금액 100%)뿐이다. Q1의 확정 기준과 Q12의 병목 표는 TASK-0028이다.
 - **나눈 작업:** 이 작업은 엔진 핵심이다. 화면 재료 읽기 함수·비교 실행기·D03 재측정은 TASK-0028(`docs/ai/tasks/TASK-0028-m2a5-sim-readers.md`)이다. 근거는 `docs/ai/design/m2a5-review/REVIEW3.md` 3절.
 - 선행 작업: 개발 브랜치 `<BASE>`(TASK-0025 병합 `c896c8a` 이후, 이 지시서와 명세를 올린 커밋).
   - `<BASE>` 자리표시가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0027-m2a5-engine.md`의 해시를 기준으로 쓰고, 결과 보고 ‘실행한 검증’ 첫 줄에 적는다(`docs/ai/tasks/README.md` ‘지시서 형식’).
@@ -132,11 +132,11 @@
 
 **`data/scenarios.json`**: `items` 끝에 `SCENARIO_M2_OPERATIONS`를 더한다(명세 3절, 부록 C).
 - `base_scenario_id: "SCENARIO_M2_MULTI_TRADE"`. 스키마가 요구하는 `id`, `stage: "M2"`, `securities_enabled: false`, `ipo_enabled: false`, `source_refs: ["DESIGN-V04"]`를 원본 레코드에 둔다.
-- 덮어쓰는 키: `title_ko`, `engine_rules`(`rules_version: "M2a-rules-2"`, `funds_check`·`forwarding_enabled` 같음, `note_ko` 부록 C), `contract_terms`(기존 M2 값 전체 복사 + `late_delivery`를 Q10 결정값으로(`price_reduction.amount` `<Q10-금액>`, `basis` `<Q10-방식>`, 방식이 `per_late_day_capped`면 `cap_basis_points` `<Q10-상한bp>`) + `status: "PRE_TUNING_2026-10-10"` + `decision_ref: "docs/DECISIONS.md 사용자 결정 일괄 채택 D03·D04, docs/ai/design/M2A5-SPEC.md"` + `notes_ko` 새로), `operations`(부록 C), `scope_note`.
+- 덮어쓰는 키: `title_ko`, `engine_rules`(`rules_version: "M2a-rules-2"`, `funds_check`·`forwarding_enabled` 같음, `note_ko` 부록 C), `contract_terms`(기존 M2 값 전체 복사 + `late_delivery`를 Q10 결정값으로(`price_reduction` `{ "currency": "USD", "amount": 50 }`, `basis` `"per_late_day_capped"`, `cap_basis_points` `10000`) + `status: "PRE_TUNING_2026-10-10"` + `decision_ref: "docs/DECISIONS.md 사용자 결정 일괄 채택 D03·D04, docs/ai/design/M2A5-SPEC.md"` + `notes_ko` 새로), `operations`(부록 C), `scope_note`.
 - `contract_terms.notes_ko`(규칙 2용, 이 문장 그대로):
   1. `"직접 무역 수출 준비는 기본 단위 2pt에 단위가 하나 늘 때마다 1pt를 더한다. 일반 운송 주선 준비는 6m³당 1pt(최소 2pt), 작업 포함 운송 주선은 견적마다 12pt다. 직원 1명은 한 번에 업무 1건만 맡는다."`
   2. `"출항 전 취소와 준비 미완료로 출항편을 놓친 경우 모두 해당 예약의 선급 운임에서 취소비 50을 뺀 금액을 환급한다. 직접 무역은 공급자 반품 없음, 운송 주선 화물은 화주에게 돌려준다."`
-  3. `<Q10-문장>` — 정액이면 `"납기를 넘긴 인도는 지연 일수와 무관하게 계약 금액을 {금액} USD 한 번 감액한다. 상품 판매대금과 운송 주선 서비스 대금에 같은 조건을 쓴다. 이 값은 사전 조정값이며 비교 실행기 재측정으로 확정한다."`, 하루 비례면 `"납기를 넘긴 인도는 늦은 하루마다 {금액} USD를 감액하되, 감액 합계는 계약 금액의 {상한}%를 넘지 않는다. 상품 판매대금과 운송 주선 서비스 대금에 같은 조건을 쓴다. 이 값은 사전 조정값이며 비교 실행기 재측정으로 확정한다."`({금액}·{상한}은 결정값으로 바꿔 적는다)
+  3. `"납기를 넘긴 인도는 늦은 하루마다 50 USD를 감액하되, 감액 합계는 계약 금액(상품 판매대금 또는 운송 주선 서비스 대금)을 넘지 않는다. 이 값은 사전 조정값이며 비교 실행기 재측정으로 확정한다."`
   4. `"결제일은 고객 견적의 payment_due_day이며 인도일보다 이를 수 없다."`
   5. `"운송 주선 화물의 수입 관세는 수입자(고객)가 부담하는 것으로 단순화한다."`
   6. `"임차료·창고 확장비·환전 차감은 원화, 선복 계약 요금은 USD다. 원화는 환전 명령으로만 마련하고 자동 환전은 없다. 가장 오래된 미지급이 14일 남은 날 마감에 경영 실패다."`
@@ -208,7 +208,7 @@
 ### 11. 지급·지급 불이행·결산
 
 - 지급 순서는 지금 규칙(명세 10.3, `engine.ts:1099-1157`). 6c 고정비를 6b와 6d 사이에 넣는다.
-- **늦은 인도 감액(5단계, `engine.ts:1000`):** `ScenarioTerms`에 `lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED'`와 `lateDeliveryCapBasisPoints: number | null`을 더한다(로더가 채움, 규칙 1 시나리오는 `FLAT_ONCE`·null). `FLAT_ONCE`면 지금 식 그대로. `PER_LATE_DAY_CAPPED`면 `min(금액 × lateDays, applyBasisPoints(contract.saleAmountMinor, cap))`(`money.ts:36-41`). `saleAmountMinor`는 직접 무역의 판매액, 주선의 서비스 대금이다. 이 계산은 새 함수 `lateDeliveryReduction(config, contract, lateDays)` 하나로 두고 `engine.ts:1000`, `reports.ts:101`, `progress.ts:49`가 함께 쓴다(지금 세 곳이 정액 값을 직접 읽는다). 화면의 같은 읽기(`src/ui/schedule.ts:67`, `src/ui/main.ts:598`)는 고치지 않고 ‘범위 밖 발견’에 적는다(규칙 1 화면 결과는 같다). 규칙 1의 결과·기록 문장은 바뀌지 않는다. 화면이 `ScenarioTerms`를 읽으므로 새 칸은 더하기만 한다.
+- **늦은 인도 감액(5단계, `engine.ts:1000`):** `ScenarioTerms`에 `lateDeliveryBasis: 'FLAT_ONCE' | 'PER_LATE_DAY_CAPPED'`와 `lateDeliveryCapBasisPoints: number | null`을 더한다(로더가 채움, 규칙 1 시나리오는 `FLAT_ONCE`·null). `FLAT_ONCE`면 지금 식 그대로. `PER_LATE_DAY_CAPPED`면 `min(금액 × lateDays, applyBasisPoints(contract.saleAmountMinor, cap))`(`money.ts:36-41`). `saleAmountMinor`는 직접 무역의 판매액, 주선의 서비스 대금이다. 이 계산은 새 함수 `lateDeliveryReduction(config, contract, lateDays)` 하나로 두고 `engine.ts:1000`, `reports.ts:101`, `progress.ts:49`가 함께 쓴다(지금 세 곳이 정액 값을 직접 읽는다). 규칙 2 `contractProgress` 문장: `progress.ts:110`·`:125`의 ‘(감액 {금액})’은 그 늦은 날 수로 계산한 금액이다. `:71`(하역 대기, 늦은 날 수 미정)은 규칙 2에서 ‘납기 {d}일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 {계약 금액}까지 감액됩니다.’로 쓴다(금액은 설정에서). 규칙 1 문장은 그대로. 화면의 같은 읽기(`src/ui/schedule.ts:67`, `src/ui/main.ts:598`)는 고치지 않고 ‘범위 밖 발견’에 적는다(규칙 1 화면 결과는 같다). 규칙 1의 결과·기록 문장은 바뀌지 않는다. 화면이 `ScenarioTerms`를 읽으므로 새 칸은 더하기만 한다.
 - **실패 기록의 USD 약정(D04 ‘지출 보류’, REVIEW3 a3):** `FailureRecord`에 `usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id; day; amountMinor }[]`를 더한다. 원인 의무 발생일부터 실패일까지 수락한 USD 계약(금액 = 수락 때 자금 검사에 쓴 필요 금액: 직접 무역은 매입 + 운임 + 관세, 주선은 운임)과 선복 계약 서명(금액 = 적용 편 수 × 편당 요금)을 날짜·명령 순서로 담는다. 없으면 빈 배열. 명세 11.2에 같은 칸을 더했다.
 - 규칙 2의 미지급 기록 문장(1133행 대신): `지급 불가: ${reasonKo} ${금액} → 미지급 의무로 기록 (14일 안에 갚지 못하면 경영 실패)`. 규칙 1은 그대로.
 - 6e: 명세 11.1~11.3. 단계 기록(`defaultEvents`), 실패 검사, `FailureRecord`(경고·위험 기록, 실패 전 14일 원화 선택 지출).
@@ -244,6 +244,8 @@
 | S16 | `paymentDefaultStatus.recovery.heldSpendingKo` | 원화 미지급 0 → null |
 | S17 | 규칙 2 계약 체결 기록 | 기록에 거래처 ID와 ‘을(를)’ 없음 |
 | S18 | 새 시나리오 `contract_terms.notes_ko` | ‘각각 2pt’·‘50 USD 한 번’ 없음(로더가 읽은 `assumptionNotes`로 확인) |
+| S19 | 규칙 2 `BOOKED_SAILING_LATE`·`NEXT_SAILING_LATE`의 ‘(감액 {금액})’ = 늦은 날 수 × 50 USD(상한) | 규칙 1 → 정액 50.00 그대로. 늦은 날 1일 → 금액이 하루치 |
+| S20 | 규칙 2 하역 대기 ‘늦은 하루마다 … 최대 … 감액됩니다.’ | 규칙 1 → 지금 문장 ‘… 50.00 USD 감액됩니다.’ 그대로 |
 
 ### 13. 하루 순서(`commitDay`, 796~838행)
 
@@ -330,7 +332,7 @@ D03 재측정은 TASK-0028이 한다. 이 작업에서는 `src/engine/sim/**`를
 
 **`src/engine/m2a5-money.test.ts`**
 - `P0-M2A5-06 임차료·고정비`, `P0-M2A5-07 환전·통화 간 이체`, `P0-M2A5-08 지급 순서`, `P0-M2A5-09 지급 불이행 단계·경영 실패`, `P0-M2A5-14 결산과 같은 시드 다시`, `P0-M2A5-15 통화 분리`
-- `M2a-5 문장 반례`: 지시 12 표 S1~S14·S16~S18(S15는 TASK-0028). 문장마다 `it` 하나.
+- `M2a-5 문장 반례`: 지시 12 표 S1~S14·S16~S20(S15는 TASK-0028). 문장마다 `it` 하나.
 - `M2a-5 늦은 인도 감액`: 설정의 방식으로 늦은 인도 1건(늦은 날 수 1과, 하루 비례면 상한에 닿는 날 수)의 감액·순 판매액 전체를 `toEqual`로. 같은 계약을 규칙 1 시나리오 값으로 계산하면 지금 정액 결과와 같다.
 - `M2a-5 통화별 항등식`: 환전·고정비가 있는 90일 실행의 마감마다 통화별 `자산 − 미지급 = 시작 + 손익 + 이체`.
 
@@ -355,7 +357,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 | `Command`에 새 명령을 넣을까 | 넣지 않는다. `OperationsCommand`·`EngineCommand`로 둔다 |
 | 기존 `tradePreview`·`tradePairs` 서명을 상태 받게 바꿀까 | 바꾸지 않는다. 새 함수 `openTradePairs`(이 작업), `quotePreview`(TASK-0028) |
 | `cashReservations`에 선복 요금 넣기 | 넣지 않는다. `commitmentReservations` + `fundsPosition.reservedCommitments` |
-| 늦은 인도 감액 | 자료값은 Q10 결정값이다. 엔진은 두 방식(정액 1회, 하루 비례·상한)을 모두 지원한다(지시 11). 자료에 없는 방식을 만들지 않는다 |
+| 늦은 인도 감액 | 자료값은 Q10 결정값(하루 50 USD, 상한 100%)이다. 엔진은 두 방식(정액 1회, 하루 비례·상한)을 모두 지원한다(지시 11). 자료에 없는 방식을 만들지 않는다 |
 | 규칙 2에서 1일 묶음 주선 준비량 | 일반 주선 부피 규칙(가구 4pt, 명세 C05). 규칙 1은 2pt 그대로 |
 | 작업 포함 견적 경험치 | 지금처럼 업무 1건당 10(명세 7절) |
 | `operations`를 `undefined`로 둘까 null로 둘까 | 상태·설정 모두 null. 비교 실행기 지표만 `undefined`(직렬화에서 빠짐) |
@@ -476,7 +478,7 @@ Codex는 실행 중에 물을 수 없다. 아래 기본값대로 하고, 다르�
 - **실행한 검증과 결과:** 명령별 통과·실패와 개수. 0절 시작 값과 끝 값(자료 문서·검사 수, 파이썬 시험 수, vitest 파일·시험 수, 첫 화면 크기·gzip).
 - **완료 조건 대조:** 조건마다 충족·미충족과 근거.
 - **허용 시험 수정 목록:** 파일·행·바꾼 내용(부록 B 표와 대조).
-- **문장 반례 표:** S1~S14·S16~S18마다 시험 이름과 반례 상태.
+- **문장 반례 표:** S1~S14·S16~S20마다 시험 이름과 반례 상태.
 - **변형 시험 표**
 - **범위 밖 발견:** 고치지 않은 문제. 최소한:
   - 화면이 새 지급 종류(`RENT`·`SPACE_FEE`)를 관세로 적는 곳(`src/ui/main.ts:693-694`, `src/ui/schedule.ts:85`).
