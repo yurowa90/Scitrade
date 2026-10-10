@@ -947,13 +947,13 @@
     },
     {
       "path": "tools/browser/README.md",
-      "size_bytes": 2728,
-      "sha256": "4136f2128831fb228e6fb884f9b35993499d19db1f1c5f29d73ba0e419143ca5"
+      "size_bytes": 3307,
+      "sha256": "7c8e782987e75e4c2d4ec08bd1f7cbaecad071eae2a41b9070ac254c20f67ef0"
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 15277,
-      "sha256": "66e60a1c08066188595e8db070040d05535c2dd05e0d2c65acd134ddb4752197"
+      "size_bytes": 15710,
+      "sha256": "beb59b3b1913a4dedd9ca0f757be3642a7892c96eb9d9d1aec90abbb87d37207"
     },
     {
       "path": "tools/browser/lib.test.mjs",
@@ -1024,6 +1024,11 @@
       "path": "tools/deploy/prepare_static.sh",
       "size_bytes": 3268,
       "sha256": "fcd503a7a893454f8c5a2744789c4f7da2c393367a5f88b57714529b035f6bb8"
+    },
+    {
+      "path": "tools/fonts/subset_gowun_dodum.py",
+      "size_bytes": 3491,
+      "sha256": "90a555e6693d844666359de7e574077372c136a64baca680d9c6112a3e074341"
     },
     {
       "path": "tools/test_check_fact_mixing.py",
