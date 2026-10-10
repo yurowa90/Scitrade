@@ -15,6 +15,8 @@ task="${1:?지시서 경로를 주세요 (예: docs/ai/tasks/TASK-0001-...md)}"
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
 [ -f "$task" ] || { echo "지시서가 없습니다: $task" >&2; exit 2; }
+# 여러 세션으로 일할 때 Codex 로그인과 실행은 허브 세션만 한다(docs/ai/SESSION_TREE.md). 허브는 SCITRADE_CODEX_HUB=1을 준다.
+[ "${SCITRADE_CODEX_HUB:-}" = 1 ] || { echo 'Codex 실행은 허브 세션만 합니다(docs/ai/SESSION_TREE.md). 허브라면 SCITRADE_CODEX_HUB=1을 주세요.' >&2; exit 4; }
 
 field() { sed -n "s/^- $1: *\`\{0,1\}\([^\`]*\)\`\{0,1\}.*/\1/p" "$task" | head -1; }
 id="$(basename "$task" .md | cut -d- -f1-2)"

@@ -21,6 +21,7 @@
 | 대항해시대 근거 추적 | [DK 적용표](../RESEARCH_APPLICATION.md) ‘대항해시대 IV 적용표’, ../../references/REFERENCE_REVIEW.md | `references/dk4_reference.json`(매뉴얼 관찰 DK4-O), `references/playthrough_research_2026-10-05/Scitrade_playthrough_research.json`(영상 관찰 DK4-V··-O·교차 결론 DK4-F), 같은 폴더 `dk4.json`(영상 목록·개발 제안) |
 | 그림·지도(픽셀아트) | [픽셀 규격](../art/PIXEL_SPEC.md), [제작 절차](../art/PROMPTS.md), [제작 목록](../art/ASSET_BACKLOG.md), ../ART_DIRECTION.md 맨 위 절 | `src/assets/palette.json`, `src/assets/manifest.json`, `scripts/build_map.py`(+`test_build_map.py`), `tools/art/*`, `src/ui/pixel.ts`·`map.ts` |
 | 웹 글꼴(D16) | [글꼴 출처·라이선스](../art/FONT_LICENSES.md) | `public/fonts/`(fonts.css·WOFF2·OFL 사본), `index.html`, `tools/fonts/subset_gowun_dodum.py`(Gowun Dodum 조각 재생성·확인), `tools/browser/lib.mjs`(글꼴 판정 `fonts.local`) |
+| 여러 세션 운영(허브·하위 세션) | [세션 트리 운영](SESSION_TREE.md), WORKFLOW.md ‘역할 분담’ | 세션별 브랜치 `claude/*`, Codex 결과 브랜치 `codex/TASK-xxxx`, 개발 브랜치 병합은 허브만 |
 | Codex 작업 지시·검수 | [작업 지시서 목록](tasks/README.md), [공통 머리말](tasks/CODEX_PREAMBLE.md), WORKFLOW.md ‘역할 분담’ | `tools/ai/codex_task.sh`(실행), `tools/ai/review_checks.sh`(검수 자동 검사), `docs/ai/tasks/results/`(결과 보고) |
 
 표의 데이터 이름은 저장소 루트 `data/<이름>.json`, 레퍼런스 이름은 `references/<이름>.json`이다. tests 경로는 저장소 루트 기준이다.

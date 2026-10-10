@@ -12,13 +12,13 @@
     },
     {
       "path": "AGENTS.md",
-      "size_bytes": 1507,
-      "sha256": "d3b08a0786eaf5d70d1a4aefdd618362d3ef1a010f4c45434f97aa63ee406473"
+      "size_bytes": 1761,
+      "sha256": "5208d7e13d4e76e4cc0a5eef9383165430d227be7e5c9186a20907b470a6c76b"
     },
     {
       "path": "CLAUDE.md",
-      "size_bytes": 1556,
-      "sha256": "535ac821b5adc01cb40e7a4c99a3dd5977dc8397f79ea1a709c4f08bb6ed3b19"
+      "size_bytes": 1943,
+      "sha256": "5ca52f48bf5bfb8f53ea9b69e5dcbebac0e945f39aa925394bfb33eb61387ee7"
     },
     {
       "path": "PACKAGE_STATUS.json",
@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 146110,
-      "sha256": "67eb0341f4486578f6d9e24cf4151dec019dd1d3d9619f624e7320e1cd1b083e"
+      "size_bytes": 148351,
+      "sha256": "c2102ef259d496c63a6c28815b2823b5bad04dd40a4a919c0ab369dea0e05b4d"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -217,13 +217,18 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 5509,
-      "sha256": "3da619cd4eb0e5e203564e2fafbd710e146da2b90cca1ccf3ac993e8c3660a1f"
+      "size_bytes": 5745,
+      "sha256": "0c6b7bcec1a16ddf3ff792cd20d09968f646cb7a3389d1a8307c82757ebed860"
+    },
+    {
+      "path": "docs/ai/SESSION_TREE.md",
+      "size_bytes": 18335,
+      "sha256": "bf4be0f685288ec125d13fca17d913f5d8aa77f94763d7c86d87c64949dd92b5"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
-      "size_bytes": 14832,
-      "sha256": "bc587af226b0363dde10a99419dc364041014aa1af88bd28250d4d6306081d7f"
+      "size_bytes": 15160,
+      "sha256": "ac494e1c2bdea2791f22a083c0e89151b66f8cee7b53d3376099a9ff85fba3d6"
     },
     {
       "path": "docs/ai/design/BUSAN-approved-texts.md",
@@ -362,8 +367,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 10459,
-      "sha256": "02023b323afccd230681d2305272adb09b6dcac85204f1fa6528bd6a208f1316"
+      "size_bytes": 10718,
+      "sha256": "eedaab669c8c7bb106d5426f50ff108018233fbb59492efad3d4a8160fe0e42c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -932,8 +937,8 @@
     },
     {
       "path": "tools/ai/codex_task.sh",
-      "size_bytes": 3211,
-      "sha256": "d0dfd50ce2ceaf3e143624cb21b19a64d8be12d3c751b857eca3c2ac012608e2"
+      "size_bytes": 3543,
+      "sha256": "827d69fea462e99262ac7280216655e5d1b9d7b0b6572f993fad038bdfa65f7c"
     },
     {
       "path": "tools/ai/review_checks.sh",
