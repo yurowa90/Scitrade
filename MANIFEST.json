@@ -1101,6 +1101,11 @@
       "sha256": "965fbcbb112a868e92e0beb138192d99720a2a051c6e24bee69c3b88e162ed49"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS2.md",
+      "size_bytes": 3068,
+      "sha256": "73775d42c93b4ec974353ed8fbb13f4e45955cf7e46855a90fc049fe1c47c7fd"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
       "size_bytes": 2094,
       "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
@@ -1424,6 +1429,11 @@
       "path": "docs/ai/tasks/TASK-0029-m2a5-d03.md",
       "size_bytes": 17946,
       "sha256": "3d1c567dd432bbc2a2fd29fc81ea8730fa77eda00c7d36e32f420bd4c0d75fcc"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0030-m2a5-blocked-remeasure.md",
+      "size_bytes": 7308,
+      "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
