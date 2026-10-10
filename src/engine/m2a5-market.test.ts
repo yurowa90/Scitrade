@@ -3,9 +3,9 @@ import { createGame, commitDay, openDay, planState } from './engine';
 import { batchZero, generateBatch, marketTable, offerDef, openTradePairs, prepWorkUnitsFor } from './market';
 import { createRng, drawUniform } from './rng';
 import { deserializeSave, serializeSave } from './save';
-import { acceptAllFeasible, runDays } from './testkit';
+import { runDays } from './testkit';
 import { contractReport } from './reports';
-import { caseOf, config, atDay, planned, scriptOf, applied } from './m2a5-testkit';
+import { caseOf, config, atDay, planned, scriptOf, applied, acceptGeneratedFeasible } from './m2a5-testkit';
 import type { OfferDef } from './types';
 
 const c1 = caseOf('P0-M2A5-01'), n1 = c1.expected_numeric;
@@ -18,7 +18,8 @@ function allBatches(seed = config.seed, save = false) {
   }
   return runDays(s, config, c1.test_fixture.last_publish_day, keepAlive).state;
 }
-const complete = allBatches();
+let cachedComplete: ReturnType<typeof allBatches> | undefined;
+const complete = () => cachedComplete ??= allBatches();
 
 describe('P0-M2A5-01 결정적 견적 공개', () => {
   it('22개 추첨과 묶음 전체 정의가 인수 수치와 일치한다', () => {
@@ -33,7 +34,7 @@ describe('P0-M2A5-01 결정적 견적 공개', () => {
     const before = atDay(c1.actions[0]!.day);
     expect(before.operations!.offers).toEqual([]);
     expect(openTradePairs(before, config)).toEqual([]);
-    expect(marketTable(before, config)).toEqual(marketTable(createGame(config), config).map((r) => ({ ...r, ageDays: before.day - r.observedDay })));
+    expect(marketTable(before, config)).toEqual(n1.table_before_publish);
     const after = commitDay(before, config, []).state;
     expect(after.operations!.offers).toEqual(n1.generated.offers);
     expect(after.rng.cursors).toEqual({});
@@ -43,17 +44,17 @@ describe('P0-M2A5-01 결정적 견적 공개', () => {
     expect(openDay(after, config).state.operations).toEqual(after.operations);
   });
   it('두 실행·저장 재개·처음부터 재계산이 같고 다른 시드는 다르다', () => {
-    expect(allBatches().operations).toEqual(complete.operations);
-    expect(allBatches(config.seed, true).operations).toEqual(complete.operations);
+    expect(allBatches().operations).toEqual(complete().operations);
+    expect(allBatches(config.seed, true).operations).toEqual(complete().operations);
     let previous = batchZero(config);
-    for (const batch of complete.operations!.batches.slice(1)) {
+    for (const batch of complete().operations!.batches.slice(1)) {
       const generated = generateBatch(config.seed, batch.k, previous.index, config);
-      expect(generated).toEqual({ batch, offers: complete.operations!.offers.filter((o) => o.batchK === batch.k) });
+      expect(generated).toEqual({ batch, offers: complete().operations!.offers.filter((o) => o.batchK === batch.k) });
       previous = batch;
     }
-    expect(allBatches(c1.test_fixture.other_seed).operations!.batches).not.toEqual(complete.operations!.batches);
-    expect(complete.operations!.batches.map((b) => b.publishDay)).toEqual(n1.publish_days);
-    expect(complete.operations!.batches.at(-1)!.offerIds).toEqual(n1.last_offer_ids);
+    expect(allBatches(c1.test_fixture.other_seed).operations!.batches).not.toEqual(complete().operations!.batches);
+    expect(complete().operations!.batches.map((b) => b.publishDay)).toEqual(n1.publish_days);
+    expect(complete().operations!.batches.at(-1)!.offerIds).toEqual(n1.last_offer_ids);
   });
 });
 
@@ -74,17 +75,12 @@ describe('P0-M2A5-02 시세표·체결 가격 고정', () => {
     const later = runDays(p.state, config, c.test_fixture.collect_day).state;
     expect(contractReport(later, later.contracts[0]!)).toEqual({ contract: { ...contract, status: 'COMPLETED', invoiceId: 'INV-CT001', deliveredDay: n.arrival, completedDay: n.receipt },
       netRevenue: n.sale, directCost: n.purchase + n.freight + n.duty, cancellationExpense: 0, contribution: n.contribution });
-    expect(later.operations!.batches[2]!.index).toEqual(config.operations!.market.index.goods.map((goodId, i) => ({ goodId, bp: n.next_index[i], stepPct: i === 0 ? 0 : 3 })));
+    expect(later.operations!.batches[2]!.index).toEqual(n.next_index_rows);
   });
   it('시세표 여섯 행 전체와 관측 나이·다음 공개일을 읽는다', () => {
     for (const day of c.test_fixture.observation_days as number[]) {
       const s = atDay(day, config, keepAlive), before = structuredClone(s);
-      const batch = day < config.operations!.market.publish.firstDay + 2 * config.operations!.market.publish.intervalDays ? n1.generated.batch : s.operations!.batches.at(-1)!;
-      const expected = batch.rows.map((r: any) => ({ cityId: r.cityId, goodId: r.goodId, side: r.side, basePriceMinor: r.basePriceMinor,
-        currency: 'USD', indexPoints: Math.floor((batch.index.find((i: any) => i.goodId === r.goodId).bp + 50) / 100), indexBp: batch.index.find((i: any) => i.goodId === r.goodId).bp,
-        observedDay: batch.publishDay, ageDays: day - batch.publishDay,
-        nextObservationDay: day > config.operations!.market.publish.lastDay ? null : batch.publishDay + config.operations!.market.publish.intervalDays,
-        hasQuoteInBatch: batch.offerIds.some((id: string) => { const o = offerDef(s, config, id)!; return o.kind === (r.side === 'BUY' ? 'supplier' : 'customer') && o.cityId === r.cityId && o.goodId === r.goodId; }) }));
+      const expected = n.tables.find((t: any) => t.day === day).rows;
       expect(marketTable(s, config)).toEqual(expected); expect(s).toEqual(before);
     }
   });
@@ -111,17 +107,18 @@ describe('P0-M2A5-16 가격 수용자', () => {
     let active = createGame(cfg);
     while (active.day <= c.test_fixture.last_publish_day) {
       const opened = openDay(active, cfg).state;
-      active = commitDay(opened, cfg, acceptAllFeasible(opened, cfg)).state;
+      active = commitDay(opened, cfg, acceptGeneratedFeasible(opened, cfg)).state;
     }
-    expect({ batches: active.operations!.batches, offers: active.operations!.offers }).toEqual({ batches: complete.operations!.batches, offers: complete.operations!.offers });
+    expect(active.contracts.some((c) => active.operations!.offers.some((o) => [c.buyOfferId, c.serviceOfferId].includes(o.id)))).toBe(true);
+    expect({ batches: active.operations!.batches, offers: active.operations!.offers }).toEqual({ batches: complete().operations!.batches, offers: complete().operations!.offers });
   });
 });
 
 describe('M2a-5 시장 생성 성질', () => {
   it('모든 묶음은 순수하고 추첨 수·작업 포함 건수·ID 유일성을 지킨다', () => {
     const before = structuredClone(config);
-    for (const b of complete.operations!.batches.slice(1)) {
-      const input = complete.operations!.batches[b.k - 1]!.index, copied = structuredClone(input);
+    for (const b of complete().operations!.batches.slice(1)) {
+      const input = complete().operations!.batches[b.k - 1]!.index, copied = structuredClone(input);
       const output = generateBatch(config.seed, b.k, input, config);
       expect(output).toEqual(generateBatch(config.seed, b.k, input, config));
       expect(input).toEqual(copied);
@@ -129,7 +126,7 @@ describe('M2a-5 시장 생성 성질', () => {
         .toEqual([n1.draw_count, b.publishDay === config.operations!.market.publish.lastDay ? 0 : n1.handling_count]);
     }
     expect(config).toEqual(before);
-    const ids = complete.operations!.offers.map((o) => o.id);
+    const ids = complete().operations!.offers.map((o) => o.id);
     expect(ids).toEqual([...new Set(ids)]);
   });
 });

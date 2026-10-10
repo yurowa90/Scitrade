@@ -3,6 +3,10 @@ import acceptance from '../../tests/acceptance_cases.json';
 import { loadScenario, OPERATIONS_SCENARIO_IDS } from '../content/scenario';
 import { createGame, openDay, planState } from './engine';
 import { runDays, type DayScript } from './testkit';
+import { openTradePairs, offerDef } from './market';
+import { listSailings, routeBetween } from './catalog';
+import { isAvailableFromToday } from './employees';
+import { runningTaskOf } from './reservations';
 import type { BookSummary } from './ledger';
 import type { Currency } from './money';
 import type { EngineCommand, GameState, ScenarioConfig } from './types';
@@ -29,4 +33,31 @@ export function book(currency: Currency, changes: Partial<BookSummary> = {}, cfg
     cancellationExpense: 0, wageExpense: 0, recruitmentExpense: 0, trainingExpense: 0, cultureExpense: 0,
     rentExpense: 0, facilitySetupExpense: 0, spaceContractExpense: 0, fxSpreadExpense: 0, currencyTransferNet: 0,
     profit: 0, openingEquity: opening, ...changes };
+}
+
+/** 생성 견적까지 포함하여 오늘 확정할 수 있는 거래를 순서대로 시도한다. */
+export function acceptGeneratedFeasible(state: GameState, cfg: ScenarioConfig): EngineCommand[] {
+  const candidates = [
+    ...openTradePairs(state, cfg).map((pair) => ({
+      from: offerDef(state, cfg, pair.buyOfferId)!.cityId, to: offerDef(state, cfg, pair.sellOfferId)!.cityId,
+      command: { type: 'ACCEPT_TRADE' as const, ...pair },
+    })),
+    ...[...cfg.offers, ...state.operations!.offers].filter((o) => o.kind === 'forwarding'
+      && o.publishDay <= state.day && o.validUntilDay >= state.day && state.offers.some((s) => s.id === o.id && s.status === 'OPEN'))
+      .map((o) => ({ from: o.cityId, to: o.destinationCityId, command: { type: 'ACCEPT_FORWARDING' as const, offerId: o.id } })),
+  ];
+  const selected: EngineCommand[] = [];
+  let planned = state;
+  for (const candidate of candidates) {
+    const employee = cfg.employees.find((e) => isAvailableFromToday(planned, e.id)
+      && planned.employees.find((p) => p.id === e.id)?.locationCityId === candidate.from && !runningTaskOf(planned, e.id));
+    const route = candidate.to && routeBetween(cfg, candidate.from, candidate.to);
+    const sailing = route && listSailings(cfg, route.id, state.day + 1)[0];
+    if (!employee || !sailing) continue;
+    const command: EngineCommand = { ...candidate.command, id: `MARKET-D${state.day}-${selected.length}`,
+      plan: { employeeId: employee.id, sailingId: sailing.id } };
+    const result = planState(planned, cfg, [command]);
+    if (result.results[0]?.status === 'APPLIED') { selected.push(command); planned = result.state; }
+  }
+  return selected;
 }

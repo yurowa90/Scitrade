@@ -1,4 +1,3 @@
-import { SAVE_FORMAT_VERSION } from './save';
 import { describe, expect, it } from 'vitest';
 import { loadScenario, M1_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
 import rules from '../../data/character_rules.json';
@@ -10,7 +9,7 @@ const { culture: _culture, ...v4State } = currentFixture.state;
 const fixture = { ...currentFixture, formatVersion: 4, state: v4State };
 import { createGame } from './engine';
 import { awardTaskCompletion } from './growth';
-import { deserializeSave, SaveError, serializeSave } from './save';
+import { deserializeSave, SaveError, serializeSave, SAVE_FORMAT_VERSION } from './save';
 import { checkSaveShape } from './save-shape';
 import { runDays } from './testkit';
 import type { CultureState, ScenarioConfig } from './types';

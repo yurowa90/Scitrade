@@ -1022,8 +1022,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0027.md",
-      "size_bytes": 22128,
-      "sha256": "72367ac00646ccd80e64c21cd9a3b31e61dd0d15438384060eacf3581ff7b3fc"
+      "size_bytes": 47608,
+      "sha256": "2e1cb5904603426b1a276ddee62260463c6baa174a089385b4748ab1d36bebbd"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -1287,8 +1287,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 100065,
-      "sha256": "3d4b5f68a799495c25406b51c6d7831f54272aba3835acbd7ad4f53b3b2dc2cd"
+      "size_bytes": 145724,
+      "sha256": "9ca60bb3c35be05cc725a00b23999e14541835dbaa7a8b1a438d8a6629cd87ea"
     },
     {
       "path": "tests/character_acceptance_cases.json",

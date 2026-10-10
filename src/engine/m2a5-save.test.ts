@@ -5,7 +5,8 @@ import { commitDay, createGame, openDay, planState } from './engine';
 import { checkInvariants } from './invariants';
 import { summarize } from './ledger';
 import { campaignSummary, upcomingPayments } from './reports';
-import { fundsPosition } from './reservations';
+import { findSailing } from './catalog';
+import { fundsPosition, sailingLoad } from './reservations';
 import { deserializeSave, migrateV5toV6, SAVE_FORMAT_VERSION, serializeSave } from './save';
 import { checkSaveShape } from './save-shape';
 import { runDays } from './testkit';
@@ -22,13 +23,9 @@ describe('P0-M2A5-12 기존 기대값 보존', () => {
     expect(first.results[c12.actions[0]!.day]).toEqual(applied(c12.actions[0]!.commands));
     expect(fundsPosition(first.state, config, 'USD')).toEqual(n.day1_funds);
     const seventh = runDays(first.state, config, config.operations!.market.publish.intervalDays, script).state;
-    expect(summarize(seventh.ledger, 'USD')).toEqual(book('USD', { cash: n.day7_cash, accountsReceivable: n.day7_receivable,
-      prepaidFreight: config.routes[0]!.bookingFeeMinor, totalAssets: n.day7_cash + n.day7_receivable + config.routes[0]!.bookingFeeMinor,
-      revenue: config.offers.find((o) => o.kind === 'customer' && o.goodId === first.state.contracts[0]!.goodId)!.unitPriceMinor * first.state.contracts[0]!.quantity,
-      costOfGoodsSold: 228000, forwardingRevenue: 38000, forwardingCost: 20000, profit: 40000 }));
+    expect(summarize(seventh.ledger, 'USD')).toEqual(book('USD', n.day7_book));
     const end = runDays(seventh, config, c12.test_fixture.last_check_day, script).state;
-    expect(summarize(end.ledger, 'USD')).toEqual(book('USD', { cash: n.day17_usd, totalAssets: n.day17_usd, revenue: 250000, costOfGoodsSold: 228000,
-      forwardingRevenue: 68000, forwardingCost: 40000, profit: 50000 }));
+    expect(summarize(end.ledger, 'USD')).toEqual(book('USD', n.day17_book));
     expect(summarize(end.ledger, 'KRW')).toEqual(book('KRW', { cash: n.day17_krw, totalAssets: n.day17_krw,
       rentExpense: config.operations!.fixedCosts.rent.amountMinor, wageExpense: c12.test_fixture.last_check_day * caseOf('P0-M2A5-06').expected_numeric.wage_daily,
       profit: n.day17_krw - config.startingCash.KRW! }));
@@ -39,9 +36,21 @@ describe('P0-M2A5-12 기존 기대값 보존', () => {
     command.buyOfferId = c12.test_fixture.apparel_buy; command.sellOfferId = c12.test_fixture.apparel_sell;
     command.plan!.sailingId = c12.test_fixture.apparel_sailing;
     const end = runDays(createGame(config), config, c12.test_fixture.last_check_day, script).state;
-    expect(summarize(end.ledger, 'USD')).toEqual(book('USD', { cash: c12.expected_numeric.apparel_usd, totalAssets: c12.expected_numeric.apparel_usd,
-      revenue: 140000, costOfGoodsSold: 125000, forwardingRevenue: 68000, forwardingCost: 40000, profit: 43000 }));
+    expect(summarize(end.ledger, 'USD')).toEqual(book('USD', c12.expected_numeric.apparel_book));
   });
+  it('두 거절 경로의 전체 문장·자금·선복 값과 철회를 보존한다', () => {
+    for (const f of c12.test_fixture.rejections) for (const signed of [false, true]) {
+      const initial = signed ? planState(fresh(), config, [c12.test_fixture.rejection_space_command]).state : fresh();
+      const before = planState(initial, config, f.commands.slice(0, -1));
+      expect(before.results).toEqual(applied(f.commands.slice(0, -1)));
+      const rejected = planState(before.state, config, f.commands.slice(-1));
+      expect(rejected.results).toEqual([{ commandId: f.commands.at(-1).id, status: 'REJECTED', reasonKo: f.reason }]);
+      expect(fundsPosition(rejected.state, config, 'USD')).toEqual(f.funds);
+      if (f.sailing_id) expect(sailingLoad(rejected.state, config, findSailing(config, f.sailing_id)!)).toEqual(f.load);
+      expect({ ...rejected.state, processedCommands: before.state.processedCommands }).toEqual(before.state);
+    }
+  });
+
 });
 
 describe('P0-M2A5-13 저장 판본 6과 재현', () => {
@@ -79,6 +88,43 @@ describe('P0-M2A5-13 저장 판본 6과 재현', () => {
     }
     expect(() => checkSaveShape(original)).not.toThrow();
   });
+  it('운영 상태의 모든 하위 필드 누락과 잘못된 자료형을 거절한다', () => {
+    const c9 = caseOf('P0-M2A5-09');
+    const original = runDays(createGame(config), config, config.campaignDays).state;
+    const ops = original.operations!;
+    ops.expansions = planned(caseOf('P0-M2A5-10')).state.operations!.expansions;
+    ops.exchanges = planned(caseOf('P0-M2A5-07')).state.operations!.exchanges;
+    ops.spaceContracts = planState(fresh(), config, c9.test_fixture.same_day_commands.slice(0, 1)).state.operations!.spaceContracts;
+    ops.handlingLog = commitDay(planned(caseOf('P0-M2A5-04')).state, config, []).state.operations!.handlingLog;
+    ops.failure!.optionalKrwSpendBeforeFirstUnpaid = c9.expected_numeric.optional_spending;
+    ops.failure!.usdCommitmentsSinceIncurred = c9.expected_numeric.same_day_commitments;
+    expect(() => checkSaveShape(original)).not.toThrow();
+    const paths: (string | number)[][] = [];
+    const shapes = new Set<string>();
+    function collect(value: unknown, path: (string | number)[]) {
+      if (Array.isArray(value)) { value.forEach((v, i) => collect(v, [...path, i])); return; }
+      if (!value || typeof value !== 'object') return;
+      for (const [key, child] of Object.entries(value)) {
+        if (key === 'offers') continue; // 견적 전체 필드는 바로 앞 시험이 다룬다.
+        const next = [...path, key], shape = next.map((k) => typeof k === 'number' ? '[]' : k).join('.');
+        // 같은 배열 원소 모양은 한 번 검사하고, null인 첫 원소 뒤의 하위 모양도 찾아간다.
+        if (!shapes.has(shape)) { shapes.add(shape); paths.push(next); }
+        collect(child, next);
+      }
+    }
+    collect(ops, ['operations']);
+    const serialized = serializeSave(original);
+    for (const path of paths) for (const damage of ['missing', 'type']) {
+      const damaged = JSON.parse(serialized);
+      let parent = damaged.state;
+      for (const key of path.slice(0, -1)) parent = parent[key];
+      const key = path.at(-1)!;
+      if (damage === 'missing') delete parent[key]; else parent[key] = false;
+      const label = path.map((k, i) => typeof k === 'number' ? `[${k}]` : `${i ? '.' : ''}${k}`).join('');
+      expect(() => deserializeSave(JSON.stringify(damaged), { dataVersion: config.dataVersion })).toThrow(label);
+    }
+  });
+
 });
 
 describe('M2a-5 불변 조건', () => {
@@ -159,7 +205,7 @@ describe('M2a-5 규칙 1 불변', () => {
     expect(Object.keys(campaignSummary(s, cfg))).toEqual(['ended', 'campaignDays', 'lastClosedDay', 'byCurrency', 'onTime', 'contracts', 'openInvoices', 'unpaidObligations']);
     expect(upcomingPayments(s, cfg, s.day)).toEqual([{ kind: 'WAGE', currency: cfg.payrollCurrency,
       amountMinor: cfg.employees.filter((e) => !cfg.recruitment?.candidateEmployeeIds.includes(e.id)).reduce((sum, e) => sum + e.salaryPerDayMinor, 0),
-      day: s.day, trigger: 'AUTO', contractId: null, employeeIds: s.employees.filter((e) => e.employmentStatus === 'employed').map((e) => e.id), sourceId: 'WAGE-D001-KRW', labelKo: '2명 급여' }]);
+      day: s.day, trigger: 'AUTO', contractId: null, employeeIds: s.employees.filter((e) => e.employmentStatus === 'employed').map((e) => e.id), sourceId: 'WAGE-D001-KRW', labelKo: `${s.employees.filter((e) => e.employmentStatus === 'employed').length}명 급여` }]);
     const poor = { ...cfg, startingCash: { ...cfg.startingCash, KRW: 0 } };
     const end = runDays(createGame(poor), poor, s.day).state;
     expect(end.log.filter((l) => l.textKo.startsWith('지급 불가:')).map((l) => l.textKo)).toEqual(cfg.employees.filter((e) => !cfg.recruitment?.candidateEmployeeIds.includes(e.id))
