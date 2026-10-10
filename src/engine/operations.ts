@@ -51,21 +51,27 @@ export function allocateHandling(s: GameState, config: ScenarioConfig, day = s.d
   return { capacityPt, allocations };
 }
 
-export interface PrepProjection { taskId: string; contractId: string; readyDay: number | null; todayPt: number; todayWantPt: number; waitDays: number }
+export interface PrepProjection { taskId: string; contractId: string; employeeId: string | null; readyDay: number | null; todayPt: number; todayWantPt: number; waitDays: number }
+/** 차단 기간에는 본사 준비를 맡지도 진행하지도 않는다. 배정 시에는 직원 처리량만으로 차단 전 완료를 판단한다. */
 export function projectPrepCompletion(state: GameState, config: ScenarioConfig,
   options: { assignQueued?: boolean; blocked?: { employeeId: string; fromDay: number; toDay: number }[] } = {}): PrepProjection[] {
   const s = structuredClone(state);
   const projections = s.tasks.filter((t) => isHomePrep(t, config) && (t.status === 'RUNNING' || (options.assignQueued && t.status === 'QUEUED')))
-    .map((t): PrepProjection => ({ taskId: t.id, contractId: t.contractId!, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 }));
+    .map((t): PrepProjection => ({ taskId: t.id, contractId: t.contractId!, employeeId: t.assignedEmployeeId, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 }));
   for (let day = s.day; day <= config.campaignDays && projections.some((p) => p.readyDay === null); day++) {
     s.day = day;
     if (options.assignQueued) for (const t of handlingOrder(s, s.tasks.filter((t) => isHomePrep(t, config) && t.status === 'QUEUED'))) {
       const emp = config.employees.find((e) => isAvailableFromToday(s, e.id)
         && s.employees.find((x) => x.id === e.id)?.locationCityId === t.cityId
         && !s.tasks.some((task) => task.status === 'RUNNING' && task.assignedEmployeeId === e.id)
-        && !options.blocked?.some((b) => b.employeeId === e.id && b.fromDay <= day && day <= b.toDay));
-      if (emp) { t.assignedEmployeeId = emp.id; t.status = 'RUNNING'; }
+        && !options.blocked?.some((b) => b.employeeId === e.id && day <= b.toDay
+          && (day >= b.fromDay || Math.ceil((t.requiredWorkUnits - t.progressWorkUnits) / e.workUnitsPerDay) > b.fromDay - day)));
+      if (emp) { t.assignedEmployeeId = emp.id; t.status = 'RUNNING'; projections.find((p) => p.taskId === t.id)!.employeeId = emp.id; }
     }
+    // 차단 중인 준비 업무는 배분에서도 빼서 다른 직원의 처리 용량을 먹지 않는다.
+    const paused = s.tasks.filter((t) => t.status === 'RUNNING' && isHomePrep(t, config)
+      && options.blocked?.some((b) => b.employeeId === t.assignedEmployeeId && b.fromDay <= day && day <= b.toDay));
+    for (const t of paused) t.status = 'QUEUED';
     const allocation = allocateHandling(s, config, day);
     for (const t of s.tasks.filter((t) => t.status === 'RUNNING')) {
       if (!t.assignedEmployeeId || !isAvailableFromToday(s, t.assignedEmployeeId)) continue;
@@ -79,6 +85,7 @@ export function projectPrepCompletion(state: GameState, config: ScenarioConfig,
       t.progressWorkUnits = Math.min(t.requiredWorkUnits, t.progressWorkUnits + amount);
       if (t.progressWorkUnits === t.requiredWorkUnits) { t.status = 'DONE'; if (p) p.readyDay = day; }
     }
+    for (const t of paused) t.status = 'RUNNING';
     // 실제 출항에 실패하면 다음 날부터는 예약 없는 업무 순서로 계산한다.
     for (const b of s.bookings.filter((b) => b.status === 'BOOKED' && b.departureDay === day)) b.status = 'CANCELLED';
   }

@@ -1606,6 +1606,26 @@
       "sha256": "f8365122026eeec5d85056b91676eb5ace1c6ecaa186fb15369c62d5d210e447"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0030-d03-cap30.md",
+      "size_bytes": 9604,
+      "sha256": "1c3c83e09b6d3ed1944a22c9e1509e2cf19ee9af3ead9e8765b164a3b8558851"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0030-d03-flat200.md",
+      "size_bytes": 9760,
+      "sha256": "80b5c474c33e1a03430c27dd53f03a105f8f9b064d097f72a551a37a5065680e"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0030-d03.md",
+      "size_bytes": 18035,
+      "sha256": "42620b7de6ef58608097a251ce3d75f8d10407506f71702dcc09509bdae86dec"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0030.md",
+      "size_bytes": 32888,
+      "sha256": "8f508b1344dda4ec948168477b9d9a01902cce3f57fd8fb0ee2c14b74da0dfdc"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -1872,8 +1892,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 197568,
-      "sha256": "0ae9115be05682cdec9fa1a35c9b5fde24690e4fcb6025d4bc9937e7459d56df"
+      "size_bytes": 197883,
+      "sha256": "8ed67026886c02e52e8d821ef4f0e8169cb14e5e428c03933d360470dadec52b"
     },
     {
       "path": "tests/character_acceptance_cases.json",

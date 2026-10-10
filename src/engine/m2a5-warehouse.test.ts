@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, openDay, planState, commitDay } from './engine';
-import { allocateHandling, coveredSailings, handlingCapacityPt, projectPrepCompletion, storageCapacityLiters, storageUsedLiters } from './operations';
+import { allocateHandling, handlingOrder, coveredSailings, handlingCapacityPt, projectPrepCompletion, storageCapacityLiters, storageUsedLiters } from './operations';
 import { fundsPosition, sailingLoad } from './reservations';
-import { findSailing } from './catalog';
+import { findSailing, listSailings, routeBetween } from './catalog';
 import { summarize } from './ledger';
 import { payrollRunwayDay } from './previews';
 import { runDays } from './testkit';
 import { caseOf, config, atDay, planned, scriptOf, applied, book } from './m2a5-testkit';
-import type { GameState } from './types';
+import { createRng } from './rng';
+import { policyById } from './sim/policies';
+import { isAvailableFromToday } from './employees';
+import type { EngineCommand, GameState } from './types';
 
 const c3 = caseOf('P0-M2A5-03'), c4 = caseOf('P0-M2A5-04'), c10 = caseOf('P0-M2A5-10'), c11 = caseOf('P0-M2A5-11');
 function spaceFixture() {
@@ -147,6 +150,71 @@ describe('M2a-5 준비 예측과 실제 진행', () => {
     }
     expect(projectPrepCompletion(s, config, { assignQueued: true, blocked: s.employees.filter((e) => e.employmentStatus === 'employed')
       .map((e) => ({ employeeId: e.id, fromDay: s.day, toDay: config.campaignDays })) }))
-      .toEqual(c4.expected_numeric.queued_projection.map((p: any) => ({ ...p, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 })));
+      .toEqual(c4.expected_numeric.queued_projection.map((p: any) => ({ ...p, employeeId: null, readyDay: null, todayPt: 0, todayWantPt: 0, waitDays: 0 })));
+  });
+});
+
+
+describe('M2a-5 차단 기간 예측', () => {
+  it('23일의 12pt 대기 업무를 차단될 직원에게 맡기지 않고 실제 완료일까지 예측한다', () => {
+    const cfg = { ...config, seed: 1001 }, policy = policyById('MAX_CONTRIBUTION~inv:SE~hire:2pt@30')!;
+    let s = createGame(cfg), rng = createRng(cfg.seed);
+    while (s.day < 23) {
+      const opened = openDay(s, cfg).state, decision = policy.decide(opened, cfg, rng);
+      s = commitDay(opened, cfg, decision.commands).state; rng = decision.rng;
+    }
+    s = openDay(s, cfg).state;
+    s = planState(s, cfg, policy.decide(s, cfg, rng).commands).state;
+    // 과거 실행기가 수락했던 견적을 자료 속성으로 찾아 같은 계획 상태를 만든다.
+    const offer = s.operations!.offers.filter((o) => o.publishDay === 22 && o.serviceClass === 'HANDLING'
+      && o.prepWorkUnits === 12 && s.offers.some((x) => x.id === o.id && x.status === 'OPEN'))
+      .sort((a, b) => b.serviceFeeMinor - a.serviceFeeMinor)[0]!;
+    const route = routeBetween(cfg, offer.cityId, offer.destinationCityId!)!;
+    const sailing = listSailings(cfg, route.id).find((b) => b.departureDay === 30)!;
+    const cmd: EngineCommand = { id: 'REPRO-ACCEPT', type: 'ACCEPT_FORWARDING', offerId: offer.id, plan: { sailingId: sailing.id } };
+    const accepted = planState(s, cfg, [cmd]);
+    expect(accepted.results).toEqual(applied([cmd])); s = accepted.state;
+    const task = s.tasks.at(-1)!, recruiter = cfg.employees.filter((e) => !cfg.recruitment!.candidateEmployeeIds.includes(e.id)).at(-1)!;
+    const blocked = [{ employeeId: recruiter.id, fromDay: 27, toDay: 30 }];
+    const before = structuredClone(s), predicted = projectPrepCompletion(s, cfg, { assignQueued: true, blocked });
+    const target = predicted.find((p) => p.taskId === task.id)!;
+    expect(target).toEqual({ taskId: task.id, contractId: task.contractId, employeeId: cfg.employees[0]!.id,
+      readyDay: 33, todayPt: 0, todayWantPt: 0, waitDays: 0 });
+    expect(s).toEqual(before);
+    // 추가 수락·고용 없이 예측에 준 동일 인력과 차단 일정을 실제 명령으로 실행한다.
+    while (s.day <= target.readyDay!) {
+      s = openDay(s, cfg).state;
+      for (const t of handlingOrder(s, s.tasks.filter((t) => t.status === 'QUEUED' && t.contractId !== null))) {
+        const e = cfg.employees.find((e) => isAvailableFromToday(s, e.id)
+          && !s.tasks.some((x) => x.status === 'RUNNING' && x.assignedEmployeeId === e.id)
+          && !blocked.some((b) => b.employeeId === e.id && s.day <= b.toDay
+            && (s.day >= b.fromDay || Math.ceil((t.requiredWorkUnits - t.progressWorkUnits) / e.workUnitsPerDay) > b.fromDay - s.day)));
+        if (e) {
+          const cmd: EngineCommand = { id: `REPRO-ASSIGN-${s.day}-${t.id}`, type: 'ASSIGN_TASK', taskId: t.id, employeeId: e.id };
+          const p = planState(s, cfg, [cmd]); expect(p.results).toEqual(applied([cmd])); s = p.state;
+        }
+      }
+      s = commitDay(s, cfg, []).state;
+    }
+    expect(s.tasks.filter((t) => predicted.some((p) => p.taskId === t.id)).map((t) => ({ taskId: t.id, employeeId: t.assignedEmployeeId, readyDay: t.completedDay })))
+      .toEqual(predicted.map(({ taskId, employeeId, readyDay }) => ({ taskId, employeeId, readyDay })));
+  });
+  it('진행 중 업무의 차단 기간에는 준비도 처리 용량 소비도 멈춘다', () => {
+    const s = planned(c4).state, employeeId = s.tasks.filter((t) => t.contractId !== null)[1]!.assignedEmployeeId!;
+    const blocked = [{ employeeId, fromDay: s.day, toDay: s.day + 2 }];
+    const before = structuredClone(s);
+    expect(projectPrepCompletion(s, config, { blocked })).toEqual([
+      { ...c4.expected_numeric.projection[0] },
+      { ...c4.expected_numeric.projection[1], readyDay: 14, todayPt: 0, todayWantPt: 0 },
+      { ...c4.expected_numeric.projection[2], readyDay: 13, todayPt: 2, waitDays: 0 },
+    ]);
+    expect(s).toEqual(before);
+    expect(projectPrepCompletion(s, { ...config, campaignDays: blocked[0]!.toDay }, { blocked })[1])
+      .toEqual({ ...c4.expected_numeric.projection[1], readyDay: null, todayPt: 0, todayWantPt: 0 });
+  });
+  it('차단이 없으면 인수 04의 기존 예측 전체와 같다', () => {
+    const s = planned(c4).state;
+    expect(projectPrepCompletion(s, config)).toEqual(c4.expected_numeric.projection);
+    expect(projectPrepCompletion(s, config, { blocked: [] })).toEqual(c4.expected_numeric.projection);
   });
 });
