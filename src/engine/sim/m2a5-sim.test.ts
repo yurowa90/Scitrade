@@ -3,9 +3,10 @@ import cases from '../../../tests/acceptance_cases.json';
 import { ALL_SCENARIO_IDS, loadScenario, SCENARIO_IDS } from '../../content/scenario';
 import { loadMapCities } from '../../content/map';
 import { compareOutputs } from './compare';
-import { listSailings } from '../catalog';
-import { planState } from '../engine';
+import { listSailings, routeBetween } from '../catalog';
+import { createGame, openDay, planState, commitDay } from '../engine';
 import { summarize } from '../ledger';
+import { createOperationsCollector } from './operations-metrics';
 import { projectPrepCompletion } from '../operations';
 import type { ScenarioConfig } from '../types';
 import { d03Tables, mergeD03, predictJ6, runD03 } from './d03';
@@ -166,4 +167,47 @@ describe('M2a-5 실행기 성질', () => {
       expect(serializeSimOutput(a)).toEqual(readFileSync(files[0]!, 'utf8'));
     } finally { rmSync(dir, { recursive: true, force: true }); }
   }, 60_000);
+});
+
+
+describe('M2a-5 차단 예측 실행 대조', () => {
+  it('재현 변형·시드의 예측 불일치와 미인도가 0이고 실제 배정도 차단 경계를 지킨다', () => {
+    const recruiter = config.employees.filter((e) => !config.recruitment!.candidateEmployeeIds.includes(e.id)).at(-1)!;
+    const violations: { day: number; remaining: number }[] = [];
+    const result = simulate(config, policyById('MAX_CONTRIBUTION~inv:SE~hire:2pt@30')!, 1001, (state, commands) => {
+      let planned = state;
+      for (const cmd of commands) {
+        const before = planned; planned = planState(planned, config, [cmd]).state;
+        const task = cmd.type === 'ASSIGN_TASK' ? before.tasks.find((t) => t.id === cmd.taskId)
+          : cmd.type === 'ACCEPT_TRADE' || cmd.type === 'ACCEPT_FORWARDING' ? planned.tasks.at(-1) : undefined;
+        const employee = cmd.type === 'ASSIGN_TASK' ? cmd.employeeId
+          : cmd.type === 'ACCEPT_TRADE' || cmd.type === 'ACCEPT_FORWARDING' ? cmd.plan?.employeeId : undefined;
+        if (task && employee === recruiter.id && state.day <= 30) {
+          const remaining = task.requiredWorkUnits - task.progressWorkUnits;
+          if (state.day >= 27 || Math.ceil(remaining / recruiter.workUnitsPerDay) > 27 - state.day) violations.push({ day: state.day, remaining });
+        }
+      }
+    });
+    expect({ misses: result.run.metrics.operations!.projectionMisses, undelivered: result.run.metrics.delivery.pastDeadlineUndelivered, violations })
+      .toEqual({ misses: 0, undelivered: 0, violations: [] });
+  });
+  it('정시 예측 예약을 실제로 배정하지 않아 출항을 놓치면 계약을 한 번 센다', () => {
+    const policy = 'MAX_CONTRIBUTION', collector = createOperationsCollector(config, policy);
+    let s = openDay(createGame(config), config).state;
+    const offer = config.offers.find((o) => o.kind === 'forwarding')!;
+    const route = routeBetween(config, offer.cityId, offer.destinationCityId!)!;
+    const sailing = listSailings(config, route.id, s.day + 1)[0]!;
+    const planned = planState(s, config, [{ id: 'MISSED-ACCEPT', type: 'ACCEPT_FORWARDING', offerId: offer.id, plan: { sailingId: sailing.id } }]);
+    expect(planned.results.map((r) => r.status)).toEqual(['APPLIED']); s = planned.state;
+    const b = s.bookings.at(-1)!, p = projectPrepCompletion(s, config, { assignQueued: true })[0]!;
+    expect(p.readyDay !== null && p.readyDay <= b.departureDay).toEqual(true);
+    const promised = { bookingId: b.id, contractId: b.contractId, readyDay: p.readyDay!, departureDay: b.departureDay };
+    while (s.day <= b.departureDay) {
+      s = openDay(s, config).state; collector.observeOpened(s);
+      const day = s.day; s = commitDay(s, config, []).state;
+      collector.observeClosed(s, day, {}, day === 1 ? [promised, promised] : []);
+    }
+    expect({ projectionMisses: collector.finish(s).projectionMisses, status: s.bookings.at(-1)!.status })
+      .toEqual({ projectionMisses: 1, status: 'CANCELLED' });
+  });
 });

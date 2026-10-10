@@ -11,7 +11,8 @@ import type { Command, EngineCommand, GameState, ScenarioConfig } from '../types
 const CANCEL_PROBABILITY = 0.05;
 const ACCEPT_PROBABILITY = 0.5;
 
-export interface PolicyDecision { commands: EngineCommand[]; rng: RngState; rejections?: Record<string, number> }
+export interface ProjectionBooking { bookingId: string; contractId: string; readyDay: number; departureDay: number }
+export interface PolicyDecision { commands: EngineCommand[]; rng: RngState; rejections?: Record<string, number>; projectionBookings?: ProjectionBooking[] }
 export interface SimPolicy {
   id: string;
   labelKo: string;

@@ -40,7 +40,7 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
       if (++iterations > config.campaignDays + 1) throw new Error('캠페인 실행 고리의 안전 한도를 넘었습니다.');
       const opened = openDay(state, config).state;
       operations?.observeOpened(opened);
-      const { commands, rng, rejections } = policy.decide(opened, config, policyRng);
+      const { commands, rng, rejections, projectionBookings } = policy.decide(opened, config, policyRng);
       observe?.(opened, commands);
       const result = commitDay(opened, config, commands);
       if (result.alreadyClosed) throw new Error('이미 마감한 날을 다시 마감했습니다.');
@@ -53,7 +53,7 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
         } else if (r.status === 'REJECTED') counts.rejected++;
         else counts.duplicate++;
       }
-      operations?.observeClosed(result.state, opened.day, rejections);
+      operations?.observeClosed(result.state, opened.day, rejections, projectionBookings);
       collector.observeClosedDay(result.state, config, opened.day);
       state = result.state;
       policyRng = rng;
