@@ -2,6 +2,7 @@
 
 - 작성: Claude, 2026-10-09(같은 날 검수 정정 반영). 대상: 사용자. 한 번에 읽고 답하도록 21개 결정을 모았다. D22(평택 출처 2건의 확인 수준)는 관리자가 `548c53c`에서 `CONTENT_READ`로 올려 해결됐다(DECISIONS:1011). 번호는 바꾸지 않는다.
 - **답하는 법:** 아래 요약표의 번호마다 ‘권장대로’ 또는 선택지 기호(가·나·다)로 답한다. 세부 번호(D02-2 등)는 따로 답해도 된다. 답이 없는 번호는 결정 대기로 남긴다. 권장값은 Claude가 지시서 초안을 쓸 때의 가정일 뿐이다.
+- **답변됨 (2026-10-10):** 사용자 “다 추천대로 해줘”. D03은 Claude 추천(나), D02-③은 그에 맞춰 가로 바꿨다. 결과는 `docs/DECISIONS.md` ‘사용자 결정 일괄 채택’.
 - **먼저 답해 주시면 좋은 것:** D01·D02·D03·D04(M2a-5 지시서를 막고 있다), D15·D16·D17(평택판 배포와 사람 시험 일정).
 - **근거 표기:** `DESIGN:n` = `docs/DESIGN_v0.4.md` n행, `DECISIONS:n` = `docs/DECISIONS.md`, `PLAN:n` = `docs/IMPLEMENTATION_PLAN.md`, `RA:n` = `docs/RESEARCH_APPLICATION.md`, `CL:n` = `docs/CLASSIC_GAME_INSIGHTS.md`, `UT:n` = `docs/USABILITY_TEST_M2A.md`, `UI_SPEC:n` = `docs/UI_SPEC.md`. 줄 번호와 자료는 평택 병합(`548c53c`)·문서 정합 뒤 개발 브랜치 `d0d4afd` 기준이다. `Bnn`(묶음)·`gap XX-nn`(항목)·`gap_plan`은 2026-10-09 요구사항 대조표(DECISIONS:1021)의 번호다. 이 표는 아직 저장소 밖(작업 공간 `gap_plan.md`)에 있다. 그래서 판단에 쓰는 근거는 파일·줄로 따로 적었다. 대조표를 저장소에 넣을지는 병합 때 관리자가 정한다.
 - **게임 숫자는 모두 DESIGN 합성값이다.** 실제 시세·임금·임차료·운임이 아니다.

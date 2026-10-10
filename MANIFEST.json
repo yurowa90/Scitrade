@@ -167,8 +167,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 136994,
-      "sha256": "969fae3e1c5b0f97d6d2e257859857a641a13a7c162575704ee91f6db52e65b8"
+      "size_bytes": 143037,
+      "sha256": "daf9a71b69b44ba72c4aec9b7c4b1ce4e2cf1291be816f9b1fa09eb8367165f2"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -182,13 +182,13 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 16581,
-      "sha256": "4b7d927e3e472a37805ffd2e62188abed68891e283ab94fe6e2b0d16ccbc4334"
+      "size_bytes": 17445,
+      "sha256": "0f9d8a8273e0db5538a92a80c52ca45033d94c480fe095761d18558dd659d482"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
-      "size_bytes": 25102,
-      "sha256": "fdad78916a68d489c956413308f587b13382869403b85f086d13fa4c423a6603"
+      "size_bytes": 25092,
+      "sha256": "f6debc653d549425647205a7fe97286a728742ae039a3488ba1171807d097d14"
     },
     {
       "path": "docs/STATUS.md",
@@ -202,8 +202,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 29617,
-      "sha256": "cea9c07b708fe17cac4a82da87980a8ff7f4e1d24fab1e700ae844d4d33c012c"
+      "size_bytes": 31234,
+      "sha256": "a2a560f695a73dec6221980c36cf96b77eccfad56844e3516aaae587cc960bb3"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -232,8 +232,8 @@
     },
     {
       "path": "docs/ai/design/DECISION-PACKET-2026-10.md",
-      "size_bytes": 83532,
-      "sha256": "6aa4eda5c8f924a4030fe54b4810efb75570f794b71cbcc5cc164cf230710f27"
+      "size_bytes": 83741,
+      "sha256": "7cff70015da7a9d7fb93961be09dedd4a0df15a81ae3047bbabf8c727bd35076"
     },
     {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
