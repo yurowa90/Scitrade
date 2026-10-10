@@ -1,69 +1,131 @@
-# TASK-0028 M2a-5 읽기 함수·비교 실행기·D03 재측정 (규칙 2) — 초안
+# TASK-0028 M2a-5 읽기 함수: 견적·환전 미리 보기, 본사·창고 표, 주간 병목 표, 지급 일정 (규칙 2)
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- **상태: 초안이다. 실행하지 않는다.** TASK-0027(엔진 핵심)이 개발 브랜치에 병합된 뒤, 세션 A가 그 위의 행 번호와 Q12 결정(`docs/ai/design/m2a5-review/QUESTIONS.md`)을 반영해 고쳐 쓴다.
-- 나눈 이유: `docs/ai/design/m2a5-review/REVIEW3.md` 3절. 아래 절은 TASK-0027 초안(`e3b9f30`)의 지시 14·18·20과 비교 실행기 시험을 옮긴 것이다. 지시 번호는 원래 번호를 그대로 둔다.
-- 명세: `docs/ai/design/M2A5-SPEC.md` 14·17절, 인수 명세 P0-M2A5-17.
+- **상태: 초안.** TASK-0027이 개발 브랜치에 병합된 뒤 세션 A가 그 머리의 행 번호로 확인하고 실행을 요청한다. 아래 행 번호는 `claude/m2a5-engine` `71dc20c`(TASK-0027 R1 검수 통과 상태) 기준이다.
+- 선행 작업: 개발 브랜치 `<BASE>`(TASK-0027 병합 뒤, 이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0028-m2a5-sim-readers.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+- 분할: 원래 TASK-0028 초안의 비교 실행기·D03 재측정은 **TASK-0029**로 옮겼다(`docs/ai/tasks/TASK-0029-m2a5-d03.md`). 한 번에 맡기는 크기를 줄이려는 것이다(TASK-0027이 1차에 끝나지 못한 교훈). 이 작업은 `src/engine/sim/**`를 고치지 않는다.
+- 결정 근거: `docs/DECISIONS.md` ‘M2a-5 사용자 결정 Q1·Q10·Q12 (2026-10-10)’의 Q12 가(주간 병목 표), 223행(표시와 결과 일치). 설계 근거 `docs/ai/design/m2a5-review/REVIEW3.md` b1.
+- 명세: `docs/ai/design/M2A5-SPEC.md` 14.3~14.6·14.8, 16절. **명세와 이 지시서가 다르면 이 지시서가 우선이다**(특히 14.6은 이 지시서의 병목 표로 바뀌었다).
 
-## 이 작업이 하는 것
+## 목표
 
-1. 화면 재료 읽기 함수: `quotePreview`(명세 14.3), `exchangePreview`(14.4), `warehouseSummary`(14.5), `hiringOutlook`(14.6, Q12 결정 반영), `upcomingPayments`(14.8). `marketTable`·`payrollRunwayDay`·`paymentDefaultStatus`·장부 보고는 TASK-0027이 한다.
-2. 비교 실행기 규칙 2 정책·지표·`d03` 명령(지시 18).
-3. D03 20시드 재측정과 보고(지시 20). 결정 Q1 나·Q12 가에 따라 확정 기준에 직접 무역 기여이익 비중 하한(예: 25%)과 J6(병목 표의 이득·손해 부호와 실제 판정의 일치 비율)을 더한다.
-4. 인수 명세 P0-M2A5-17, `review_summary` 35건.
-5. 결정 Q10(하루 50 USD, 상한 100%)이 기준값이다. `d03`은 상한 30%와 정액 200 USD 변형도 함께 재서 비교한다.
+규칙 2 화면(후속 Sol 작업)이 쓸 읽기 함수를 엔진에 만든다. 모두 상태를 바꾸지 않는다. 규칙 1의 기존 함수 결과는 바이트 단위로 그대로다.
 
-## TASK-0027 초안에서 옮긴 절 (행 번호는 병합 뒤 다시 씀)
+## 먼저 읽을 파일
 
-### 14. 읽기 함수
+- `src/engine/operations.ts`: 14~52행(보관·처리 한도, `allocateHandling`), 54~86행(`projectPrepCompletion`), 94~124행(선복·임차료), 126~141행(감액·USD 설명), 210~237행(`paymentDefaultStatus`).
+- `src/engine/reports.ts`: 62~176행(`QuotePreview`, `tradePreview`, `forwardingPreview`, `tradePairs`), 213~296행(`UpcomingPaymentKind`, `upcomingPayments`).
+- `src/engine/previews.ts`: 41~55행(`payrollRunwayDay`).
+- `src/engine/market.ts`: 82~114행(`offerDef`, `openTradePairs`, `marketTable`, `prepWorkUnitsFor`).
+- `src/engine/capacity.ts`: 49~94행(`workloadSummary`).
+- `src/engine/reservations.ts`(`fundsPosition`, `commitmentReservations`, 선복 한도).
+- 자료: `data/market_rules.json`(틀 `prep_work_units`, 부피·무게), `data/routes.json`.
+- 화면(읽기만): `src/ui/main.ts`가 `upcomingPayments`·`UpcomingPaymentKind`를 쓰는 곳.
 
-모두 상태를 바꾸지 않는다. 규칙 1은 지금 결과·칸 그대로다.
-1. 장부 보고: 지시 4.
-2. `marketTable`: 지시 5.
-3. `quotePreview(state, config, offerIds, quantity?)`(명세 14.3). `affectedContracts`는 뺄 수 있음 2.
-4. `payrollRunwayDay`(규칙 2 임차료 포함, 1일 56)와 `exchangePreview`(명세 14.4).
-5. `warehouseSummary`(명세 14.5). `demand.recent`는 뺄 수 있음 3.
-6. `hiringOutlook`(명세 14.6, 뺄 수 있음 1).
-7. `paymentDefaultStatus`(명세 14.7).
-8. `upcomingPayments`(명세 14.8). 정렬 번호 OVERDUE 0, RENT 1, SPACE_FEE 2, WAGE 3, FREIGHT 4, DUTY 5. 선복 요금 행은 `cashReservations` 고리 밖에서 만든다.
+## 구현 지시
 
+### 1. `quotePreview(state, config, offerIds, quantity?)` (명세 14.3)
 
-### 18. 비교 실행기(`src/engine/sim/**`)
+- 새 함수다. 기존 `tradePreview`·`forwardingPreview`는 바꾸지 않는다.
+- 반환: 기존 `QuotePreview` 칸 전부 + `quantity`, `maxQuantity`, `quantityStep`, `prepWorkUnits`, `volumeLiters`, `massGrams`, `storageAfterLiters`, `storageCapacityLiters`, `counterpartySpreadPct`, `serviceClass`, `titleKo`, `contributionPerPrepPtMinor`(기여이익 ÷ 준비 pt, 내림), `lateDeliveryReductionMinor`(다음 출항편으로 보낼 때의 감액, `lateDeliveryReduction` 사용, 정시면 0), `affectedContracts: { contractId; readyBefore; readyAfter; missesSailing }[]`.
+- `affectedContracts`: 이 견적을 오늘 쉬는 직원에게 맡긴 계획 상태에서 `projectPrepCompletion`을 다시 돌려, 준비 완료일이 늦어지는 기존 계약만 담는다. `missesSailing`은 예약한 출항일 < `readyAfter`이거나 `readyAfter`가 null일 때 true다.
+- 거절될 견적(수량·보관·자금)이면 `null`이 아니라 `{ allowed: false, reasonKo }`를 더해 돌려준다. 문장은 명령 거절 문장과 같아야 한다(같은 검사 함수를 쓴다).
 
-1. **기본은 그대로:** `SIM_POLICIES`(5개)와 기본 `run`(`SCENARIO_IDS`)은 바꾸지 않는다. 규칙 1 시나리오에서 정책 동작·`appliedByType` 키(`sim.ts:31-33`)·지표 모양이 같아야 한다. 완료 조건 2의 바이트 비교가 확인한다.
-2. **새 정책:** `NO_FX`, `LATE_OK`를 `EXTRA_POLICIES`로 두고 `policyById`는 두 목록을 함께 찾는다. 규칙 1 시나리오에서 둘은 `MAX_CONTRIBUTION`과 같게 움직인다.
-3. **규칙 2 행동(`config.operations`가 있을 때만, 명세 17.3):** 하루 명령 순서 = 환전 → 투자 → 영입 → 다시 예약 → 대기 업무 배정(8.3 순서) → 견적 수락.
-   - 환전: 명세 17.3 식. `IDLE`·`NO_FX`는 하지 않는다. 진단 `react`는 원화 미지급이 있을 때만 그날 필요한 만큼.
-   - 수락: 직접 무역은 `openTradePairs`, 수량은 큰 것부터. `MAX_CONTRIBUTION`·`ON_TIME_FIRST`·`ASSET_LIGHT`·`NO_FX`는 정시 편만, `LATE_OK`는 감액 뒤 기여이익이 양수면 늦은 편도. 각 후보는 계획 상태에서 `projectPrepCompletion({ assignQueued: true, blocked })`으로 이 견적과 기존 예약 계약이 모두 예약 출항편 전에 끝날 때만 받는다. 빈 직원이 있으면 계획에 넣고, 없으면 출항편만 예약한다.
-   - 다시 예약: 출항 불참한 계약은 예측 완료일 뒤 첫 편(정시 우선).
-4. **명령 집계:** 규칙 2 실행의 `appliedByType` 키는 기존 6개 뒤에 `EXCHANGE_CURRENCY`, `EXPAND_WAREHOUSE`, `SIGN_SPACE_CONTRACT`, `SCOUT_SITE`, `START_RECRUIT_QUEST`, `HIRE_CANDIDATE` 순서로 고정한다. 규칙 1은 지금 6개.
-5. **지표:** 규칙 2 실행에만 `metrics.operations`(명세 17.3 목록). 규칙 1 실행의 JSON에는 이 키가 없다(`undefined`로 두어 직렬화에서 빠짐).
-6. **`d03` 명령:** `node src/engine/sim/run.mjs d03 [--seeds N] [--out PATH]`.
-   - 시나리오: `OPERATIONS_SCENARIO_IDS` 전부. 정책 묶음: 기준(`IDLE`, `NO_FX`, `MAX_CONTRIBUTION`, `LATE_OK`, `MAX_CONTRIBUTION~fx:react`), 투자만(보통·적극 × S·E·SE·SE22), 고용(보통·적극 × 2pt·3pt × 8·29·30·31·50일 × none·S·E·SE·SE22), 진단(두 명 고용 2pt 22일 + 3pt 36일·SE), `scout:early`(2pt 30일·SE, 3pt 30일·SE, 2pt 30일·none; 뺄 수 있음 4).
-   - 변형 이름 형식: `{정책}~inv:{none|S|E|SE|SE22}~hire:{2pt|3pt}@{일}[+…]~scout:early`. 후보는 처리량이 맞는 첫 후보(설정 순서)다. 소스에 직원 ID를 쓰지 않는다.
-   - 영입: 시작 직원 가운데 설정 순서 마지막 사람이 H−3 조사(후보의 조사 장소), H−2 의뢰, 면담 가능해진 다음 날(보통 H) 고용. `blocked`로 그 사람을 H−3부터 비운다. 명령이 거절되면 다음 날 다시 한다. 실제 고용일을 지표에 남긴다.
-   - 출력: `--out`에는 실행 전체(JSON, 기존 `SimOutput` 형식, `policyId`는 변형 이름). 표준 출력에는 명세 17.2와 같은 꼴의 마크다운 표: ① 기준 표 ② 투자만 ③ 고용 표(보통) ④ 고용 표(적극) ⑤ J1~J5 판정과 근거 수 ⑥ 시드별 1위 정책 분포와 가장 강한 정책 ⑦ 사업별 기여이익 비중 ⑧ 계획 고용일과 실제 고용일이 다른 실행 수. 칸 형식 `+1,234 (16) ↑`(USD 정수, 같은 수락·투자의 고용 없음 대비 중앙값, 이득 시드 수, ↑·↓ 표시는 명세 17.2 정의).
-   - 비교 값은 USD 순자산이다. 통화를 합친 값은 어디에도 없다.
-7. **소스 검사:** `sim.test.ts:169-182`(자료 ID·도시 이름·비결정 호출 금지)가 새 소스에도 통과해야 한다.
+### 2. `exchangePreview(state, config, direction, usdAmountMinor)` (명세 14.4)
 
+- 반환 `{ allowed; reasonKo; krwMinor; spreadKrwMinor; usdAvailableBefore; usdAvailableAfter; krwAvailableBefore; krwAvailableAfter; runwayBefore; runwayAfter; warningKo }`.
+- `allowed`·`reasonKo`는 `EXCHANGE_CURRENCY` 검사와 같은 함수·같은 문장이다.
+- `runwayAfter`는 환전 뒤 원화로 `payrollRunwayDay`를 계산한다(통화를 합치지 않는다).
+- `warningKo`(S15): KRW→USD 뒤 원화가 오늘 낼 임차료·급여보다 적으면 ‘환전 뒤 원화 {가용}으로는 오늘 급여·임차료 {금액}을 다 낼 수 없습니다.’, 아니면 null.
 
-### 20. D03 재측정 실행과 보고
+### 3. `warehouseSummary(state, config)` (명세 14.5)
 
-- 모든 검증이 끝난 뒤 실행한다: `node src/engine/sim/run.mjs d03 --out /tmp/TASK-0027-d03.json > docs/ai/tasks/results/TASK-0027-d03.md`.
-- 걸린 시간을 결과 보고에 적는다. 1시간을 넘을 것 같으면 먼저 `--seeds 5`로 돌려 시간을 재고, 20시드 전체를 돌린다. 20시드를 끝내지 못하면 몇 시드까지 했는지 적는다(통과로 쓰지 않는다).
-- 결과 보고 ‘D03 재측정’ 절에 표 ①~⑧을 옮기고, J1~J5마다 통과·실패와 근거 수를 적는다. 명세 17.2의 모형 값과 다른 칸(부호가 다르거나 ↑·↓가 바뀐 칸)을 목록으로 적고, 원인 추정(정책 차이 등)을 한 줄씩 적는다.
-- **값을 고치지 않는다.** 기준을 벗어나도 그대로 보고한다. 조정은 Claude가 한다.
+- 명세 14.5의 칸 그대로: `storage`, `handling`(오늘 배분 미리 계산: `allocateHandling` 사용), `prepDaysToClear`(`projectPrepCompletion` 기준), `demand`(오늘 열린 견적 합, 최근 4묶음 이력), `staff`, `sailings[]`, `rent`, `expansion`, `spaceContracts[]`.
+- `demand.recent[]`의 `acceptedPrepPt`·`handlingAccepted`는 그 묶음의 견적으로 체결한 계약(`operations.offers`의 `publishDay`로 묶음을 찾는다)에서 센다.
+- 여기에 `bottleneck: WeeklyBottleneck`(지시 4, 고용 후보 없이)을 더한다.
 
+### 4. 주간 병목 표 `weeklyBottleneck(state, config, candidateId?)` (Q12 가)
 
-## 옮긴 시험
+학생이 “직원을 더 두면 일주일에 작업 포함 주선을 몇 건 더 처리할 수 있나”를 화면 한 표로 판단하게 하는 값이다. 주(7일) 단위의 정상 상태 용량 추정이다. 모의 실행이 아니다. 같은 입력이면 같은 출력이다.
 
-**`src/engine/sim/m2a5-sim.test.ts`**
-- `P0-M2A5-17 비교 실행기`: 기본 `runSuite()`의 시나리오 목록이 `SCENARIO_IDS`와 같다. 새 시나리오 시드 1개로 `IDLE` 71일 실패, `NO_FX` 실패, `MAX_CONTRIBUTION` 완료·끝 원화 미지급 0·통화별 항등식(이체 포함), 규칙 2 `appliedByType` 키 목록 전체. `MAX_CONTRIBUTION`은 늦은 편을 예약하지 않고 `LATE_OK`는 한다(같은 시드에서 늦은 인도 1건 이상이 있는 시드를 찾아 확인). 같은 입력 두 번이면 같은 출력. `d03`을 `--seeds 1`로 돌리면 표 ①~⑧ 제목이 있다. 변형 이름의 고용 후보가 처리량으로 정해진다(이름 바꾸기 설정에서도 같은 지표).
-- 읽기 함수 시험(새 파일 `src/engine/m2a5-readers.test.ts`): `quotePreview`·`exchangePreview`(문장 반례 S15)·`warehouseSummary`·`hiringOutlook`·`upcomingPayments`의 기대값 전체를 `toEqual`로.
+- **단위:** ‘작업 포함 주선 건수/주’. 기준 화물은 자료의 HANDLING 틀이다. 부피 `V`(L)는 틀 부피의 최댓값, 준비량 `P`(pt)는 틀 `prep_work_units`의 최댓값이다(자료에서 계산, 지금 값 9,000 L·12pt).
+- **수요 `demand`:** 최근 4개 공개 묶음(오늘 이하 공개일, 묶음 0 제외)의 HANDLING 견적 수 평균(소수 버림 없이 `{ offeredPerWeek: 분자, weeks: 분모 }`로 둔다). 묶음이 없으면 null.
+- **다른 일 몫 `otherPtPerWeek`:** 최근 4묶음에서 체결한 STANDARD 주선과 직접 무역의 준비 pt 합 ÷ 묶음 수(내림). 없으면 0.
+- **제약별 용량(고용 전 `before`, 후 `after`):**
+  - `staff`: `floor(max(0, 본사 직원 처리량 합 × 7 − otherPtPerWeek) ÷ P)`. 본사 직원 = 고용 상태이고 위치가 본사 도시인 직원. `after`는 후보의 `workUnitsPerDay`를 더한다.
+  - `warehouseHandling`: `floor(max(0, handlingCapacityPt(오늘 기준, 확장 반영) × 7 − otherPtPerWeek) ÷ P)`. 고용 전후 같다.
+  - `storage`: `floor(storageCapacityLiters × 7 ÷ (D × V))`. `D` = 체류 일수 = 출항 간격 + 예약 마감 일수(자료에서 계산, 지금 7 + 1 = 8). 고용 전후 같다.
+  - `sailing`: 노선마다 `min(floor(부피 한도 ÷ V), floor(무게 한도 ÷ 그 노선 목적지 HANDLING 틀 무게의 최댓값))`의 합. 그 노선의 다음 출항편(출항일이 오늘보다 뒤인 첫 편) 기준이며 선복 계약 한도를 반영한다. 고용 전후 같다.
+- **결과:** `{ unit: 'HANDLING_JOBS_PER_WEEK'; demand; otherPtPerWeek; rows: { constraint: 'DEMAND' | 'STAFF' | 'WAREHOUSE_HANDLING' | 'STORAGE' | 'SAILING'; before: number | null; after: number | null }[]; binding: { before: 제약[]; after: 제약[] }; usableBefore; usableAfter; extraJobsPerWeek; remainingHandlingBatches; contributionPerJobMinor; wageKrwPerWeek | null; wageUsdLotsPerWeek | null }`.
+  - `usable` = 각 열의 최솟값(수요 포함, 수요가 null이면 수요 빼고). `binding`은 최솟값과 같은 제약 전부(동률 포함).
+  - `extraJobsPerWeek = usableAfter − usableBefore`(후보가 없으면 0).
+  - `remainingHandlingBatches`: 오늘 이후 공개될 묶음 가운데 HANDLING 견적이 나올 수 있는 묶음 수(납기·결제가 캠페인 안). 지금 자료로 1일에 10.
+  - `contributionPerJobMinor`: HANDLING 틀 기여이익(서비스 대금 − 운임)의 최솟값(USD).
+  - 임금은 원화 그대로(`wageKrwPerWeek` = 일급 × 7), 환전 필요량은 `wageUsdLotsPerWeek = ceil(일급 × 7 ÷ USD→KRW 환율 × 100 USD)`. 통화를 더하지 않는다. 후보가 없으면 둘 다 null.
+- **반례:** 투자 없는 회사(1일, 기본 직원 2명)에 2pt 후보 → `STAFF` before 2 → after 3, `SAILING` 2라 `extraJobsPerWeek` 0이다. 선복 계약 두 노선과 창고 확장이 적용된 상태 → 2pt 후보 +1, 3pt 후보 +2. 이 네 값을 인수 명세 새 사례(아래 지시 7)로 고정하고 시험한다. 계산이 이 값과 다르면 값을 고치지 말고 ‘질문’에 적는다.
 
-## 옮긴 완료 조건·변형 시험
+### 5. `hiringOutlook(state, config, candidateId)` (명세 14.6 대체)
 
-- `docs/ai/tasks/results/TASK-0028-d03.md`가 있고 20시드 표다.
-- 변형: 규칙 2 `MAX_CONTRIBUTION`의 정시 거르기 제거, 기본 `runSuite` 시나리오에 새 시나리오를 넣음, 환전 정책 제거, 규칙 2 판단을 `config.id`로 → `P0-M2A5-17 비교 실행기` 또는 `sim.test.ts` ‘8 소스 검사’가 실패.
-- 기본 `run` 회귀: 작업 전후 `compare` ‘같음’, `cmp` 바이트 같음.
+- `{ workUnitsPerDay; wageKrwPerDay; wageUsdLotsPerWeek; bottleneck: weeklyBottleneck(state, config, candidateId); recentHandlingOfferedPt; recentHandlingAcceptedPt }`.
+- 명세의 `recentDeclinedForStaffPt`·`effectiveHomePtAfter`는 만들지 않는다(엔진은 플레이어가 받지 않은 이유를 알 수 없다).
+
+### 6. `upcomingPayments` (명세 14.8)
+
+- `UpcomingPaymentKind`에 `'RENT' | 'SPACE_FEE'`를 **값만** 더한다. 규칙 1 결과는 그대로다.
+- 정렬 번호: OVERDUE 0, RENT 1, SPACE_FEE 2, WAGE 3, FREIGHT 4, DUTY 5. 기존 네 종류의 상대 순서는 그대로다.
+- 임차료 행은 창 안의 임차일(확장 효력 반영 금액), 선복 요금 행은 창 안의 적용 편 출항일(아직 내지 않은 것)에 넣는다. 선복 요금 행은 `cashReservations` 고리 밖에서 만든다.
+- 화면(`src/ui/main.ts`, `src/ui/schedule.ts`)이 이 종류를 관세로 적는 문제는 고치지 않는다. 화면 타입 검사가 깨지면(예: 망라 `switch`) 고치지 말고 ‘질문’에 적는다.
+
+### 7. 인수 명세
+
+- `tests/acceptance_cases.json`에 `P0-M2A5-18 본사·창고 표와 병목 표`, `P0-M2A5-19 견적·환전 미리 보기`를 더한다(형식은 01~16과 같다). 행동·기대 수치 전체를 이 항목에 두고 시험은 여기서 읽는다.
+  - 18: 지시 4 반례의 네 값과 그 상태를 만드는 명령(1일 `SIGN_SPACE_CONTRACT` 두 노선, 1일 `EXPAND_WAREHOUSE`, 2일 마감 뒤 3일에 확인. 다음 출항편 9일은 계약 적용 편이다)과 각 `rows` 전체.
+  - 19: 명세 18-02의 8일 쌍 수량 200 미리 보기 전체, 15일 묶음의 보관 초과 미리 보기(`allowed: false`와 문장), 1일 `exchangePreview` 두 방향(S15 반례 포함).
+- `review_summary`: `case_count` 36, `P0` 31, `engine_linked_case_count` 31, `added_cases_note` 끝에 `"; TASK-0028 added P0-M2A5-18..19, total 36."`. 17번은 TASK-0029가 더한다(번호를 비워 둔다).
+- `PACKAGE_STATUS.json` `core_acceptance_specifications` 36(허브 허락 필요, 이 칸만).
+
+### 8. 작은 문장 고침
+
+- 규칙 2 미지급 기록 문장의 캠페인 종료 분기가 괄호 안에 마침표를 남긴다(‘(… 끝납니다.)’, `engine.ts:1179` 근처). 괄호 안 문장은 마침표 없이 쓴다: ‘(90일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝남)’. 시험 S22의 기대 문장을 함께 고친다.
+
+## 고칠 수 있는 파일
+
+- `src/engine/reports.ts`, `src/engine/operations.ts`, `src/engine/previews.ts`, `src/engine/market.ts`, `src/engine/engine.ts`(지시 8의 한 줄만), 새 `src/engine/readers.ts`(원하면), 새 시험 `src/engine/m2a5-readers.test.ts`, `src/engine/m2a5-money.test.ts`(S22 기대 문장만), `src/engine/m2a5-testkit.ts`.
+- `tests/acceptance_cases.json`, `PACKAGE_STATUS.json`(한 칸), `docs/ai/tasks/results/TASK-0028.md`, `MANIFEST.json`(생성만).
+
+## 손대지 않을 파일
+
+- `src/ui/**`, `src/engine/sim/**`, `src/content/**`, `data/**`, `schemas/**`, `tools/**`, 위 목록 밖 `docs/**`, 기존 시험 파일(위 하나 밖).
+
+## 지켜야 할 것
+
+- TASK-0027의 ‘지켜야 할 것’이 모두 적용된다(규칙 1 불변, 화면 0줄, 설정에 ID 키 금지, 결정적, 통화 분리, 새 문장마다 반례, 전체 객체 `toEqual`, 새 시험에 자료 ID 금지, JSON 형식).
+- 읽기 함수는 상태를 바꾸지 않는다. 시험마다 호출 전후 `structuredClone` 비교를 넣는다.
+- 미리 보기·병목 표의 거절 문장과 수치는 명령 경로와 같은 함수에서 나온다(DECISIONS:223).
+
+## 테스트
+
+새 파일 `src/engine/m2a5-readers.test.ts`. `describe` 제목은 그대로 쓴다.
+- `P0-M2A5-18 본사·창고 표와 병목 표`, `P0-M2A5-19 견적·환전 미리 보기`.
+- `M2a-5 읽기 함수 성질`: 상태 불변, 규칙 1에서 `upcomingPayments` 결과가 작업 전과 같음(TASK-0027 R1 골든 스크립트를 이 작업의 기준으로 다시 돌린다, 완료 조건), 미리 보기 거절 문장 = 명령 거절 문장(보관·수량·자금·환전 각 1).
+- `M2a-5 병목 표 경계`: 수요 null(묶음 없음), 직원 0명 본사, 상한 0인 노선, 동률 제약 `binding` 전체.
+
+## 완료 조건
+
+1. 지시 1~8 반영.
+2. `npx vitest run` 실패 0, `npm run typecheck` 통과, `python3 tools/validate_data.py` 통과, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0(크기 검사는 TASK-0055가 들어간 기준이므로 통과해야 한다. 넘으면 수치를 ‘질문’에 적고 계속한다).
+3. 규칙 1 골든: TASK-0027 R1 보고의 `/tmp/TASK-0027-R1-golden.mjs`를 같은 방식으로 다시 써서 `<BASE>` 사본과 이 작업 결과를 비교해 ‘같음’. 지울 키는 없다(이 작업은 규칙 1 보고 칸을 더하지 않는다). `upcomingPayments` 결과도 같다.
+4. 변형 시험(사본·편집기·되돌림·`cmp`):
+
+| 번호 | 변형 | 실패해야 하는 시험 |
+|---|---|---|
+| 1 | 병목 표 `sailing`이 무게 한도를 무시 | `P0-M2A5-18 …` |
+| 2 | 병목 표 `storage`의 체류 일수를 7로 | `P0-M2A5-18 …` |
+| 3 | `after`에 후보 처리량을 더하지 않음 | `P0-M2A5-18 …` |
+| 4 | `affectedContracts`가 늦어지지 않는 계약도 담음 | `P0-M2A5-19 …` |
+| 5 | `exchangePreview`가 명령과 다른 거절 문장 | `M2a-5 읽기 함수 성질` |
+| 6 | `upcomingPayments` 정렬에서 RENT를 WAGE 뒤로 | `P0-M2A5-18 …` 또는 새 일정 시험 |
+| 7 | 읽기 함수가 상태를 바꿈(`allocateHandling` 결과를 상태에 씀) | `M2a-5 읽기 함수 성질` |
+
+5. 결과 보고 `docs/ai/tasks/results/TASK-0028.md`(공통 머리말 형식): 바꾼 파일, 설계 판단, 검증(시작·끝 값), 골든 비교, 변형 표, 범위 밖 발견(화면이 새 지급 종류를 관세로 적는 곳 포함), 질문.

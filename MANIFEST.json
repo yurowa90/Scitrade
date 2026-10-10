@@ -887,8 +887,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0028-m2a5-sim-readers.md",
-      "size_bytes": 8224,
-      "sha256": "05bff6f6d0cbe9129ddfe149fa59a610fe4f7f80310e63b2ec193ff8b653b734"
+      "size_bytes": 14307,
+      "sha256": "cf6208755efbe199a4c5b366eaf7edc6eee1a5f9657ffac3731e6c76a3c63861"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0029-m2a5-d03.md",
+      "size_bytes": 8127,
+      "sha256": "391c897aeb2f6a09b20e52908660cb803fb86f957ba11f49072a954385b717f0"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
