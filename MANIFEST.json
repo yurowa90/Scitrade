@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 66596,
-      "sha256": "64347b6bbd14b55fe8595e7a2c35f0143154c3b99f22c10702cd86a84cb5c5fe"
+      "size_bytes": 67010,
+      "sha256": "43dd2d7db0cab1e63253ea78099fc15c64900f1fb0843cbb546ab97e4f29cdc2"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -227,8 +227,8 @@
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
-      "size_bytes": 18737,
-      "sha256": "7420761c4adfc0f5fc0a29246503dbdad5d50ef62c8bf03fa2c2d305d3dd5c38"
+      "size_bytes": 18776,
+      "sha256": "3b685d8c682bce8c4ce1fd9dfc38f66a0282d7d55c161e8e89dec1290d48fa0e"
     },
     {
       "path": "docs/ai/WORKFLOW.md",

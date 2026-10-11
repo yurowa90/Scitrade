@@ -22,7 +22,7 @@
 | 허브 | `session_01FkkUQ5LtztW2ttpSWBvzDC` | 개발 브랜치 `ccr-21863e28-zmusty`, `codex/*` | 아래 ‘허브가 하는 일’ | TASK-0025·0026 마무리, 새 작업은 0055부터 |
 | A M2a-5 엔진 | `session_01VAaqu4D6AEBbh8fFKWYY6f`(2026-10-10 열림, PR #2) | `claude/m2a5-engine` | M2a-5 시장·창고: 설계 확정 → Astra 엔진 지시서 → 검수 → 20시드 조율(D03 나) → Sol 화면 지시서 → 검수 | 0027~0034 |
 | B 화면·배치·측정 | `session_019iddTJ3VLdrucfWSMhAR6Q`(2026-10-10 열림, PR #3) | `claude/ui-layout` | TASK-0024(배치 공통+A·Esc·한 열 Tab 순서·1024px 머리 줄 접힘), 이후 화면 지시서·검수, Chromium 측정, 허브의 통합 측정 요청 | 0024, 0035~0044 |
-| C 조사·근거 | 열 때 적음 | `claude/research` | 교과 현행판(2024-3·2026-1) 대조, 보전 기록 교차 확인(TASK-0020 후속), 사실 섞임 규칙 개정, 사용성 시험·IRB 문서 | 0045~0054 |
+| C 조사·근거 | `session_01GeYCvVoGQNchBeubUoRNJC`(2026-10-11 열림) | `claude/research` | 교과 현행판(2024-3·2026-1) 대조, 보전 기록 교차 확인(TASK-0020 후속), 사실 섞임 규칙 개정, 사용성 시험·IRB 문서 | 0045~0054 |
 
 **허브가 하는 일:**
 - Codex 실행과 `codex/*` 브랜치 관리.
