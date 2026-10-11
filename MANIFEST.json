@@ -1301,6 +1301,11 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
+      "size_bytes": 335,
+      "sha256": "12dcec0217911c80f35b8c16b685108f55446a1772e29e6b84f3868080f0c71c"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
