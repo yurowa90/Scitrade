@@ -52,3 +52,93 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
 - 작업 끝에는 STATUS.md에 실제 변경과 실행한 검증, 남은 위험과 다음 단계를 기록한다. 실행하지 않은 인수 기준을 통과로 표시하지 않는다.
 - 문서·데이터를 변경하면 `python3 tools/build_package.py --manifest-only` 후 `python3 tools/validate_data.py`로 관련 파일 해시를 갱신·확인한다.
 - 배포 묶음은 `python3 tools/build_package.py`로 만든다. 생성된 ZIP·임시 파일·원본 광고 영상·원작 자산은 Git에 추가하지 않는다.
+
+## 역할 분담: Claude 총괄·검수, Codex 구현 (2026-10-05 사용자 결정)
+
+일반 웹앱 개발처럼 계획·지시·검수와 구현을 나눈다. 위의 공동 작업 규칙은 그대로 유지하고, 아래가 우선한다.
+
+| 역할 | 맡는 일 | 하지 않는 일 |
+|---|---|---|
+| Claude (총괄·검수) | 범위 결정, 작업 지시서 작성(`docs/ai/tasks/`), Codex 실행, 검수(diff 읽기·자동 검사·화면 확인), 커밋·푸시, `STATUS.md`·`DECISIONS.md` 갱신, 사용자 보고 | 검수 없이 Codex 결과를 커밋하지 않는다 |
+| Codex · Astra (`gpt-6-astra`) | 엔진·상태·장부·저장처럼 틀리면 경제 값이 깨지는 구현, 여러 파일에 걸친 구조 변경 | 커밋·푸시, 상태·결정 문서 수정 |
+| Codex · Sol (`gpt-6.1-sol`) | 화면 연결·스타일·기존 방식을 따른 테스트 보강, 조사(출처 원문 대조, 웹 검색 사용)와 콘텐츠 초안(의뢰·대사 문구) | 위와 같음. 조사 결과로 데이터를 직접 고치지 않는다 |
+
+모델 이름과 설명은 Codex CLI 0.160.0에 들어 있는 모델 목록에서 확인했다.
+- Astra: ‘가장 어려운 작업을 위한 최상위 모델’.
+- Sol(6.1): ‘코딩과 일상 업무를 위한 최신 주력 모델’.
+
+계정에서 실제로 쓸 수 있는지는 첫 실행 때 확인한다.
+
+**흐름:**
+1. **지시:** Claude가 지시서를 쓴다. 지시서에는 목표, 읽을 파일, 범위(포함·제외), 구현 지시, 테스트, 완료 조건, 담당 모델, 추론 강도를 적는다. 공통 규칙은 `docs/ai/tasks/CODEX_PREAMBLE.md`에 있다.
+2. **구현:** Claude(허브 세션만, [SESSION_TREE.md](SESSION_TREE.md))가 `SCITRADE_CODEX_HUB=1 tools/ai/codex_task.sh <지시서>`로 Codex를 실행한다.
+   - 실행 장소는 로컬 작업 브랜치 `codex/<작업 ID>`다.
+   - Codex는 변경과 결과 보고서(`docs/ai/tasks/results/<작업 ID>.md`)만 남긴다.
+3. **검수:** Claude가 아래를 확인한다.
+   - `tools/ai/review_checks.sh`: 자료 검사·타입 검사·테스트·빌드·빌드 크기 한도(`tools/check_bundle_size.mjs`, 빌드가 성공했을 때만)·파이썬 시험(그림 도구, 지도 생성, 자료 검사기 회귀 `tools/test_validate_data.py`)·node 시험(측정 도구, 크기 검사기). 지도 원본 재생성 시험은 원본 폴더(`SCITRADE_MAP_SOURCES`, 없으면 저장소 옆 `map/`)가 있을 때만 돈다.
+   - diff 전체를 읽고, 기존 기대값이 바뀌지 않았는지 본다.
+   - 지시서의 완료 조건을 하나씩 대조한다.
+   - 화면 작업은 Playwright로 클릭해 진행한다.
+   - 결과는 보고서 끝의 ‘검수’ 절에 기록한다.
+4. **반려:** 고칠 점이 있으면 Claude가 보고서에 반려 사유를 적고 같은 지시서로 다시 실행한다.
+   - 두 번 반려된 작업은 Claude가 직접 고치거나, 지시서를 다시 나눈다. 어느 쪽인지 사용자에게 알린다.
+5. **반영:** 통과하면 Claude(허브 세션만)가 개발 브랜치에 합쳐 커밋·푸시한다. 그 뒤 `STATUS.md`와 지시서 목록의 상태를 갱신한다.
+   - `codex/*` 브랜치는 원격에 올려 검수하는 하위 세션과 나눈다(2026-10-10 사용자 결정, 그 전에는 로컬 전용). 개발 브랜치에 합치는 일은 허브 세션만 한다. 여러 세션으로 나눠 일하는 규칙은 [SESSION_TREE.md](SESSION_TREE.md).
+
+**조사·콘텐츠 결과:** Sol의 조사는 가설과 같은 지위로 받는다. Claude가 원문 또는 다른 출처로 교차 확인한 항목만 데이터에 반영한다. `sources.json`의 확인 수준도 그에 맞게 올린다.
+
+**실행 환경과 보안:**
+- **인증:** API 키를 쓰지 않고 사용자의 ChatGPT(Codex Pro) 계정으로 로그인한다(2026-10-05 사용자 결정).
+- **로그인 방법:** 이 클라우드 환경은 브라우저 로그인 창을 띄울 수 없다. 그래서 Claude(허브 세션만)가 `codex login --device-auth`를 실행하고, 나온 일회용 코드를 사용자에게 전달한다. 사용자는 https://auth.openai.com/codex/device 에서 그 코드를 입력한다. 사용자에게 코드나 토큰을 받아 오지 않는다.
+- **로그인 정보:** `~/.codex/auth.json`에 저장된다. 이 파일은 비밀번호처럼 다룬다: 커밋·로그·채팅에 남기지 않는다. 환경이 새로 만들어지면 사라지므로 다시 로그인한다.
+- **네트워크 허용:** `auth.openai.com`, `chatgpt.com`(구독 경로), `api.openai.com`.
+- `review_checks.sh`는 혹시 남아 있을 키 변수를 지운 환경에서 테스트·빌드를 돌린다.
+- **샌드박스:** 2026-10-05 확인 결과, Codex 샌드박스(workspace-write, 내장 bubblewrap)가 이 컨테이너에서 동작했다. 동작하지 않게 되면 `CODEX_SANDBOX=danger-full-access`로 실행한다. 이 컨테이너 자체가 격리 환경이고 Codex는 커밋·푸시하지 않으므로 허용한다. 실행 기록에 그렇게 실행했다고 남긴다.
+
+**운영 기록 (2026-10-05 첫 실행에서 정한 것):**
+- **병렬 실행:**
+  - 파일이 겹치지 않는 작업은 별도 git 작업 폴더(`git worktree add <경로> -b codex/<ID> <기준>`)에서 동시에 돌린다.
+  - 작업 폴더의 `node_modules`는 원본을 **복사**한다(`cp -r`).
+  - 링크로 연결하면 Codex 샌드박스가 작업 폴더 밖에 쓰지 못해 테스트 캐시가 막힌다.
+- **선행 작업과 이어 붙이기:** 선행 작업의 검수를 기다리지 않고 그 스냅숏 위에서 다음 작업을 시작할 수 있다. 선행 작업에 수정이 생기면, 합친 뒤 다시 검수한다.
+- **재작업:**
+  - 같은 작업 ID에 `-R<n>` 지시서를 만들어 같은 브랜치에서 실행한다(`TASK-0001-R1-...md`).
+  - 결과는 원래 보고서 끝에 `## 재작업 n` 절로 덧붙인다.
+  - Claude의 검수 기록은 같은 보고서의 `## 검수 n차` 절에 쓴다.
+- **검수 방식:** Claude 하위 에이전트로 관점별 리뷰를 하고, 지적마다 독립 검증자 3명이 반박을 시도한다. 2명 이상이 유지한 항목만 반려 사유로 쓴다.
+- **스냅숏 커밋:** Codex가 끝나면 로컬 작업 브랜치에 ‘검수 전 스냅숏’으로 커밋한 뒤 검수한다. 실행 중에는 커밋하지 않는다.
+- **프로세스 종료:** `pkill -f`는 쓰지 않는다. 그 패턴이 자기 셸 명령 줄과도 맞아 셸까지 끝낼 수 있다. `pgrep`으로 PID를 확인한 뒤 `kill`한다.
+- **조사 결과의 지위:** Sol의 조사 결과를 독립 검증해 보니 맞는 값 하나를 틀렸다고 판정한 것이 있었다(TASK-0003, 산투스). 그래서 조사 결과는 교차 검증 없이 데이터에 넣지 않는다.
+
+**운영 기록 (2026-10-06 추가, TASK-0004·0007 검수에서 정한 것):**
+- **디스크:**
+  - 검증 에이전트는 작업 사본을 하나만 만들고, 끝나기 전에 지운다(`rm -rf`).
+  - 브라우저 측정이나 긴 시험 전에 `df -h /`로 남은 공간을 확인한다.
+  - 이유: 디스크가 차면 브라우저 렌더러가 멈추고, 코드 결함처럼 보인다. TASK-0007 검수 3차에서 이것을 CSS 문제로 잘못 판단했다(`docs/DECISIONS.md` ‘픽셀 렌더링·픽셀 지도 반영’).
+- **작업 사본에서 git에 쓰지 않는다:** `cp -r`로 복사한 작업 폴더는 원래 저장소의 `.git`을 함께 쓴다. 그래서 사본에서 실행한 `git stash`·`commit`·`reset`·`checkout`은 원래 저장소에 남는다(TASK-0005 1차 검수에서 stash 3개가 남았다). 변형을 되돌릴 때는 원본 파일을 다시 복사한다.
+- **화면 배율 측정:** Playwright의 배율 흉내(`deviceScaleFactor`)를 쓰지 않는다. 실제 장치에 없는 이음매와 흐림이 생긴다. 대신 Chromium을 실제 배율로 띄운다.
+  - `chromium.launch({ args: ['--force-device-scale-factor=<배율>', '--window-size=<폭>,1000'] })`
+  - `browser.newContext({ viewport: null })`
+- **`MANIFEST.json`:** 스냅숏 커밋 전에 `git checkout MANIFEST.json`으로 되돌리지 않는다. 자료 해시가 실제 파일과 어긋난다. 항상 `python3 tools/build_package.py --manifest-only`로 다시 만든다(TASK-0004-R1 스냅숏에서 생긴 실수).
+
+
+## 시험 빌드 정적 배포 (Netlify, 2026-10-06 사용자 결정)
+
+- **사이트:** `scitrade-usability-test` (사용자 Netlify 팀 `yurowa90`). 주소 https://scitrade-usability-test.netlify.app
+- **평택판 사이트(D15, 2026-10-10):** `scitrade-pyeongtaek-test`(같은 팀). 주소 https://scitrade-pyeongtaek-test.netlify.app. 부산 3판 사이트는 덮어쓰지 않는다.
+  - 3단계의 업로드 명령에는 Netlify가 발급한 일회용 접근 경로가 들어 있다. 자동 권한 검사가 이를 막을 수 있으니, 막히면 우회하지 말고 사용자에게 한 번 허락을 받는다. 접근 경로는 출력하거나 저장하지 않는다.
+- **올리는 것:** 시험 빌드의 `dist`만 올린다. 원본 저장소·문서·자료는 올리지 않는다.
+  1. 그 커밋을 별도 작업 트리에서 빌드한다(`git worktree add --detach … <커밋>`, `node_modules`는 `cp -r`, `npm run build`).
+  2. `dist`를 배포 전용 폴더로 복사하고 다음을 더한다.
+     - `netlify.toml`(`[build] publish = "." command = ""`).
+     - `_headers`(`X-Robots-Tag: noindex, nofollow`).
+     - `robots.txt`(`Disallow: /`).
+     - `version.txt`(빌드 커밋).
+  3. Netlify 커넥터의 `deploy-site`가 돌려주는 `npx @netlify/mcp … --proxy-path …` 명령을 **그 폴더 안에서** 실행한다.
+     - 이 환경에서는 `NODE_USE_ENV_PROXY=1`을 앞에 붙여야 한다. 붙이지 않으면 Node의 내장 fetch가 에이전트 프록시를 거치지 않아 403이 난다.
+- **배포 뒤 확인:**
+  - `curl`로 `version.txt`·자산·`x-robots-tag`를 확인한다.
+  - Playwright로 휴대폰·태블릿 에뮬레이션에서 연다. Chromium은 에이전트 프록시 CA를 바로 신뢰하지 않으므로, TLS 검증을 끄지 말고 `--ignore-certificate-errors-spki-list=<프록시 CA의 SPKI sha256>`로 그 CA 하나만 신뢰시킨다.
+- **Netlify가 덧붙이는 것:** 무료 사이트의 HTML에 안내 주석과 `/.netlify/scripts/hud` 스크립트를 넣는다. 이 스크립트가 오른쪽 아래에 ‘Powered by Netlify’ 배지(고정 iframe 216×92px)를 띄운다.
+  - 배지 안의 ‘Hide this badge’로 숨기면 기기마다 기억된다(브라우저 저장소).
+  - 사용성 시험 전에 기기마다 숨긴다(`docs/USABILITY_TEST_M2A.md` 8절).

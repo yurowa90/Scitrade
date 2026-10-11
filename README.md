@@ -1,6 +1,6 @@
 # Scitrade
 
-현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.4.1.
+현대 무역·물류 경영과 동물·신수 직원 수집을 결합한 게임의 개발 자료입니다. 설계 v0.4 · 개발 자료 v0.5.0.
 
 처음 사용하는 코드 세션에서는 `START_HERE.md`부터 읽습니다. 이 묶음은 설계 v0.4를 담은 재생성 배포본입니다.
 
@@ -12,18 +12,33 @@
 
 먼저 `docs/CHARACTERS_AND_ORGANIZATION.md`와 `docs/ART_DIRECTION.md`를 읽습니다. 설계 수치는 DESIGN이며 실제 코드와 미술 자산의 진행 상태는 [docs/STATUS.md](docs/STATUS.md)를 기준으로 확인합니다.
 
+## 시제품 실행
+
+M1(거래 한 건)과 M2a 일부(복수 계약·운송 주선·자원 예약, 동료 영입, 경험치·레벨·훈련, 도시 문화 활동)의 엔진과 최소 화면이 있습니다. 본사는 평택입니다(2026-10-09). 화면 위쪽에서 시나리오를 고릅니다. Node.js 22 이상에서:
+
+```bash
+npm install
+npm run dev        # 화면 (http://localhost:5173)
+npm test           # 엔진 테스트
+npm run typecheck
+python3 tools/validate_data.py   # 자료 검사
+```
+
+현재 구현 범위와 검증 기록은 [docs/STATUS.md](docs/STATUS.md)를 봅니다. 엔진 결정은 [docs/DECISIONS.md](docs/DECISIONS.md)의 ‘M1 엔진 구현 결정’과 ‘M2a 첫 단계’에 있습니다.
+
 ## 2026-10-05 플레이·개발·그래픽 참고 연구
 
 [Claude·Codex 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 시작합니다. [자료 전체](references/playthrough_research_2026-10-05/README.md)에 게임별 플레이·공략 5편씩과 보충 리뷰를 포함한 영상26편의 자동자막 분석, 관찰134개, 공식 정지 이미지17장, 개발·그래픽 사양, JSON·CSV를 수록했습니다.
 
-현재 브랜치의 구현과 진행 상태를 먼저 확인하고 필요한 제안만 연결합니다. 연구 자료의 M1·M2 단계명은 기존 기능을 다시 만들라는 지시가 아닙니다. 영상 화면·음성 직접 확인과 실증 계수 검증은 수행하지 않았습니다.
+현재 브랜치의 구현과 진행 상태를 먼저 확인하고 필요한 제안만 연결합니다. 연구 자료의 M1·M2 단계명은 기존 기능을 다시 만들라는 지시가 아닙니다. 영상 화면·음성 직접 확인과 실증 계수 검증은 수행하지 않았습니다. 제안 14개의 채택 여부와 남은 일은 [docs/RESEARCH_APPLICATION.md](docs/RESEARCH_APPLICATION.md)에 있습니다.
 
 ## Claude·Codex와 작업하기
 
 - Codex는 [AGENTS.md](AGENTS.md), Claude는 [CLAUDE.md](CLAUDE.md)에서 시작합니다.
 - 두 파일은 [공통 작업 규칙](docs/ai/WORKFLOW.md)을 함께 사용합니다.
 - [현재 상태](docs/STATUS.md), [단계별 구현 계획](docs/IMPLEMENTATION_PLAN.md), [업무별 자료 위치](docs/ai/CONTEXT_MAP.md)를 확인합니다.
-- 게임 엔진과 미술 자산은 아직 없습니다.
+- [고전게임 인사이트·후속 개선 Claude 인계](docs/ai/CLASSIC_GAME_HANDOFF.md): 기존 플레이 기록과 공식 자료를 현재 단계에 연결한 우선순위·범위·완료 조건입니다. 게임 구현 완료 보고가 아닙니다.
+- M1과 M2a 일부의 엔진·최소 화면만 있습니다. 미술 자산은 아직 없습니다. 진행 상태는 [현재 상태](docs/STATUS.md)를 기준으로 합니다.
 
 ## 먼저 알아둘 결정
 
@@ -64,16 +79,16 @@
 
 | 파일 | 용도 |
 |---|---|
-| `characters.json` | 동물·신수 원안12종, P0 6종·P1 6종, 능력·속성·영입·성장 방향 |
+| `characters.json` | 동료 60종: P0 6종, 6개 거점 국가별 대표 동물·멸종위기 동물·신화 존재와 공통 신화 모티프. 만남 지역·보전 상태·출전 기록, 능력·속성·영입·성장 방향 |
 | `character_rules.json` | 레벨·교육·강화·업무 기여·중첩 상한·후천적 지역 경험 |
 | `organization.json` | 3부서·7상설팀·팀 내 역할·별도 프로젝트 편성 |
 | `job_templates.json`, `team_synergies.json` | 직무6종·속성 친화·팀 조합 조건3종. 최초 업무2종·시너지2규칙 |
 | `ui_screens.json` | 화면 ID·정보·행동·도입 단계 |
 | `content_hooks.json` | 아직 구현되지 않은 명령·대화 연결점의 등록부 |
 | `game_config.json` | 90일 캠페인, 통화·초기 현금·기능 단계·고정 시드 |
-| `world.json` | 6개 거점과 개념 지도 위치. 좌표는 실제 위경도가 아님 |
+| `world.json` | 세계 거점 21곳(1장 7곳 + 세계 확장 미리 보기 14곳)과 해협·운하 6곳. 본사는 평택(`HOME_BASE`). 지도 표시용 대략 위경도, 거점 역할·선정 근거·개방 단계. 개념 지도 좌표(`map_position`)는 1장 7곳에만 있음 |
 | `goods.json` | 8개 대표 품목·단위·보관 종류. HS 코드는 확인 전 `null` |
-| `routes.json` | 6개 단방향 합성 노선·용량·출발 간격·요금 |
+| `routes.json` | 6개 단방향 노선·용량·출발 간격·요금. ROUTE01·02의 운송일수는 실제 평택발 선사 요일표 근거(`schedule_basis`), 나머지 값은 합성 |
 | `employees.json` | 직원·후보 6명. 2명 고용 상태, 나머지 후보 |
 | `market_offers.json` | 첫 거래의 매입·판매 견적 |
 | `scenarios.json` | M1 정상·취소·지연, 도시 문화, P1 주식의 분리된 시작 조건 |
@@ -96,7 +111,7 @@ Python 3 표준 라이브러리만 사용합니다. 폴더를 이동해도 동�
 python3 tools/validate_data.py
 ```
 
-검증 범위: JSON 구조, ID 중복·교차 참조, 출처·교과 연결, P0/P1 기능 구분, 양수·범위 조건, M1 정상·취소·지연 거래 산수·IPO 예제, ECB 교차환율 재계산, manifest 해시. 기존 인수 사례14개와 캐릭터·조직 인수 사례8개를 별도 제공합니다. 총22개는 미구현 엔진에 연결할 명세입니다. 통과는 **데이터 묶음의 정합성 확인**이며 게임 플레이·실제 경제·교육 효과 검증을 뜻하지 않습니다.
+검증 범위: JSON 구조, ID 중복·교차 참조, 출처·교과 연결, P0/P1 기능 구분, 양수·범위 조건, M1 정상·취소·지연 거래 산수·IPO 예제, ECB 교차환율 재계산, manifest 해시. 거래·운영 인수 사례 18개(M2a 4개 포함)와 캐릭터·조직 인수 사례 8개를 별도로 제공합니다. 총 26개(핵심 18 + 캐릭터 8) 가운데 일부만 엔진 테스트에 연결했으며, 연결 현황은 STATUS.md에 있습니다. 이 검사는 M2 시나리오의 경로 산술도 확인합니다. 통과는 **데이터 묶음의 정합성 확인**이며 게임 플레이·실제 경제·교육 효과 검증을 뜻하지 않습니다.
 
 ## 첫 코드 세션에 넣을 요청
 
@@ -119,4 +134,4 @@ M1 거래 → M2a 복수 계약·동료 영입·레벨·교육·도시 활동 �
 python3 tools/build_package.py
 ```
 
-검증 후 `dist/Scitrade_development_v0.4.1.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.
+검증 후 `dist/Scitrade_development_v0.5.0.zip`을 만듭니다. 문서·데이터 수정 후 해시만 갱신하려면 `python3 tools/build_package.py --manifest-only`를 사용합니다. ZIP은 생성물이며 Git에는 문서·JSON·검증 도구를 보관합니다.

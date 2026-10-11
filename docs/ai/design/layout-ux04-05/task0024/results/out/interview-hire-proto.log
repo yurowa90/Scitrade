@@ -1,0 +1,7 @@
+l1366: {"iv_head_from_bar":110.9,"hire_from_bar":467.1,"hire_h":37.3,"iv_head_low_from_bar":110.9,"hire_low_from_bar":467.1,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+cb1366t: {"iv_head_from_bar":98.3,"hire_from_bar":454.5,"hire_h":44,"iv_head_low_from_bar":98.3,"hire_low_from_bar":454.5,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadAirL: {"iv_head_from_bar":187.8,"hire_from_bar":543.9,"hire_h":44,"iv_head_low_from_bar":260.3,"hire_low_from_bar":616.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadminiL: {"iv_head_from_bar":187.8,"hire_from_bar":543.9,"hire_h":44,"iv_head_low_from_bar":208.3,"hire_low_from_bar":564.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadmini6L: {"iv_head_from_bar":184.3,"hire_from_bar":540.4,"hire_h":44,"iv_head_low_from_bar":184.3,"hire_low_from_bar":540.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+l1920: {"iv_head_from_bar":183.9,"hire_from_bar":540.1,"hire_h":37.3,"iv_head_low_from_bar":422.9,"hire_low_from_bar":779.1,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+t1000: {"iv_head_from_bar":188,"hire_from_bar":373.2,"hire_h":44,"iv_head_low_from_bar":311.5,"hire_low_from_bar":496.7,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과

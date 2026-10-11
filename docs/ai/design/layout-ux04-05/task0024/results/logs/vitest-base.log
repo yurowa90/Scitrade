@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/accept28/t24h/base
+
+
+ Test Files  32 passed (32)
+      Tests  973 passed | 1 todo (974)
+   Start at  04:11:26
+   Duration  71.87s (tests 84%, transform 8%, import 7%)
+
+    Isolate  32 workers spawned · ~752ms startup each (spawn + environment, per file)
+             at least ~7.27s faster with isolate: false — reuses workers across files instead of one per file
+

@@ -51,7 +51,8 @@
           "stat_total",
           "stats",
           "visual_motif",
-          "xp_total"
+          "xp_total",
+          "species_ko"
         ],
         "properties": {
           "art_direction": {
@@ -174,7 +175,12 @@
             "additionalProperties": true
           },
           "creature_kind": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "animal",
+              "myth_inspired"
+            ],
+            "description": "창작 결합 생물(original_creature)은 쓰지 않는다 (2026-10-04 사용자 결정)."
           },
           "data_basis": {
             "type": "string"
@@ -418,6 +424,174 @@
           },
           "xp_total": {
             "type": "integer"
+          },
+          "myth_reference": {
+            "type": "object",
+            "description": "특정 전승을 모티프로 한 경우의 출전 조사 기록. 게임 설정은 창작 해석이며 전승의 확정 설명이 아니다.",
+            "required": [
+              "creature",
+              "tradition",
+              "summary_ko",
+              "sources",
+              "checked_on",
+              "check_level"
+            ],
+            "properties": {
+              "creature": {
+                "type": "string"
+              },
+              "tradition": {
+                "type": "string"
+              },
+              "summary_ko": {
+                "type": "string"
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "checked_on": {
+                "type": "string"
+              },
+              "check_level": {
+                "type": "string"
+              },
+              "design_cautions_ko": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "encounter": {
+            "type": "object",
+            "description": "처음 만나는 국가·도시와 수집 분류. 국적·능력·근무 지역 제한이 아니다.",
+            "required": [
+              "country_code",
+              "city_id",
+              "category",
+              "category_ko",
+              "unlock_stage",
+              "note_ko"
+            ],
+            "properties": {
+              "country_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "city_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "starter",
+                  "representative_animal",
+                  "rare_animal",
+                  "myth_legend",
+                  "global_myth"
+                ]
+              },
+              "category_ko": {
+                "type": "string"
+              },
+              "unlock_stage": {
+                "type": "string",
+                "enum": [
+                  "P0",
+                  "M2a",
+                  "M3",
+                  "P1"
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "conservation": {
+            "type": "object",
+            "description": "실재 동물의 보전 상태 기록. 출처와 확인 수준을 함께 남긴다.",
+            "required": [
+              "iucn_status",
+              "note_ko",
+              "cites_appendix",
+              "national_protection_ko",
+              "sources",
+              "checked_on",
+              "check_level",
+              "design_cautions_ko"
+            ],
+            "properties": {
+              "iucn_status": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "CR",
+                  "EN",
+                  "VU",
+                  "NT",
+                  "LC",
+                  null
+                ]
+              },
+              "note_ko": {
+                "type": "string"
+              },
+              "cites_appendix": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "I",
+                  "II",
+                  "III",
+                  null
+                ]
+              },
+              "national_protection_ko": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "checked_on": {
+                "type": "string"
+              },
+              "check_level": {
+                "type": "string"
+              },
+              "design_cautions_ko": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "species_ko": {
+            "type": "string",
+            "description": "도감에 표시할 실제 종 또는 전승 존재의 이름"
           }
         },
         "additionalProperties": true

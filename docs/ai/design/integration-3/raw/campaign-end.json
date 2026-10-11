@@ -1,0 +1,135 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "campaign-end",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/i3/dist",
+  "dist_index_sha256": "02baa14df2159b1d5e4a5d67d8c4d0bf56309ed46a5ed8c3439be5e3778c7850",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 47
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "settlement_from_bar": -0.1,
+        "overflow_x_end": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 47
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "settlement_from_bar": 0,
+        "overflow_x_end": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 47
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "settlement_from_bar": -0.1,
+        "overflow_x_end": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "settlement_from_bar",
+      "profile": "l1366",
+      "actual": -0.1,
+      "min": -2,
+      "max": 8,
+      "ok": true
+    },
+    {
+      "value": "settlement_from_bar",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": -2,
+      "max": 8,
+      "ok": true
+    },
+    {
+      "value": "settlement_from_bar",
+      "profile": "t1000",
+      "actual": -0.1,
+      "min": -2,
+      "max": 8,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_end",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_end",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_end",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": true
+}

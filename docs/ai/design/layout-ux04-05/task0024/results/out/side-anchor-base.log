@@ -1,0 +1,7 @@
+l1366: {"queue_moved":-101.6,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+cb1366t: {"queue_moved":-117,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+ipadAirL: {"queue_moved":-136.5,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+ipadminiL: {"queue_moved":-136.5,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+ipadmini6L: {"queue_moved":-136.5,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+l1920: {"queue_moved":-101.6,"res_moved":0,"trade_moved":0,"overflow_x":0} 기대 실패, 실행 ok, 글꼴 통과
+t1000: {"queue_moved":0.1,"res_moved":-2450.9,"trade_moved":0,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과

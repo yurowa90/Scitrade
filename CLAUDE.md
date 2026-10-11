@@ -8,9 +8,14 @@
 2. [docs/STATUS.md](docs/STATUS.md) — 실제 구현·검증·미완료 상태.
 3. [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) — 이번 단계의 범위와 완료 조건.
 4. [docs/ai/CONTEXT_MAP.md](docs/ai/CONTEXT_MAP.md) — 업무별 문서·데이터 위치.
+5. [docs/ai/SESSION_TREE.md](docs/ai/SESSION_TREE.md) — 여러 세션(허브·하위)으로 일할 때 누가 무엇을 하는지.
 
 이 파일과 AGENTS.md는 같은 문서를 안내한다. 독립적인 게임 규칙이나 별도 진행 상태를 만들지 않는다. 새 작업에서는 기존 코드가 생겼는지 먼저 확인하고, 자료나 이전 대화만으로 구현 완료를 추정하지 않는다. 사용자 지시와 적용되는 상위 지침이 우선한다.
 
 2026-10-05 추가된 레퍼런스는 [연구 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 읽는다. 세 관점의 보고서·개발 및 그래픽 사양·소스 데이터를 현재 구현과 대조하는 자료다.
+
+Claude는 총괄·검수를 맡고 구현은 Codex(Astra·Sol)에 지시서로 맡긴다. 역할과 흐름은 WORKFLOW.md의 ‘역할 분담’, 지시서 목록은 [docs/ai/tasks/README.md](docs/ai/tasks/README.md)에 있다.
+
+Claude 세션은 허브 하나와 갈래별 하위 세션으로 나눠 일한다(2026-10-10 사용자 결정). 세션마다 맡는 일·브랜치·작업 번호와 허브만 쓰는 파일은 [docs/ai/SESSION_TREE.md](docs/ai/SESSION_TREE.md)에 있다.
 
 검증 시작 명령: `python3 tools/validate_data.py`.

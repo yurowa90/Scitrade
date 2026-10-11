@@ -11,10 +11,9 @@
       ],
       "curriculum_refs": [
         "SOC04",
-        "SOC07",
-        "SOC10"
+        "SOC07"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -28,7 +27,7 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_PACKAGING",
+        "id": "KT_PYEONGTAEK_PACKAGING",
         "title_ko": "한 상인의 포장·보관 요구",
         "scope": "city_and_named_contact",
         "content_revision": "1"
@@ -46,7 +45,7 @@
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_PACKAGING",
+          "topic_id": "KT_PYEONGTAEK_PACKAGING",
           "unlocks": [
             "DIALOGUE_CLARIFY_CUSTOMER_PACKAGING",
             "TASK_RESEARCH_EXISTING_SMALL_PACK_SUPPLIERS"
@@ -70,21 +69,32 @@
       ],
       "actor_experience_dedupe_key_template": "{company_id}:{actor_id}:{activity_id}:{city_id}:{content_revision}:personal_experience",
       "relationship_dedupe_key_template": "{company_id}:{actor_id}:{contact_id}:{activity_id}:{city_id}:{content_revision}:relationship",
-      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다."
+      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다.",
+      "report_ko": {
+        "finding_ko": "윤서: “지금 들여오는 상자는 우리 가게 선반에 다 들어가지 않아요. 더 작은 묶음이면 좋겠어요.”",
+        "scope_ko": "판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다.",
+        "not_claimed_ko": "평택의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.",
+        "open_question_ko": "윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지."
+      },
+      "extension_curriculum_refs": [
+        "SOC10"
+      ]
     },
     {
       "id": "CA02",
-      "title_ko": "박물관과 항구 기록 산책",
+      "title_ko": "항만 전시관과 기록 산책",
       "stage": "P0",
       "source_refs": [
-        "DESIGN-V03"
+        "DESIGN-V03",
+        "GPPC-STATS-2026-06",
+        "MOF-PORT-2025"
       ],
       "curriculum_refs": [
         "SOC04",
-        "SOC08",
-        "SOC12"
+        "SOC07",
+        "SCI01"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -98,8 +108,8 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_PORT_RECORDS",
-        "title_ko": "항구 기록을 읽을 때 확인할 질문",
+        "id": "KT_PYEONGTAEK_PORT_RECORDS",
+        "title_ko": "항만 순위를 읽을 때 확인할 질문",
         "scope": "city_and_named_contact",
         "content_revision": "1"
       },
@@ -110,13 +120,13 @@
         "require_sufficient_cash": true
       },
       "observations_ko": [
-        "가상 전시의 서로 다른 설명을 비교하고 출처와 시점을 확인합니다.",
-        "실제 지역사 사실은 검증한 자료가 추가되기 전까지 서술하지 않습니다."
+        "가상 전시의 서로 다른 순위 설명을 비교하고 단위·연도·출처를 확인합니다.",
+        "순위는 확인한 2025년 통계만 쓰고, 실제 지역사는 서술하지 않습니다."
       ],
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_PORT_RECORDS",
+          "topic_id": "KT_PYEONGTAEK_PORT_RECORDS",
           "unlocks": [
             "DIALOGUE_COMPARE_PORT_RECORDS",
             "TASK_RESEARCH_RECORD_PROVENANCE"
@@ -140,7 +150,13 @@
       ],
       "actor_experience_dedupe_key_template": "{company_id}:{actor_id}:{activity_id}:{city_id}:{content_revision}:personal_experience",
       "relationship_dedupe_key_template": "{company_id}:{actor_id}:{contact_id}:{activity_id}:{city_id}:{content_revision}:relationship",
-      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다."
+      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다.",
+      "report_ko": {
+        "finding_ko": "하람: “이 안내판은 ‘전국 4위’, 저 안내판은 ‘전국 5위’예요. 하나는 컨테이너를 20피트 상자 기준(TEU)으로, 하나는 모든 화물을 톤으로 셌대요. 무엇을 무슨 단위로 셌는지 보기 전에는 한쪽이 틀렸다고 할 수 없어요.”",
+        "scope_ko": "가상 전시 1곳의 안내판 2개를 안내자 1명(하람)과 읽었습니다. 둘 다 2025년 한 해의 순위입니다. 원래 통계표는 아직 직접 보지 않았습니다.",
+        "not_claimed_ko": "어느 순위가 더 중요한지, 다른 해에도 순위가 같은지, 그리고 평택항의 실제 역사(전시는 가상이고, 순위만 2025년 통계를 따릅니다).",
+        "open_question_ko": "전시의 ‘톤’이 무게만 센 것인지, 그리고 1위 항만과는 얼마나 차이 나는지."
+      }
     },
     {
       "id": "CA03",
@@ -152,7 +168,7 @@
       "curriculum_refs": [
         "SOC04"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -167,7 +183,7 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_ORDER_CLARIFICATION",
+        "id": "KT_PYEONGTAEK_ORDER_CLARIFICATION",
         "title_ko": "특정 상대의 주문 표현을 확인하는 방법",
         "scope": "city_and_named_contact",
         "content_revision": "1"
@@ -185,7 +201,7 @@
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_ORDER_CLARIFICATION",
+          "topic_id": "KT_PYEONGTAEK_ORDER_CLARIFICATION",
           "unlocks": [
             "DIALOGUE_CONFIRM_ORDER_TERMS",
             "DIALOGUE_REQUEST_FOLLOWUP_MEETING"
@@ -210,7 +226,13 @@
       ],
       "actor_experience_dedupe_key_template": "{company_id}:{actor_id}:{activity_id}:{city_id}:{content_revision}:personal_experience",
       "relationship_dedupe_key_template": "{company_id}:{actor_id}:{contact_id}:{activity_id}:{city_id}:{content_revision}:relationship",
-      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다."
+      "repeat_policy_ko": "회사 보고서는 회사별 1회, 직접 경험은 직원별 1회, 관계는 참여 직원과 해당 인물 쌍별 1회. 다른 직원의 첫 참여는 가능하며 경비와 시간을 다시 사용한다.",
+      "report_ko": {
+        "finding_ko": "윤서: “‘다음 주 초에 조금 더’라고 하면 저는 월요일에 열 상자 정도를 뜻해요.” / 하람: “같은 말도 사람마다 뜻이 다를 수 있으니, 날짜와 숫자로 다시 말해 달라고 하세요.”",
+        "scope_ko": "2명(윤서·하람)과 하루의 대화. ‘월요일·열 상자 정도’는 윤서 본인에게 확인한 뜻입니다. 다른 거래처의 표현은 확인하지 않았습니다.",
+        "not_claimed_ko": "평택의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다.",
+        "open_question_ko": "‘정도’가 몇 상자까지인지, 매주 같은 양인지."
+      }
     },
     {
       "id": "CA04",
@@ -223,7 +245,7 @@
         "SOC04",
         "SOC07"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -237,7 +259,7 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_EVENT_NEEDS",
+        "id": "KT_PYEONGTAEK_EVENT_NEEDS",
         "title_ko": "한 가상 행사의 준비 일정과 물류 질문",
         "scope": "city_and_named_contact",
         "content_revision": "1"
@@ -255,7 +277,7 @@
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_EVENT_NEEDS",
+          "topic_id": "KT_PYEONGTAEK_EVENT_NEEDS",
           "unlocks": [
             "DIALOGUE_ASK_EVENT_REQUIREMENTS",
             "TASK_RESEARCH_EVENT_DELIVERY_FEASIBILITY"
@@ -296,7 +318,7 @@
         "SCI06",
         "SCI10"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -310,7 +332,7 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_FIELD_OBSERVATIONS",
+        "id": "KT_PYEONGTAEK_FIELD_OBSERVATIONS",
         "title_ko": "가상 생산 현장의 보관·환경 자료 확인",
         "scope": "city_and_named_contact",
         "content_revision": "1"
@@ -328,7 +350,7 @@
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_FIELD_OBSERVATIONS",
+          "topic_id": "KT_PYEONGTAEK_FIELD_OBSERVATIONS",
           "unlocks": [
             "DIALOGUE_VERIFY_SUPPLIER_CLAIMS",
             "TASK_REQUEST_FIELD_EVIDENCE"
@@ -366,7 +388,7 @@
         "SOC06",
         "ETH02"
       ],
-      "city_id": "BUSAN",
+      "city_id": "PYEONGTAEK",
       "venue_id": "VEN_CULTURE",
       "fictional": true,
       "contact_ids": [
@@ -381,7 +403,7 @@
         "basis": "DESIGN"
       },
       "knowledge_topic": {
-        "id": "KT_BUSAN_PROJECT_REQUIREMENTS",
+        "id": "KT_PYEONGTAEK_PROJECT_REQUIREMENTS",
         "title_ko": "작은 가상 지역 프로젝트의 참여 조건",
         "scope": "city_and_named_contact",
         "content_revision": "1"
@@ -399,7 +421,7 @@
       "effects": [
         {
           "type": "UNLOCK_KNOWLEDGE",
-          "topic_id": "KT_BUSAN_PROJECT_REQUIREMENTS",
+          "topic_id": "KT_PYEONGTAEK_PROJECT_REQUIREMENTS",
           "unlocks": [
             "DIALOGUE_NEGOTIATE_PROJECT_ROLES",
             "TASK_PLAN_COMMUNITY_PROJECT"
