@@ -1,0 +1,747 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "route-map-fit",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/i3/dist",
+  "dist_index_sha256": "02baa14df2159b1d5e4a5d67d8c4d0bf56309ed46a5ed8c3439be5e3778c7850",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 509.1,
+        "map_w": 503,
+        "map_left_band": 0,
+        "map_h": 314,
+        "overflow_x": 0,
+        "map_left_band_day2": 0,
+        "map_h_day2": 314,
+        "map_left_band_restart": 0,
+        "map_h_restart": 314,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 509.1,
+        "map_w": 503,
+        "map_left_band": 0,
+        "map_h": 314,
+        "overflow_x": 0,
+        "map_left_band_day2": 0,
+        "map_h_day2": 314,
+        "map_left_band_restart": 0,
+        "map_h_restart": 314,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 406.6,
+        "map_w": 400,
+        "map_left_band": 0.3,
+        "map_h": 250,
+        "overflow_x": 0,
+        "map_left_band_day2": 0.3,
+        "map_h_day2": 250,
+        "map_left_band_restart": 0.3,
+        "map_h_restart": 250,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 321.5,
+        "map_w": 315,
+        "map_left_band": 0.3,
+        "map_h": 245,
+        "overflow_x": 0,
+        "map_left_band_day2": 0.3,
+        "map_h_day2": 245,
+        "map_left_band_restart": 0.3,
+        "map_h_restart": 245,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 381,
+        "map_w": 374,
+        "map_left_band": 0.5,
+        "map_h": 245,
+        "overflow_x": 0,
+        "map_left_band_day2": 0.5,
+        "map_h_day2": 245,
+        "map_left_band_restart": 0.5,
+        "map_h_restart": 245,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 811.3,
+        "map_w": 804,
+        "map_left_band": 0.6,
+        "map_h": 502,
+        "overflow_x": 0,
+        "map_left_band_day2": 0.6,
+        "map_h_day2": 502,
+        "map_left_band_restart": 0.6,
+        "map_h_restart": 502,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "frame_w": 926.6,
+        "map_w": 920,
+        "map_left_band": 0.3,
+        "map_h": 576,
+        "overflow_x": 0,
+        "map_left_band_day2": 0.3,
+        "map_h_day2": 576,
+        "map_left_band_restart": 0.3,
+        "map_h_restart": 576,
+        "overflow_x_restart": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "map_left_band",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "ipadAirL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "ipadminiL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "ipadmini6L",
+      "actual": 0.5,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "l1920",
+      "actual": 0.6,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band",
+      "profile": "t1000",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "ipadAirL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "ipadminiL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "ipadmini6L",
+      "actual": 0.5,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "l1920",
+      "actual": 0.6,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_day2",
+      "profile": "t1000",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "ipadAirL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "ipadminiL",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "ipadmini6L",
+      "actual": 0.5,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "l1920",
+      "actual": 0.6,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "map_left_band_restart",
+      "profile": "t1000",
+      "actual": 0.3,
+      "min": 0,
+      "max": 1.5,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_restart",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "l1366",
+      "actual": 503,
+      "min": 503,
+      "max": 503,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "cb1366t",
+      "actual": 503,
+      "min": 503,
+      "max": 503,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "l1366",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "cb1366t",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "ipadAirL",
+      "actual": 400,
+      "min": 400,
+      "max": 400,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "ipadAirL",
+      "actual": 250,
+      "min": 250,
+      "max": 250,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "ipadminiL",
+      "actual": 315,
+      "min": 315,
+      "max": 315,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "ipadmini6L",
+      "actual": 374,
+      "min": 374,
+      "max": 374,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "ipadminiL",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "ipadmini6L",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "l1920",
+      "actual": 804,
+      "min": 804,
+      "max": 804,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "l1920",
+      "actual": 502,
+      "min": 502,
+      "max": 502,
+      "ok": true
+    },
+    {
+      "value": "map_w",
+      "profile": "t1000",
+      "actual": 920,
+      "min": 920,
+      "max": 920,
+      "ok": true
+    },
+    {
+      "value": "map_h",
+      "profile": "t1000",
+      "actual": 576,
+      "min": 576,
+      "max": 576,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "l1366",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "cb1366t",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "ipadAirL",
+      "actual": 250,
+      "min": 250,
+      "max": 250,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "ipadminiL",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "ipadmini6L",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "l1920",
+      "actual": 502,
+      "min": 502,
+      "max": 502,
+      "ok": true
+    },
+    {
+      "value": "map_h_day2",
+      "profile": "t1000",
+      "actual": 576,
+      "min": 576,
+      "max": 576,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "l1366",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "cb1366t",
+      "actual": 314,
+      "min": 314,
+      "max": 314,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "ipadAirL",
+      "actual": 250,
+      "min": 250,
+      "max": 250,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "ipadminiL",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "ipadmini6L",
+      "actual": 245,
+      "min": 245,
+      "max": 245,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "l1920",
+      "actual": 502,
+      "min": 502,
+      "max": 502,
+      "ok": true
+    },
+    {
+      "value": "map_h_restart",
+      "profile": "t1000",
+      "actual": 576,
+      "min": 576,
+      "max": 576,
+      "ok": true
+    }
+  ],
+  "ok": true
+}
