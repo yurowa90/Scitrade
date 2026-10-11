@@ -1186,6 +1186,11 @@
       "sha256": "73775d42c93b4ec974353ed8fbb13f4e45955cf7e46855a90fc049fe1c47c7fd"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS3.md",
+      "size_bytes": 4547,
+      "sha256": "3aa0392e7b163448983c01020ef74fa610bc48c0f0d2386a742712d2e05e09b7"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
       "size_bytes": 2094,
       "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
