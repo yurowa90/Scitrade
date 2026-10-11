@@ -1301,6 +1301,11 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/research/CONSERVATION-BULK.md",
+      "size_bytes": 12414,
+      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
       "size_bytes": 18151,
       "sha256": "b4b11b61d5d3f80f2d94c5e520a6174287f10229e4062a14ed83b34fc02f7b7b"
