@@ -1301,6 +1301,11 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
+      "size_bytes": 18151,
+      "sha256": "b4b11b61d5d3f80f2d94c5e520a6174287f10229e4062a14ed83b34fc02f7b7b"
+    },
+    {
       "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
       "size_bytes": 43560,
       "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
