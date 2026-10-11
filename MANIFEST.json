@@ -1531,6 +1531,11 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
+      "size_bytes": 13099,
+      "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
