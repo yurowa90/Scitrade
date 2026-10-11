@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { loadScenario, SCENARIO_IDS } from '../content/scenario';
-import { createGame, openDay, planState } from './engine';
+import { commitDay, createGame, openDay, planState } from './engine';
 import { exchangePreview, hiringOutlook, quotePreview, warehouseSummary, weeklyBottleneck, type QuoteOfferIds } from './readers';
+import { cargoSpace } from './catalog';
+import { offerDef } from './market';
 import { upcomingPayments } from './reports';
 import { atDay, applied, caseOf, config, fresh, scriptOf } from './m2a5-testkit';
 import type { EngineCommand, GameState, ScenarioConfig } from './types';
@@ -52,12 +54,12 @@ describe('P0-M2A5-18 본사·창고 표와 병목 표', () => {
     expect(read(s, config, () => upcomingPayments(s, config, f18.payment_through_day))).toEqual(n18.payments_invested);
     expect(read(later, config, () => upcomingPayments(later, config, later.day))).toEqual(n18.payments_expanded_rent);
   });
-  it('직접 무역과 일반 주선의 준비량을 다른 일 몫에 함께 넣는다', () => {
+  it('오늘 수락한 직접 무역과 일반 주선의 준비량은 관측 창 밖이다', () => {
     const p = planState(atDay(f18.storage_day), config, f18.history_commands);
     expect(p.results).toEqual(applied(f18.history_commands));
     expect(read(p.state, config, () => warehouseSummary(p.state, config))).toEqual(n18.with_trade);
   });
-  it('최근 네 묶음은 견적 공개일로 계약 준비량을 세고 오래된 묶음을 제외한다', () => {
+  it('28일 창은 수락일이 경계인 계약을 포함하고 오래된 계약을 뺀다', () => {
     for (const day of f18.history_days) {
       const s = atDay(day, config, { [f18.storage_day]: f18.history_commands });
       expect(read(s, config, () => warehouseSummary(s, config))).toEqual(n18[`history_${day}`]);
@@ -169,6 +171,18 @@ describe('M2a-5 읽기 함수 성질', () => {
 });
 
 describe('M2a-5 병목 표 경계', () => {
+  it('1일 관측 창은 비어 있고 투자 없음과 S+E의 고용 반례를 보존한다', () => {
+    for (const row of n18.hiring) {
+      const s = row.invested ? invested() : fresh();
+      // 투자 완료 상태를 1일에 놓는 용량 반례다. 실제 확장 명령 효력일은 바꾸지 않는다.
+      s.day = 1;
+      for (const expansion of s.operations!.expansions) expansion.effectiveDay = 1;
+      for (const space of s.operations!.spaceContracts) space.firstSailingDay = config.routes.find((r) => r.id === space.routeId)!.firstDepartureDay;
+      const expected = structuredClone(row.outlook.bottleneck);
+      expected.storageDetail.windowDays = 0;
+      expect(read(s, config, () => weeklyBottleneck(s, config, row.candidate_id))).toEqual(expected);
+    }
+  });
   it('공개 묶음이 없으면 수요 null이고 동률 제약을 모두 남긴다', () => {
     const s = fresh(); s.operations!.batches = [];
     expect(read(s, config, () => weeklyBottleneck(s, config))).toEqual(n18.initial.bottleneck);
@@ -197,5 +211,47 @@ describe('M2a-5 병목 표 경계', () => {
     const s = fresh();
     s.employees.filter((e) => e.employmentStatus === 'employed').forEach((e) => e.availableFromDay = config.campaignDays);
     expect(read(s, config, () => weeklyBottleneck(s, config))).toEqual(n18.initial.bottleneck);
+  });
+});
+
+describe('P0-M2A5-20 28일 병목 실측', () => {
+  const spec = caseOf('P0-M2A5-20'), f = spec.test_fixture, n = spec.expected_numeric;
+  it('계약 원기록의 독립 손계산과 전체 병목 표가 같다', () => {
+    const s = atDay(f.day, config, f.script);
+    expect(read(s, config, () => weeklyBottleneck(s, config, f.candidate_id))).toEqual(n.bottleneck);
+  });
+  it('재구성 점유는 모든 날의 실제 마감 비작업 화물 점유와 같다', () => {
+    let s = createGame(config);
+    const actual: number[] = [];
+    for (let t = 1; t < f.day; t++) {
+      s = openDay(s, config).state;
+      const commands: EngineCommand[] = f.script[t] ?? [];
+      const closed = commitDay(s, config, commands);
+      expect(closed.results).toEqual(applied(commands));
+      s = closed.state;
+      actual.push(s.cargoLots.filter((lot) => {
+        if (lot.locationCityId !== config.homeCityId || !['PREPARING', 'AWAITING_DEPARTURE', 'HELD_UNALLOCATED'].includes(lot.status)) return false;
+        const c = s.contracts.find((c) => c.id === lot.contractId);
+        return !c || c.kind !== 'FORWARDING' || offerDef(s, config, c.serviceOfferId!)?.serviceClass !== 'HANDLING';
+      }).reduce((sum, lot) => sum + cargoSpace(config, lot.goodId, lot.quantity).volumeLiters, 0));
+    }
+    // 최종 원기록을 날짜축만 평행 이동하여 각 t+1을 길이 1인 관측 창의 1일에 놓는다.
+    // 그러면 평균의 내림에 가려지는 차이 없이 실제 재구성 코드의 하루 점유를 읽는다.
+    const reconstructed = actual.map((_, i) => {
+      const shifted = structuredClone(s), offset = i + 1;
+      shifted.day = 2;
+      for (const c of shifted.contracts) {
+        c.acceptedDay -= offset;
+        if (c.cancelledDay !== null) c.cancelledDay -= offset;
+      }
+      for (const sh of shifted.shipments) sh.departureDay -= offset;
+      return read(shifted, config, () => weeklyBottleneck(shifted, config)).storageDetail.otherOccupancyLiters;
+    });
+    expect(reconstructed).toEqual(actual);
+  });
+  it('28일보다 오래된 준비는 빠지고 남은 미배정 화물은 계속 점유한다', () => {
+    const s = atDay(f.day + 14, config, f.script);
+    const b = read(s, config, () => weeklyBottleneck(s, config));
+    expect({ otherPtPerWeek: b.otherPtPerWeek, storageDetail: b.storageDetail }).toEqual(n.older_window);
   });
 });
