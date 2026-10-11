@@ -62,8 +62,8 @@
     },
     {
       "path": "data/curriculum_links.json",
-      "size_bytes": 73295,
-      "sha256": "aa1a741f3f4b1a50d32e12c3e529991517190ee7a77328354dada9301f701405"
+      "size_bytes": 77312,
+      "sha256": "f0dab6797e7f466029a5d49cff841c46a0d1ac8f02e69000b0dbd6d43b5d9dab"
     },
     {
       "path": "data/employees.json",
@@ -1299,6 +1299,16 @@
       "path": "docs/ai/design/m2a5-review/spec_check/out_B_window7_flat50.md",
       "size_bytes": 2759,
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
+    },
+    {
+      "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
+      "size_bytes": 18151,
+      "sha256": "b4b11b61d5d3f80f2d94c5e520a6174287f10229e4062a14ed83b34fc02f7b7b"
+    },
+    {
+      "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
+      "size_bytes": 43560,
+      "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
