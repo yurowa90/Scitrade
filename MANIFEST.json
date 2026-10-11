@@ -1521,6 +1521,11 @@
       "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
     },
     {
+      "path": "docs/ai/tasks/TASK-0032-m2a5-trade-lots.md",
+      "size_bytes": 4127,
+      "sha256": "915558e88bffd7a409a63f87c863a62def5ad67d0f5e1c37c9adc987369be535"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
