@@ -1301,6 +1301,21 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/map-detail-d14/README.md",
+      "size_bytes": 9596,
+      "sha256": "b3828fbc157e0221f8b26d946eba979426028128a96f2e983cde6a9fbfdc93f1"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap-5d59ff3.txt",
+      "size_bytes": 2295,
+      "sha256": "e106fe8da3d84f90040742db6db5c7b53e8da7c9164f0c188930218b9daff362"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap.js",
+      "size_bytes": 1634,
+      "sha256": "287056f8b5f7c289f35b56647cc7ccc594d3f1144aa4be278190bda17501821c"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
