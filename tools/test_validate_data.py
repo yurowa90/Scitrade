@@ -35,6 +35,10 @@ class ConservationTest(unittest.TestCase):
         self.record.update(cites_status='not_listed', cites_appendix='I')
         self.assertTrue(any('EMP01: CITES 확인 상태와 부속서' in error for error in self.errors()))
 
+    def test_listed_rejects_invalid_appendix(self):
+        self.record.update(cites_status='listed', cites_appendix='IV')
+        self.assertTrue(any('EMP01: CITES 확인 상태와 부속서' in error for error in self.errors()))
+
     def test_invalid_checked_on_rejected(self):
         for value in ('2026-13-01', '2026/10/11', None, '2026-02-29', '20261011'):
             with self.subTest(value=value):
@@ -53,6 +57,17 @@ class ConservationTest(unittest.TestCase):
         self.record.update(cites_status='unresolved', cites_appendix=None)
         self.assertEqual(self.errors(), [])
         self.assertEqual(validator.check_conservation(self.tables), ['EMP01'])
+
+    def test_unresolved_requires_date_and_basis(self):
+        self.record.update(cites_status='unresolved', cites_appendix=None)
+        for field, value, message in (
+                ('cites_checked_on', None, 'EMP01: CITES 확인일'),
+                ('cites_basis', '  ', 'EMP01: CITES 확인 근거')):
+            with self.subTest(field=field):
+                saved = self.record[field]
+                self.record[field] = value
+                self.assertTrue(any(message in error for error in self.errors()))
+                self.record[field] = saved
 
     def test_empty_scientific_name_rejected(self):
         self.record['scientific_name'] = ''

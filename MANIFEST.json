@@ -1636,6 +1636,11 @@
       "sha256": "98e2fb385fbacbc8c9e73ff9166e3c9a94f750d5d76ae835c8cfb83f148cd3b2"
     },
     {
+      "path": "docs/ai/tasks/TASK-0053-conservation-tests.md",
+      "size_bytes": 3678,
+      "sha256": "38797ea86dc12d16b69c2905e8c1213a9b2abf6fd68cfd35a545e39d6f909889"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
@@ -1859,6 +1864,11 @@
       "path": "docs/ai/tasks/results/TASK-0050.md",
       "size_bytes": 8012,
       "sha256": "373160fdc011b0e471c42ea2fc72da8db43d368960c6d5081a199b67504235a0"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0053.md",
+      "size_bytes": 4607,
+      "sha256": "1faf2b1554c76f91fe75dfe885910b555fc0c0784a4095e19c1b2d0f0399047a"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
@@ -2312,8 +2322,8 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 60555,
-      "sha256": "96e151a86e0bedd7e5f78b67f9db6f4c09dc97bbb0a5123dbc550f3068a43b27"
+      "size_bytes": 61352,
+      "sha256": "16da534bd3989a44ee0803383345854942e0209c7f3fa5e8d00f7ca5e11029da"
     },
     {
       "path": "tools/validate_data.py",
