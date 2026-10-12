@@ -1321,6 +1321,36 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/pyeongtaek-device-check/README.md",
+      "size_bytes": 9541,
+      "sha256": "6b085539894e9a627135d6fd5291f2eea355c45a30b23080dbd8ddc9bdc60716"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/pt.js",
+      "size_bytes": 9762,
+      "sha256": "3bdb4ac566bbbf47f777484c0f85bb2169abc70cd5416334596760f2b05f974d"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/pt7-5d59ff3.jsonl",
+      "size_bytes": 10021,
+      "sha256": "d780e163d71c6f58c7d9ff065bfefc11f8cde20d9e3dc94776775f540d4d3bbb"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/ptother.js",
+      "size_bytes": 827,
+      "sha256": "861f3c6ea64c96480225a93b38389d1f1c2e64f5bff85bf9dbbfaa047819f44e"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/ptzoom.js",
+      "size_bytes": 1980,
+      "sha256": "9b884c0132b79757ebd60af8d33871a7243f070a7dc9bb90f905860b4568a398"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/zoom-5d59ff3.json",
+      "size_bytes": 2698,
+      "sha256": "e9ab91ee3fdcc4ea80e942f289afc452c662c787dd8a1f6ba7a74604fe1015f8"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
       "size_bytes": 12414,
       "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
