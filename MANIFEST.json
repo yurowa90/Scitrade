@@ -1302,8 +1302,8 @@
     },
     {
       "path": "docs/ai/design/map-detail-d14/README.md",
-      "size_bytes": 9596,
-      "sha256": "b3828fbc157e0221f8b26d946eba979426028128a96f2e983cde6a9fbfdc93f1"
+      "size_bytes": 10283,
+      "sha256": "0a7e9c33282055c43c0028d08e4933e8bcdd54f52eb7921f04923b3a0941188e"
     },
     {
       "path": "docs/ai/design/map-detail-d14/hubgap-5d59ff3.txt",
@@ -1314,6 +1314,11 @@
       "path": "docs/ai/design/map-detail-d14/hubgap.js",
       "size_bytes": 1634,
       "sha256": "287056f8b5f7c289f35b56647cc7ccc594d3f1144aa4be278190bda17501821c"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/proto-a21011c.patch",
+      "size_bytes": 56586,
+      "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -1529,6 +1534,11 @@
       "path": "docs/ai/tasks/TASK-0030-m2a5-blocked-remeasure.md",
       "size_bytes": 7308,
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0035-map-detail.md",
+      "size_bytes": 95151,
+      "sha256": "22bbd21a90fd62b5d8c31971f090e4b9873ff6431b477a4a5228a0f61a60d657"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
