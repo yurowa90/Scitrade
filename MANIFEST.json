@@ -1731,6 +1731,11 @@
       "sha256": "5eb6a165fd669d8ccbfde5dda51b987c2fc36dec43a50f158135b420be65fee2"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0035.md",
+      "size_bytes": 32742,
+      "sha256": "d06ac830b549336bb4cfa1d2fc6fc7e324547ffa15cbe9a102284702544bcec6"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -2047,13 +2052,13 @@
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 16217,
-      "sha256": "3b5b7f30e66de63c6158d604ca142108ffa627f61a0efdc9c58e611dd4d1b7b4"
+      "size_bytes": 16428,
+      "sha256": "4e856f462084b6055643a355e320a7da1d04a9953770f1005d34c12bd60099be"
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 9199,
-      "sha256": "5eadc73b5696ff2f6e0d4f1ebf44734264945c3b7d5b25bd174e5b2b6ec0dae7"
+      "size_bytes": 9658,
+      "sha256": "93afa5e1f6e8d9f2d58d39594bd02a4fbd9ad45c51aae592589284c428499496"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -2104,6 +2109,11 @@
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/map-detail.json",
+      "size_bytes": 5894,
+      "sha256": "2c2571aec104b90cb52031dba45dab5893d3acfc18010e1be9e06936f494e0d4"
     },
     {
       "path": "tools/browser/scenarios/queue-chip.json",
