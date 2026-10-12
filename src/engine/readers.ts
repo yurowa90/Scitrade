@@ -140,7 +140,10 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
   const windowStart = Math.max(1, s.day - 28), windowDays = s.day - windowStart;
   const handling = (c: GameState['contracts'][number]) => c.kind === 'FORWARDING'
     && offerDef(s, config, c.serviceOfferId!)?.serviceClass === 'HANDLING';
-  const otherContracts = new Set(s.contracts.filter((c) => !handling(c)
+  // 시작 견적은 한 번만 나오므로 반복 거래의 주간 부담으로 외삽하지 않는다.
+  const initialOffers = new Set(config.offers.map((offer) => offer.id));
+  const recurringContracts = s.contracts.filter((c) => !initialOffers.has(c.serviceOfferId ?? c.buyOfferId!));
+  const otherContracts = new Set(recurringContracts.filter((c) => !handling(c)
     && c.acceptedDay >= windowStart && c.acceptedDay < s.day).map((c) => c.id));
   const otherPrep = s.tasks.filter((t) => isHomePrep(t, config) && otherContracts.has(t.contractId!))
     .reduce((sum, t) => sum + t.requiredWorkUnits, 0);
@@ -151,7 +154,7 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
   // 예약은 출항 전날까지다. 노선 간격이 다르면 가장 긴 체류를 기준으로 보관 한도를 추정한다.
   const fallbackDwellDays = Math.max(...routes.map((r) => r.departureIntervalDays)) + 1;
   const occupancy = Array<number>(windowDays).fill(0), dwell: number[] = [];
-  for (const c of s.contracts) {
+  for (const c of recurringContracts) {
     if (c.originCityId !== config.homeCityId) continue;
     // 취소 회사 화물은 lot.contractId가 끊겨도 계약의 cargoLotId로 추적한다.
     const lot = s.cargoLots.find((l) => l.id === c.cargoLotId);
@@ -184,7 +187,7 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
   const rows: WeeklyBottleneck['rows'] = [same('DEMAND', demand ? Math.floor(offered / batches.length) : null),
     { constraint: 'STAFF', before: jobs(staff), after: jobs(staff + (hire?.workUnitsPerDay ?? 0)) },
     same('WAREHOUSE_HANDLING', jobs(handlingCapacityPt(s, config))),
-    same('STORAGE', Math.floor(Math.max(0, storageCapacityLiters(s, config) - storageDetail.otherOccupancyLiters) * 7 / (storageDetail.handlingDwellDays * volume))), same('SAILING', sailing)];
+    same('STORAGE', Math.floor(Math.max(0, storageCapacityLiters(s, config) - storageDetail.otherPeakLiters) * 7 / (storageDetail.handlingDwellDays * volume))), same('SAILING', sailing)];
   const usableBefore = Math.min(...rows.flatMap((r) => r.before === null ? [] : [r.before]));
   const usableAfter = Math.min(...rows.flatMap((r) => r.after === null ? [] : [r.after]));
   let remainingHandlingBatches = 0;
