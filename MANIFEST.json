@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 320978,
-      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
+      "size_bytes": 333343,
+      "sha256": "de229ff178be17e76dd03abc6feb6fed25f8672e08f931245423d95580e32828"
     },
     {
       "path": "data/contacts.json",
@@ -1302,8 +1302,8 @@
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
-      "size_bytes": 12414,
-      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+      "size_bytes": 13244,
+      "sha256": "175bfc767ae35fa79bf8c954e2fe07bb8762345a089782958252e8713b589185"
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
