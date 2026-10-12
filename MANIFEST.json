@@ -1556,6 +1556,16 @@
       "sha256": "af6865d18867db4b875e7fcf8c8fe220e74451695c1a7bbab0d50259812b63a3"
     },
     {
+      "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
+      "size_bytes": 8352,
+      "sha256": "380f67de905d6219f502c367ef19bca887a84ec15f26d02dfa9c74e6bc1d9bc5"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
+      "size_bytes": 5975,
+      "sha256": "b873b535c6524a2494392c22ff856b4391814928d6a8f484fd764f45e29bf3e9"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
       "size_bytes": 13099,
       "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
