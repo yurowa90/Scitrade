@@ -66,6 +66,7 @@ export function d03Tables(output: SimOutput): string {
     '①은 보통·고용·투자 없음 대비, ②는 같은 수락의 투자 없음 대비, ③·④는 같은 수락·투자의 고용 없음 대비다. 조사 선행은 같은 고용·투자의 조사 선행 없는 실행 대비다.',
     'S=1일 선복, E=7일 확장, SE=둘 다, SE22=22일 둘 다. ↑는 중앙 ≥ +300 USD·이득 ≥ 0.75N·실패 ≤ floor(0.05N), ↓는 중앙 ≤ −300 USD·이득 ≤ 0.25N이다. N<10이면 화살표를 쓰지 않는다.', ''];
   for (const scenarioId of output.meta.scenarioIds) {
+    const campaignDays = loadScenario(scenarioId as Parameters<typeof loadScenario>[0]).campaignDays;
     const runs = output.runs.filter((r) => r.scenarioId === scenarioId), ids = [...new Set(runs.map((r) => r.policyId))];
     const get = (id: string) => runs.filter((r) => r.policyId === id);
     const stats = (id: string, base = baselineId(id)) => cell(get(id), get(base));
@@ -98,7 +99,15 @@ export function d03Tables(output: SimOutput): string {
         return ds.length && ds.filter((d) => d.handlingUsedPt / d.handlingCapacityPt >= 0.9 || d.storageUsedLiters / d.storageCapacityLiters >= 0.9).length >= ds.length / 2;
       }).length;
       const waiting = median(rs.map((r) => r.metrics.operations!.warehouseWaitingTaskDays));
-      return { id, prediction, actual, matched: prediction.arrow === actual, highSeeds, waiting, n: measurements.length };
+      const pairs = rs.map((r) => ({ r, b: bs.find((b) => b.seed === r.seed)! }));
+      const increases = pairs.map(({ r, b }) => r.metrics.operations!.handlingJobs - b.metrics.operations!.handlingJobs);
+      const realized = pairs.flatMap(({ r }, i) => {
+        const actualDay = r.metrics.operations!.actualHires[0]!.actualDay;
+        const extra = prediction.value;
+        return actualDay === null || !extra ? [] : [increases[i]! / (extra * (campaignDays - actualDay + 1) / 7)];
+      });
+      const excluded = rs.filter((r) => r.metrics.operations!.actualHires[0]!.actualDay === null).length;
+      return { increase: median(increases), realization: median(realized), excluded, id, prediction, actual, matched: prediction.arrow === actual, highSeeds, waiting, n: measurements.length };
     });
     const eligible = ids.filter((id) => { const v = parseVariant(id)!; return !['IDLE', 'NO_FX'].includes(v.acceptance) && !v.react && v.hires.length < 2; });
     const complete = eligible.filter((id) => get(id).length === n);
@@ -138,8 +147,9 @@ export function d03Tables(output: SimOutput): string {
     judge('J6', j6.length ? matches / j6.length >= 0.8 : null, `${matches}/${j6.length}칸 (${j6.length ? (matches * 100 / j6.length).toFixed(1) : '미측정'}%), ${j6.reduce((s, c) => s + c.n, 0)}시드 관측; ${j6Groups}`);
     const direct = median(shares.map((s) => s.direct));
     judge('J7', n ? direct >= 25 : null, `${n}시드, 직접 무역 ${direct.toFixed(2)}%, 작업 포함 ${median(shares.map((s) => s.handling)).toFixed(2)}%, 일반 ${median(shares.map((s) => s.standard)).toFixed(2)}% (각 시드 비중의 중앙)`);
-    lines.push('', '### J6 칸별 병목 예측', '', '| 정책 | 추가 업무/주 중앙 | 예측 | 실측 | 일치 | 예측 시드 수 | 불일치: 이용률 높은 시드 | 불일치: 창고 대기 업무-일 중앙 |', '|---|---:|---|---|---|---:|---:|---:|');
-    for (const c of j6) lines.push(`| ${c.id} | ${c.prediction.value} | ${c.prediction.arrow} | ${c.actual} | ${c.matched ? '일치' : '불일치'} | ${c.n} | ${c.matched ? '—' : c.highSeeds} | ${c.matched ? '—' : c.waiting} |`);
+    lines.push('', '### J6 칸별 병목 예측', '', '| 정책 | 추가 업무/주 중앙 | 예측 | 실측 | 일치 | 예측 시드 수 | 처리 증가 실측 | 실현률 | 불일치: 이용률 높은 시드 | 불일치: 창고 대기 업무-일 중앙 |', '|---|---:|---|---|---|---:|---:|---|---:|---:|');
+    for (const c of j6) lines.push(`| ${c.id} | ${c.prediction.value} | ${c.prediction.arrow} | ${c.actual} | ${c.matched ? '일치' : '불일치'} | ${c.n} | ${c.increase} | ${Number.isNaN(c.realization) ? '—' : c.realization.toFixed(3)} (미고용 제외 ${c.excluded}) | ${c.matched ? '—' : c.highSeeds} | ${c.matched ? '—' : c.waiting} |`);
+    lines.push('', '처리 증가 실측은 같은 시드·수락·투자의 고용 없는 실행 대비 수락 HANDLING 건수 차이 중앙값이다(취소 제외). 실현률은 각 시드의 차이를 이 칸의 예측 추가 업무/주 × (캠페인 일수 − 실제 고용일 + 1) / 7로 나눈 뒤 중앙값을 낸다. 미고용 시드는 실현률에서 제외하며 예측 0은 —다.');
     lines.push('', '보관 예측은 정상 상태의 리틀의 법칙 추정이다. 도착 집중·높은 이용률의 대기는 놓칠 수 있다. 이용률 높은 시드는 실제 고용일 이후 마감의 절반 이상에서 보관 또는 처리 이용률이 90% 이상인 경우다.');
     if (mode === 'base') {
       lines.push('', '## ⑥ 시드별 1위 정책 분포와 가장 강한 정책', '', '| 1위 정책 (동점은 정책 이름 순) | 시드 수 |', '|---|---:|');
