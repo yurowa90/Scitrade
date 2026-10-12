@@ -560,3 +560,13 @@ main.layout { padding-bottom: 5.5rem; }
 
 /* 머리 줄: 빌드 표시를 둘째 줄에 둬 표시 글 길이와 무관하게 1001~1100px에서도 저장·불러오기 묶음이 첫 줄에 남는다. */
 .brand .sub { max-width: 9.5rem; }
+
+/* D14 지도 상세: 고르기 목록, 고른 표시의 고리, 지도 아래 상세 칸. */
+.map-pick { display: flex; align-items: center; gap: .5rem; margin: 0 0 .5rem; font-size: .9rem; }
+.map-pick select { min-width: 0; max-width: 100%; }
+.pick-ring { fill: none; stroke: var(--navy); }
+.map-detail { margin: .6rem 0; padding: .6rem .8rem; border: 2px solid var(--navy); border-radius: 8px; background: #fffdf7; }
+.map-detail h3 { margin: 0 0 .3rem; font-size: 1rem; }
+.map-detail ul { margin: 0 0 .5rem; padding-left: 1.2rem; }
+.map-near { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+@media (any-pointer: coarse) { .map-pick select, .map-detail button { min-height: 44px; } }

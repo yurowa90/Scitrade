@@ -27,7 +27,7 @@ import { payrollRunwayDay } from '../engine/previews';
 import { workloadSummary } from '../engine/capacity';
 import { scheduleBlock, scheduleKeys } from './schedule';
 import { FOCUS_FALLBACK_SELECTORS, focusFallbackIds, FIXED_REGION_SELECTOR } from './focus';
-import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, mapPresentation, readMapScroll, mapScrollPosition, mapRedrawDecision, type MapMode } from './map';
+import { MAP_ATTRIBUTION, mapLegend, renderWorldMap, MapMeasurementMemory, mapPresentation, readMapScroll, mapScrollPosition, mapRedrawDecision, type MapMode, type MapMark, mapMarks, nearestMarks } from './map';
 
 declare const __BUILD_ID__: string | undefined;
 const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
@@ -67,11 +67,14 @@ let lastColumn: 'main' | 'side' | null = null;
 /** 동료를 카드로 골랐으면 상세를 그 카드 바로 아래에 둔다. 운영표 줄로 골랐으면 운영표 아래. */
 let detailUnder: 'card' | 'roster' = 'card';
 /** Esc로 닫는 칸. 안쪽 칸이 앞이다(기록장은 현지 패널 안). */
-type LayerKey = 'book' | 'local' | 'interview' | 'detail';
-const LAYER_ORDER: LayerKey[] = ['book', 'local', 'interview', 'detail'];
+type LayerKey = 'book' | 'local' | 'interview' | 'detail' | 'map';
+const LAYER_ORDER: LayerKey[] = ['book', 'local', 'interview', 'detail', 'map'];
 /** 칸마다 마지막으로 열거나 그 안을 누르거나 초점을 둔 순번. */
-const layerTouched: Record<LayerKey, number> = { book: 0, local: 0, interview: 0, detail: 0 };
+const layerTouched: Record<LayerKey, number> = { book: 0, local: 0, interview: 0, detail: 0, map: 0 };
 let layerSeq = 0;
+/** 지도 상세에서 고른 표시와 가까운 후보의 열쇠. */
+let mapPick: string | null = null;
+let mapNear: string[] = [];
 
 /** 다시 그려도 배정·예약 자리가 줄어들어 다음 버튼이 움직이지 않게 한다. */
 function queuedStatus(slot: string, text: string): string {
@@ -143,6 +146,8 @@ function resetUi() {
   lastColumn = null;
   detailUnder = 'card';
   for (const key of LAYER_ORDER) layerTouched[key] = 0;
+  mapPick = null;
+  mapNear = [];
 }
 
 function newId(type: string): string {
@@ -370,7 +375,36 @@ function topbar(): string {
   </header>`;
 }
 
+/** 보이는 지도 표시 전부를 목록 하나로 고른다. */
+function mapPicker(marks: MapMark[], picked: MapMark | undefined): string {
+  const groups = [...new Set(marks.map((m) => m.group))];
+  return `<label class="map-pick">지도에서 볼 곳 <select data-action="map-pick" id="map-pick">
+      <option value=""${picked ? '' : ' selected'}>고르세요</option>
+      ${groups.map((g) => `<optgroup label="${esc(g)}">${marks.filter((m) => m.group === g).map((m) => `<option value="${esc(m.key)}"${picked?.key === m.key ? ' selected' : ''}>${esc(m.nameKo)}</option>`).join('')}</optgroup>`).join('')}
+    </select></label>`;
+}
+
+/** 지도 아래 상세 칸. 가까운 후보가 여럿이면 단추로 고른다. */
+function mapDetail(marks: MapMark[], picked: MapMark | undefined): string {
+  const near = mapNear.map((key) => marks.find((m) => m.key === key)).filter((m): m is MapMark => Boolean(m));
+  if (near.length > 1) {
+    return `<div class="map-detail" id="map-detail">
+      <h3 id="map-detail-h" tabindex="-1">이 근처에 여러 곳이 있습니다</h3>
+      <div class="map-near">${near.map((m) => `<button data-action="map-near" data-mark="${esc(m.key)}">${esc(m.nameKo)} <small>${esc(m.group)}</small></button>`).join('')}</div>
+      <button data-action="map-close">닫기</button>
+    </div>`;
+  }
+  if (!picked) return '';
+  return `<div class="map-detail" id="map-detail">
+      <h3 id="map-detail-h" tabindex="-1">${esc(picked.nameKo)} <small>${esc(picked.group)}</small></h3>
+      <ul>${picked.lines.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
+      <button data-action="map-close">닫기</button>
+    </div>`;
+}
+
 function worldMap(): string {
+  const marks = mapMarks(view, config, mapMode);
+  const picked = marks.find((m) => m.key === mapPick);
   const moving = view.shipments.filter((x) => x.arrivalDay === null);
   const waiting = moving.filter((x) => portWaitStatus(view, config, x) === 'WAITING_RESTRICTION');
   const status = moving.length
@@ -388,10 +422,12 @@ function worldMap(): string {
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
       </div>
     </div>
-    <div data-map-frame ${mapPresentation(config, mapMode).attributes} class="map-frame ${mapPresentation(config, mapMode).world ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG })}</div>
+    ${mapPicker(marks, picked)}
+    <div data-map-frame ${mapPresentation(config, mapMode).attributes} class="map-frame ${mapPresentation(config, mapMode).world ? 'is-world' : ''}">${renderWorldMap(view, config, mapMode, { ...mapMeasurements.get(mapMode), baseOutsideSvg: MAP_BASE_OUTSIDE_SVG, picked: picked?.key })}</div>
     ${mapPresentation(config, mapMode).hint}
+    ${mapDetail(marks, picked)}
     ${mapLegend()}
-    <p class="muted small">${esc(routeText)}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 거점에 마우스를 올리면 선정 근거가 보입니다. ${MAP_ATTRIBUTION}.</p>
+    <p class="muted small">${esc(routeText)}. 항로선은 표시용이며 실제 항로 자료가 아닙니다. 세계 거점은 물동량·금융센터·해운 도시 순위로 골랐고, 2장(세계 확장)에서 열립니다. 목록에서 고르거나 지도의 거점·해협·배를 누르면 지도 아래에 자세한 내용이 나옵니다. ${MAP_ATTRIBUTION}.</p>
   </section>`;
 }
 
@@ -949,6 +985,7 @@ function openLayers(): { key: LayerKey; within: string; opener: () => HTMLElemen
   if (iv && document.getElementById(`interview-${iv}`)) layers.push({ key: 'interview', within: `#interview-${iv}, [data-action="interview"][data-candidate="${iv}"]`, opener: () => app.querySelector<HTMLElement>(`[data-action="interview"][data-candidate="${iv}"]`) });
   const dt = ui.detailId;
   if (dt && dt === ui.selectedCard && document.getElementById(`growth-${dt}`)) layers.push({ key: 'detail', within: `#growth-${dt}, [data-action="detail"][data-emp="${dt}"]`, opener: () => app.querySelector<HTMLElement>(`[data-action="detail"][data-emp="${dt}"]`) });
+  if (document.getElementById('map-detail')) layers.push({ key: 'map', within: '#map-detail, #map-pick, [data-map-frame]', opener: () => document.getElementById('map-pick') });
   return layers;
 }
 /** 누르거나 초점을 둔 곳이 열린 칸 안이면 그 칸을 맨 위로 올린다. */
@@ -977,9 +1014,49 @@ function closeTopLayer(ev: KeyboardEvent) {
   if (top.key === 'book') ui.cultureBookOpen = false;
   if (top.key === 'interview') ui.interviewId = null;
   if (top.key === 'detail') ui.detailId = null;
+  if (top.key === 'map') { mapPick = null; mapNear = []; }
   render(true);
   revealOpener(top.opener() ?? document.getElementById('crew-h'));
   ignoreClicksUntil = Date.now() + 500;
+}
+
+/** 고른 표시를 강조하고 상세 칸을 펼침 띠 안으로 가져온다. */
+function pickMapMark(key: string | null, focusHead = false) {
+  mapPick = key;
+  mapNear = [];
+  if (key) markOpened('map');
+  render(focusHead);
+  // 세계지도에서 고른 표시가 틀 밖이면 틀 가운데로 가져온다.
+  const frame = app.querySelector<HTMLElement>('[data-map-frame]')!;
+  const dot = frame.querySelector('.picked [data-mark-dot], [data-mark-dot].picked');
+  if (dot) {
+    const f = frame.getBoundingClientRect(), r = dot.getBoundingClientRect();
+    if (r.left < f.left || r.right > f.right) frame.scrollLeft += (r.left + r.right) / 2 - (f.left + f.right) / 2;
+  }
+  if (focusHead) document.getElementById('map-detail-h')?.focus({ preventScroll: true });
+  liveStatus.textContent = liveRegionText(liveStatus.textContent ?? '', key ? `${document.getElementById('map-detail-h')?.textContent ?? ''}: 지도 아래에 자세한 내용` : '');
+  revealBelow(document.getElementById('map-detail'), document.getElementById('map-detail-h'));
+  ignoreClicksUntil = Date.now() + 500;
+}
+
+/** 이름표는 바로 고르고, 그 밖의 점은 22px 안의 후보를 찾는다. */
+function tapMap(target: Element, x: number, y: number) {
+  const label = target.closest('.ribbon, .gate-label')?.closest<HTMLElement>('[data-mark]');
+  if (label) return pickMapMark(label.dataset.mark!);
+  const points = Array.from(app.querySelectorAll<Element>('[data-map-frame] [data-mark-dot]')).map((dot) => {
+    const r = dot.getBoundingClientRect();
+    return { key: dot.closest<HTMLElement>('[data-mark]')!.dataset.mark!, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  const near = nearestMarks(points, x, y);
+  if (near.length === 1) return pickMapMark(near[0]!);
+  if (near.length > 1) {
+    mapPick = null;
+    mapNear = near;
+    markOpened('map');
+    render();
+    revealBelow(document.getElementById('map-detail'), document.getElementById('map-detail-h'));
+    ignoreClicksUntil = Date.now() + 500;
+  }
 }
 
 function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
@@ -1038,7 +1115,7 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
       frame.scrollLeft, frame.scrollWidth, frame.clientWidth, mapScrollRatio);
     mapMeasurements.remember(mapMode, width, dpr);
     if (decision.redraw) {
-      frame.innerHTML = renderWorldMap(view, config, mapMode, { ...measurement, baseOutsideSvg: MAP_BASE_OUTSIDE_SVG });
+      frame.innerHTML = renderWorldMap(view, config, mapMode, { ...measurement, baseOutsideSvg: MAP_BASE_OUTSIDE_SVG, picked: mapPick });
       frame.dataset.viewportKey = decision.key;
     }
     frame.dataset.measured = 'true';
@@ -1124,6 +1201,7 @@ function showCulturePreview(employeeId: string) {
 
 app.addEventListener('click', (ev) => {
   const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
+  if (!el && (ev.target as HTMLElement).closest('[data-map-frame]') && Date.now() >= ignoreClicksUntil) return tapMap(ev.target as Element, ev.clientX, ev.clientY);
   if (!el || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
   activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
@@ -1231,7 +1309,18 @@ app.addEventListener('click', (ev) => {
       }
       case 'map-mode':
         mapMode = d.mode === 'world' ? 'world' : 'route';
+        if (!mapMarks(view, config, mapMode).some((m) => m.key === mapPick)) mapPick = null;
+        mapNear = [];
         return render();
+      case 'map-near':
+        return pickMapMark(d.mark ?? null, true);
+      case 'map-close':
+        mapPick = null;
+        mapNear = [];
+        render(true);
+        revealOpener(document.getElementById('map-pick'));
+        ignoreClicksUntil = Date.now() + 500;
+        return;
       case 'select-card':
         detailUnder = el.tagName === 'ARTICLE' ? 'card' : 'roster';
         ui.selectedCard = d.emp ?? null;
@@ -1303,6 +1392,8 @@ app.addEventListener('change', async (ev) => {
     }
     startScenario(el.value as ScenarioId);
     render();
+  } else if (el.dataset.action === 'map-pick') {
+    pickMapMark(el.value || null);
   } else if (el.dataset.action === 'crew-role' || el.dataset.action === 'crew-attr') {
     if (el.dataset.action === 'crew-role') ui.crewRole = el.value || null;
     else ui.crewAttribute = el.value || null;

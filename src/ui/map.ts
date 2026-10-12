@@ -2,7 +2,7 @@
 // ‘이번 항로’는 1장 동아시아 확대 지도, ‘전 세계’는 태평양 중심 세계지도를 쓴다.
 // 지도 위치는 표시용이며 운송시간·거리 계산에 쓰지 않는다.
 
-import { HUB_ROLE_KO, loadMapCities, loadRouteWaypoints, loadSeaGates, type MapCity } from '../content/map';
+import { HUB_ROLE_KO, loadMapCities, loadRouteScheduleCheck, loadRouteWaypoints, loadSeaGates, type MapCity } from '../content/map';
 import { routeOf } from '../engine/catalog';
 import { portWaitStatus } from '../engine/progress';
 import type { GameState, ScenarioConfig } from '../engine/types';
@@ -128,13 +128,34 @@ function hubStatus(c: MapCity, routeCities: Set<string>): HubStatus {
   return c.availability.status === 'MAP_PREVIEW' ? 'preview' : 'planned';
 }
 
+type Voyage = { routeId: string; shipmentIds: string[]; departureDay: number; waiting: boolean; arrived: boolean };
+
+/** 선박: 출항 후 인도 전까지 항로 위에 표시. 같은 출항편에 실린 화물은 배 한 척으로 그린다. */
+function voyagesOf(state: GameState, config: ScenarioConfig): Map<string, Voyage> {
+  const voyages = new Map<string, Voyage>();
+  for (const sh of state.shipments) {
+    if (!(sh.arrivalDay === null || (sh.releaseDay !== null && state.day <= sh.releaseDay))) continue;
+    const booking = state.bookings.find((x) => x.id === sh.bookingId);
+    if (!booking) continue;
+    const v = voyages.get(booking.sailingId) ?? { routeId: booking.routeId, shipmentIds: [], departureDay: sh.departureDay, waiting: false, arrived: true };
+    v.shipmentIds.push(sh.id);
+    v.waiting ||= portWaitStatus(state, config, sh) === 'WAITING_RESTRICTION';
+    v.arrived &&= sh.arrivalDay !== null;
+    voyages.set(booking.sailingId, v);
+  }
+  return voyages;
+}
+
+function hubWhen(status: HubStatus, c: MapCity): string {
+  return status === 'active'
+    ? '이번 시나리오 거점'
+    : status === 'planned'
+      ? `1장 ${c.availability.stage} 단계에서 열림`
+      : '세계 확장(2장)에서 열림 — 지금은 지도 미리 보기';
+}
+
 function hubTitle(c: MapCity, status: HubStatus): string {
-  const when =
-    status === 'active'
-      ? '이번 시나리오 거점'
-      : status === 'planned'
-        ? `1장 ${c.availability.stage} 단계에서 열림`
-        : '세계 확장(2장)에서 열림 — 지금은 지도 미리 보기';
+  const when = hubWhen(status, c);
   const roles = c.roles.map((r) => HUB_ROLE_KO[r]).join('·');
   return [`${c.nameKo} — ${roles}`, ...c.basisKo, c.noteKo, when].filter(Boolean).join('\n');
 }
@@ -234,7 +255,7 @@ export function worldMapViewport(config: ScenarioConfig, mode: MapMode, options:
     routeBox, options.availableWidth, options.dpr, world ? 'world' : 'route');
 }
 
-export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode, options: { availableWidth?: number; dpr?: number; baseOutsideSvg?: boolean } = {}): string {
+export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: MapMode, options: { availableWidth?: number; dpr?: number; baseOutsideSvg?: boolean; picked?: string | null } = {}): string {
   const map = chooseMap(config, mode);
   if (!map) return '<p class="muted">지도 자산이 없습니다.</p>';
   const world = map === WORLD_MAP;
@@ -302,10 +323,11 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     const finance = c.roles.includes('FINANCE_CENTER');
     const badgeScale = status === 'preview' ? 0.78 : 1;
     return `
-    <g class="port ${status}">
+    <g class="port ${status}${options.picked === `hub:${c.id}` ? ' picked' : ''}" data-mark="hub:${c.id}">
       <title>${hubTitle(c, status)}</title>
+      ${options.picked === `hub:${c.id}` ? `<circle cx="${p.x}" cy="${p.y}" r="${16 * k * badgeScale}" class="pick-ring" stroke-width="${3 * k}"/>` : ''}
       ${status === 'preview' ? '' : `<circle cx="${p.x}" cy="${p.y}" r="${15 * k}" class="port-glow"/>`}
-      <g transform="translate(${p.x} ${p.y}) scale(${k * badgeScale})"><circle r="10" class="port-badge"/><g class="port-anchor">${c.cargoPort ? ANCHOR : BANK}</g>${finance ? '<circle cx="8" cy="-8" r="4" class="finance-coin"/>' : ''}</g>
+      <g transform="translate(${p.x} ${p.y}) scale(${k * badgeScale})"><circle r="10" class="port-badge" data-mark-dot/><g class="port-anchor">${c.cargoPort ? ANCHOR : BANK}</g>${finance ? '<circle cx="8" cy="-8" r="4" class="finance-coin"/>' : ''}</g>
       ${box ? `<g class="ribbon"><rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="${5 * kr}"/>
       <text x="${box.x + box.w / 2}" y="${box.y + box.h * 0.7}" text-anchor="middle" font-size="${size * kr}">${c.nameKo}</text></g>` : ''}
     </g>`;
@@ -315,31 +337,22 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     const p = proj(g);
     const box = world ? labelFor(g.nameKo, p.x, p.y, 11, false) : null;
     return `
-    <g class="gate gate-${g.gateType}">
+    <g class="gate gate-${g.gateType}${options.picked === `gate:${g.id}` ? ' picked' : ''}" data-mark="gate:${g.id}">
+      ${options.picked === `gate:${g.id}` ? `<circle cx="${p.x}" cy="${p.y}" r="${11 * k}" class="pick-ring" stroke-width="${3 * k}"/>` : ''}
       <title>${g.nameKo} (${g.connectsKo})\n${g.eventHookKo}\n세계 확장(2장)에서 항로 선택·사건과 연결 예정</title>
-      <rect x="${p.x - 5 * k}" y="${p.y - 5 * k}" width="${10 * k}" height="${10 * k}" transform="rotate(45 ${p.x} ${p.y})" class="gate-mark"/>
+      <rect x="${p.x - 5 * k}" y="${p.y - 5 * k}" width="${10 * k}" height="${10 * k}" transform="rotate(45 ${p.x} ${p.y})" class="gate-mark" data-mark-dot/>
       ${box ? `<text class="gate-label" x="${box.x + box.w / 2}" y="${box.y + box.h * 0.72}" text-anchor="middle" font-size="${11 * k}">${g.nameKo}</text>` : ''}
     </g>`;
   });
 
-  // 선박: 출항 후 인도 전까지 항로 위에 표시. 같은 출항편에 실린 화물은 배 한 척으로 그린다.
-  const voyages = new Map<string, { routeId: string; shipmentIds: string[]; departureDay: number; waiting: boolean; arrived: boolean }>();
-  for (const sh of state.shipments) {
-    if (!(sh.arrivalDay === null || (sh.releaseDay !== null && state.day <= sh.releaseDay))) continue;
-    const booking = state.bookings.find((x) => x.id === sh.bookingId);
-    if (!booking) continue;
-    const v = voyages.get(booking.sailingId) ?? { routeId: booking.routeId, shipmentIds: [], departureDay: sh.departureDay, waiting: false, arrived: true };
-    v.shipmentIds.push(sh.id);
-    v.waiting ||= portWaitStatus(state, config, sh) === 'WAITING_RESTRICTION';
-    v.arrived &&= sh.arrivalDay !== null;
-    voyages.set(booking.sailingId, v);
-  }
+  const voyages = voyagesOf(state, config);
   const ships = [...voyages.entries()].map(([sailingId, v]) => {
     const pts = routeLines.find((l) => l.route.id === v.routeId)?.pts ?? [];
     if (pts.length < 2) return '';
     const t = v.arrived ? 1 : v.waiting ? 0.93 : (state.day - v.departureDay) / routeOf(config, v.routeId).transitDays;
     const pos = pointAlong(pts, t);
-    return `<g class="ship ${v.waiting ? 'waiting' : ''}" transform="translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)}) rotate(${pos.angle.toFixed(1)}) scale(${k * 0.9})"><title>${sailingId}: ${v.shipmentIds.join(', ')}${v.waiting ? ' — 하역 중단으로 대기 중' : ''}</title>${SHIP}</g>`;
+    const picked = options.picked === `ship:${sailingId}`;
+    return `${picked ? `<circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${18 * k}" class="pick-ring" stroke-width="${3 * k}"/>` : ''}<g class="ship ${v.waiting ? 'waiting' : ''}${picked ? ' picked' : ''}" data-mark="ship:${sailingId}" data-mark-dot transform="translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)}) rotate(${pos.angle.toFixed(1)}) scale(${k * 0.9})"><title>${sailingId}: ${v.shipmentIds.join(', ')}${v.waiting ? ' — 하역 중단으로 대기 중' : ''}</title>${SHIP}</g>`;
   });
 
   // 항만 사건: 공지된 하역 중단.
@@ -399,6 +412,55 @@ export function renderWorldMap(state: GameState, config: ScenarioConfig, mode: M
     <img class="map-base pixel-art" src="${map.path}" alt="" aria-hidden="true" style="left: ${-vb.x / vb.w * 100}%; top: ${-vb.y / vb.h * 100}%; width: ${map.width / vb.w * 100}%; height: ${map.height / vb.h * 100}%;" />
     ${svg}
   </div>`;
+}
+
+/** 지도 표시 하나. 목록·지도 누르기·상세 칸이 같은 열쇠를 쓴다. */
+export interface MapMark { key: string; group: string; nameKo: string; lines: string[] }
+
+const MARK_GROUP: Record<HubStatus | 'gate' | 'ship', string> = {
+  active: '이번 시나리오 거점', planned: '1장에서 열릴 거점', preview: '세계 확장(2장) 미리 보기', gate: '해협·운하', ship: '운항 중인 배',
+};
+
+/** 그린 지도와 같은 표시를 돌려준다. 상세 글은 SVG 제목과 같은 자료로 만든다. */
+export function mapMarks(state: GameState, config: ScenarioConfig, mode: MapMode): MapMark[] {
+  const map = chooseMap(config, mode);
+  if (!map) return [];
+  const routeCities = new Set(config.routes.flatMap((r) => [r.fromCityId, r.toCityId]));
+  const all = loadMapCities();
+  const nameOf = (id: string) => all.find((c) => c.id === id)?.nameKo ?? id;
+  const voyages = voyagesOf(state, config);
+  const order: Record<HubStatus, number> = { active: 0, planned: 1, preview: 2 };
+  const hubs = all.filter((c) => inBounds(c, map.bounds)).map((c) => ({ c, status: hubStatus(c, routeCities) }))
+    .sort((a, b) => order[a.status] - order[b.status]);
+  const marks: MapMark[] = hubs.map(({ c, status }) => ({
+    key: `hub:${c.id}`, group: MARK_GROUP[status], nameKo: c.nameKo,
+    lines: [
+      c.roles.map((r) => HUB_ROLE_KO[r]).join('·'), ...c.basisKo, c.noteKo, hubWhen(status, c),
+      ...config.routes.filter((r) => r.fromCityId === c.id || r.toCityId === c.id).map((r) => {
+        const check = loadRouteScheduleCheck(r.id);
+        return `${r.id} ${nameOf(r.fromCityId)}→${nameOf(r.toCityId)} ${r.transitDays}일·${r.departureIntervalDays}일마다`
+          + (check ? ` (선사 요일표로 확인 ${check.checkedOn}, 오차 ±${check.toleranceDays}일. 게임은 요일 없이 단순화)` : '');
+      }),
+      ...(() => { const n = [...voyages.values()].filter((v) => { const r = routeOf(config, v.routeId); return !v.arrived && (r.fromCityId === c.id || r.toCityId === c.id); }).length;
+        return n ? [`이 거점을 오가는 운항 중인 배 ${n}척`] : []; })(),
+    ].filter(Boolean),
+  }));
+  for (const g of loadSeaGates().filter((x) => inBounds(x, map.bounds))) {
+    marks.push({ key: `gate:${g.id}`, group: MARK_GROUP.gate, nameKo: g.nameKo, lines: [g.connectsKo, g.eventHookKo, '세계 확장(2장)에서 항로 선택·사건과 연결 예정'] });
+  }
+  for (const [sailingId, v] of voyages) {
+    if ((loadRouteWaypoints(v.routeId)).length < 2) continue;
+    const r = routeOf(config, v.routeId);
+    marks.push({ key: `ship:${sailingId}`, group: MARK_GROUP.ship, nameKo: `${nameOf(r.fromCityId)}→${nameOf(r.toCityId)} 배`,
+      lines: [`출항편 ${sailingId}`, `실은 화물 ${v.shipmentIds.join(', ')}`, ...(v.waiting ? ['하역 중단으로 대기 중'] : [])] });
+  }
+  return marks;
+}
+
+/** 반지름 22 CSS px 안의 표시를 가까운 순서로 돌려준다. */
+export function nearestMarks(points: { key: string; x: number; y: number }[], x: number, y: number, radius = 22): string[] {
+  return points.map((p) => ({ key: p.key, d: Math.hypot(p.x - x, p.y - y) }))
+    .filter((p) => p.d <= radius).sort((a, b) => a.d - b.d).map((p) => p.key);
 }
 
 /** 지도 아래 범례. 색·모양만으로 뜻을 전하지 않도록 글자로도 적는다. */

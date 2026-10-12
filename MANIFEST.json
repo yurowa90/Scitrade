@@ -1301,6 +1301,26 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/map-detail-d14/README.md",
+      "size_bytes": 10283,
+      "sha256": "0a7e9c33282055c43c0028d08e4933e8bcdd54f52eb7921f04923b3a0941188e"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap-5d59ff3.txt",
+      "size_bytes": 2295,
+      "sha256": "e106fe8da3d84f90040742db6db5c7b53e8da7c9164f0c188930218b9daff362"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap.js",
+      "size_bytes": 1634,
+      "sha256": "287056f8b5f7c289f35b56647cc7ccc594d3f1144aa4be278190bda17501821c"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/proto-a21011c.patch",
+      "size_bytes": 56586,
+      "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
       "size_bytes": 15196,
       "sha256": "25fce75d7ab82b62942898a93d641ab2f9b4f8be7b96dd2717a11b2c00c04063"
@@ -1541,6 +1561,11 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0035-map-detail.md",
+      "size_bytes": 95151,
+      "sha256": "22bbd21a90fd62b5d8c31971f090e4b9873ff6431b477a4a5228a0f61a60d657"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
       "size_bytes": 13099,
       "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
@@ -1739,6 +1764,11 @@
       "path": "docs/ai/tasks/results/TASK-0030.md",
       "size_bytes": 39251,
       "sha256": "5eb6a165fd669d8ccbfde5dda51b987c2fc36dec43a50f158135b420be65fee2"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0035.md",
+      "size_bytes": 35329,
+      "sha256": "a356a4e3285346db21ffc2b8b1231e6e192062c14dfff6fa7b423d9ead2d2e4f"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0048.md",
@@ -2062,13 +2092,13 @@
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 16217,
-      "sha256": "3b5b7f30e66de63c6158d604ca142108ffa627f61a0efdc9c58e611dd4d1b7b4"
+      "size_bytes": 16428,
+      "sha256": "4e856f462084b6055643a355e320a7da1d04a9953770f1005d34c12bd60099be"
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 9199,
-      "sha256": "5eadc73b5696ff2f6e0d4f1ebf44734264945c3b7d5b25bd174e5b2b6ec0dae7"
+      "size_bytes": 9658,
+      "sha256": "93afa5e1f6e8d9f2d58d39594bd02a4fbd9ad45c51aae592589284c428499496"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -2119,6 +2149,11 @@
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/map-detail.json",
+      "size_bytes": 5894,
+      "sha256": "2c2571aec104b90cb52031dba45dab5893d3acfc18010e1be9e06936f494e0d4"
     },
     {
       "path": "tools/browser/scenarios/queue-chip.json",
