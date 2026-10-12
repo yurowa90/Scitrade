@@ -2,9 +2,9 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `low`
-- 선행 작업: TASK-0050이 들어간 개발 브랜치 `<BASE>` 위에 만든 `codex/TASK-0053`에서 작업한다.
-  - `<BASE>`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0053-conservation-tests.md`의 해시를 쓰고 결과 보고에 적는다.
-  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only <BASE> HEAD`를 실행해 결과 보고에 적는다.
+- 선행 작업: TASK-0050이 들어간 개발 브랜치 `8933708` 위에 만든 `codex/TASK-0053`에서 작업한다.
+  - `8933708`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0053-conservation-tests.md`의 해시를 쓰고 결과 보고에 적는다.
+  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only 8933708 HEAD`를 실행해 결과 보고에 적는다.
 - 병렬 작업: `tools/test_validate_data.py`를 여는 다른 작업과 동시에 돌리지 않는다.
 - 결정 근거: TASK-0050 검수(`docs/ai/tasks/results/TASK-0050.md` ‘검수’ 절). 검사 코드 8곳을 일부러 바꿨을 때 시험 1~8이 두 곳을 잡지 못했다.
   1. `check_conservation`이 `unresolved`를 확인일·근거 검사에서 빼도 시험이 통과한다. TASK-0050 지시서 규칙 3은 `unresolved`에도 확인일·근거를 요구하지만, 시험 목록에 그 경우가 없었다(지시서 작성자 누락).
@@ -48,5 +48,5 @@
 
 - `python3 tools/test_validate_data.py` 통과. 시험 수 전후(지금 93개 → 95개)를 적는다.
 - `python3 tools/validate_data.py` PASS.
-- `bash tools/ai/review_checks.sh --check <BASE>` 통과.
+- `bash tools/ai/review_checks.sh --check 8933708` 통과.
 - 바뀐 파일이 위 ‘고칠 수 있는 파일’ 셋뿐이다.
