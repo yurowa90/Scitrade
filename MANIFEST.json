@@ -1762,23 +1762,23 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0031-d03-cap30.md",
-      "size_bytes": 11252,
-      "sha256": "77f057412f91cfd6e7e008fadc3118a346ff4f54f50aff4fbd9a93eee87b3124"
+      "size_bytes": 11238,
+      "sha256": "61f62e51f2307f306948f165cb2a7ac9b7658a992ebd7e2945d241550d48e8b4"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0031-d03-flat200.md",
-      "size_bytes": 11464,
-      "sha256": "640d651d13d2453fd4b119083b84cc2d6d660a14c671dc0026f5af5f3249466b"
+      "size_bytes": 11451,
+      "sha256": "80b6abd7a5df4dc5875f156c864a63789352da2196fcb71bb1253d54cafdb7d1"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0031-d03.md",
-      "size_bytes": 20880,
-      "sha256": "1a2b27ae8839103d87b98cd9244ac10675368b23f64b7d2aa6c2c662f4f1b6c6"
+      "size_bytes": 20857,
+      "sha256": "6c62ea0a3b064592d822db1887c3bd7870dbad110167961fe2a551b776da7143"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0031.md",
-      "size_bytes": 47555,
-      "sha256": "03f24100536f903c7ed02306ba925e1f474e563acc601ee45a651656ade8ed9a"
+      "size_bytes": 74829,
+      "sha256": "809db9ae378bf1b7f3bcd2827a88031ba7490f9dbce3de8d91c7e6ea676bde02"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0048.md",
@@ -2052,8 +2052,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 204237,
-      "sha256": "141ebd3c5619f08d9c857e5bb06cf024ef778a94f9db73c15fa15f929cdf15a6"
+      "size_bytes": 207592,
+      "sha256": "9a281a6949e72291865a3a7ca2452de0e446b9e9d8990e33d08ffb1906887bbc"
     },
     {
       "path": "tests/character_acceptance_cases.json",

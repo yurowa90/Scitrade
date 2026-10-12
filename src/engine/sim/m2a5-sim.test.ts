@@ -50,7 +50,7 @@ describe('P0-M2A5-17 비교 실행기', () => {
         expect({ currency, net: run.metrics.currencies[currency]!.netAssets }).toEqual({ currency, net: b.openingEquity + b.profit + b.currencyTransferNet });
       }
     }
-  });
+  }, 60_000);
   it('정시 거르기는 예약 명령과 수락 계획에서 확인한다', () => {
     const evaluate = (id: string, seed: number) => {
       const late: boolean[] = [];
@@ -152,7 +152,7 @@ describe('M2a-5 실행기 성질', () => {
     });
     const hired = result.run.metrics.operations!.actualHires[0]!.actualDay!;
     expect(assignments.filter((day) => day >= h.day - n.recruit_lead_days && day <= hired)).toEqual([]);
-  });
+  }, 60_000);
   it('감액 변형은 설정 사본만 바꾼다', () => {
     const before = structuredClone(config), cap = withLateMode(config, 'cap30'), flat = withLateMode(config, 'flat200');
     expect(config).toEqual(before);

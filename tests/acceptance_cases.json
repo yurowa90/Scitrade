@@ -5218,8 +5218,8 @@
               },
               {
                 "constraint": "STORAGE",
-                "before": 3,
-                "after": 3
+                "before": 1,
+                "after": 1
               },
               {
                 "constraint": "SAILING",
@@ -5229,16 +5229,14 @@
             ],
             "binding": {
               "before": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ],
               "after": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ]
             },
-            "usableBefore": 2,
-            "usableAfter": 2,
+            "usableBefore": 1,
+            "usableAfter": 1,
             "extraJobsPerWeek": 0,
             "remainingHandlingBatches": 5,
             "contributionPerJobMinor": 84000,
@@ -5358,8 +5356,8 @@
               },
               {
                 "constraint": "STORAGE",
-                "before": 3,
-                "after": 3
+                "before": 1,
+                "after": 1
               },
               {
                 "constraint": "SAILING",
@@ -5369,16 +5367,14 @@
             ],
             "binding": {
               "before": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ],
               "after": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ]
             },
-            "usableBefore": 2,
-            "usableAfter": 2,
+            "usableBefore": 1,
+            "usableAfter": 1,
             "extraJobsPerWeek": 0,
             "remainingHandlingBatches": 4,
             "contributionPerJobMinor": 84000,
@@ -6251,10 +6247,10 @@
             "handlingPt": 192,
             "batches": 4
           },
-          "otherPtPerWeek": 2,
+          "otherPtPerWeek": 0,
           "storageDetail": {
-            "otherOccupancyLiters": 15653,
-            "otherPeakLiters": 24300,
+            "otherOccupancyLiters": 150,
+            "otherPeakLiters": 300,
             "handlingDwellDays": 9,
             "windowDays": 28
           },
@@ -6276,8 +6272,8 @@
             },
             {
               "constraint": "STORAGE",
-              "before": 2,
-              "after": 2
+              "before": 3,
+              "after": 3
             },
             {
               "constraint": "SAILING",
@@ -6288,11 +6284,9 @@
           "binding": {
             "before": [
               "STAFF",
-              "STORAGE",
               "SAILING"
             ],
             "after": [
-              "STORAGE",
               "SAILING"
             ]
           },
@@ -6307,10 +6301,134 @@
         "older_window": {
           "otherPtPerWeek": 0,
           "storageDetail": {
-            "otherOccupancyLiters": 4585,
-            "otherPeakLiters": 24300,
+            "otherOccupancyLiters": 300,
+            "otherPeakLiters": 300,
             "handlingDwellDays": 9,
             "windowDays": 28
+          }
+        },
+        "mixed_day": {
+          "day": 17,
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 8,
+              "handlingPt": 96,
+              "batches": 2
+            },
+            "otherPtPerWeek": 0,
+            "storageDetail": {
+              "otherOccupancyLiters": 18,
+              "otherPeakLiters": 300,
+              "handlingDwellDays": 9,
+              "windowDays": 16
+            },
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 3
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 8,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": 630000,
+            "wageUsdLotsPerWeek": 5
+          },
+          "storage_boundary": {
+            "capacity_liters": 34715,
+            "bottleneck": {
+              "unit": "HANDLING_JOBS_PER_WEEK",
+              "demand": {
+                "handlingOffered": 8,
+                "handlingPt": 96,
+                "batches": 2
+              },
+              "otherPtPerWeek": 0,
+              "storageDetail": {
+                "otherOccupancyLiters": 18,
+                "otherPeakLiters": 300,
+                "handlingDwellDays": 9,
+                "windowDays": 16
+              },
+              "rows": [
+                {
+                  "constraint": "DEMAND",
+                  "before": 4,
+                  "after": 4
+                },
+                {
+                  "constraint": "STAFF",
+                  "before": 2,
+                  "after": 3
+                },
+                {
+                  "constraint": "WAREHOUSE_HANDLING",
+                  "before": 3,
+                  "after": 3
+                },
+                {
+                  "constraint": "STORAGE",
+                  "before": 2,
+                  "after": 2
+                },
+                {
+                  "constraint": "SAILING",
+                  "before": 2,
+                  "after": 2
+                }
+              ],
+              "binding": {
+                "before": [
+                  "STAFF",
+                  "STORAGE",
+                  "SAILING"
+                ],
+                "after": [
+                  "STORAGE",
+                  "SAILING"
+                ]
+              },
+              "usableBefore": 2,
+              "usableAfter": 2,
+              "extraJobsPerWeek": 0,
+              "remainingHandlingBatches": 8,
+              "contributionPerJobMinor": 84000,
+              "wageKrwPerWeek": 630000,
+              "wageUsdLotsPerWeek": 5
+            }
           }
         }
       }

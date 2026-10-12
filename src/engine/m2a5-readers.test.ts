@@ -217,10 +217,26 @@ describe('M2a-5 병목 표 경계', () => {
 describe('P0-M2A5-20 28일 병목 실측', () => {
   const spec = caseOf('P0-M2A5-20'), f = spec.test_fixture, n = spec.expected_numeric;
   it('계약 원기록의 독립 손계산과 전체 병목 표가 같다', () => {
-    const s = atDay(f.day, config, f.script);
-    expect(read(s, config, () => weeklyBottleneck(s, config, f.candidate_id))).toEqual(n.bottleneck);
+    for (const [day, expected] of [[f.day, n.bottleneck], [n.mixed_day.day, n.mixed_day.bottleneck]]) {
+      const s = atDay(day, config, f.script);
+      expect(read(s, config, () => weeklyBottleneck(s, config, f.candidate_id))).toEqual(expected);
+    }
+    // 진행 명령은 그대로 두고 읽기 용량만 경계에 놓아 300L 차감이 내림에 가려지지 않게 한다.
+    const s = atDay(n.mixed_day.day, config, f.script), cfg = structuredClone(config);
+    cfg.operations!.facility.storageLiters = n.mixed_day.storage_boundary.capacity_liters;
+    expect(read(s, cfg, () => weeklyBottleneck(s, cfg, f.candidate_id))).toEqual(n.mixed_day.storage_boundary.bottleneck);
   });
-  it('재구성 점유는 모든 날의 실제 마감 비작업 화물 점유와 같다', () => {
+  it.each([false, true])('재구성 점유는 모든 날의 실제 마감 비작업 화물 점유와 같다 (반환 경계 %s)', (recurringReturn) => {
+    const cfg = structuredClone(config);
+    // 기본 진행의 반환 고객 화물은 묶음 0이라 제외된다. 추가 조건에서는 읽기용 견적
+    // 정의만 반복 견적으로 옮겨 같은 실제 반환 기록의 경계도 따로 검사한다.
+    const moved = recurringReturn ? cfg.offers.filter((o) => o.kind === 'forwarding' && o.serviceClass !== 'HANDLING') : [];
+    cfg.offers = cfg.offers.filter((o) => !moved.includes(o));
+    const observed = (state: GameState) => {
+      const view = structuredClone(state);
+      view.operations!.offers.push(...structuredClone(moved));
+      return view;
+    };
     let s = createGame(config);
     const actual: number[] = [];
     for (let t = 1; t < f.day; t++) {
@@ -229,23 +245,25 @@ describe('P0-M2A5-20 28일 병목 실측', () => {
       const closed = commitDay(s, config, commands);
       expect(closed.results).toEqual(applied(commands));
       s = closed.state;
-      actual.push(s.cargoLots.filter((lot) => {
+      const view = observed(s);
+      actual.push(view.cargoLots.filter((lot) => {
         if (lot.locationCityId !== config.homeCityId || !['PREPARING', 'AWAITING_DEPARTURE', 'HELD_UNALLOCATED'].includes(lot.status)) return false;
-        const c = s.contracts.find((c) => c.id === lot.contractId);
-        return !c || c.kind !== 'FORWARDING' || offerDef(s, config, c.serviceOfferId!)?.serviceClass !== 'HANDLING';
+        const c = view.contracts.find((c) => c.cargoLotId === lot.id);
+        if (c && cfg.offers.some((o) => o.id === (c.serviceOfferId ?? c.buyOfferId))) return false;
+        return !c || c.kind !== 'FORWARDING' || offerDef(view, cfg, c.serviceOfferId!)?.serviceClass !== 'HANDLING';
       }).reduce((sum, lot) => sum + cargoSpace(config, lot.goodId, lot.quantity).volumeLiters, 0));
     }
     // 최종 원기록을 날짜축만 평행 이동하여 각 t+1을 길이 1인 관측 창의 1일에 놓는다.
     // 그러면 평균의 내림에 가려지는 차이 없이 실제 재구성 코드의 하루 점유를 읽는다.
     const reconstructed = actual.map((_, i) => {
-      const shifted = structuredClone(s), offset = i + 1;
+      const shifted = observed(s), offset = i + 1;
       shifted.day = 2;
       for (const c of shifted.contracts) {
         c.acceptedDay -= offset;
         if (c.cancelledDay !== null) c.cancelledDay -= offset;
       }
       for (const sh of shifted.shipments) sh.departureDay -= offset;
-      return read(shifted, config, () => weeklyBottleneck(shifted, config)).storageDetail.otherOccupancyLiters;
+      return read(shifted, cfg, () => weeklyBottleneck(shifted, cfg)).storageDetail.otherOccupancyLiters;
     });
     expect(reconstructed).toEqual(actual);
   });
@@ -253,5 +271,14 @@ describe('P0-M2A5-20 28일 병목 실측', () => {
     const s = atDay(f.day + 14, config, f.script);
     const b = read(s, config, () => weeklyBottleneck(s, config));
     expect({ otherPtPerWeek: b.otherPtPerWeek, storageDetail: b.storageDetail }).toEqual(n.older_window);
+  });
+  it('시작 견적에 있는 HANDLING 계약도 체류 표본에서 제외한다', () => {
+    const s = atDay(f.day, config, f.script), cfg = structuredClone(config);
+    const offer = s.operations!.offers.find((o) => o.serviceClass === 'HANDLING'
+      && s.contracts.some((c) => c.serviceOfferId === o.id))!;
+    cfg.offers.push(structuredClone(offer));
+    const expected = structuredClone(n.bottleneck);
+    expected.storageDetail.handlingDwellDays = n18.initial.bottleneck.storageDetail.handlingDwellDays;
+    expect(read(s, cfg, () => weeklyBottleneck(s, cfg, f.candidate_id))).toEqual(expected);
   });
 });
