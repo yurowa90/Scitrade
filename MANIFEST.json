@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 314738,
-      "sha256": "4e824c43c054dcabfaa3b9c7cf21efe353fd301d6b179b7c376bd811dbb28cec"
+      "size_bytes": 320978,
+      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
     },
     {
       "path": "data/contacts.json",
@@ -1301,6 +1301,11 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/research/CONSERVATION-BULK.md",
+      "size_bytes": 12414,
+      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
       "size_bytes": 18151,
       "sha256": "b4b11b61d5d3f80f2d94c5e520a6174287f10229e4062a14ed83b34fc02f7b7b"
@@ -1309,6 +1314,11 @@
       "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
       "size_bytes": 43560,
       "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
+    },
+    {
+      "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
+      "size_bytes": 4080,
+      "sha256": "9c3a1394f26fa616123178274f1ff36d95c68ac46db8173268e8e5daef99eee5"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -1526,6 +1536,11 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
+      "size_bytes": 13099,
+      "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
@@ -1714,6 +1729,11 @@
       "path": "docs/ai/tasks/results/TASK-0030.md",
       "size_bytes": 39251,
       "sha256": "5eb6a165fd669d8ccbfde5dda51b987c2fc36dec43a50f158135b420be65fee2"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0048.md",
+      "size_bytes": 7175,
+      "sha256": "e16bb18d88c6ba7da84cca833636e93d6d1f0a871ea881e0abd3cbcdd12c5529"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
@@ -2142,8 +2162,8 @@
     },
     {
       "path": "tools/check_fact_mixing.py",
-      "size_bytes": 16555,
-      "sha256": "bcc260a760aaca4026cb112e97228fe1babd6ab68114fcdd2c9cb353894b5962"
+      "size_bytes": 19819,
+      "sha256": "eba59636c6e9fa8edb360f0dad4db8114be354f4d3421371476d39e7f8e4d76b"
     },
     {
       "path": "tools/deploy/prepare_static.sh",
@@ -2157,8 +2177,8 @@
     },
     {
       "path": "tools/test_check_fact_mixing.py",
-      "size_bytes": 9825,
-      "sha256": "c5ea008c94ff272c78c1f1b249639ae0e0c512e4e13a8521fb2c0f7b1f731d74"
+      "size_bytes": 14181,
+      "sha256": "c0a2f745f620657600143b1fcfe25cbfa0c85140e84773eef249dd3b135344de"
     },
     {
       "path": "tools/test_validate_data.py",
