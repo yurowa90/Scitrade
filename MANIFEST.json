@@ -1317,8 +1317,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 8446,
-      "sha256": "184bb29b5276f404b3c506664d8606833a53dade3445d08a905d830546044577"
+      "size_bytes": 11276,
+      "sha256": "5ba4517011ee15c35943fc77dd70b6ceec8e15ccc1835aaf222703aa73bd2154"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
