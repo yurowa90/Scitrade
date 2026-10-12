@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 333343,
-      "sha256": "de229ff178be17e76dd03abc6feb6fed25f8672e08f931245423d95580e32828"
+      "size_bytes": 334548,
+      "sha256": "77bed168ce598caaea7c2ab319d9899377f5cd4414b25711339106b0b86ea853"
     },
     {
       "path": "data/contacts.json",
@@ -1302,8 +1302,8 @@
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
-      "size_bytes": 15091,
-      "sha256": "ce76c43516937e8c37762bf5245b7ff96a46a3948218b045823e1594f8dc1cf2"
+      "size_bytes": 15196,
+      "sha256": "25fce75d7ab82b62942898a93d641ab2f9b4f8be7b96dd2717a11b2c00c04063"
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
@@ -1317,8 +1317,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 12298,
-      "sha256": "e249a00798fdd8554937376b2a0fbdfd6eff27159e2a73bcdad8bcc5b7fad126"
+      "size_bytes": 13268,
+      "sha256": "2ab0d428aee842e27a01f804ea203be0bc5901be305758983af7745a68fc982a"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1547,8 +1547,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0050-conservation-fields.md",
-      "size_bytes": 12701,
-      "sha256": "4c62c7c062c34b2c645b622c12ac3ea17132c6adb251041629251b7c6c379f62"
+      "size_bytes": 12994,
+      "sha256": "6309517c82dfd33a894c6f4079855606c0aac06002ff971c16e1e9e6534a911c"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",

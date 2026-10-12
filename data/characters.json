@@ -6104,13 +6104,17 @@
       "conservation": {
         "iucn_status": "VU",
         "note_ko": "취약(VU). 19~20세기 초 깃털 이불 재료로 수백만 마리가 잡혀 깃털이 주로 일본에서 수출되었고, 1949년 멸종으로 여겨졌다가 1951년 다시 발견되었다. 현재 약 4,200마리이며 대부분 도리시마에서 번식한다. ‘신천옹(信天翁)’이라고도 부른다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
-          "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text"
+          "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "U.S. Fish and Wildlife Service, Office of Law Enforcement, “NOTICE TO THE WILDLIFE IMPORT/EXPORT COMMUNITY: CITES CoP19 Amendments to Appendices I and II” (2023-01-13, CITES Notification No. 2023/005 인용, https://www.fws.gov/sites/default/files/documents/OLE%20Public%20Bulletin%20-%20Changes%20to%20CITES%20Species%20Listings%201-13-2023.pdf, 열람 2026-10-12)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES Ⅱ는 국제적멸종위기종 고시 제2026-63호(제2023-45호부터 Ⅱ)와 미국 어류야생동물국 공지(2023-01-13: CoP19에서 부속서 Ⅰ→Ⅱ 이동, 2023-02-23 발효, CITES Notification 2023/005)로 확인. 사무국 통지 원문은 미열람. IUCN VU는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "깃털 거래 역사를 다룰 때 상품으로 다시 등장시키지 않는다"
         ]
