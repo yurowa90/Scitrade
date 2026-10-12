@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { REPO_ROOT, loadProfiles, selectProfiles, validateScenario, loadScenario, resolveDistPath, contentType, fontCacheKey, checkExpectations, isInside } from './lib.mjs';
-const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position', 'report-contract-link', 'schedule-toggle', 'crew-facet', 'campaign-end', 'route-map-fit', 'queue-chip', 'card-detail', 'card-detail-low', 'interview-hire', 'side-anchor'];
+const names = ['smoke', 'day-anchor', 'culture-result-flow3', 'local-tab-position', 'report-contract-link', 'schedule-toggle', 'crew-facet', 'campaign-end', 'route-map-fit', 'queue-chip', 'card-detail', 'card-detail-low', 'interview-hire', 'side-anchor', 'map-detail'];
 const scenarioFile = name => path.join(REPO_ROOT, 'tools/browser/scenarios', `${name}.json`);
 const profiles = loadProfiles().profiles;
 
@@ -39,8 +39,12 @@ test('잘못된 단계와 기대를 거절한다', () => {
     [{ steps: [{ do: 'measure', name: 'v', what: 'unknown', selector: '#x' }] }, '모르는 측정'],
     [{ profiles: ['unknown'] }, '모르는 프로필'],
     [{ steps: [{ do: 'remember', name: 'v', selector: '#test' }, { do: 'measure', name: 'v', what: 'overflow-x' }] }, 'name이 중복됩니다'],
+    [{ steps: [{ do: 'select', selector: '#x' }] }, 'value와 index 가운데 하나만 씁니다'],
+    [{ steps: [{ do: 'select', selector: '#x', value: 'a', index: 1 }] }, 'value와 index 가운데 하나만 씁니다'],
+    [{ steps: [{ do: 'select', selector: '#x', index: -1 }] }, 'index는 0 이상 정수입니다'],
   ];
   assert.deepEqual(validateScenario({ ...base, expect: [], steps: [{ do: 'measure', name: 'ok1', what: 'overflow-x' }] }), []);
+  assert.deepEqual(validateScenario({ ...base, expect: [], steps: [{ do: 'select', selector: '#x', index: 1 }] }), []);
   for (const [change, message] of cases) {
     const errors = validateScenario({ ...base, expect: [], ...change });
     assert.ok(errors.some(e => e.includes(message)), `${message}: ${JSON.stringify(errors)}`);

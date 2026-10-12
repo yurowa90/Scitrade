@@ -66,7 +66,7 @@ type CityRaw = {
   hub_note_ko?: string;
 };
 type GateRaw = { id: string; name_ko: string; gate_type: SeaGate['gateType']; geo_position: GeoPoint; connects_ko: string; event_hook_ko: string };
-type RouteRaw = { id: string; map_waypoints?: { points: GeoPoint[] } };
+type RouteRaw = { id: string; map_waypoints?: { points: GeoPoint[] }; schedule_basis?: { status: string; checked_on: string; tolerance_days: number } };
 
 export function loadMapCities(): MapCity[] {
   return (world as unknown as { items: CityRaw[] }).items
@@ -99,4 +99,10 @@ export function loadSeaGates(): SeaGate[] {
 export function loadRouteWaypoints(routeId: string): GeoPoint[] {
   const route = (routes as { items: RouteRaw[] }).items.find((r) => r.id === routeId);
   return route?.map_waypoints?.points ?? [];
+}
+
+/** 노선 운항 근거의 확인 날짜와 오차. 선사·서비스 이름과 메모는 내보내지 않는다. */
+export function loadRouteScheduleCheck(routeId: string): { checkedOn: string; toleranceDays: number } | null {
+  const basis = (routes as { items: RouteRaw[] }).items.find((r) => r.id === routeId)?.schedule_basis;
+  return basis?.status === 'CARRIER_WEEKDAY_SCHEDULE' ? { checkedOn: basis.checked_on, toleranceDays: basis.tolerance_days } : null;
 }
