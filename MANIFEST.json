@@ -1636,6 +1636,11 @@
       "sha256": "98e2fb385fbacbc8c9e73ff9166e3c9a94f750d5d76ae835c8cfb83f148cd3b2"
     },
     {
+      "path": "docs/ai/tasks/TASK-0053-conservation-tests.md",
+      "size_bytes": 3678,
+      "sha256": "38797ea86dc12d16b69c2905e8c1213a9b2abf6fd68cfd35a545e39d6f909889"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
