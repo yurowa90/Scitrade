@@ -1186,6 +1186,11 @@
       "sha256": "73775d42c93b4ec974353ed8fbb13f4e45955cf7e46855a90fc049fe1c47c7fd"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS3.md",
+      "size_bytes": 4547,
+      "sha256": "3aa0392e7b163448983c01020ef74fa610bc48c0f0d2386a742712d2e05e09b7"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
       "size_bytes": 2094,
       "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
@@ -1591,6 +1596,31 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0031-R1-m2a5-bottleneck-peak.md",
+      "size_bytes": 4939,
+      "sha256": "302df57d1796f899614d2020c1ee3bcba44d0e3c2e334612f433d20db730887e"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0031-m2a5-bottleneck-storage.md",
+      "size_bytes": 12422,
+      "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0032-m2a5-trade-lots.md",
+      "size_bytes": 6250,
+      "sha256": "20d651452df6992d5be7103f67340ae27aa13719ba5f5c9071428e2ee00a48a7"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
+      "size_bytes": 8352,
+      "sha256": "380f67de905d6219f502c367ef19bca887a84ec15f26d02dfa9c74e6bc1d9bc5"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
+      "size_bytes": 5975,
+      "sha256": "b873b535c6524a2494392c22ff856b4391814928d6a8f484fd764f45e29bf3e9"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0035-map-detail.md",
       "size_bytes": 95151,
       "sha256": "22bbd21a90fd62b5d8c31971f090e4b9873ff6431b477a4a5228a0f61a60d657"
@@ -1792,8 +1822,28 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0030.md",
-      "size_bytes": 39251,
-      "sha256": "5eb6a165fd669d8ccbfde5dda51b987c2fc36dec43a50f158135b420be65fee2"
+      "size_bytes": 39873,
+      "sha256": "d58ac6dff97af1900d19aac14361c7ace9bee63c62be0d1e248d96b2921fc0cc"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03-cap30.md",
+      "size_bytes": 11238,
+      "sha256": "61f62e51f2307f306948f165cb2a7ac9b7658a992ebd7e2945d241550d48e8b4"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03-flat200.md",
+      "size_bytes": 11451,
+      "sha256": "80b6abd7a5df4dc5875f156c864a63789352da2196fcb71bb1253d54cafdb7d1"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03.md",
+      "size_bytes": 20857,
+      "sha256": "6c62ea0a3b064592d822db1887c3bd7870dbad110167961fe2a551b776da7143"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031.md",
+      "size_bytes": 77526,
+      "sha256": "fed352207da13a3cc268f78025252a269c89d0577b0adce38532252fecef6227"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",
@@ -2072,8 +2122,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 197883,
-      "sha256": "8ed67026886c02e52e8d821ef4f0e8169cb14e5e428c03933d360470dadec52b"
+      "size_bytes": 207592,
+      "sha256": "9a281a6949e72291865a3a7ca2452de0e446b9e9d8990e33d08ffb1906887bbc"
     },
     {
       "path": "tests/character_acceptance_cases.json",

@@ -1,7 +1,7 @@
 import { summarize } from '../ledger';
 import { offerDef, prepWorkUnitsFor } from '../market';
 import { storageCapacityLiters, storageUsedLiters, unpaidByCurrency } from '../operations';
-import { weeklyBottleneck } from '../readers';
+import { weeklyBottleneck, type WeeklyBottleneck } from '../readers';
 import { contractReport } from '../reports';
 import type { GameState, ScenarioConfig } from '../types';
 import { candidateFor, parseVariant } from './variants';
@@ -11,7 +11,7 @@ import { rejectionCounts } from './operations-policy';
 export function createOperationsCollector(config: ScenarioConfig, policyId: string) {
   const variant = parseVariant(policyId)!;
   const daily: { day: number; handlingUsedPt: number; handlingCapacityPt: number; storageUsedLiters: number; storageCapacityLiters: number; waitingTaskDays: number; waitingPt: number }[] = [];
-  const bottlenecks: { day: number; pt: number; extraJobsPerWeek: number; usableAfter: number }[] = [];
+  const bottlenecks: { day: number; pt: number; extraJobsPerWeek: number; usableAfter: number; otherPtPerWeek: number; storageDetail: WeeklyBottleneck['storageDetail'] }[] = [];
   const rejections = rejectionCounts();
   let departing = new Set<string>();
   const promised = new Map<string, ProjectionBooking>(), missed = new Set<string>();
@@ -20,7 +20,7 @@ export function createOperationsCollector(config: ScenarioConfig, policyId: stri
       departing = new Set(s.bookings.filter((b) => b.status === 'BOOKED' && b.departureDay === s.day).map((b) => b.id));
       if (!variant.hires.length && [8, 22, 29, 30, 31, 36, 50].includes(s.day)) for (const pt of [2, 3]) {
         const c = candidateFor(config, pt);
-        if (c) { const b = weeklyBottleneck(s, config, c.id); bottlenecks.push({ day: s.day, pt, extraJobsPerWeek: b.extraJobsPerWeek, usableAfter: b.usableAfter }); }
+        if (c) { const b = weeklyBottleneck(s, config, c.id); bottlenecks.push({ day: s.day, pt, extraJobsPerWeek: b.extraJobsPerWeek, usableAfter: b.usableAfter, otherPtPerWeek: b.otherPtPerWeek, storageDetail: b.storageDetail }); }
       }
     },
     observeClosed(s: GameState, day: number, rejected: Record<string, number> = {}, projections: ProjectionBooking[] = []) {
@@ -55,7 +55,8 @@ export function createOperationsCollector(config: ScenarioConfig, policyId: stri
         s.operations!.exchanges.filter((x) => x.direction === direction).reduce((a, x) => ({ usdMinor: a.usdMinor + x.usdMinor, krwMinor: a.krwMinor + x.krwMinor, spreadKrwMinor: a.spreadKrwMinor + x.spreadKrwMinor }), { usdMinor: 0, krwMinor: 0, spreadKrwMinor: 0 })]));
       const f = s.operations!.failure;
       const forwardingPrep = [...config.offers, ...s.operations!.offers].filter((o) => o.kind === 'forwarding').map((o) => prepWorkUnitsFor(config, o, o.quantity));
-      return { projectionMisses: missed.size, outcome: s.operations!.outcome, failureDay: f?.day ?? null,
+      return { handlingJobs: s.contracts.filter((c) => c.kind === 'FORWARDING' && c.cancelledDay === null
+        && offerDef(s, config, c.serviceOfferId!)?.serviceClass === 'HANDLING').length, projectionMisses: missed.size, outcome: s.operations!.outcome, failureDay: f?.day ?? null,
         failureObligation: f ? { currency: f.currency, amountMinor: f.amountMinor, incurredDay: f.incurredDay } : null,
         firstUnpaidDay: s.obligations.length ? Math.min(...s.obligations.map((o) => o.incurredDay)) : null,
         unpaidAtEnd: unpaidByCurrency(s, config).map(({ currency, amountMinor }) => ({ currency, amountMinor })), exchanges, currencies: books,

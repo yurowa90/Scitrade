@@ -4414,7 +4414,13 @@
             "remainingHandlingBatches": 10,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 0,
+              "otherPeakLiters": 0,
+              "handlingDwellDays": 8,
+              "windowDays": 0
+            }
           }
         },
         "invested": {
@@ -4534,7 +4540,13 @@
             "remainingHandlingBatches": 10,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 0,
+              "otherPeakLiters": 0,
+              "handlingDwellDays": 8,
+              "windowDays": 2
+            }
           }
         },
         "hiring": [
@@ -4591,7 +4603,13 @@
                 "remainingHandlingBatches": 10,
                 "contributionPerJobMinor": 84000,
                 "wageKrwPerWeek": 630000,
-                "wageUsdLotsPerWeek": 5
+                "wageUsdLotsPerWeek": 5,
+                "storageDetail": {
+                  "otherOccupancyLiters": 0,
+                  "otherPeakLiters": 0,
+                  "handlingDwellDays": 8,
+                  "windowDays": 0
+                }
               },
               "recentHandlingOfferedPt": 0,
               "recentHandlingAcceptedPt": 0
@@ -4650,7 +4668,13 @@
                 "remainingHandlingBatches": 10,
                 "contributionPerJobMinor": 84000,
                 "wageKrwPerWeek": 770000,
-                "wageUsdLotsPerWeek": 6
+                "wageUsdLotsPerWeek": 6,
+                "storageDetail": {
+                  "otherOccupancyLiters": 0,
+                  "otherPeakLiters": 0,
+                  "handlingDwellDays": 8,
+                  "windowDays": 0
+                }
               },
               "recentHandlingOfferedPt": 0,
               "recentHandlingAcceptedPt": 0
@@ -4708,7 +4732,13 @@
                 "remainingHandlingBatches": 10,
                 "contributionPerJobMinor": 84000,
                 "wageKrwPerWeek": 630000,
-                "wageUsdLotsPerWeek": 5
+                "wageUsdLotsPerWeek": 5,
+                "storageDetail": {
+                  "otherOccupancyLiters": 0,
+                  "otherPeakLiters": 0,
+                  "handlingDwellDays": 8,
+                  "windowDays": 2
+                }
               },
               "recentHandlingOfferedPt": 0,
               "recentHandlingAcceptedPt": 0
@@ -4767,7 +4797,13 @@
                 "remainingHandlingBatches": 10,
                 "contributionPerJobMinor": 84000,
                 "wageKrwPerWeek": 770000,
-                "wageUsdLotsPerWeek": 6
+                "wageUsdLotsPerWeek": 6,
+                "storageDetail": {
+                  "otherOccupancyLiters": 0,
+                  "otherPeakLiters": 0,
+                  "handlingDwellDays": 8,
+                  "windowDays": 2
+                }
               },
               "recentHandlingOfferedPt": 0,
               "recentHandlingAcceptedPt": 0
@@ -5023,7 +5059,7 @@
               "handlingPt": 96,
               "batches": 2
             },
-            "otherPtPerWeek": 2,
+            "otherPtPerWeek": 0,
             "rows": [
               {
                 "constraint": "DEMAND",
@@ -5067,7 +5103,13 @@
             "remainingHandlingBatches": 8,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 0,
+              "otherPeakLiters": 0,
+              "handlingDwellDays": 8,
+              "windowDays": 14
+            }
           }
         },
         "history_36": {
@@ -5176,8 +5218,8 @@
               },
               {
                 "constraint": "STORAGE",
-                "before": 3,
-                "after": 3
+                "before": 1,
+                "after": 1
               },
               {
                 "constraint": "SAILING",
@@ -5187,21 +5229,25 @@
             ],
             "binding": {
               "before": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ],
               "after": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ]
             },
-            "usableBefore": 2,
-            "usableAfter": 2,
+            "usableBefore": 1,
+            "usableAfter": 1,
             "extraJobsPerWeek": 0,
             "remainingHandlingBatches": 5,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 1071,
+              "otherPeakLiters": 24300,
+              "handlingDwellDays": 9,
+              "windowDays": 28
+            }
           }
         },
         "history_43": {
@@ -5291,7 +5337,7 @@
               "handlingPt": 192,
               "batches": 4
             },
-            "otherPtPerWeek": 0,
+            "otherPtPerWeek": 1,
             "rows": [
               {
                 "constraint": "DEMAND",
@@ -5310,8 +5356,8 @@
               },
               {
                 "constraint": "STORAGE",
-                "before": 3,
-                "after": 3
+                "before": 1,
+                "after": 1
               },
               {
                 "constraint": "SAILING",
@@ -5321,21 +5367,25 @@
             ],
             "binding": {
               "before": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ],
               "after": [
-                "STAFF",
-                "SAILING"
+                "STORAGE"
               ]
             },
-            "usableBefore": 2,
-            "usableAfter": 2,
+            "usableBefore": 1,
+            "usableAfter": 1,
             "extraJobsPerWeek": 0,
             "remainingHandlingBatches": 4,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 1146,
+              "otherPeakLiters": 24300,
+              "handlingDwellDays": 9,
+              "windowDays": 28
+            }
           }
         },
         "with_trade": {
@@ -5411,7 +5461,7 @@
               "handlingPt": 96,
               "batches": 2
             },
-            "otherPtPerWeek": 3,
+            "otherPtPerWeek": 0,
             "rows": [
               {
                 "constraint": "DEMAND",
@@ -5455,7 +5505,13 @@
             "remainingHandlingBatches": 8,
             "contributionPerJobMinor": 84000,
             "wageKrwPerWeek": null,
-            "wageUsdLotsPerWeek": null
+            "wageUsdLotsPerWeek": null,
+            "storageDetail": {
+              "otherOccupancyLiters": 0,
+              "otherPeakLiters": 0,
+              "handlingDwellDays": 8,
+              "windowDays": 14
+            }
           }
         }
       },
@@ -6103,12 +6159,285 @@
           "ACCEPT_FORWARDING": 6
         }
       }
+    },
+    {
+      "id": "P0-M2A5-20",
+      "phase": "P0",
+      "milestone": "M2",
+      "title": "28일 병목 실측과 명령 시점 보관 재구성",
+      "currency": "USD",
+      "evidence_class": "DESIGN",
+      "scenario_id": "SCENARIO_M2_OPERATIONS",
+      "actions": [
+        {
+          "step": 1,
+          "action": "test_fixture의 고정 명령으로 29일 마감 뒤 30일 표를 읽는다."
+        }
+      ],
+      "expected_assertions": [
+        "수락일 창의 준비 pt, 명령 시점 점유와 실제 출항 체류를 손계산한 전체 병목 표와 비교한다.",
+        "1~29일 마감 실제 점유와 마지막 기록에서 재구성한 다음 날 명령 시점 점유가 같다."
+      ],
+      "human_review_check": "합성 게임 계약 원기록과 TASK-0031 손계산을 대조한다. 현실 물류 실측값은 아니다.",
+      "engine_test_ref": "src/engine/m2a5-readers.test.ts",
+      "engine_test_names": [
+        "P0-M2A5-20 28일 병목 실측"
+      ],
+      "test_fixture": {
+        "day": 30,
+        "candidate_id": "EMP05",
+        "script": {
+          "2": [
+            {
+              "id": "TRADE-START",
+              "type": "ACCEPT_TRADE",
+              "buyOfferId": "OFFER_BUY_01",
+              "sellOfferId": "OFFER_SELL_01",
+              "plan": {
+                "employeeId": "EMP01",
+                "sailingId": "ROUTE01-D009"
+              }
+            },
+            {
+              "id": "STANDARD-START",
+              "type": "ACCEPT_FORWARDING",
+              "offerId": "OFFER_FWD_01"
+            }
+          ],
+          "8": [
+            {
+              "id": "HANDLING-START",
+              "type": "ACCEPT_FORWARDING",
+              "offerId": "MKT-D008-H1",
+              "plan": {
+                "employeeId": "EMP02",
+                "sailingId": "ROUTE01-D016"
+              }
+            }
+          ],
+          "15": [
+            {
+              "id": "TRADE-CANCEL-START",
+              "type": "ACCEPT_TRADE",
+              "buyOfferId": "MKT-D015-APP-BUY",
+              "sellOfferId": "MKT-D015-APP-SELL"
+            }
+          ],
+          "18": [
+            {
+              "id": "TRADE-CANCEL",
+              "type": "CANCEL_CONTRACT",
+              "contractId": "CT004"
+            }
+          ],
+          "20": [
+            {
+              "id": "STANDARD-CANCEL",
+              "type": "CANCEL_CONTRACT",
+              "contractId": "CT002"
+            }
+          ]
+        }
+      },
+      "expected_numeric": {
+        "bottleneck": {
+          "unit": "HANDLING_JOBS_PER_WEEK",
+          "demand": {
+            "handlingOffered": 16,
+            "handlingPt": 192,
+            "batches": 4
+          },
+          "otherPtPerWeek": 0,
+          "storageDetail": {
+            "otherOccupancyLiters": 150,
+            "otherPeakLiters": 300,
+            "handlingDwellDays": 9,
+            "windowDays": 28
+          },
+          "rows": [
+            {
+              "constraint": "DEMAND",
+              "before": 4,
+              "after": 4
+            },
+            {
+              "constraint": "STAFF",
+              "before": 2,
+              "after": 3
+            },
+            {
+              "constraint": "WAREHOUSE_HANDLING",
+              "before": 3,
+              "after": 3
+            },
+            {
+              "constraint": "STORAGE",
+              "before": 3,
+              "after": 3
+            },
+            {
+              "constraint": "SAILING",
+              "before": 2,
+              "after": 2
+            }
+          ],
+          "binding": {
+            "before": [
+              "STAFF",
+              "SAILING"
+            ],
+            "after": [
+              "SAILING"
+            ]
+          },
+          "usableBefore": 2,
+          "usableAfter": 2,
+          "extraJobsPerWeek": 0,
+          "remainingHandlingBatches": 6,
+          "contributionPerJobMinor": 84000,
+          "wageKrwPerWeek": 630000,
+          "wageUsdLotsPerWeek": 5
+        },
+        "older_window": {
+          "otherPtPerWeek": 0,
+          "storageDetail": {
+            "otherOccupancyLiters": 300,
+            "otherPeakLiters": 300,
+            "handlingDwellDays": 9,
+            "windowDays": 28
+          }
+        },
+        "mixed_day": {
+          "day": 17,
+          "bottleneck": {
+            "unit": "HANDLING_JOBS_PER_WEEK",
+            "demand": {
+              "handlingOffered": 8,
+              "handlingPt": 96,
+              "batches": 2
+            },
+            "otherPtPerWeek": 0,
+            "storageDetail": {
+              "otherOccupancyLiters": 18,
+              "otherPeakLiters": 300,
+              "handlingDwellDays": 9,
+              "windowDays": 16
+            },
+            "rows": [
+              {
+                "constraint": "DEMAND",
+                "before": 4,
+                "after": 4
+              },
+              {
+                "constraint": "STAFF",
+                "before": 2,
+                "after": 3
+              },
+              {
+                "constraint": "WAREHOUSE_HANDLING",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "STORAGE",
+                "before": 3,
+                "after": 3
+              },
+              {
+                "constraint": "SAILING",
+                "before": 2,
+                "after": 2
+              }
+            ],
+            "binding": {
+              "before": [
+                "STAFF",
+                "SAILING"
+              ],
+              "after": [
+                "SAILING"
+              ]
+            },
+            "usableBefore": 2,
+            "usableAfter": 2,
+            "extraJobsPerWeek": 0,
+            "remainingHandlingBatches": 8,
+            "contributionPerJobMinor": 84000,
+            "wageKrwPerWeek": 630000,
+            "wageUsdLotsPerWeek": 5
+          },
+          "storage_boundary": {
+            "capacity_liters": 34715,
+            "bottleneck": {
+              "unit": "HANDLING_JOBS_PER_WEEK",
+              "demand": {
+                "handlingOffered": 8,
+                "handlingPt": 96,
+                "batches": 2
+              },
+              "otherPtPerWeek": 0,
+              "storageDetail": {
+                "otherOccupancyLiters": 18,
+                "otherPeakLiters": 300,
+                "handlingDwellDays": 9,
+                "windowDays": 16
+              },
+              "rows": [
+                {
+                  "constraint": "DEMAND",
+                  "before": 4,
+                  "after": 4
+                },
+                {
+                  "constraint": "STAFF",
+                  "before": 2,
+                  "after": 3
+                },
+                {
+                  "constraint": "WAREHOUSE_HANDLING",
+                  "before": 3,
+                  "after": 3
+                },
+                {
+                  "constraint": "STORAGE",
+                  "before": 2,
+                  "after": 2
+                },
+                {
+                  "constraint": "SAILING",
+                  "before": 2,
+                  "after": 2
+                }
+              ],
+              "binding": {
+                "before": [
+                  "STAFF",
+                  "STORAGE",
+                  "SAILING"
+                ],
+                "after": [
+                  "STORAGE",
+                  "SAILING"
+                ]
+              },
+              "usableBefore": 2,
+              "usableAfter": 2,
+              "extraJobsPerWeek": 0,
+              "remainingHandlingBatches": 8,
+              "contributionPerJobMinor": 84000,
+              "wageKrwPerWeek": 630000,
+              "wageUsdLotsPerWeek": 5
+            }
+          }
+        }
+      }
     }
   ],
   "review_summary": {
-    "case_count": 37,
+    "case_count": 38,
     "phase_case_counts": {
-      "P0": 32,
+      "P0": 33,
       "P1": 4,
       "P2": 1
     },
@@ -6130,7 +6459,7 @@
     ],
     "engine_test_pass_claim": false,
     "added_cases_note": "v0.3 package QA: added independent predeparture cancellation and accepted-late-delivery cases; total 14; M2a added P0-M2A-01..04, total 18.; M2a-5 added P0-M2A5-01..16, total 34.; TASK-0028 added P0-M2A5-18..19, total 36.; TASK-0029 added P0-M2A5-17, total 37.",
-    "engine_linked_case_count": 32,
+    "engine_linked_case_count": 33,
     "ui_linked_case_count": 1
   },
   "human_review_records": []
