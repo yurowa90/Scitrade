@@ -530,7 +530,12 @@
               "sources",
               "checked_on",
               "check_level",
-              "design_cautions_ko"
+              "design_cautions_ko",
+              "scientific_name",
+              "scientific_name_rank",
+              "cites_status",
+              "cites_checked_on",
+              "cites_basis"
             ],
             "properties": {
               "iucn_status": {
@@ -585,6 +590,44 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scientific_name": {
+                "type": "string",
+                "description": "동료의 대표 학명"
+              },
+              "scientific_name_rank": {
+                "type": "string",
+                "enum": [
+                  "species",
+                  "subspecies",
+                  "genus",
+                  "family"
+                ],
+                "description": "대표 학명의 분류 단계: 종·아종·속·과"
+              },
+              "cites_status": {
+                "type": "string",
+                "enum": [
+                  "listed",
+                  "not_listed",
+                  "unresolved",
+                  "unchecked"
+                ],
+                "description": "listed=부속서 등재, not_listed=확인했고 미등재, unresolved=원문끼리 엇갈려 판정 보류, unchecked=확인 안 함(검사 실패)"
+              },
+              "cites_checked_on": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "CITES 확인일(YYYY-MM-DD), 확인하지 않았으면 null"
+              },
+              "cites_basis": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "CITES 등재·미등재·판정 보류의 근거 문장, 확인하지 않았으면 null"
               }
             },
             "additionalProperties": false
