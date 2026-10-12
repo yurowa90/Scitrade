@@ -31,7 +31,7 @@ class FactMixingTest(unittest.TestCase):
         """원본은 허용 목록 여덟 건을 모두 사용한다."""
         self.assertEqual(checker.check_documents(self.docs), [])
         raw = checker.check_documents(self.docs, [])
-        self.assertEqual({f.key() for f in raw}, {tuple(e[k] for k in ('code', 'file', 'record', 'field', 'token')) for e in checker.ALLOWLIST})
+        self.assertEqual({f.key() for f in raw}, {tuple(e[k] for k in ('code', 'file', 'record', 'field', 'token')) + (e.get('other', ''),) for e in checker.ALLOWLIST})
         self.assertEqual(len(raw), 8)
 
     def test_02_reasons(self):
@@ -111,7 +111,7 @@ class FactMixingTest(unittest.TestCase):
 
     def test_13_unused(self):
         """낡은 허용 항목을 잡는다."""
-        entries = checker.ALLOWLIST + [{'code': 'RANK_WITHOUT_BASIS', 'file': 'world.json', 'record': self.home['id'], 'field': 'hub_note_ko', 'token': '999위', 'reason': '시험'}]
+        entries = checker.ALLOWLIST + [{'code': 'RANK_WITHOUT_BASIS', 'file': 'world.json', 'record': self.home['id'], 'field': 'hub_note_ko', 'token': '999위', 'sentence_contains': '존재하지 않는 순위 문장', 'reason': '시험'}]
         self.assertIn('ALLOWLIST_UNUSED', self.codes(entries))
 
     def test_14_bad_allowlist(self):
@@ -119,6 +119,9 @@ class FactMixingTest(unittest.TestCase):
         entry = copy.deepcopy(checker.ALLOWLIST[0])
         missing = dict(entry); del missing['file']
         cases = [[dict(entry, reason='')], [dict(entry, reason='  ')], [missing], [entry, entry], [dict(entry, code='BAD_CODE')]]
+        missing_sentence = dict(entry); del missing_sentence['sentence_contains']
+        cases += [[missing_sentence], [dict(entry, sentence_contains='일곱자이하')],
+                  [dict(entry, sentence_contains=None)], [dict(entry, code='FACT_NAMES_OTHER_HUB')]]
         for entries in cases:
             with self.subTest(entries=entries), self.assertRaises(checker.AllowlistError):
                 checker.check_documents(self.docs, entries)
@@ -169,6 +172,70 @@ class FactMixingTest(unittest.TestCase):
             with contextlib.redirect_stdout(out):
                 self.assertEqual(checker.main(['--root', tmp, '--json']), 1)
             self.assertIsInstance(json.loads(out.getvalue()), list)
+
+    def test_21_shared_variants(self):
+        """표기가 다른 같은 비율·물량은 거점 공유로 잡는다."""
+        for first, second in [('비중은 57 %다.', '환적 비중은 57％다.'),
+                              ('물량은 5506만TEU다.', '처리량은 55,060,000 TEU다.')]:
+            with self.subTest(first=first):
+                docs = self.synthetic(note=first)
+                docs['world.json']['items'][1]['hub_note_ko'] = second
+                findings = checker.check_documents(docs, [])
+                shared = [f for f in findings if f.code == 'FACT_SHARED_BETWEEN_HUBS']
+                self.assertEqual(len(shared), 1)
+                self.assertEqual(shared[0].token, checker.fact_tokens(first)[0].text)
+
+    def test_22_canonical(self):
+        """소수 정밀도와 단위를 지키며 표기를 통일한다."""
+        def value(text, kind='QTY'):
+            return checker.canonical(checker.Token(kind, text))
+        self.assertEqual({value(t, 'SHARE') for t in ['57 %', '57％', '57%']}, {'57%'})
+        self.assertEqual(value('5506만TEU'), value('55,060,000 TEU'))
+        self.assertEqual(value('5.5만 TEU'), value('55,000TEU'))
+        self.assertNotEqual(value('57%'), value('57.1%'))
+        self.assertEqual(value('1.25억 R/T'), '125000000R/T')
+        self.assertEqual(value('−0.50％', 'SHARE'), '-0.5%')
+        self.assertEqual(value('1..2 TEU'), '1..2TEU')
+        self.assertEqual(value('국내 1위', 'RANK'), '국내 1위')
+        docs = self.synthetic(note='처리량 5.5만 TEU, 비중 57％다.')
+        docs['venues.json'] = {'items': [{'id': 'V', 'city_id': 'HUB_A',
+                                         'note_ko': '처리량 55,000TEU, 비중 57 %다.'}]}
+        self.assertEqual(checker.check_documents(docs, []), [])
+
+    def test_23_yuan(self):
+        """위안 가격과 띄어 쓴 순위를 구별한다."""
+        self.assertEqual(checker.fact_tokens('택시 기본요금은 14위안이다.'), [])
+        self.assertEqual(checker.fact_tokens('1위 안에 든다.'), [checker.Token('RANK', '1위', None, 1)])
+
+    def test_24_alias_boundary(self):
+        """낱말 안 별칭과 관문 이름을 거점으로 읽지 않는다."""
+        self.assertFalse(checker.names_hub('부산물', {'부산'}, []))
+        for text in ['부산항', '부산은', '부산발', '부산물과 부산은']:
+            self.assertTrue(checker.names_hub(text, {'부산'}, []))
+        self.assertFalse(checker.names_hub('파나마 운하를 거쳐', {'파나마'}, ['파나마 운하']))
+        self.assertTrue(checker.names_hub('파나마는', {'파나마'}, ['파나마 운하']))
+        self.assertTrue(checker.names_hub('파나마 운하와 파나마는', {'파나마'}, ['파나마 운하']))
+        self.assertFalse(checker.names_hub('HUB_AB', {'HUB_A'}, []))
+        self.assertTrue(checker.names_hub('HUB_A 항만', {'HUB_A'}, []))
+
+    def test_25_allowlist_sentence(self):
+        """허용된 순위와 같은 새 문장도 따로 검사한다."""
+        hub = next(h for h in self.docs['world.json']['items'] if h['id'] == 'HONG_KONG')
+        sentence = '홍콩은 세계 6위 금융 도시다.'
+        hub['hub_note_ko'] += ' ' + sentence
+        findings = checker.check_documents(self.docs)
+        self.assertEqual([(f.code, f.sentence) for f in findings], [('RANK_WITHOUT_BASIS', sentence)])
+
+    def test_26_allowlist_other(self):
+        """상대 거점이 다르면 허용 항목을 쓰지 않는다."""
+        entries = copy.deepcopy(checker.ALLOWLIST)
+        entry = next(e for e in entries if e['record'] == 'PANAMA')
+        entry['other'] = 'BUSAN'
+        findings = checker.check_documents(self.docs, entries)
+        self.assertEqual({f.code for f in findings}, {'ALLOWLIST_UNUSED', 'FACT_NAMES_OTHER_HUB'})
+        fact = next(f for f in findings if f.code == 'FACT_NAMES_OTHER_HUB')
+        self.assertEqual(fact.other, 'SANTOS')
+        self.assertEqual(fact.key()[-1], 'SANTOS')
 
 if __name__ == '__main__':
     unittest.main()
