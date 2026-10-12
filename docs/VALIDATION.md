@@ -42,6 +42,7 @@
 | 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 21개 통과. 원본 재생성 시험 3개는 원본 폴더가 있을 때만 돌고, 없으면 건너뛴다(CI) | `tools/ai/review_checks.sh:49-51`(2026-10-10 다시 셈) |
 | 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 251,378 B·자료 125,986 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 403,918 B(한도 600,000 B)·gzip 118,558 B(한도 140,000 B, 여유 약 21.4 KB), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0028 병합 검사(2026-10-10). 빌드 표시가 커밋 해시라 `dev` 표시보다 수 B 크다. TASK-0055 병합 뒤(`dev` 표시) 359,790 B / 105,686 B → TASK-0027 403,488 / 118,413 B → TASK-0028 |
 | 크기 검사기 시험 | `node --test tools/check_bundle_size.test.mjs` | 11개 통과 | TASK-0026 |
+| 사실 섞임 검사와 시험 | `python3 tools/check_fact_mixing.py`, `python3 tools/test_check_fact_mixing.py` | PASS(자료 24개, 문장 7,654개, 사실 표지 53개, 허용 목록 8건 모두 사용). 시험 26개 통과 | TASK-0048 병합 뒤(2026-10-12). 시험 20 → 26 |
 
 위 일곱 가지와 타입 검사·빌드·`MANIFEST.json` 재생성·사실 섞임 검사·브라우저 도구 시험 등이 Codex 결과 검수의 자동 검사다. 수정 모드 13종, 확인 모드(`--check`) 14종이다(`tools/ai/review_checks.sh`, TASK-0026 병합 뒤). CI(`.github/workflows/checks.yml`)는 확인 모드를 돈다.
 

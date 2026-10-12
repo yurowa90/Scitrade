@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "dataset_version": "0.3.0",
   "edition": "2022-33",
-  "current_edition_comparison_status": "not_completed",
+  "current_edition_comparison_status": "completed",
   "source_document": "docs/DESIGN_v0.4.md",
   "source_sections": [
     "17",
@@ -52,8 +52,15 @@
       "pdf_page_offset": 6,
       "pagination_reference_id_in_design": "C2",
       "verification_status": "source_design_records_official_hwp_comparison",
-      "current_edition_comparison_status": "not_completed",
-      "pagination_pdf_total_pages": 316
+      "current_edition_comparison_status": "completed",
+      "pagination_pdf_total_pages": 316,
+      "current_edition_source": {
+        "notice": "국가교육위원회고시 제2024-3호",
+        "edunet_list_url": "https://www.edunet.net/clssFlCtgr/list/5",
+        "pdf_sha256": "7383ec75add6dae0d1c2138ecfe36dc2c762ab980a96db4aafccface33979e06",
+        "hwp_sha256": "8dd9846e71822afea14809993de892396d1f9ed1238ce1f8461733909d6b2044",
+        "pdf_total_pages": 317
+      }
     },
     {
       "id": "C1-ETH",
@@ -66,7 +73,10 @@
       "pdf_page_offset": 6,
       "pagination_reference_id_in_design": "C6",
       "verification_status": "source_design_records_official_hwp_comparison",
-      "current_edition_comparison_status": "not_completed"
+      "current_edition_comparison_status": "completed",
+      "current_edition_source": {
+        "notice": "교육부 고시 제2022-33호(이후 개정 고시의 대상 별책에 없음)"
+      }
     },
     {
       "id": "C1-SCI",
@@ -79,8 +89,11 @@
       "pdf_page_offset": 6,
       "pagination_reference_id_in_design": "C3",
       "verification_status": "source_design_records_official_hwp_comparison",
-      "current_edition_comparison_status": "not_completed",
-      "pagination_pdf_total_pages": 292
+      "current_edition_comparison_status": "completed",
+      "pagination_pdf_total_pages": 292,
+      "current_edition_source": {
+        "notice": "교육부 고시 제2022-33호(이후 개정 고시의 대상 별책에 없음)"
+      }
     }
   ],
   "links": [
@@ -98,7 +111,7 @@
       "printed_page": 94,
       "pdf_page": 100,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 오래된 항구·창고의 거래 기록을 읽는 지사 이야기. 보존·개발·지역 관계를 함께 고려",
       "priority": [
         "P1"
@@ -117,7 +130,9 @@
           "keyword_ko": "조선의 개항을 국제 질서의 변동과 연관하여"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 94
     },
     {
       "id": "SOC02",
@@ -133,7 +148,7 @@
       "printed_page": 95,
       "pdf_page": 101,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 수출기업의 성장과 구조조정 기록. 외화 자금·고용·환경 투자에 얽힌 선택을 역사적 맥락에서 설명",
       "priority": [
         "P1"
@@ -152,7 +167,9 @@
           "keyword_ko": "외환 위기의 극복 과정을 이해하고, 사회와 문화의 변동"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 95
     },
     {
       "id": "SOC03",
@@ -169,7 +186,7 @@
       "printed_page": 108,
       "pdf_page": 114,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 기상에 따른 항만 지연과 정보 제공. P1: 물류 기술 도입이 비용·공간·업무를 바꾸는 이야기",
       "priority": [
         "P0",
@@ -195,7 +212,9 @@
           "keyword_ko": "교통⋅통신 및 과학기술의 발달"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 108
     },
     {
       "id": "SOC04",
@@ -212,7 +231,7 @@
       "printed_page": 108,
       "pdf_page": 114,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 현지 거래처의 요구를 확인하는 대화·직원 협업. 국적에 따라 정직성·능력을 고정하지 않음",
       "priority": [
         "P0"
@@ -240,7 +259,9 @@
           "keyword_ko": "다문화 사회의 현황"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 108
     },
     {
       "id": "SOC05",
@@ -257,7 +278,7 @@
       "printed_page": 115,
       "pdf_page": 121,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 조달·운송·소비의 연결, 계약 비용과 환경 자료를 함께 보는 핵심 플레이",
       "priority": [
         "P0"
@@ -283,7 +304,9 @@
           "keyword_ko": "지속가능한 발전을 위한 제도적 방안과 개인적 노력"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 115
     },
     {
       "id": "SOC06",
@@ -300,7 +323,7 @@
       "printed_page": 115,
       "pdf_page": 121,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고: 물류 접근성과 가격 차이, 업무·보상 배분. 회사의 이익과 타인의 영향을 나란히 표시",
       "priority": [
         "P0 보고"
@@ -319,7 +342,9 @@
           "keyword_ko": "사회 및 공간 불평등 현상"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 115
     },
     {
       "id": "SOC07",
@@ -336,7 +361,7 @@
       "printed_page": 131,
       "pdf_page": 137,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 커피 공급 차질과 대체 공급자 탐색. 나라 전체를 동일한 생산·기후 조건으로 취급하지 않음",
       "priority": [
         "P0"
@@ -364,7 +389,9 @@
           "keyword_ko": "세계의 다양한 기후에 대한 이해를 바탕으로 기후를 활용하거나 극복한 사례를 찾아 인간 생활과의 관계"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 131
     },
     {
       "id": "SOC08",
@@ -380,7 +407,7 @@
       "printed_page": 143,
       "pdf_page": 149,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 커피·의류·항구에 얽힌 역사 기록. 과거의 교역을 피해와 권력관계까지 포함해 해석",
       "priority": [
         "P1"
@@ -400,7 +427,9 @@
           "basis_note_ko": "‘산업 혁명’은 문장에 있고 ‘제국주의’는 해설에만 있다."
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 143
     },
     {
       "id": "SOC09",
@@ -416,7 +445,7 @@
       "printed_page": 153,
       "pdf_page": 159,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 업무량 급증에 따른 채용·외주·조직 변화와 거래 정보 확인. P1: 기업 관련 보도 검증",
       "priority": [
         "P0",
@@ -436,7 +465,9 @@
           "keyword_ko": "메시지를 비판적으로 분석하고 대안적 메시지 생산"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 153
     },
     {
       "id": "SOC10",
@@ -452,7 +483,7 @@
       "printed_page": 169,
       "pdf_page": 175,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 국내 공급업체·가공장·항구 연결과 창고 입지 선택",
       "priority": [
         "P1"
@@ -471,7 +502,9 @@
           "keyword_ko": "산업구조의 전환이 지역 경제에 미치는 영향"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 169
     },
     {
       "id": "SOC11",
@@ -487,7 +520,7 @@
       "printed_page": 183,
       "pdf_page": 189,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 도심·외곽 창고의 임대비·운송 접근성·침수 노출·주민 영향을 비교",
       "priority": [
         "P1"
@@ -506,7 +539,9 @@
           "keyword_ko": "지속가능성과 회복력이 높은 도시 … 도시 계획 및 도시 혁신"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 183
     },
     {
       "id": "SOC12",
@@ -522,7 +557,7 @@
       "printed_page": 197,
       "pdf_page": 203,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 항구별 현지 파트너 이야기와 교류 기록. 현재의 거래 관행을 민족적 고정관념으로 설명하지 않음",
       "priority": [
         "P1"
@@ -541,7 +576,9 @@
           "keyword_ko": "경제 및 대중문화 교류가 확대되는 모습 … 다문화 사회의 현실"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 198
     },
     {
       "id": "SOC13",
@@ -557,7 +594,7 @@
       "printed_page": 209,
       "pdf_page": 215,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 통상 협력·갈등 시나리오에 대한 여러 해석과 대응. 플레이어는 회사 수준에서 조달·운송을 조정",
       "priority": [
         "P1"
@@ -582,7 +619,9 @@
           "keyword_ko": "다양한 국제 문제의 원인을 분석하고, 이를 해결하기 위해 국가를 비롯한 여러 주체가 수행하는 활동"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 210
     },
     {
       "id": "SOC14",
@@ -599,7 +638,7 @@
       "printed_page": 221,
       "pdf_page": 227,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 납기·품질·책임·고용 조건을 확인하고 이행. 실제 법률 판단과 게임의 단순 계약 규칙을 구분",
       "priority": [
         "P0"
@@ -624,7 +663,9 @@
           "keyword_ko": "법으로 보장되는 근로자의 권리"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 222
     },
     {
       "id": "SOC15",
@@ -641,7 +682,7 @@
       "printed_page": 232,
       "pdf_page": 238,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 한정된 자금·공간·업무 시간을 계약에 배분. 공급 차질의 비용 부담을 고객·회사·공급자 사이에서 조정",
       "priority": [
         "P0"
@@ -666,7 +707,9 @@
           "keyword_ko": "자원 배분의 효율성과 형평성"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 233
     },
     {
       "id": "SOC16",
@@ -682,7 +725,7 @@
       "printed_page": 232,
       "pdf_page": 238,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 조달처·거래비용·관세 발효일 비교. 기업의 싼 매입가만으로 국가의 비교우위를 판정하지 않음",
       "priority": [
         "P0"
@@ -701,7 +744,9 @@
           "keyword_ko": "무역 원리를 이해하고, 자유 무역과 보호 무역 정책의 경제적 효과"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 233
     },
     {
       "id": "SOC17",
@@ -717,7 +762,7 @@
       "printed_page": 232,
       "pdf_page": 238,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 계약·인도·결제 시점의 환율 차이. P1: 경기 상황과 수요·신용 조건 변화",
       "priority": [
         "P0",
@@ -737,7 +782,9 @@
           "keyword_ko": "경기 변동의 의미와 요인 … 재정 정책과 통화 정책"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 233
     },
     {
       "id": "SOC18",
@@ -754,7 +801,7 @@
       "printed_page": 242,
       "pdf_page": 248,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 공급망 증빙을 요구하는 장기 고객·필수재 운송·지역 협정의 변화. 인증 여부와 실제 노동·환경 성과는 구분",
       "priority": [
         "P1"
@@ -785,7 +832,9 @@
           "keyword_ko": "다양한 지역 통합 … 지역 기구의 구성원"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2024-3",
+      "current_printed_page": 243
     },
     {
       "id": "ETH01",
@@ -800,7 +849,7 @@
       "printed_page": 34,
       "pdf_page": 40,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: EV05에서 채용·외주·업무 배분·납기 조정을 비교. 직원의 권리와 처리 용량을 함께 고려",
       "priority": [
         "P0"
@@ -813,7 +862,8 @@
           "keyword_ko": "직업윤리 / 노동의 가치에 대한 사회적 존중"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "ETH02",
@@ -828,7 +878,7 @@
       "printed_page": 34,
       "pdf_page": 40,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 자동화 이익을 임금·재교육·유보 자금에 어떻게 배분할지 협의",
       "priority": [
         "P1"
@@ -841,7 +891,8 @@
           "keyword_ko": "공정한 분배를 이루기 위한 정책을 분배 정의 이론을 통해 비판 또는 정당화"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "ETH03",
@@ -856,7 +907,7 @@
       "printed_page": 34,
       "pdf_page": 40,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 공급자의 노동 조건에 대한 자료를 확인하고 거래 유지·개선 요구·변경 판단",
       "priority": [
         "P1"
@@ -869,7 +920,8 @@
           "keyword_ko": "경제생활에서 발생하는 도덕적 선과 이윤 추구 사이의 갈등"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "ETH04",
@@ -884,7 +936,7 @@
       "printed_page": 33,
       "pdf_page": 39,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고·P1 사건: 센서·자동화의 성능과 불확실성을 공개하고 도입 범위를 결정",
       "priority": [
         "P0 보고",
@@ -898,7 +950,8 @@
           "keyword_ko": "과학기술의 사회적 책임 문제"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "ETH05",
@@ -913,7 +966,7 @@
       "printed_page": 33,
       "pdf_page": 39,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고·P1 사건: 배출자료를 검토하거나 항만·창고 확장과 지역 환경의 영향을 살펴봄",
       "priority": [
         "P0 보고",
@@ -927,7 +980,8 @@
           "keyword_ko": "오늘날 환경 문제의 사례와 심각성을 조사하고, 이에 대한 윤리적 해결 방안을 제시"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "ETH06",
@@ -942,7 +996,7 @@
       "printed_page": 62,
       "pdf_page": 68,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 직원의 선택적 독서 기록과 고전의 관점으로 장기 전환 계획을 재검토. 환경 사건만으로 과목 전체 연계를 주장하지 않음",
       "priority": [
         "P1"
@@ -955,7 +1009,8 @@
           "keyword_ko": "기후위기 문제 / 지속가능한 삶"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI01",
@@ -970,7 +1025,7 @@
       "printed_page": 76,
       "pdf_page": 82,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 질량·길이·시간 및 유도량의 단위 일관성, kg·t·m³와 공간 환산. 회계의 화폐 단위 검증은 별도로 수행",
       "priority": [
         "P0"
@@ -986,7 +1041,8 @@
           "keyword_ko": "기본량의 의미를 알고, 자연 현상을 기술하는 데 단위가 가지는 의미"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI02",
@@ -1001,7 +1057,7 @@
       "printed_page": 76,
       "pdf_page": 82,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 냉동 화물의 온도 기록과 누락 자료 확인. P1: 센서의 측정·전송·판독을 구분하는 장비 투자",
       "priority": [
         "P0",
@@ -1015,7 +1071,8 @@
           "keyword_ko": "측정⋅분석하여 정보를 산출함을 알고, 이러한 정보를 디지털로 변환하는 기술"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI03",
@@ -1030,7 +1087,7 @@
       "printed_page": 82,
       "pdf_page": 88,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고: 냉장 공간 대체 시 에너지·비용 조건 비교. P1: 장비 효율 개선과 유지비",
       "priority": [
         "P0 보고",
@@ -1044,7 +1101,8 @@
           "keyword_ko": "에너지 효율의 의미와 중요성"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI04",
@@ -1059,7 +1117,7 @@
       "printed_page": 82,
       "pdf_page": 88,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고: 운송 배출자료의 범위 확인. P1: 근거를 확보한 배출량 비교. 개별 기상이변을 자동으로 기후변화 탓으로 단정하지 않음",
       "priority": [
         "P0 보고",
@@ -1073,7 +1131,8 @@
           "keyword_ko": "온실효과 강화로 인한 지구온난화의 메커니즘"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI23",
@@ -1090,7 +1149,7 @@
       "printed_page": 82,
       "pdf_page": 88,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 예측 서비스·물류 자동화의 도입. 입력 자료와 오차, 작업 변화·재교육을 함께 검토하며 기술 도입의 수익을 보장하지 않음",
       "priority": [
         "P1"
@@ -1115,7 +1174,8 @@
           "keyword_ko": "과학기술 이용에서 과학 윤리의 중요성"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI05",
@@ -1130,7 +1190,7 @@
       "printed_page": 93,
       "pdf_page": 99,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 같은 화물·외기 조건에서 포장재만 바꾸는 시험. 조건·측정 결과·불확실성을 기록",
       "priority": [
         "P1"
@@ -1149,7 +1209,8 @@
           "keyword_ko": "과학 탐구의 과정과 절차"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI06",
@@ -1164,7 +1225,7 @@
       "printed_page": 96,
       "pdf_page": 102,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 단열재·포장·센서의 실제 기능을 시험한 뒤 구매. 제품 설명과 측정 결과 비교",
       "priority": [
         "P1"
@@ -1183,7 +1244,8 @@
           "keyword_ko": "생활 속의 과학 탐구"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI07",
@@ -1198,7 +1260,7 @@
       "printed_page": 109,
       "pdf_page": 115,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 하역·적재 계획에서 지지와 무게중심 검토. MVP의 총중량 제한과 구분하며 3D 적재 퍼즐은 후순위",
       "priority": [
         "P1"
@@ -1211,7 +1273,8 @@
           "keyword_ko": "평형을 이룸을 알고, 다양한 구조물의 안정성을 분석"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI08",
@@ -1226,7 +1289,7 @@
       "printed_page": 109,
       "pdf_page": 115,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 보고·P1 계산: 냉장 설비의 에너지 흐름과 전력 사용. 소비전력과 냉각 성능을 같은 양으로 취급하지 않음",
       "priority": [
         "P0 보고",
@@ -1246,7 +1309,8 @@
           "keyword_ko": "열이 역학적 에너지로 전환되는 과정의 효율을 정성적으로 이해"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI09",
@@ -1261,7 +1325,7 @@
       "printed_page": 121,
       "pdf_page": 127,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 연료의 성분·연소량에 따른 직접 CO₂ 배출 설명. CO₂ 질량과 모든 온실기체를 합친 CO₂e를 혼동하지 않음",
       "priority": [
         "P1"
@@ -1274,7 +1338,8 @@
           "keyword_ko": "화학 반응에서 물질의 양적 관계"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI10",
@@ -1289,7 +1354,7 @@
       "printed_page": 133,
       "pdf_page": 139,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 화물·포장에 동반된 생물과 생태계 영향을 조사하는 검역 이야기. 국가·생물종별 실제 수치는 별도 근거 필요",
       "priority": [
         "P1"
@@ -1302,7 +1367,8 @@
           "keyword_ko": "생태계의 구조를 이해하고"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI11",
@@ -1317,7 +1383,7 @@
       "printed_page": 145,
       "pdf_page": 151,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0: 예보와 실제 항만 상태를 구분해 대기·대체편·납기 협상. 예보를 확정 미래로 취급하지 않음",
       "priority": [
         "P0"
@@ -1330,7 +1396,8 @@
           "keyword_ko": "주요 악기상의 생성 메커니즘과 대처 방안"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI12",
@@ -1345,7 +1412,7 @@
       "printed_page": 145,
       "pdf_page": 151,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 해류가 항로·운항 조건에 미치는 영향 보고. 외부 선사 예약형 MVP에서는 선박 물리 운항을 직접 계산하지 않음",
       "priority": [
         "P1"
@@ -1358,7 +1425,8 @@
           "keyword_ko": "표층 순환 및 기후변화의 관련성"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI13",
@@ -1373,7 +1441,7 @@
       "printed_page": 161,
       "pdf_page": 167,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 설명·P1 계산: 외기와 화물 사이 열 이동, 단열·냉각 조건 비교. 단열재가 열 이동을 완전히 막는 것으로 처리하지 않음",
       "priority": [
         "P0 설명",
@@ -1393,7 +1461,8 @@
           "keyword_ko": "열이 전도, 대류, 복사 등의 방법으로 전달되는 과정"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI14",
@@ -1408,7 +1477,7 @@
       "printed_page": 173,
       "pdf_page": 179,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P2: 물류 센서 회로의 신호 처리와 고장 원인을 검토하는 기술 사건. 전자제품을 거래했다는 이유만으로 학습했다고 표시하지 않음",
       "priority": [
         "P2"
@@ -1421,7 +1490,8 @@
           "keyword_ko": "다이오드, 트랜지스터 등 반도체 소자를 활용하는 전자회로를 분석"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI15",
@@ -1436,7 +1506,7 @@
       "printed_page": 185,
       "pdf_page": 191,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 상품별 화학적 변질과 온도 이력. 자료를 확보한 반응에만 적용하고 식품 안전 판정과 구분",
       "priority": [
         "P1"
@@ -1449,7 +1519,8 @@
           "keyword_ko": "농도, 온도, 촉매에 따라 반응 속도가 달라짐"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI16",
@@ -1464,7 +1535,7 @@
       "printed_page": 185,
       "pdf_page": 191,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P2: 적합한 조건의 기체 화물·용기 사례. LNG와 고압 실재기체에 무조건 적용하지 않음",
       "priority": [
         "P2"
@@ -1477,7 +1548,8 @@
           "keyword_ko": "이상 기체 방정식을 근사적으로 활용하는 사례"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI17",
@@ -1492,7 +1564,7 @@
       "printed_page": 197,
       "pdf_page": 203,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 전동 하역장비의 충전·가동·교체를 산화·환원 및 화학·전기 에너지 전환과 연결해 설명. 배터리별 성능과 안전·운송 조건은 별도 자료 확보",
       "priority": [
         "P1"
@@ -1511,7 +1583,8 @@
           "keyword_ko": "화학 전지의 발전 과정"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI18",
@@ -1526,7 +1599,7 @@
       "printed_page": 197,
       "pdf_page": 203,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P1: 포장재의 보호 성능·질량·재사용·회수 비용 비교. 재질 이름 하나로 친환경 여부를 결정하지 않음",
       "priority": [
         "P1"
@@ -1539,7 +1612,8 @@
           "keyword_ko": "다양한 고분자가 합성되는 것"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI19",
@@ -1554,7 +1628,7 @@
       "printed_page": 208,
       "pdf_page": 214,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P2: 효소 제품이나 식품 가공 고객의 온도 조건. 효소 활성과 미생물 증식은 다른 모형으로 구분",
       "priority": [
         "P2"
@@ -1573,7 +1647,8 @@
           "keyword_ko": "효소의 작용에 영향을 미치는 요인들"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI20",
@@ -1588,7 +1663,7 @@
       "printed_page": 220,
       "pdf_page": 226,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P2: 품종·이용 목적·증빙을 확인하는 특수 계약. 표시·수입 조건은 검증된 별도 법령이나 명시적 가상 규칙 사용",
       "priority": [
         "P2"
@@ -1607,7 +1682,8 @@
           "keyword_ko": "생명공학기술"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI21",
@@ -1622,7 +1698,7 @@
       "printed_page": 231,
       "pdf_page": 237,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P0 설명·P1 상세: 항만 작업 제한의 이유를 설명. 구체적인 높이·주기별 운항 한계는 선박·항만 자료로 검증",
       "priority": [
         "P0 설명",
@@ -1636,7 +1712,8 @@
           "keyword_ko": "해수의 운동"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     },
     {
       "id": "SCI22",
@@ -1651,7 +1728,7 @@
       "printed_page": 243,
       "pdf_page": 249,
       "edition": "2022-33",
-      "edition_comparison_status": "current_edition_not_verified",
+      "edition_comparison_status": "same_in_current_edition",
       "application_notes": "P2: 위치·통신 정보 이상과 대체 절차를 다루는 우주기상 사건. 영향의 크기·빈도는 후속 전문 근거 확보",
       "priority": [
         "P2"
@@ -1670,9 +1747,17 @@
           "keyword_ko": "태양 활동의 주기"
         }
       ],
-      "achievement_standards_source_id": "MOE-2022-33-HWP"
+      "achievement_standards_source_id": "MOE-2022-33-HWP",
+      "current_edition_text": "2022-33"
     }
   ],
   "$schema": "../schemas/curriculum_links.schema.json",
-  "achievement_standards_rule": "achievement_standards는 교육부 고시 제2022-33호 별책6·7·9 공식 HWP에서 옮긴 성취기준 코드와 문장이다(가운뎃점 ⋅ 포함 원문 그대로). basis는 직접(문장에 내용 요소의 핵심어가 있음), 해설(성취기준 해설에만 있음), 영역(같은 영역의 성취기준이지만 핵심어 없음)이다. 현행판(국가교육위원회고시 제2024-3호·제2026-1호) 대조는 하지 않았다. 2024-3은 별책7(사회과) 전체를 다시 고시했으나 전문을 확보하지 못했다."
+  "achievement_standards_rule": "achievement_standards는 교육부 고시 제2022-33호 별책6·7·9 공식 HWP에서 옮긴 성취기준 코드와 문장이다(가운뎃점 ⋅ 포함 원문 그대로). basis는 직접(문장에 내용 요소의 핵심어가 있음), 해설(성취기준 해설에만 있음), 영역(같은 영역의 성취기준이지만 핵심어 없음)이다. 현행판 대조(2026-10-11)에서 47개 연결의 코드와 문장은 현행판과 같다. 별책7은 2024-3 재고시본과 대조했다(current_edition_comparison).",
+  "current_edition": "2026-1",
+  "current_edition_comparison": {
+    "checked_on": "2026-10-11",
+    "report": "docs/ai/design/research/CURRICULUM-CURRENT.md",
+    "summary_ko": "2026-10-11 기준 최근 고시는 국가교육위원회고시 제2026-1호다. 2026-1은 별책1·2·3·4·15만, 2024-3은 별책1·2·3·4·7·12·14·18·19·22·23~39·41을 개정했다(국가법령정보센터 고시문). 별책6·9는 2022-33 이후 다시 고시되지 않았다. 별책7은 2024-3에서 다시 고시됐으나 공식 재고시본(에듀넷 게시 PDF)과 대조한 결과 47개 연결의 내용 요소·성취기준 코드·문장은 모두 같다. 바뀐 곳은 문화유산→국가유산 용어(동아시아 역사 기행 성격·목표·교수학습 등)와 중학교 해설의 코드 1개뿐이다. 동아시아 역사 기행 이후 과목은 인쇄쪽이 1쪽 밀렸다(current_printed_page).",
+    "not_checked_ko": "2026-1 별책4(고등학교 교육과정) 본문은 읽지 못했다. 과목 편제·이수 기준 변경 여부는 이 대조 범위 밖이다."
+  }
 }

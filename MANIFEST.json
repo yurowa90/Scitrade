@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 314738,
-      "sha256": "4e824c43c054dcabfaa3b9c7cf21efe353fd301d6b179b7c376bd811dbb28cec"
+      "size_bytes": 320978,
+      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
     },
     {
       "path": "data/contacts.json",
@@ -62,8 +62,8 @@
     },
     {
       "path": "data/curriculum_links.json",
-      "size_bytes": 73295,
-      "sha256": "aa1a741f3f4b1a50d32e12c3e529991517190ee7a77328354dada9301f701405"
+      "size_bytes": 77312,
+      "sha256": "f0dab6797e7f466029a5d49cff841c46a0d1ac8f02e69000b0dbd6d43b5d9dab"
     },
     {
       "path": "data/employees.json",
@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 167151,
-      "sha256": "a474d874c9e732ab5f63ea9d8544bdf935d704b7fef598c406a84d16e1bd530f"
+      "size_bytes": 180028,
+      "sha256": "595340f2de77e7bd2ef22a9b9c1d6614d36db5f6fb04bf8ce8503c651ffb6e94"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 66596,
-      "sha256": "64347b6bbd14b55fe8595e7a2c35f0143154c3b99f22c10702cd86a84cb5c5fe"
+      "size_bytes": 68978,
+      "sha256": "357ac0d813648e11f7d09f161de833c29d939ce461990e1fb37834d32acb5ecb"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9022,
-      "sha256": "fbea57a3c4d39218c721e108a8e0d0004e7a273e4aa18192c923e1de9972f3aa"
+      "size_bytes": 9306,
+      "sha256": "465e83773dfe702d4b9f0334f755ed611deea04a2a437a887269338f2eee4701"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -227,8 +227,8 @@
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
-      "size_bytes": 18737,
-      "sha256": "7420761c4adfc0f5fc0a29246503dbdad5d50ef62c8bf03fa2c2d305d3dd5c38"
+      "size_bytes": 18776,
+      "sha256": "3b685d8c682bce8c4ce1fd9dfc38f66a0282d7d55c161e8e89dec1290d48fa0e"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -1306,14 +1306,34 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/research/CONSERVATION-BULK.md",
+      "size_bytes": 12414,
+      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+    },
+    {
+      "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
+      "size_bytes": 18151,
+      "sha256": "b4b11b61d5d3f80f2d94c5e520a6174287f10229e4062a14ed83b34fc02f7b7b"
+    },
+    {
+      "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
+      "size_bytes": 43560,
+      "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
+    },
+    {
+      "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
+      "size_bytes": 4080,
+      "sha256": "9c3a1394f26fa616123178274f1ff36d95c68ac46db8173268e8e5daef99eee5"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 13734,
-      "sha256": "65fc32b17f40f1df567bc48ca07309b0bb21240229b07e663b948aa5ac1236e9"
+      "size_bytes": 14311,
+      "sha256": "e5caba57dc62100a687b04c5e6de086be9506bb57134816fdd209f74d5340914"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1536,6 +1556,11 @@
       "sha256": "af6865d18867db4b875e7fcf8c8fe220e74451695c1a7bbab0d50259812b63a3"
     },
     {
+      "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
+      "size_bytes": 13099,
+      "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
@@ -1744,6 +1769,11 @@
       "path": "docs/ai/tasks/results/TASK-0031.md",
       "size_bytes": 47555,
       "sha256": "03f24100536f903c7ed02306ba925e1f474e563acc601ee45a651656ade8ed9a"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0048.md",
+      "size_bytes": 7175,
+      "sha256": "e16bb18d88c6ba7da84cca833636e93d6d1f0a871ea881e0abd3cbcdd12c5529"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
@@ -2172,8 +2202,8 @@
     },
     {
       "path": "tools/check_fact_mixing.py",
-      "size_bytes": 16555,
-      "sha256": "bcc260a760aaca4026cb112e97228fe1babd6ab68114fcdd2c9cb353894b5962"
+      "size_bytes": 19819,
+      "sha256": "eba59636c6e9fa8edb360f0dad4db8114be354f4d3421371476d39e7f8e4d76b"
     },
     {
       "path": "tools/deploy/prepare_static.sh",
@@ -2187,8 +2217,8 @@
     },
     {
       "path": "tools/test_check_fact_mixing.py",
-      "size_bytes": 9825,
-      "sha256": "c5ea008c94ff272c78c1f1b249639ae0e0c512e4e13a8521fb2c0f7b1f731d74"
+      "size_bytes": 14181,
+      "sha256": "c0a2f745f620657600143b1fcfe25cbfa0c85140e84773eef249dd3b135344de"
     },
     {
       "path": "tools/test_validate_data.py",
