@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 188469,
-      "sha256": "2202502ef29b542281abc0fdafd764586419375609a32ca005326bd5df13e10f"
+      "size_bytes": 189575,
+      "sha256": "9d9cd89c7c2e35ce479e81fd42829614897ddfb233fa631967395c504cb5dca5"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 70029,
-      "sha256": "046f1f098e112140f6f10888d9acdde8125159c8b713b215d8508ce76245770e"
+      "size_bytes": 71292,
+      "sha256": "6d5828db58846433bd2e739b464f3c25743380117074aa974e05a3babd580adb"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9306,
-      "sha256": "465e83773dfe702d4b9f0334f755ed611deea04a2a437a887269338f2eee4701"
+      "size_bytes": 9557,
+      "sha256": "7e37b39ec9941e86255edb3de9296671da63f6b5b1f6c875080dcf7683d82266"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1352,8 +1352,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 14311,
-      "sha256": "e5caba57dc62100a687b04c5e6de086be9506bb57134816fdd209f74d5340914"
+      "size_bytes": 14838,
+      "sha256": "bb2543dcf3b4ce4ef55a1bf0909d255fd4e384836debcef85cfeabc5e7e4509d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
