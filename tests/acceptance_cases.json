@@ -1069,10 +1069,10 @@
         "row_prices": [
           1000,
           3998,
-          1442,
-          5098,
-          1405,
-          5049
+          1566,
+          5379,
+          1514,
+          5352
         ],
         "counterparty_pct": [
           -1,
@@ -1082,7 +1082,7 @@
         ],
         "max_lots": [
           2,
-          2
+          3
         ],
         "generated": {
           "batch": {
@@ -1129,28 +1129,28 @@
                 "cityId": "HAIPHONG",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1442,
+                "basePriceMinor": 1566,
                 "regionalPct": 1
               },
               {
                 "cityId": "HAIPHONG",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5098,
+                "basePriceMinor": 5379,
                 "regionalPct": 2
               },
               {
                 "cityId": "SHANGHAI",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1405,
+                "basePriceMinor": 1514,
                 "regionalPct": 2
               },
               {
                 "cityId": "SHANGHAI",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5049,
+                "basePriceMinor": 5352,
                 "regionalPct": -1
               }
             ],
@@ -1183,7 +1183,7 @@
               },
               {
                 "goodId": "COSMETICS",
-                "lots": 2
+                "lots": 3
               }
             ],
             "templateIds": [
@@ -1248,7 +1248,7 @@
               "quantity": 100,
               "quantityStep": 100,
               "maxQuantity": 200,
-              "unitPriceMinor": 1405,
+              "unitPriceMinor": 1514,
               "serviceFeeMinor": 0,
               "currency": "USD",
               "destinationCityId": null,
@@ -1272,7 +1272,7 @@
               "goodId": "COSMETICS",
               "quantity": 50,
               "quantityStep": 50,
-              "maxQuantity": 100,
+              "maxQuantity": 150,
               "unitPriceMinor": 4038,
               "serviceFeeMinor": 0,
               "currency": "USD",
@@ -1297,8 +1297,8 @@
               "goodId": "COSMETICS",
               "quantity": 50,
               "quantityStep": 50,
-              "maxQuantity": 100,
-              "unitPriceMinor": 5098,
+              "maxQuantity": 150,
+              "unitPriceMinor": 5379,
               "serviceFeeMinor": 0,
               "currency": "USD",
               "destinationCityId": null,
@@ -1499,7 +1499,7 @@
             "cityId": "HAIPHONG",
             "goodId": "APPAREL",
             "side": "SELL",
-            "basePriceMinor": 1400,
+            "basePriceMinor": 1520,
             "currency": "USD",
             "indexPoints": 100,
             "indexBp": 10000,
@@ -1512,7 +1512,7 @@
             "cityId": "HAIPHONG",
             "goodId": "COSMETICS",
             "side": "SELL",
-            "basePriceMinor": 4900,
+            "basePriceMinor": 5170,
             "currency": "USD",
             "indexPoints": 100,
             "indexBp": 10000,
@@ -1525,7 +1525,7 @@
             "cityId": "SHANGHAI",
             "goodId": "APPAREL",
             "side": "SELL",
-            "basePriceMinor": 1350,
+            "basePriceMinor": 1455,
             "currency": "USD",
             "indexPoints": 100,
             "indexBp": 10000,
@@ -1538,7 +1538,7 @@
             "cityId": "SHANGHAI",
             "goodId": "COSMETICS",
             "side": "SELL",
-            "basePriceMinor": 5000,
+            "basePriceMinor": 5300,
             "currency": "USD",
             "indexPoints": 100,
             "indexBp": 10000,
@@ -1615,7 +1615,7 @@
       ],
       "expected_numeric": {
         "purchase": 198000,
-        "sale": 281000,
+        "sale": 302800,
         "freight": 18000,
         "duty": 9900,
         "need": 225900,
@@ -1623,7 +1623,7 @@
         "departure": 9,
         "arrival": 13,
         "receipt": 19,
-        "contribution": 55100,
+        "contribution": 76900,
         "next_index": [
           10200,
           10506
@@ -1676,7 +1676,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1442,
+                "basePriceMinor": 1566,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1689,7 +1689,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5098,
+                "basePriceMinor": 5379,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1702,7 +1702,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1405,
+                "basePriceMinor": 1514,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1715,7 +1715,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5049,
+                "basePriceMinor": 5352,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1759,7 +1759,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1442,
+                "basePriceMinor": 1566,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1772,7 +1772,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5098,
+                "basePriceMinor": 5379,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1785,7 +1785,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1405,
+                "basePriceMinor": 1514,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1798,7 +1798,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5049,
+                "basePriceMinor": 5352,
                 "currency": "USD",
                 "indexPoints": 102,
                 "indexBp": 10200,
@@ -1842,7 +1842,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1544,
+                "basePriceMinor": 1676,
                 "currency": "USD",
                 "indexPoints": 111,
                 "indexBp": 11141,
@@ -1855,7 +1855,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5402,
+                "basePriceMinor": 5700,
                 "currency": "USD",
                 "indexPoints": 109,
                 "indexBp": 10916,
@@ -1868,7 +1868,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1474,
+                "basePriceMinor": 1589,
                 "currency": "USD",
                 "indexPoints": 111,
                 "indexBp": 11141,
@@ -1881,7 +1881,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5513,
+                "basePriceMinor": 5843,
                 "currency": "USD",
                 "indexPoints": 109,
                 "indexBp": 10916,
@@ -1925,7 +1925,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1544,
+                "basePriceMinor": 1676,
                 "currency": "USD",
                 "indexPoints": 111,
                 "indexBp": 11141,
@@ -1938,7 +1938,7 @@
                 "cityId": "HAIPHONG",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5402,
+                "basePriceMinor": 5700,
                 "currency": "USD",
                 "indexPoints": 109,
                 "indexBp": 10916,
@@ -1951,7 +1951,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "APPAREL",
                 "side": "SELL",
-                "basePriceMinor": 1474,
+                "basePriceMinor": 1589,
                 "currency": "USD",
                 "indexPoints": 111,
                 "indexBp": 11141,
@@ -1964,7 +1964,7 @@
                 "cityId": "SHANGHAI",
                 "goodId": "COSMETICS",
                 "side": "SELL",
-                "basePriceMinor": 5513,
+                "basePriceMinor": 5843,
                 "currency": "USD",
                 "indexPoints": 109,
                 "indexBp": 10916,
@@ -5636,8 +5636,8 @@
           "purchase": 198000,
           "freight": 18000,
           "duty": 9900,
-          "sale": 281000,
-          "contributionBeforePayroll": 55100,
+          "sale": 302800,
+          "contributionBeforePayroll": 76900,
           "cashNeed": 225900,
           "departureDay": 9,
           "arrivalDay": 13,
@@ -5669,7 +5669,7 @@
             {
               "day": 19,
               "labelKo": "외상대금 수금",
-              "amount": 281000
+              "amount": 302800
             }
           ],
           "allowed": true,
@@ -5688,7 +5688,7 @@
           },
           "serviceClass": null,
           "titleKo": null,
-          "contributionPerPrepPtMinor": 18366,
+          "contributionPerPrepPtMinor": 25633,
           "lateDeliveryReductionMinor": 0,
           "affectedContracts": []
         },
@@ -5831,8 +5831,8 @@
           "purchase": 198000,
           "freight": 18000,
           "duty": 9900,
-          "sale": 276000,
-          "contributionBeforePayroll": 50100,
+          "sale": 297800,
+          "contributionBeforePayroll": 71900,
           "cashNeed": 225900,
           "departureDay": 9,
           "arrivalDay": 13,
@@ -5864,7 +5864,7 @@
             {
               "day": 19,
               "labelKo": "외상대금 수금",
-              "amount": 276000
+              "amount": 297800
             }
           ],
           "allowed": true,
@@ -5883,7 +5883,7 @@
           },
           "serviceClass": null,
           "titleKo": null,
-          "contributionPerPrepPtMinor": 16700,
+          "contributionPerPrepPtMinor": 23966,
           "lateDeliveryReductionMinor": 5000,
           "affectedContracts": []
         },
