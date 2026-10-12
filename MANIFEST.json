@@ -1521,6 +1521,11 @@
       "sha256": "e35ec6880cb17d589b7dd857df02424f46456ac93c1801a2fdf4012a541066cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0031-R1-m2a5-bottleneck-peak.md",
+      "size_bytes": 4939,
+      "sha256": "302df57d1796f899614d2020c1ee3bcba44d0e3c2e334612f433d20db730887e"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0031-m2a5-bottleneck-storage.md",
       "size_bytes": 12422,
       "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
@@ -1719,6 +1724,26 @@
       "path": "docs/ai/tasks/results/TASK-0030.md",
       "size_bytes": 39873,
       "sha256": "d58ac6dff97af1900d19aac14361c7ace9bee63c62be0d1e248d96b2921fc0cc"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03-cap30.md",
+      "size_bytes": 11252,
+      "sha256": "77f057412f91cfd6e7e008fadc3118a346ff4f54f50aff4fbd9a93eee87b3124"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03-flat200.md",
+      "size_bytes": 11464,
+      "sha256": "640d651d13d2453fd4b119083b84cc2d6d660a14c671dc0026f5af5f3249466b"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031-d03.md",
+      "size_bytes": 20880,
+      "sha256": "1a2b27ae8839103d87b98cd9244ac10675368b23f64b7d2aa6c2c662f4f1b6c6"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0031.md",
+      "size_bytes": 47555,
+      "sha256": "03f24100536f903c7ed02306ba925e1f474e563acc601ee45a651656ade8ed9a"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0055.md",
@@ -1987,8 +2012,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 197883,
-      "sha256": "8ed67026886c02e52e8d821ef4f0e8169cb14e5e428c03933d360470dadec52b"
+      "size_bytes": 204237,
+      "sha256": "141ebd3c5619f08d9c857e5bb06cf024ef778a94f9db73c15fa15f929cdf15a6"
     },
     {
       "path": "tests/character_acceptance_cases.json",

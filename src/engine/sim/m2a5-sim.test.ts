@@ -7,6 +7,8 @@ import { listSailings, routeBetween } from '../catalog';
 import { createGame, openDay, planState, commitDay } from '../engine';
 import { summarize } from '../ledger';
 import { createOperationsCollector } from './operations-metrics';
+import { atDay, applied } from '../m2a5-testkit';
+import { runDays } from '../testkit';
 import { projectPrepCompletion } from '../operations';
 import type { ScenarioConfig } from '../types';
 import { d03Tables, mergeD03, predictJ6, runD03 } from './d03';
@@ -101,6 +103,28 @@ function dataIds(c: ScenarioConfig): string[] {
 }
 
 describe('M2a-5 실행기 성질', () => {
+  it('handlingJobs는 취소를 빼고 납기 지난 미인도 작업 포함 주선도 센다', () => {
+    const opened = atDay(8, config);
+    const offers = opened.operations!.offers.filter((o) => o.serviceClass === 'HANDLING' && o.publishDay === opened.day);
+    const trade = config.offers.find((o) => o.kind === 'supplier')!;
+    const buy = opened.operations!.offers.find((o) => o.kind === 'supplier' && o.goodId === trade.goodId)!;
+    const sell = opened.operations!.offers.find((o) => o.kind === 'customer' && o.goodId === buy.goodId)!;
+    const standard = opened.operations!.offers.find((o) => o.serviceClass === 'STANDARD')!;
+    const commands = [
+      ...offers.slice(0, 2).map((o, i) => ({ id: `COUNT-H-${i}`, type: 'ACCEPT_FORWARDING' as const, offerId: o.id })),
+      { id: 'COUNT-TRADE', type: 'ACCEPT_TRADE' as const, buyOfferId: buy.id, sellOfferId: sell.id },
+      { id: 'COUNT-STANDARD', type: 'ACCEPT_FORWARDING' as const, offerId: standard.id },
+    ];
+    const accepted = planState(opened, config, commands);
+    expect(accepted.results).toEqual(applied(commands));
+    const cancel = { id: 'COUNT-CANCEL', type: 'CANCEL_CONTRACT' as const, contractId: accepted.state.contracts[1]!.id };
+    const cancelled = planState(accepted.state, config, [cancel]);
+    expect(cancelled.results).toEqual(applied([cancel]));
+    const state = runDays(cancelled.state, config, 30).state;
+    expect({ handlingJobs: createOperationsCollector(config, 'MAX_CONTRIBUTION').finish(state).handlingJobs,
+      missed: state.contracts[0]!.deliveryDeadlineDay < state.day && state.contracts[0]!.deliveredDay === null,
+      cancelled: state.contracts[1]!.cancelledDay }).toEqual({ handlingJobs: 1, missed: true, cancelled: 8 });
+  });
   it('규칙 1 새 정책은 기존 최대 기여이익과 같은 지표', () => {
     for (const scenario of SCENARIO_IDS) {
       const cfg = loadScenario(scenario), normal = simulate(cfg, policyById(f.policies[2]!)!, n.first_matching_seed).run;
@@ -134,6 +158,28 @@ describe('M2a-5 실행기 성질', () => {
     expect(config).toEqual(before);
     expect(cap).toEqual({ ...before, terms: { ...before.terms, lateDeliveryCapBasisPoints: n.cap30_bp } });
     expect(flat).toEqual({ ...before, terms: { ...before.terms, lateDeliveryBasis: 'FLAT_ONCE', lateDeliveryPriceReductionMinor: n.flat200_minor, lateDeliveryCapBasisPoints: null } });
+  });
+  it('J6 진단 열은 시드별 처리 차이·실제 고용일·미고용 제외·예측 0을 구분한다', () => {
+    const baseline = run(f.policies[2]!, n.first_matching_seed).run;
+    const hireId = `${f.policies[2]}~hire:2pt@30`;
+    const runs = Array.from({ length: 10 }, (_, i) => {
+      const b = structuredClone(baseline), r = structuredClone(baseline);
+      b.seed = i + 1; r.seed = i + 1; r.policyId = hireId;
+      b.metrics.operations!.handlingJobs = 10;
+      r.metrics.operations!.handlingJobs = 11 + i;
+      r.metrics.currencies.USD!.netAssets += 40000;
+      r.metrics.operations!.utilization = []; r.metrics.operations!.warehouseWaitingTaskDays = 0;
+      r.metrics.operations!.actualHires = [{ pt: 2, plannedDay: 30, actualDay: i < 8 ? 21 : null }];
+      b.metrics.operations!.bottlenecks.forEach((x) => x.extraJobsPerWeek = 2);
+      return [b, r];
+    }).flat();
+    const output = runD03({ seeds: [n.first_matching_seed], policyIds: [] });
+    output.runs = runs; output.meta.seeds = Array.from({ length: 10 }, (_, i) => i + 1);
+    output.meta.policyIds = [baseline.policyId, hireId];
+    const row = () => d03Tables(output).split('\n').find((line) => line.startsWith(`| ${hireId} |`) && line.includes('미고용 제외'));
+    expect(row()).toEqual(`| ${hireId} | 2 | ↑ | ↑ | 일치 | 10 | 5.5 | 0.225 (미고용 제외 2) | — | — |`);
+    runs.forEach((r) => r.metrics.operations!.bottlenecks.forEach((x) => x.extraJobsPerWeek = 0));
+    expect(row()).toEqual(`| ${hireId} | 0 | ↓ | ↑ | 불일치 | 10 | 5.5 | — (미고용 제외 2) | 0 | 0 |`);
   });
   it('J6 계산 단위: 추가 업무량과 짝수 중앙값', () => {
     expect(predictJ6(n.j6_rows)).toEqual(n.j6_expected);

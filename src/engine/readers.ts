@@ -123,6 +123,7 @@ function candidate(s: GameState, config: ScenarioConfig, id?: string) {
 export type BottleneckConstraint = 'DEMAND' | 'STAFF' | 'WAREHOUSE_HANDLING' | 'STORAGE' | 'SAILING';
 export interface WeeklyBottleneck {
   unit: 'HANDLING_JOBS_PER_WEEK'; demand: { handlingOffered: number; handlingPt: number; batches: number } | null;
+  storageDetail: { otherOccupancyLiters: number; otherPeakLiters: number; handlingDwellDays: number; windowDays: number };
   otherPtPerWeek: number; rows: { constraint: BottleneckConstraint; before: number | null; after: number | null }[];
   binding: { before: BottleneckConstraint[]; after: BottleneckConstraint[] };
   usableBefore: number; usableAfter: number; extraJobsPerWeek: number; remainingHandlingBatches: number;
@@ -136,12 +137,41 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
   const batches = recentBatches(s), hire = candidate(s, config, candidateId);
   const offered = batches.reduce((sum, b) => sum + batchOffers(s, b.publishDay).filter((o) => o.serviceClass === 'HANDLING').length, 0);
   const demand = batches.length ? { handlingOffered: offered, handlingPt: offered * prep, batches: batches.length } : null;
-  const otherPtPerWeek = batches.length ? Math.floor(batches.reduce((sum, b) => sum + acceptedPrep(s, config, b.publishDay, false), 0) / batches.length) : 0;
+  const windowStart = Math.max(1, s.day - 28), windowDays = s.day - windowStart;
+  const handling = (c: GameState['contracts'][number]) => c.kind === 'FORWARDING'
+    && offerDef(s, config, c.serviceOfferId!)?.serviceClass === 'HANDLING';
+  const otherContracts = new Set(s.contracts.filter((c) => !handling(c)
+    && c.acceptedDay >= windowStart && c.acceptedDay < s.day).map((c) => c.id));
+  const otherPrep = s.tasks.filter((t) => isHomePrep(t, config) && otherContracts.has(t.contractId!))
+    .reduce((sum, t) => sum + t.requiredWorkUnits, 0);
+  const otherPtPerWeek = windowDays ? Math.floor(otherPrep * 7 / windowDays) : 0;
   const staff = config.employees.filter((e) => s.employees.some((x) => x.id === e.id && x.employmentStatus === 'employed' && x.locationCityId === config.homeCityId))
     .reduce((sum, e) => sum + e.workUnitsPerDay, 0);
   const routes = config.routes.filter((r) => r.fromCityId === config.homeCityId && templates.some((t) => t.destinationCityId === r.toCityId));
   // 예약은 출항 전날까지다. 노선 간격이 다르면 가장 긴 체류를 기준으로 보관 한도를 추정한다.
-  const dwellDays = Math.max(...routes.map((r) => r.departureIntervalDays)) + 1;
+  const fallbackDwellDays = Math.max(...routes.map((r) => r.departureIntervalDays)) + 1;
+  const occupancy = Array<number>(windowDays).fill(0), dwell: number[] = [];
+  for (const c of s.contracts) {
+    if (c.originCityId !== config.homeCityId) continue;
+    // 취소 회사 화물은 lot.contractId가 끊겨도 계약의 cargoLotId로 추적한다.
+    const lot = s.cargoLots.find((l) => l.id === c.cargoLotId);
+    if (!lot) continue;
+    const departure = s.shipments.find((sh) => sh.contractId === c.id)?.departureDay;
+    if (handling(c)) {
+      if (departure !== undefined && departure >= windowStart && departure < s.day) dwell.push(departure - c.acceptedDay + 1);
+      continue;
+    }
+    const out = departure ?? (lot.status === 'RETURNED_TO_OWNER' ? c.cancelledDay! : Infinity);
+    const liters = cargoSpace(config, lot.goodId, lot.quantity).volumeLiters;
+    // 명령은 출항·반환보다 먼저다. 수락 당일을 제외하고 나간 날까지 센다.
+    for (let i = 0; i < windowDays; i++) if (c.acceptedDay < windowStart + i && windowStart + i <= out) occupancy[i]! += liters;
+  }
+  const storageDetail = {
+    otherOccupancyLiters: windowDays ? Math.floor(occupancy.reduce((sum, n) => sum + n, 0) / windowDays) : 0,
+    otherPeakLiters: Math.max(0, ...occupancy),
+    handlingDwellDays: dwell.length ? Math.ceil(dwell.reduce((sum, n) => sum + n, 0) / dwell.length) : fallbackDwellDays,
+    windowDays,
+  };
   const sailing = routes.reduce((sum, r) => {
     const next = listSailings(config, r.id, s.day + 1)[0];
     if (!next) return sum;
@@ -154,7 +184,7 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
   const rows: WeeklyBottleneck['rows'] = [same('DEMAND', demand ? Math.floor(offered / batches.length) : null),
     { constraint: 'STAFF', before: jobs(staff), after: jobs(staff + (hire?.workUnitsPerDay ?? 0)) },
     same('WAREHOUSE_HANDLING', jobs(handlingCapacityPt(s, config))),
-    same('STORAGE', Math.floor(storageCapacityLiters(s, config) * 7 / (dwellDays * volume))), same('SAILING', sailing)];
+    same('STORAGE', Math.floor(Math.max(0, storageCapacityLiters(s, config) - storageDetail.otherOccupancyLiters) * 7 / (storageDetail.handlingDwellDays * volume))), same('SAILING', sailing)];
   const usableBefore = Math.min(...rows.flatMap((r) => r.before === null ? [] : [r.before]));
   const usableAfter = Math.min(...rows.flatMap((r) => r.after === null ? [] : [r.after]));
   let remainingHandlingBatches = 0;
@@ -162,7 +192,7 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
     if (day > s.day && templates.some((t) => day + t.deadlineOffsetDays <= config.campaignDays && day + t.paymentOffsetDays <= config.campaignDays)) remainingHandlingBatches++;
   }
   const wageKrwPerWeek = hire ? hire.salaryPerDayMinor * 7 : null;
-  return { unit: 'HANDLING_JOBS_PER_WEEK', demand, otherPtPerWeek, rows,
+  return { unit: 'HANDLING_JOBS_PER_WEEK', demand, otherPtPerWeek, storageDetail, rows,
     binding: { before: rows.filter((r) => r.before === usableBefore).map((r) => r.constraint), after: rows.filter((r) => r.after === usableAfter).map((r) => r.constraint) },
     usableBefore, usableAfter, extraJobsPerWeek: hire ? usableAfter - usableBefore : 0, remainingHandlingBatches,
     contributionPerJobMinor: Math.min(...templates.map((t) => t.serviceFeeMinor - routeBetween(config, config.homeCityId, t.destinationCityId)!.bookingFeeMinor)),
