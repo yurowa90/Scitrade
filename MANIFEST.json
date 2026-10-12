@@ -1316,6 +1316,11 @@
       "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
     },
     {
+      "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
+      "size_bytes": 4080,
+      "sha256": "9c3a1394f26fa616123178274f1ff36d95c68ac46db8173268e8e5daef99eee5"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
