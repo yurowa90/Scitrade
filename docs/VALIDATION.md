@@ -36,7 +36,7 @@
 | 검사 | 명령 | 결과 | 근거 |
 |---|---|---|---|
 | 자료 검사 | `python3 tools/validate_data.py` | PASS. 자료 문서 23개, 구조·참조·산술 검사 25,184건(TASK-0022 병합 뒤, 2026-10-09). 인수 명세 26건(거래·운영 18 + 캐릭터·조직 8)의 연결 시험 파일·제목이 있는지까지 본다. 시험을 돌리지는 않는다 | `tools/validate_data.py:1033-1056`(MANIFEST 해시 검사와 출력) |
-| 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 93개 통과 | TASK-0050 병합 뒤(2026-10-12). W2-0b 뒤 74 → 84 → 93 |
+| 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 95개 통과 | TASK-0053 병합 뒤(2026-10-12). W2-0b 뒤 74 → 84 → 93 → 95 |
 | 엔진·화면 시험 | `npx vitest run` | 42개 파일·1,199개 통과(할 일 1) | TASK-0031(+R1) 병합 뒤(2026-10-12). TASK-0023 뒤 973 → TASK-0025 1,000 → TASK-0024 1,040 → TASK-0055 1,047 → TASK-0027 1,125 → TASK-0028 1,152 → TASK-0029 1,163 → TASK-0030 1,168 → TASK-0035 1,191 → TASK-0031(+R1) 1,199. 부하에 약하던 `m2a5-sim.test.ts` 시험 두 개에 60초 제한을 달았다 |
 | 그림 도구 시험 | `python3 tools/art/test_pixel_tools.py` | 21개 통과 | TASK-0007 |
 | 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 21개 통과. 원본 재생성 시험 3개는 원본 폴더가 있을 때만 돌고, 없으면 건너뛴다(CI) | `tools/ai/review_checks.sh:49-51`(2026-10-10 다시 셈) |
