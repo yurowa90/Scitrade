@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 314738,
-      "sha256": "4e824c43c054dcabfaa3b9c7cf21efe353fd301d6b179b7c376bd811dbb28cec"
+      "size_bytes": 320978,
+      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
     },
     {
       "path": "data/contacts.json",
