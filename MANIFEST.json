@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 180028,
-      "sha256": "595340f2de77e7bd2ef22a9b9c1d6614d36db5f6fb04bf8ce8503c651ffb6e94"
+      "size_bytes": 185896,
+      "sha256": "21b5b02b4cc5127e80c08546d715b808e4176d90f6d9e43730f7127027372e39"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 17830,
-      "sha256": "0b784dbe9e3d8ca88069106b9e5ae152d810d42e5fc2daa0959ec01958d592e9"
+      "size_bytes": 18141,
+      "sha256": "c51edc99da63c969aed4ab2d5136fbcf25c9fbe320570a820479ef96e4d29be0"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 68978,
-      "sha256": "357ac0d813648e11f7d09f161de833c29d939ce461990e1fb37834d32acb5ecb"
+      "size_bytes": 69586,
+      "sha256": "725d6b1c8322f3a8ece77e6ceadf84aa9930ed692e6ab911e34547ae83beecc3"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1334,6 +1334,11 @@
       "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
       "size_bytes": 43560,
       "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
+    },
+    {
+      "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
+      "size_bytes": 8446,
+      "sha256": "184bb29b5276f404b3c506664d8606833a53dade3445d08a905d830546044577"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
