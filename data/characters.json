@@ -1811,13 +1811,16 @@
       "conservation": {
         "iucn_status": "EN",
         "note_ko": "중국 중부·남서부 산림의 고유종. 서식지 감소로 위기(EN).",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
-          "Wikipedia: Golden snub-nosed monkey https://en.wikipedia.org/wiki/Golden_snub-nosed_monkey"
+          "Wikipedia: Golden snub-nosed monkey https://en.wikipedia.org/wiki/Golden_snub-nosed_monkey",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(들창코원숭이속 전종 Ⅰ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -2152,13 +2155,16 @@
       "conservation": {
         "iucn_status": "LC",
         "note_ko": "일본 고유종. 겨울에 온천에 들어가는 무리로 알려져 있다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
-          "작성자 지식 기반"
+          "작성자 지식 기반",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "작성자 지식 기반, 출처 대조 필요",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(영장목 전종 Ⅱ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 작성자 지식 기반, 출처 대조 필요",
         "design_cautions_ko": []
       }
     },
@@ -2264,13 +2270,16 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "이리오모테섬에만 사는 아종. 성체 100~150마리 수준으로 추정되며 위급(CR).",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": "일본 특별천연기념물 (확인 필요)",
         "sources": [
-          "Wikipedia: Iriomote cat https://en.wikipedia.org/wiki/Iriomote_cat"
+          "Wikipedia: Iriomote cat https://en.wikipedia.org/wiki/Iriomote_cat",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(고양이과 전종 Ⅱ(Ⅰ은 P. b. bengalensis 방글라데시·인도·태국 개체군만)). IUCN CR은 Red List 2026-1 데이터셋에 아종 평가가 없어 확인하지 못함(종 P. bengalensis는 LC). 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -2827,14 +2836,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "1992년에 처음 학계에 알려진 종. 베트남·라오스 안남산맥에만 살며 덫 사냥 피해로 위급(CR). 이미 사라졌을 가능성도 거론된다.",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Saola https://en.wikipedia.org/wiki/Saola",
-          "WWF: Saola https://wwf.panda.org/our_work/wildlife/profiles/mammals/saola"
+          "WWF: Saola https://wwf.panda.org/our_work/wildlife/profiles/mammals/saola",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(종 단위 Ⅰ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -3058,14 +3070,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "베트남 북부 고유종으로 전체 약 250~300마리. 닌빈성 반롱 보호구역에 가장 큰 무리가 산다. 위급(CR).",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
           "Fauna & Flora: Delacour's langur https://www.fauna-flora.org/projects/conserving-delacours-langur-vietnam/",
-          "Mongabay (2021) https://news.mongabay.com/2021/03/thriving-population-of-endangered-monkeys-gives-hope-to-conservationists"
+          "Mongabay (2021) https://news.mongabay.com/2021/03/thriving-population-of-endangered-monkeys-gives-hope-to-conservationists",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(영장목 전종 Ⅱ(같은 속 Ⅰ은 geei·pileatus·shortridgei뿐)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -3515,13 +3530,16 @@
       "conservation": {
         "iucn_status": "LC",
         "note_ko": "얼룩코뿔새는 1800년대 중반 싱가포르에서 사라졌다가 1994년 우빈섬에서 다시 관찰되었고, 인공 둥지 상자 사업으로 무리가 돌아오고 있다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
-          "NParks: Return of the Hornbills https://www.nparks.gov.sg/nparksbuzz/issue-02-vol-2-2009/conservation/return-of-the-hornbills"
+          "NParks: Return of the Hornbills https://www.nparks.gov.sg/nparksbuzz/issue-02-vol-2-2009/conservation/return-of-the-hornbills",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(검은코뿔새속 전종 Ⅱ(얼룩코뿔새 Anthracoceros albirostris 기준)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": []
       }
     },
@@ -3971,13 +3989,16 @@
       "conservation": {
         "iucn_status": null,
         "note_ko": "뉴기니섬 일대에 사는 극락조과 새들. 과거 유럽 모자 장식용 깃털 거래로 많이 사냥되었다. 종별 상태가 달라 대표 종 확정 후 다시 확인한다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
-          "작성자 지식 기반"
+          "작성자 지식 기반",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "작성자 지식 기반, 출처 대조 필요",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(극락조과 전종 Ⅱ). IUCN 범주는 대표 종이 정해지지 않아 판정하지 않음. 그 밖의 설명은 기존 확인 수준: 작성자 지식 기반, 출처 대조 필요",
         "design_cautions_ko": [
           "깃털을 거래 상품으로 등장시키지 않는다"
         ]
@@ -4678,10 +4699,13 @@
         "national_protection_ko": null,
         "sources": [
           "ZSL: World's largest amphibian heading for extinction https://www.zsl.org/news-and-events/news/worlds-largest-amphibian-heading-extinction",
-          "EDGE of Existence https://www.edgeofexistence.org/species/chinese-giant-salamander/"
+          "EDGE of Existence https://www.edgeofexistence.org/species/chinese-giant-salamander/",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I·IUCN CR는 2026-10-11 원문(국제적멸종위기종 고시 제2026-63호, IUCN 2026-1)으로 확인. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "식용·약재로 등장시키지 않는다"
         ]
@@ -4904,14 +4928,17 @@
       "conservation": {
         "iucn_status": "EN",
         "note_ko": "위기(EN). 한때 중국 산시성 양현에만 남았다가 복원되었다. 일본은 2008년 사도섬 방사, 2012년 36년 만의 야생 부화를 확인했고, 한국은 2019년 창녕 우포늪에서 40마리를 처음 방사했다.",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Crested ibis https://en.wikipedia.org/wiki/Crested_ibis",
-          "서울신문 (2019) ‘따오기’ 40년 만에 난다 https://m.go.seoul.co.kr/news/2019/05/22/20190522014012"
+          "서울신문 (2019) ‘따오기’ 40년 만에 난다 https://m.go.seoul.co.kr/news/2019/05/22/20190522014012",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(종 단위 Ⅰ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "한·중·일 공동 복원 이야기로 다루고 한 나라의 소유로 표현하지 않는다"
         ]
@@ -5019,14 +5046,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "2020년 위급(CR)으로 상향되었다. 사냥과 불법 거래, 서식지 감소가 위협이다.",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
           "World Land Trust: Red-shanked douc https://www.worldlandtrust.org/species/red-shanked-douc/",
-          "Illegal trade of douc langurs in Vietnam 2010–2020 https://research.cumbria.ac.uk/en/publications/the-illegal-trade-of-the-douc-langurs-pygathrix-sp-in-vietnam-jan/"
+          "Illegal trade of douc langurs in Vietnam 2010–2020 https://research.cumbria.ac.uk/en/publications/the-illegal-trade-of-the-douc-langurs-pygathrix-sp-in-vietnam-jan/",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(납작코원숭이속 전종 Ⅰ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -5134,14 +5164,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "양쯔강대왕자라(Rafetus swinhoei)는 확인된 개체가 2~3마리뿐이라 위급(CR)이며 사실상 야생 절멸 위기로 평가된다. 하노이 호안끼엠 호수에 살던 전설의 거북도 이 무리로 알려졌다(2016년 사망).",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
           "TIME (2023) https://time.com/6275373/giant-yangtze-softshell-turtle-female-dies/",
-          "Turtle Survival Alliance: Legendary Turtle Dies in Vietnam https://shop.turtlesurvival.org/blogs/news/legendary-turtle-dies-in-vietnam"
+          "Turtle Survival Alliance: Legendary Turtle Dies in Vietnam https://shop.turtlesurvival.org/blogs/news/legendary-turtle-dies-in-vietnam",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (남은 개체 수는 자료마다 다름)",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(종 단위 Ⅱ(고시 국명 ‘상하이자라’)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인 (남은 개체 수는 자료마다 다름)",
         "design_cautions_ko": [
           "호안끼엠 전설의 신격(금거북)은 직원으로 그리지 않고, 실제 종의 보전 이야기로만 다룬다"
         ]
@@ -5249,14 +5282,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "위급(CR). 전체 300~400마리 중 싱가포르에 약 60~70마리가 산다(2021년 68마리). 도시 개발로 서식지가 크게 줄었다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
           "NParks (2016) National strategy to conserve Raffles' Banded Langur https://www.nparks.gov.sg/news/2016/8/national-strategy-to-conserve-elusive-native-raffles-banded-langur-launched",
-          "SG101: Raffles' Banded Langur https://www.sg101.gov.sg/resources/connexionsg/rafflesbandedlangur/"
+          "SG101: Raffles' Banded Langur https://www.sg101.gov.sg/resources/connexionsg/rafflesbandedlangur/",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES II는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(영장목 전종 Ⅱ(같은 속 Ⅰ은 potenziani뿐)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -5367,10 +5403,13 @@
         "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
-          "Wikipedia: Bali myna https://en.wikipedia.org/wiki/Bali_myna"
+          "Wikipedia: Bali myna https://en.wikipedia.org/wiki/Bali_myna",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I·IUCN CR는 2026-10-11 원문(국제적멸종위기종 고시 제2026-63호, IUCN 2026-1)으로 확인. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "애완조 거래를 상품으로 등장시키지 않는다"
         ]
@@ -5482,10 +5521,13 @@
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Malayan tapir https://en.wikipedia.org/wiki/Malayan_tapir",
-          "Mongabay (2016) https://news.mongabay.com/2016/09/black-white-and-unique-the-malayan-tapir-struggles-for-recognition/"
+          "Mongabay (2016) https://news.mongabay.com/2016/09/black-white-and-unique-the-malayan-tapir-struggles-for-recognition/",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I·IUCN EN는 2026-10-11 원문(국제적멸종위기종 고시 제2026-63호, IUCN 2026-1)으로 확인. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -5714,13 +5756,16 @@
       "conservation": {
         "iucn_status": "VU",
         "note_ko": "인도태평양혹등돌고래(중국흰돌고래)는 취약(VU). 주강 하구 일대에 세계에서 가장 큰 무리(2,000마리 이상)가 살며, 선박 교통·해안 개발의 영향을 받는다.",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
-          "Frontiers in Marine Science (2022) https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2022.1048959/full"
+          "Frontiers in Marine Science (2022) https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2022.1048959/full",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(혹등참흰돌고래속 전종 Ⅰ). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -5941,13 +5986,17 @@
         "iucn_status": "CR",
         "note_ko": "넓적부리도요는 위급(CR)으로 세계에 수백 마리만 남았다. 약 8,000km 이동 경로에서 중국 장쑤성 루둥 갯벌이 가장 중요한 중간 기착지로 확인되었고, 한국 서해안 갯벌도 들른다.",
         "cites_appendix": null,
-        "national_protection_ko": null,
+        "national_protection_ko": "멸종위기 야생생물 Ⅰ급",
         "sources": [
           "BTO: New hope for two of the most threatened birds https://bto.org/about-bto/press-releases/new-hope-two-most-threatened-birds-world",
-          "Birds Korea https://www.birdskoreablog.org/?p=10602"
+          "Birds Korea https://www.birdskoreablog.org/?p=10602",
+          "「야생생물 보호 및 관리에 관한 법률 시행규칙」 [별표 1] 멸종위기 야생생물(시행 2026-05-12판, 국가법령정보센터 https://www.law.go.kr/LSW/flDownload.do?gubun=&flSeq=164113403&bylClsCd=110201, 열람 2026-10-11)",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "국내 Ⅰ급(별표 1의 넓적부리도요 Eurynorhynchus pygmeus, 현 학명 Calidris pygmaea)·IUCN CR·CITES 미등재는 2026-10-11 원문으로 확인. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "보전 협력으로 만나는 동료이며 포획·구매로 얻지 않는다"
         ]
@@ -6055,13 +6104,17 @@
       "conservation": {
         "iucn_status": "VU",
         "note_ko": "취약(VU). 19~20세기 초 깃털 이불 재료로 수백만 마리가 잡혀 깃털이 주로 일본에서 수출되었고, 1949년 멸종으로 여겨졌다가 1951년 다시 발견되었다. 현재 약 4,200마리이며 대부분 도리시마에서 번식한다. ‘신천옹(信天翁)’이라고도 부른다.",
-        "cites_appendix": null,
+        "cites_appendix": "II",
         "national_protection_ko": null,
         "sources": [
-          "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text"
+          "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "U.S. Fish and Wildlife Service, Office of Law Enforcement, “NOTICE TO THE WILDLIFE IMPORT/EXPORT COMMUNITY: CITES CoP19 Amendments to Appendices I and II” (2023-01-13, CITES Notification No. 2023/005 인용, https://www.fws.gov/sites/default/files/documents/OLE%20Public%20Bulletin%20-%20Changes%20to%20CITES%20Species%20Listings%201-13-2023.pdf, 열람 2026-10-12)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES Ⅱ는 국제적멸종위기종 고시 제2026-63호(제2023-45호부터 Ⅱ)와 미국 어류야생동물국 공지(2023-01-13: CoP19에서 부속서 Ⅰ→Ⅱ 이동, 2023-02-23 발효, CITES Notification 2023/005)로 확인. 사무국 통지 원문은 미열람. IUCN VU는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "깃털 거래 역사를 다룰 때 상품으로 다시 등장시키지 않는다"
         ]
@@ -6626,14 +6679,17 @@
       "conservation": {
         "iucn_status": "CR",
         "note_ko": "위급(CR). 술라웨시와 부톤섬에만 산다. 알을 품지 않고 지열이나 햇볕으로 데워진 모래에 깊이 묻어 부화시킨다.",
-        "cites_appendix": null,
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Maleo https://en.wikipedia.org/wiki/Maleo",
-          "Mongabay (2015) https://news.mongabay.com/2015/10/the-maleo-a-success-story-for-indonesias-strange-pit-digging-bird/"
+          "Mongabay (2015) https://news.mongabay.com/2015/10/the-maleo-a-success-story-for-indonesias-strange-pit-digging-bird/",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(종 단위 Ⅰ(고시 국명 ‘셀레베스메거포우드’)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "알을 채집·판매하는 장면을 쓰지 않는다"
         ]
@@ -6855,14 +6911,17 @@
       "conservation": {
         "iucn_status": "EN",
         "note_ko": "2016년 취약(VU)에서 위기(EN)로 상향되었다. 지난 75년 동안 약 절반이 줄었다고 추정된다. 서파푸아 첸데라와시만에서는 어선의 그물(바간)에서 작은 물고기를 빨아 먹는 행동이 관찰된다.",
-        "cites_appendix": "II",
+        "cites_appendix": "I",
         "national_protection_ko": null,
         "sources": [
           "Antara News https://en.antaranews.com/news/295338/a-massive-undertaking-to-protect-whale-sharks-in-indonesia",
-          "Galapagos Whale Shark Project https://galapagoswhaleshark.org/whale-sharks/conservation-status"
+          "Galapagos Whale Shark Project https://galapagoswhaleshark.org/whale-sharks/conservation-status",
+          "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호 [별표](시행 2026-03-05, CITES 부속서의 국내 고시, https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000275380, 열람 2026-10-11)",
+          "IUCN (2026). The IUCN Red List of Threatened Species. Version 2026-1, GBIF 데이터셋 doi:10.15468/0qnb58 (열람 2026-10-11)",
+          "근거 정리: docs/ai/design/research/CONSERVATION-BULK.md (TASK-0047)"
         ],
-        "checked_on": "2026-10-04",
-        "check_level": "웹 2차 자료로 확인 (CITES 등급은 확인 필요)",
+        "checked_on": "2026-10-12",
+        "check_level": "CITES I는 2026-10-11 국제적멸종위기종 고시 제2026-63호로 확인(종 단위 Ⅰ. 고시 개정이유상 부속서 Ⅱ→Ⅰ 이동(CITES CoP20, 2025-12)). IUCN 범주는 Red List 2026-1과 같음. 그 밖의 설명은 기존 확인 수준: 웹 2차 자료로 확인",
         "design_cautions_ko": [
           "상어 지느러미 등 부산물을 거래 상품으로 등장시키지 않는다"
         ]

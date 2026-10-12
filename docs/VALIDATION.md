@@ -37,10 +37,10 @@
 |---|---|---|---|
 | 자료 검사 | `python3 tools/validate_data.py` | PASS. 자료 문서 23개, 구조·참조·산술 검사 25,184건(TASK-0022 병합 뒤, 2026-10-09). 인수 명세 26건(거래·운영 18 + 캐릭터·조직 8)의 연결 시험 파일·제목이 있는지까지 본다. 시험을 돌리지는 않는다 | `tools/validate_data.py:1033-1056`(MANIFEST 해시 검사와 출력) |
 | 자료 검사기 회귀 시험 | `python3 tools/test_validate_data.py` | 74개 통과 | W2-0b 교과 검사 뒤(2026-10-09) |
-| 엔진·화면 시험 | `npx vitest run` | 41개 파일·1,168개 통과(할 일 1) | TASK-0030 병합 뒤(2026-10-10). TASK-0023 뒤 973 → TASK-0025 1,000 → TASK-0024 1,040 → TASK-0055 1,047 → TASK-0027 1,125 → TASK-0028 1,152 → TASK-0029 1,163 → TASK-0030 1,168 |
+| 엔진·화면 시험 | `npx vitest run` | 42개 파일·1,191개 통과(할 일 1) | TASK-0035 병합 뒤(2026-10-12). TASK-0023 뒤 973 → TASK-0025 1,000 → TASK-0024 1,040 → TASK-0055 1,047 → TASK-0027 1,125 → TASK-0028 1,152 → TASK-0029 1,163 → TASK-0030 1,168 → TASK-0035 1,191. `src/engine/sim/m2a5-sim.test.ts`의 영입 차단 시험 하나가 기본 5초 제한이라 같은 기기에서 Codex가 돌 때 시간 초과가 날 수 있다(세션 A가 60초 제한을 넣기로 함) |
 | 그림 도구 시험 | `python3 tools/art/test_pixel_tools.py` | 21개 통과 | TASK-0007 |
 | 지도 생성 시험 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | 21개 통과. 원본 재생성 시험 3개는 원본 폴더가 있을 때만 돌고, 없으면 건너뛴다(CI) | `tools/ai/review_checks.sh:49-51`(2026-10-10 다시 셈) |
-| 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 251,378 B·자료 125,986 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 403,918 B(한도 600,000 B)·gzip 118,558 B(한도 140,000 B, 여유 약 21.4 KB), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0028 병합 검사(2026-10-10). 빌드 표시가 커밋 해시라 `dev` 표시보다 수 B 크다. TASK-0055 병합 뒤(`dev` 표시) 359,790 B / 105,686 B → TASK-0027 403,488 / 118,413 B → TASK-0028 |
+| 빌드 크기 한도 | `node tools/check_bundle_size.mjs dist` | 통과. JS 청크 2개(코드 257,348 B·자료 125,986 B, 하나에 500,000 B 이하), 첫 화면 JS·CSS 410,418 B(한도 600,000 B)·gzip 120,327 B(한도 140,000 B, 여유 약 19.7 KB, TASK-0035 병합 트리), 글꼴 4,169,241 B(한도 5,000,000 B, 첫 화면 합계 밖). 빌드가 성공했을 때만 재고, 실패하면 재지 않고 실패로 센다 | TASK-0028 병합 검사(2026-10-10). 빌드 표시가 커밋 해시라 `dev` 표시보다 수 B 크다. TASK-0055 병합 뒤(`dev` 표시) 359,790 B / 105,686 B → TASK-0027 403,488 / 118,413 B → TASK-0028 |
 | 크기 검사기 시험 | `node --test tools/check_bundle_size.test.mjs` | 11개 통과 | TASK-0026 |
 | 사실 섞임 검사와 시험 | `python3 tools/check_fact_mixing.py`, `python3 tools/test_check_fact_mixing.py` | PASS(자료 24개, 문장 7,654개, 사실 표지 53개, 허용 목록 8건 모두 사용). 시험 26개 통과 | TASK-0048 병합 뒤(2026-10-12). 시험 20 → 26 |
 

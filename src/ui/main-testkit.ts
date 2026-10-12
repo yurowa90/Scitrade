@@ -26,7 +26,7 @@ export async function startUi(config?: ScenarioConfig) {
     set textContent(value:string) { announcements.push(value); } };
   let statusbarHeight = 100;
   let resizeStatus: (() => void) | undefined;
-  const bounds: Record<string,{top:number;bottom:number;height:number}> = {};
+  const bounds: Record<string,{top:number;bottom:number;height:number;left?:number;right?:number;width?:number}> = {};
   // 배정·예약 칸의 화면 위치. 다시 그린 뒤 위치는 afterRender에서 바꾼다.
   const slotTops: Record<string,number> = {};
   const slotRect = (slot:string) => { const top=slotTops[slot] ?? 180; return {top,bottom:top+88,height:88,width:260}; };
@@ -77,7 +77,9 @@ export async function startUi(config?: ScenarioConfig) {
   const PANEL_OF: Record<string,string> = { 'select-card':'crew','crew-filter':'crew','crew-role':'crew','crew-attr':'crew','detail':'crew','train':'crew',
     'scout':'crew','recruit-emp':'crew','recruit-quest':'crew','interview':'crew','hire':'crew','unqueue':'queue','schedule-toggle':'queue' };
   const OUTSIDE_LAYOUT = ['scenario','save','load','export','restart','end-day','queue-jump','skip-to','culture-result'];
-  const newFrame = () => ({ dataset:{} as Record<string,string>,innerHTML:'',scrollLeft:0,scrollWidth:2000,clientWidth:930,querySelector:()=>null });
+  const newFrame = () => ({ dataset:{} as Record<string,string>,innerHTML:'',scrollLeft:0,scrollWidth:2000,clientWidth:930,querySelector:()=>null,
+    // 고른 표시를 틀 안으로 옮길 때 틀의 위치를 읽는다.
+    getBoundingClientRect:()=>({left:0,right:930,top:0,bottom:600,width:930,height:600}) });
   let frame = newFrame();
   const elements = () => [...html.matchAll(/<(button|article|tr|select)\b([^>]*\bdata-action="[^"]*"[^>]*)>/g)].map((match) => {
     const attrs = Object.fromEntries([...match[2]!.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, unescape(m[2]!)]));
@@ -136,7 +138,8 @@ export async function startUi(config?: ScenarioConfig) {
     querySelector:(selector:string)=>/^(\[data-action="[^"]+"\])(\[data-[a-z-]+="[^"]*"\])*$/.test(selector) && selector!=='[data-action="detail"]' && selector!=='[data-action="end-day"]' && selector!=='[data-action="culture-result"]' ? (()=>{const d=Object.fromEntries([...selector.matchAll(/\[data-([a-z-]+)="([^"]*)"\]/g)].map((m)=>[m[1]!.replace(/-([a-z])/g,(_x,c:string)=>c.toUpperCase()),m[2]!]));return elements().find((e)=>Object.entries(d).every(([k,v])=>e.dataset[k]===v)) ?? null;})()
       : /^#growth-[^ ]+ \.training h4$/.test(selector) ? (html.includes(`id="${selector.slice(1).split(' ')[0]}"`) ? {getBoundingClientRect:()=>bounds[`training-h-${selector.slice(8).split(' ')[0]}`] ?? rect()} : null)
       : selector==='.trade' ? (bounds.trade ? {getBoundingClientRect:()=>bounds.trade} : null) : selector==='.flash-toast' ? (html.includes('class="flash-toast') ? {getBoundingClientRect:()=>({top:toastTop,bottom:792,height:792-toastTop})} : null) : selector==='.statusbar' ? {getBoundingClientRect:()=>({top:0,bottom:statusbarHeight,height:statusbarHeight})} : selector === '[data-action="detail"]' && html.includes('data-action="detail"') ? Object.assign(rendered({action:'detail'}),{scrollIntoView:scroll}) : selector === '[data-action="end-day"]' ? rendered({action:'end-day'}) : selector==='[data-map-frame]' || (selector === '.map-frame.is-world' && html.includes('class="map-frame is-world"')) ? frame : null,
-    querySelectorAll:(selector:string)=>selector.startsWith('.crew h2,') ? sideAnchors() : selector==='[data-action-slot]' ? [...html.matchAll(/data-action-slot="([^"]+)"/g)].map((m)=>({dataset:{actionSlot:m[1]},getBoundingClientRect:()=>slotRect(m[1]!)}))
+    querySelectorAll:(selector:string)=>selector==='[data-map-frame] [data-mark-dot]' ? [...html.matchAll(/data-mark="([^"]+)"/g)].map((m)=>({getBoundingClientRect:()=>bounds[`mark:${m[1]}`] ?? {left:-1000,right:-990,top:-1000,bottom:-990,width:10,height:10},closest:()=>({dataset:{mark:m[1]}})}))
+      : selector.startsWith('.crew h2,') ? sideAnchors() : selector==='[data-action-slot]' ? [...html.matchAll(/data-action-slot="([^"]+)"/g)].map((m)=>({dataset:{actionSlot:m[1]},getBoundingClientRect:()=>slotRect(m[1]!)}))
       // 계약 카드 위치는 제목 위치를 따른다.
       : selector==='.contract' ? [...html.matchAll(/id="(contract-h-[^"]+)"/g)].map((m)=>({getBoundingClientRect:()=>{const h=bounds[m[1]!] ?? rect();return {top:h.top-10,bottom:h.top+290,height:300};},querySelector:(q:string)=>q==='h3[id]' ? doc.getElementById(m[1]!) : null}))
       : elements(),
@@ -161,6 +164,8 @@ export async function startUi(config?: ScenarioConfig) {
     clickNow, bounds,
     // 이미 다시 그려져 사라진 단추를 누르는 경우를 흉내 낸다(Claude 검수).
     clickTarget:(target:unknown,detail=0)=>listeners.click!({detail,target}),
+    // 지도 틀 안의 점을 누른다. label이 있으면 그 표시의 이름표를 누른다.
+    tapMap:(x:number,y:number,label?:string)=>{vi.advanceTimersByTime(501);return listeners.click!({detail:1,clientX:x,clientY:y,target:{closest:(selector:string)=>selector==='[data-action]' ? null : selector==='[data-map-frame]' ? {} : selector==='.ribbon, .gate-label' && label ? {closest:()=>({dataset:{mark:label}})} : null}});},
     resizeStatusbar:(height:number)=>{statusbarHeight=height;resizeStatus!();},
     change:(dataset:Record<string,string>,value:string)=>listeners.change!({target:{...rendered(dataset),value}}),
     importText:async(text:string)=>{const input=new Input(); input.files=[{text:async()=>text}]; await listeners.change!({target:input});},

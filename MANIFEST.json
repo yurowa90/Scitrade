@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 320978,
-      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
+      "size_bytes": 334548,
+      "sha256": "77bed168ce598caaea7c2ab319d9899377f5cd4414b25711339106b0b86ea853"
     },
     {
       "path": "data/contacts.json",
@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 180028,
-      "sha256": "595340f2de77e7bd2ef22a9b9c1d6614d36db5f6fb04bf8ce8503c651ffb6e94"
+      "size_bytes": 189575,
+      "sha256": "9d9cd89c7c2e35ce479e81fd42829614897ddfb233fa631967395c504cb5dca5"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 17830,
-      "sha256": "0b784dbe9e3d8ca88069106b9e5ae152d810d42e5fc2daa0959ec01958d592e9"
+      "size_bytes": 18141,
+      "sha256": "c51edc99da63c969aed4ab2d5136fbcf25c9fbe320570a820479ef96e4d29be0"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 68978,
-      "sha256": "357ac0d813648e11f7d09f161de833c29d939ce461990e1fb37834d32acb5ecb"
+      "size_bytes": 71688,
+      "sha256": "f1c4b67300e654e9f182f14032f35384211bfe126de790263d9e345f94534f23"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 31487,
-      "sha256": "e4525964ad1ffdcebaac474624cd3541ef866791d6c451455f561faff9d087be"
+      "size_bytes": 49743,
+      "sha256": "95ae6ff5f545807b6cc15b0c65c7ce3b3bda1270b0102868eaf47f6beb0ea229"
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9306,
-      "sha256": "465e83773dfe702d4b9f0334f755ed611deea04a2a437a887269338f2eee4701"
+      "size_bytes": 9557,
+      "sha256": "7e37b39ec9941e86255edb3de9296671da63f6b5b1f6c875080dcf7683d82266"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1306,9 +1306,59 @@
       "sha256": "088378bd63bea4177f9b898852990d7ef1835195871f34f039d35ea5371510a5"
     },
     {
+      "path": "docs/ai/design/map-detail-d14/README.md",
+      "size_bytes": 10283,
+      "sha256": "0a7e9c33282055c43c0028d08e4933e8bcdd54f52eb7921f04923b3a0941188e"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap-5d59ff3.txt",
+      "size_bytes": 2295,
+      "sha256": "e106fe8da3d84f90040742db6db5c7b53e8da7c9164f0c188930218b9daff362"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/hubgap.js",
+      "size_bytes": 1634,
+      "sha256": "287056f8b5f7c289f35b56647cc7ccc594d3f1144aa4be278190bda17501821c"
+    },
+    {
+      "path": "docs/ai/design/map-detail-d14/proto-a21011c.patch",
+      "size_bytes": 56586,
+      "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/README.md",
+      "size_bytes": 9541,
+      "sha256": "6b085539894e9a627135d6fd5291f2eea355c45a30b23080dbd8ddc9bdc60716"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/pt.js",
+      "size_bytes": 9762,
+      "sha256": "3bdb4ac566bbbf47f777484c0f85bb2169abc70cd5416334596760f2b05f974d"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/pt7-5d59ff3.jsonl",
+      "size_bytes": 10021,
+      "sha256": "d780e163d71c6f58c7d9ff065bfefc11f8cde20d9e3dc94776775f540d4d3bbb"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/ptother.js",
+      "size_bytes": 827,
+      "sha256": "861f3c6ea64c96480225a93b38389d1f1c2e64f5bff85bf9dbbfaa047819f44e"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/ptzoom.js",
+      "size_bytes": 1980,
+      "sha256": "9b884c0132b79757ebd60af8d33871a7243f070a7dc9bb90f905860b4568a398"
+    },
+    {
+      "path": "docs/ai/design/pyeongtaek-device-check/zoom-5d59ff3.json",
+      "size_bytes": 2698,
+      "sha256": "e9ab91ee3fdcc4ea80e942f289afc452c662c787dd8a1f6ba7a74604fe1015f8"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
-      "size_bytes": 12414,
-      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+      "size_bytes": 15196,
+      "sha256": "25fce75d7ab82b62942898a93d641ab2f9b4f8be7b96dd2717a11b2c00c04063"
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
@@ -1319,6 +1369,11 @@
       "path": "docs/ai/design/research/CURRICULUM-CURRENT.md",
       "size_bytes": 43560,
       "sha256": "1ecf6e627610f53d44c9619dd11decbc6a7038a80c2df6e65b48322e03a28484"
+    },
+    {
+      "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
+      "size_bytes": 13268,
+      "sha256": "2ab0d428aee842e27a01f804ea203be0bc5901be305758983af7745a68fc982a"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1332,8 +1387,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 14311,
-      "sha256": "e5caba57dc62100a687b04c5e6de086be9506bb57134816fdd209f74d5340914"
+      "size_bytes": 14838,
+      "sha256": "bb2543dcf3b4ce4ef55a1bf0909d255fd4e384836debcef85cfeabc5e7e4509d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1566,9 +1621,19 @@
       "sha256": "b873b535c6524a2494392c22ff856b4391814928d6a8f484fd764f45e29bf3e9"
     },
     {
+      "path": "docs/ai/tasks/TASK-0035-map-detail.md",
+      "size_bytes": 95151,
+      "sha256": "22bbd21a90fd62b5d8c31971f090e4b9873ff6431b477a4a5228a0f61a60d657"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
       "size_bytes": 13099,
       "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0050-conservation-fields.md",
+      "size_bytes": 12994,
+      "sha256": "6309517c82dfd33a894c6f4079855606c0aac06002ff971c16e1e9e6534a911c"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1777,8 +1842,13 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0031.md",
-      "size_bytes": 74829,
-      "sha256": "809db9ae378bf1b7f3bcd2827a88031ba7490f9dbce3de8d91c7e6ea676bde02"
+      "size_bytes": 77526,
+      "sha256": "fed352207da13a3cc268f78025252a269c89d0577b0adce38532252fecef6227"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0035.md",
+      "size_bytes": 35329,
+      "sha256": "a356a4e3285346db21ffc2b8b1231e6e192062c14dfff6fa7b423d9ead2d2e4f"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0048.md",
@@ -2102,13 +2172,13 @@
     },
     {
       "path": "tools/browser/lib.mjs",
-      "size_bytes": 16217,
-      "sha256": "3b5b7f30e66de63c6158d604ca142108ffa627f61a0efdc9c58e611dd4d1b7b4"
+      "size_bytes": 16428,
+      "sha256": "4e856f462084b6055643a355e320a7da1d04a9953770f1005d34c12bd60099be"
     },
     {
       "path": "tools/browser/lib.test.mjs",
-      "size_bytes": 9199,
-      "sha256": "5eadc73b5696ff2f6e0d4f1ebf44734264945c3b7d5b25bd174e5b2b6ec0dae7"
+      "size_bytes": 9658,
+      "sha256": "93afa5e1f6e8d9f2d58d39594bd02a4fbd9ad45c51aae592589284c428499496"
     },
     {
       "path": "tools/browser/measure.mjs",
@@ -2159,6 +2229,11 @@
       "path": "tools/browser/scenarios/local-tab-position.json",
       "size_bytes": 679,
       "sha256": "402e491d44233433ccb89ad334be51a7b22521cb4af65fb64512f05fdb008a76"
+    },
+    {
+      "path": "tools/browser/scenarios/map-detail.json",
+      "size_bytes": 5894,
+      "sha256": "2c2571aec104b90cb52031dba45dab5893d3acfc18010e1be9e06936f494e0d4"
     },
     {
       "path": "tools/browser/scenarios/queue-chip.json",

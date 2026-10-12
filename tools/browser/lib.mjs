@@ -62,7 +62,8 @@ export function validateScenario(obj) {
     if (['tap', 'select', 'scroll-to', 'remember'].includes(s.do) && (typeof s.selector !== 'string' || !s.selector)) error('선택자가 필요합니다');
     if (s.do === 'tap' && 'index' in s && (!Number.isInteger(s.index) || s.index < 0)) error('index는 0 이상 정수입니다');
     if (s.do === 'end-day' && 'times' in s && (!Number.isInteger(s.times) || s.times < 1)) error('times는 양의 정수입니다');
-    if (s.do === 'select' && typeof s.value !== 'string') error('value가 필요합니다');
+    if (s.do === 'select' && (typeof s.value === 'string') === ('index' in s)) error('value와 index 가운데 하나만 씁니다');
+    if (s.do === 'select' && 'index' in s && (!Number.isInteger(s.index) || s.index < 0)) error('index는 0 이상 정수입니다');
     if (s.do === 'scroll-to' && !Number.isFinite(s.offset_from_bar)) error('막대 기준 위치가 필요합니다');
     if (s.do === 'wait' && (!Number.isFinite(s.ms) || s.ms < 0)) error('대기 시간이 필요합니다');
     if (s.do === 'measure') {
@@ -139,7 +140,7 @@ async function step(page, s, scenario, profile, refs, values) {
   const selector = s.selector || scenario.end_day_selector;
   if (s.do === 'tap') await tap(page, s.selector, s.index ?? 0, profile.touch);
   else if (s.do === 'end-day') for (let i = 0; i < (s.times ?? 1); i++) await tap(page, selector, 0, profile.touch);
-  else if (s.do === 'select') { await page.selectOption(s.selector, s.value); await page.waitForTimeout(300); }
+  else if (s.do === 'select') { await page.selectOption(s.selector, 'index' in s ? { index: s.index } : s.value); await page.waitForTimeout(300); }
   else if (s.do === 'wait') await page.waitForTimeout(s.ms);
   else if (s.do === 'scroll-top') { await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(100); }
   else if (s.do === 'scroll-to') {
