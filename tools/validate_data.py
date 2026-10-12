@@ -26,6 +26,41 @@ def check(condition, message):
         ERRORS.append(message)
 
 
+def check_conservation(tables):
+    """대표 학명과 CITES 확인 기록을 검사하고 판정 보류 ID를 돌려준다."""
+    unresolved = []
+    for character in tables['characters'].values():
+        if 'conservation' not in character:
+            continue
+        cid = character['id']
+        record = character['conservation']
+        check(isinstance(record, dict), f'{cid}: 보전 기록은 객체여야 합니다')
+        if not isinstance(record, dict):
+            continue
+        name = record.get('scientific_name')
+        check(isinstance(name, str) and bool(name.strip()), f'{cid}: 대표 학명이 비어 있습니다')
+        status, appendix = record.get('cites_status'), record.get('cites_appendix')
+        check((status == 'listed' and appendix in ('I', 'II', 'III'))
+              or (status in ('not_listed', 'unresolved', 'unchecked') and appendix is None),
+              f'{cid}: CITES 확인 상태와 부속서 값이 맞지 않습니다')
+        if status in ('listed', 'not_listed', 'unresolved'):
+            checked_on = record.get('cites_checked_on')
+            valid_date = isinstance(checked_on, str) and bool(re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}', checked_on))
+            if valid_date:
+                try:
+                    datetime.date.fromisoformat(checked_on)
+                except ValueError:
+                    valid_date = False
+            check(valid_date, f'{cid}: CITES 확인일은 유효한 YYYY-MM-DD 날짜여야 합니다')
+            basis = record.get('cites_basis')
+            check(isinstance(basis, str) and bool(basis.strip()), f'{cid}: CITES 확인 근거가 비어 있습니다')
+        if status == 'unchecked':
+            check(False, f'{cid}: CITES 확인 안 함(cites_status unchecked)')
+        if status == 'unresolved':
+            unresolved.append(cid)
+    return unresolved
+
+
 def validate_growth(rules, characters):
     """성장 자료와 엔진이 고정한 의미를 대조한다. 누락도 검사 실패로 보고한다."""
     level_min, level_max = rules.get('level_min'), rules.get('level_max')
@@ -1031,6 +1066,7 @@ def main():
         check(tables['scenarios'][sid]['engine_rules'] == {**tables['scenarios'][sid]['engine_rules'],
               'rules_version': 'M1-rules-1', 'funds_check': 'immediate_cash', 'forwarding_enabled': False},
               sid + ': M1 rule set unchanged')
+    unresolved_conservation = check_conservation(tables)
     check_m2a(tables)
     validate_cancellation(tables['scenarios'], tables['routes'])
     check_market_rules(documents, tables)
@@ -1165,6 +1201,8 @@ def main():
     print(f'{n_core + n_char} acceptance specifications included ({n_core} core + {n_char} character); '
           f'linked by file and test name: {core_engine} core and {char_engine} character to engine tests, '
           f'{core_ui + char_ui} to screen tests. This validator checks that those files and names exist; it does not run them (npx vitest run).')
+    if unresolved_conservation:
+        print(f'CITES 판정 보류 {len(unresolved_conservation)}건: ' + ', '.join(unresolved_conservation))
     print(f'Unlinked specifications: {n_core - core_engine} core, {n_char - char_engine} character. '
           f'Curriculum: {len(pending_found)} P0 item links without a P0 label remain on the pending list (not approved exceptions).')
     print('Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.')

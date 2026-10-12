@@ -2,10 +2,10 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `medium`
-- 선행 작업: 개발 브랜치 `<BASE>` 위에 만든 `codex/TASK-0050`에서 작업한다.
-  - `<BASE>`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0050-conservation-fields.md`의 해시를 쓰고 결과 보고에 적는다.
-  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only <BASE> HEAD`를 실행해 결과 보고에 적는다.
-  - 줄 번호는 `37b2633`(claude/research) 기준이다. 개발 브랜치에 TASK-0047 반영(`7df8059`)과 EMP53 Ⅱ 반영이 들어간 뒤 실행한다. `<BASE>`에서 다르면 코드가 사실이고, 차이를 결과 보고에 적는다.
+- 선행 작업: 개발 브랜치 `c75b4c1` 위에 만든 `codex/TASK-0050`에서 작업한다.
+  - `c75b4c1`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0050-conservation-fields.md`의 해시를 쓰고 결과 보고에 적는다.
+  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only c75b4c1 HEAD`를 실행해 결과 보고에 적는다.
+  - 줄 번호는 `37b2633`(claude/research) 기준이다. 개발 브랜치에 TASK-0047 반영(`7df8059`)과 EMP53 Ⅱ 반영이 들어간 뒤 실행한다. `c75b4c1`에서 다르면 코드가 사실이고, 차이를 결과 보고에 적는다.
 - 병렬 작업: `tools/validate_data.py`·`data/characters.json`·`schemas/characters.schema.json`을 여는 다른 작업과 동시에 돌리지 않는다(SESSION_TREE ‘한 번에 한 작업만 여는 파일’).
 - 결정 근거:
   - **사용자 결정(2026-10-12, 허브 세션):** 질문 3에 “대표 학명 + 확인일 둘 다(추천)”. 확인하지 않은 값을 검사기가 잡게 한다.
@@ -62,7 +62,7 @@
 
 - `data/characters.json`은 `json.dumps(…, ensure_ascii=False, indent=2) + '\n'` 형식을 지킨다(지금 파일이 이 형식이다). 손으로 고치지 말고 스크립트로 칸을 넣는다. 스크립트는 저장소에 남기지 않는다.
 - 새 칸은 각 `conservation` 객체에서 `cites_appendix` 바로 뒤에 `cites_status`·`cites_checked_on`·`cites_basis`를 둔다. `scientific_name`·`scientific_name_rank`는 객체 맨 앞에 둔다.
-- 아래 표의 글을 바꾸지 않는다. 표와 자료가 어긋나면(예: `<BASE>`의 `cites_appendix`가 표의 ‘지금 값’과 다름) 멈추고 결과 보고 ‘질문’에 적는다.
+- 아래 표의 글을 바꾸지 않는다. 표와 자료가 어긋나면(예: `c75b4c1`의 `cites_appendix`가 표의 ‘지금 값’과 다름) 멈추고 결과 보고 ‘질문’에 적는다.
 
 ## 구현 지시
 
@@ -164,7 +164,7 @@
 - `python3 tools/validate_data.py` PASS. 검사 수 전후를 적는다.
 - `python3 tools/test_validate_data.py` 통과. 시험 수 전후를 적는다.
 - `npx vitest run` 통과. 투영 시험(`src/content/character-fields.test.ts`)이 새 칸 때문에 깨지지 않는지 확인한다. 새 칸은 투영 밖이라 빌드에 실리지 않아야 한다.
-- `bash tools/ai/review_checks.sh --check <BASE>` 통과.
+- `bash tools/ai/review_checks.sh --check c75b4c1` 통과.
 - 결과 보고 `docs/ai/tasks/results/TASK-0050.md`에 다음을 적는다.
   - 바꾼 칸 요약.
   - 시험 목록과 질문.

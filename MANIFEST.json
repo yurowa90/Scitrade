@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 334548,
-      "sha256": "77bed168ce598caaea7c2ab319d9899377f5cd4414b25711339106b0b86ea853"
+      "size_bytes": 347260,
+      "sha256": "73dd763ab918ac1732198c1d9c80e8dfcb9379d8da08e42f9c7c3599ccbdb6be"
     },
     {
       "path": "data/contacts.json",
@@ -1632,8 +1632,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0050-conservation-fields.md",
-      "size_bytes": 12994,
-      "sha256": "6309517c82dfd33a894c6f4079855606c0aac06002ff971c16e1e9e6534a911c"
+      "size_bytes": 13000,
+      "sha256": "98e2fb385fbacbc8c9e73ff9166e3c9a94f750d5d76ae835c8cfb83f148cd3b2"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1856,6 +1856,11 @@
       "sha256": "e16bb18d88c6ba7da84cca833636e93d6d1f0a871ea881e0abd3cbcdd12c5529"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0050.md",
+      "size_bytes": 8012,
+      "sha256": "373160fdc011b0e471c42ea2fc72da8db43d368960c6d5081a199b67504235a0"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -2007,8 +2012,8 @@
     },
     {
       "path": "schemas/characters.schema.json",
-      "size_bytes": 17947,
-      "sha256": "4a9688ff24a1331c9e9f15b0c7942252158fb7bdc58c57e69539db3a852b457c"
+      "size_bytes": 19535,
+      "sha256": "b9a2e7f66972048af532b01fe3bbee26763f88d0390c00754bbf27bd7db8113a"
     },
     {
       "path": "schemas/contacts.schema.json",
@@ -2307,13 +2312,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 56992,
-      "sha256": "6179fd93f59e6524b06bd33ab54dd189a428e9c1d7ede06555ad71f3ccb5dfb5"
+      "size_bytes": 60555,
+      "sha256": "96e151a86e0bedd7e5f78b67f9db6f4c09dc97bbb0a5123dbc550f3068a43b27"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 70626,
-      "sha256": "0c59277270ef7fc16d9cdafc29fe0e9cd09a695553fc292d7c1210cdf4c0901e"
+      "size_bytes": 72700,
+      "sha256": "f87a1abb03e2e5455e357da6345bdf8aa387d6d0ec2f8bb3e66d9c37e937d88c"
     }
   ]
 }

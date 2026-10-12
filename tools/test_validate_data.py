@@ -11,6 +11,80 @@ from pathlib import Path
 import validate_data as validator
 
 
+class ConservationTest(unittest.TestCase):
+    def setUp(self):
+        self.tables = {'characters': {item['id']: item for item in
+                       validator.read('data/characters.json')['items']}}
+        self.record = self.tables['characters']['EMP01']['conservation']
+        validator.ERRORS.clear()
+
+    def errors(self):
+        validator.ERRORS.clear()
+        validator.check_conservation(self.tables)
+        return list(validator.ERRORS)
+
+    def test_current_records_pass(self):
+        self.assertEqual(self.errors(), [])
+        self.assertEqual(validator.check_conservation(self.tables), [])
+
+    def test_listed_requires_appendix(self):
+        self.record['cites_appendix'] = None
+        self.assertTrue(any('EMP01: CITES 확인 상태와 부속서' in error for error in self.errors()))
+
+    def test_not_listed_rejects_appendix(self):
+        self.record.update(cites_status='not_listed', cites_appendix='I')
+        self.assertTrue(any('EMP01: CITES 확인 상태와 부속서' in error for error in self.errors()))
+
+    def test_invalid_checked_on_rejected(self):
+        for value in ('2026-13-01', '2026/10/11', None, '2026-02-29', '20261011'):
+            with self.subTest(value=value):
+                self.record['cites_checked_on'] = value
+                self.assertTrue(any('EMP01: CITES 확인일' in error for error in self.errors()))
+
+    def test_blank_basis_rejected(self):
+        self.record['cites_basis'] = '  '
+        self.assertTrue(any('EMP01: CITES 확인 근거' in error for error in self.errors()))
+
+    def test_unchecked_rejected_even_with_date_and_basis(self):
+        self.record.update(cites_status='unchecked', cites_appendix=None)
+        self.assertIn('EMP01: CITES 확인 안 함(cites_status unchecked)', self.errors())
+
+    def test_unresolved_allowed_with_date_and_basis(self):
+        self.record.update(cites_status='unresolved', cites_appendix=None)
+        self.assertEqual(self.errors(), [])
+        self.assertEqual(validator.check_conservation(self.tables), ['EMP01'])
+
+    def test_empty_scientific_name_rejected(self):
+        self.record['scientific_name'] = ''
+        self.assertIn('EMP01: 대표 학명이 비어 있습니다', self.errors())
+
+    def test_pass_output_reports_unresolved_after_second_line(self):
+        original_read = Path.read_text
+
+        def read_with_status(path, *args, **kwargs):
+            text = original_read(path, *args, **kwargs)
+            if path == validator.ROOT / 'data/characters.json':
+                document = json.loads(text)
+                document['items'] = list(self.tables['characters'].values())
+                return json.dumps(document, ensure_ascii=False)
+            return text
+
+        for unresolved in (False, True):
+            with self.subTest(unresolved=unresolved):
+                self.record.update(cites_status='unresolved' if unresolved else 'listed',
+                                   cites_appendix=None if unresolved else 'II')
+                validator.ERRORS.clear()
+                output = io.StringIO()
+                with mock.patch.object(Path, 'read_text', read_with_status), contextlib.redirect_stdout(output):
+                    self.assertEqual(validator.main(), 0)
+                lines = output.getvalue().splitlines()
+                self.assertTrue(lines[0].startswith('PASS:'))
+                if unresolved:
+                    self.assertEqual(lines[2], 'CITES 판정 보류 1건: EMP01')
+                else:
+                    self.assertNotIn('CITES 판정 보류', output.getvalue())
+
+
 class RecruitmentKeysTest(unittest.TestCase):
     def tables(self):
         root = Path(__file__).resolve().parents[1]
