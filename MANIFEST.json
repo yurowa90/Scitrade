@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 320978,
-      "sha256": "246bc90fbd1cc242abbb0e290d30750559ce5ce4cd129582d6f3d02cbc31f3c7"
+      "size_bytes": 334548,
+      "sha256": "77bed168ce598caaea7c2ab319d9899377f5cd4414b25711339106b0b86ea853"
     },
     {
       "path": "data/contacts.json",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 31487,
-      "sha256": "e4525964ad1ffdcebaac474624cd3541ef866791d6c451455f561faff9d087be"
+      "size_bytes": 46102,
+      "sha256": "caf0c936e19d666eed9022d3d2fdbfa25978493d35ddbd0f43d6e191369a7d93"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -1302,8 +1302,8 @@
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
-      "size_bytes": 12414,
-      "sha256": "88d402e24f3375995e37e2253db4fc4c8a0cd6fe8a12e76923a2c92fde48378e"
+      "size_bytes": 15196,
+      "sha256": "25fce75d7ab82b62942898a93d641ab2f9b4f8be7b96dd2717a11b2c00c04063"
     },
     {
       "path": "docs/ai/design/research/CONSERVATION-RECHECK.md",
@@ -1317,8 +1317,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 8446,
-      "sha256": "184bb29b5276f404b3c506664d8606833a53dade3445d08a905d830546044577"
+      "size_bytes": 13268,
+      "sha256": "2ab0d428aee842e27a01f804ea203be0bc5901be305758983af7745a68fc982a"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1544,6 +1544,11 @@
       "path": "docs/ai/tasks/TASK-0048-fact-mixing-rules.md",
       "size_bytes": 13099,
       "sha256": "a4a8953f31db6d2741f0e14418b5771a9410fa7f1622d535c471f240ad0da48e"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0050-conservation-fields.md",
+      "size_bytes": 12994,
+      "sha256": "6309517c82dfd33a894c6f4079855606c0aac06002ff971c16e1e9e6534a911c"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
