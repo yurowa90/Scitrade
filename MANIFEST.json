@@ -1781,6 +1781,11 @@
       "sha256": "384a8054ed04b25ed50b912bc8ebf1b25d59803203fbcde26f24f3dd06dbe9f9"
     },
     {
+      "path": "docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md",
+      "size_bytes": 12549,
+      "sha256": "44aa358ea987a9f0f88ce206e5a98aea8858ea5eeba9b9a2328a7c2c83b0d4fe"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
