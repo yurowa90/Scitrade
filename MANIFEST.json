@@ -1846,6 +1846,11 @@
       "sha256": "124dc1276c97cb4c0f8869a9f692698bca7925dcc48913468cbb3d631bd7b919"
     },
     {
+      "path": "docs/ai/tasks/TASK-0059-R1-code-split-fixes.md",
+      "size_bytes": 6066,
+      "sha256": "01caf574b93a5351525d6135bb34178ae540564c94280762ef0c2cc99f004801"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0059-code-split.md",
       "size_bytes": 15887,
       "sha256": "09c6f2fc26f49b2db50dd0201a772b83593864757762a024a160942ce0c5b137"
