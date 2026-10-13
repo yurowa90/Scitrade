@@ -284,7 +284,7 @@ describe('종료 화면과 견적 유효기간', () => {
     expect(s.operations!.outcome).toBe('COMPLETED');
     expect(companyReport(s, cfg).payroll.accountsPayable).toBeGreaterThan(0);
     const ui = await loadedUi(s), html = ui.app.innerHTML;
-    expect(html).toContain('<span>원화 급여 가능일</span><b>캠페인 종료</b>');
+    expect(html.split('id="status-h"')[1]!.split('</header>')[0]).toContain('<span>원화 급여 가능일</span><b>캠페인 종료</b>');
     expect(html).toContain('종료 · 남은 미지급 있음(결산 참고)');
     expect(html).not.toContain('실패까지'); expect(html).not.toContain('하루 진행 뒤 예상:');
     expect(html).not.toContain('id="exchange-h"'); expect(html).not.toContain('환전 칸에서');

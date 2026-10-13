@@ -33,6 +33,10 @@ const absent = {
   template: `${config.operations!.market.forwarding.templates[0]!.id}-없음`,
 };
 const cases: [string, (s: GameState) => void, string][] = [
+  ['offers.quantity 배수', (s) => { const o = buy(s); o.quantityStep = Math.max(2, o.quantityStep); o.quantity = o.quantityStep + 1; o.maxQuantity = o.quantityStep * 3; }, '견적의 수량·단위·최대 수량이 맞지 않습니다'],
+  ['offers.quantityStep 0', (s) => { buy(s).quantityStep = 0; }, '견적의 수량·단위·최대 수량이 맞지 않습니다'],
+  ['offers.maxQuantity 배수', (s) => { const o = buy(s); o.quantityStep = Math.max(2, o.quantityStep); o.quantity = o.quantityStep; o.maxQuantity = o.quantityStep * 2 + 1; }, '견적의 수량·단위·최대 수량이 맞지 않습니다'],
+
   ['offers.counterpartyId', (s) => { buy(s).counterpartyId = absent.party; }, '생성 견적이 설정에 없는 거래처를 가리킵니다'],
   ['offers.cityId', (s) => { buy(s).cityId = absent.city; }, '생성 견적이 설정에 없는 도시를 가리킵니다'],
   ['offers.destinationCityId', (s) => { forwarding(s).destinationCityId = absent.city; }, '생성 견적이 설정에 없는 도착 도시를 가리킵니다'],
