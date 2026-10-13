@@ -2,8 +2,8 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: TASK-0058 병합 기록 커밋(허브가 병합 뒤 알려 준다, 이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
-  - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0059-code-split.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+- 선행: TASK-0058 병합 기록 커밋(허브가 병합 뒤 알려 준다, 이하 `bd10189`). 기준 비교(`review_checks.sh`)는 `bd10189`로 한다.
+  - `bd10189`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0059-code-split.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
   - TASK-0058이 `main.ts`·`ui/market.ts`를 고친다. 그래서 아래 위치는 **함수 이름으로 찾고**, 실제 줄을 결과 보고에 적는다.
 - 근거: `docs/ai/design/code-split-0059/README.md`(세션 B 실측, `f38f9cf`). 먼저 읽는다. 시제품 diff(`proto-f38f9cf.diff`)는 크기 측정용이라 그대로 쓰지 않는다(형이 `any`이고, 불러오는 시점·실패 처리가 없다).
 - 목적: 첫 화면에서 받아 해석하는 JS를 줄여, 앞으로 넣을 화면(M5 그림·이야기, 성장 보드, 정책 그물)이 들어갈 여유를 만든다. 지금 첫 화면 gzip은 132,034 B이고 한도는 140,000 B다(허브, TASK-0057 병합 뒤).
@@ -19,7 +19,7 @@
 - 새 파일은 `ui/market.ts`·`ui/warehouse.ts`·`ui/money-alerts.ts`에서 `main.ts`가 쓰는 함수를 다시 내보낸다. 세 모듈은 그대로 두고, 이 파일만 진입점으로 쓴다.
 - 두 함수는 첫 화면에 필요하므로 새 작은 모듈(예: `src/ui/ops-labels.ts`)로 옮긴다. 원래 모듈은 그것을 다시 내보낸다.
   - `constraintLabel`(`ui/recruitment.ts`가 정적으로 부름)과 그 이름표 표.
-  - `main.ts`가 규칙 1에서도 부르는 함수가 있으면 같이 옮긴다. `f38f9cf` 기준 후보는 `counterpartyNameKo`(`partyKo`)와 `routeLabel`(`commandLabel`)이다. `<BASE>`에서 다시 확인한다.
+  - `main.ts`가 규칙 1에서도 부르는 함수가 있으면 같이 옮긴다. `f38f9cf` 기준 후보는 `counterpartyNameKo`(`partyKo`)와 `routeLabel`(`commandLabel`)이다. `bd10189`에서 다시 확인한다.
 - `main.ts`는 세 모듈을 정적으로 부르지 않는다. 다음 꼴로 쓴다.
   - `let opsScreens: typeof import('./ops-screens') | null = null`
   - `ensureOpsScreens(): Promise<void>` — 한 번만 `import()`하고, 같은 약속(promise)을 재사용한다.
@@ -56,7 +56,7 @@
   - `main-testkit.ts`에 `await screensReady()`(두 묶음을 미리 불러 둠)를 더해, 해당 시험의 준비 단계에서 부른다.
   - 진입점 핸들러가 비동기가 되어 생긴 대기를 시험 도우미에서 기다린다.
 - **새 시험(`src/ui/code-split.test.ts`):**
-  1. 첫 렌더(규칙 1 기본 시나리오)는 두 묶음을 불러오기 전에 끝나고, HTML이 지금과 같다. 기준 HTML은 `<BASE>` 출력의 고정 값이나 기존 시험의 스냅숏을 쓴다.
+  1. 첫 렌더(규칙 1 기본 시나리오)는 두 묶음을 불러오기 전에 끝나고, HTML이 지금과 같다. 기준 HTML은 `bd10189` 출력의 고정 값이나 기존 시험의 스냅숏을 쓴다.
   2. 규칙 2 시나리오를 고르면 묶음을 불러온 뒤 시나리오가 바뀐다. 결과 HTML은 정적 import일 때와 같다.
   3. 묶음 불러오기가 실패하면(`import()`를 실패하게 흉내 냄) 시나리오·오늘 할 일·`select` 값이 그대로이고, 경고 알림이 보이고, 다음 시도에서 다시 불러온다.
   4. 규칙 2 저장을 불러오기·가져오기로 열면 묶음을 먼저 불러온다. 실패하면 상태가 바뀌지 않는다.
@@ -84,9 +84,9 @@
 
 ## 지켜야 할 것
 
-- **결정성:** 기본 비교 실행기 400회 출력이 `<BASE>`와 바이트로 같다(`cmp` 0). 엔진을 건드리지 않으므로 같아야 한다. 다르면 멈추고 보고한다.
-- **저장 호환:** 저장 형식·키·검증은 그대로다. `<BASE>`에서 만든 규칙 1·규칙 2 저장을 이 빌드에서 불러와 같은 상태가 되는지 시험 4로 확인한다.
-- **멈춤 기준:** 첫 화면 gzip이 `<BASE>`보다 3,000 B 넘게 줄지 않으면 멈추고 보고한다. 원인으로 의심되는 것(정적 import가 남은 경로 등)을 함께 적는다.
+- **결정성:** 기본 비교 실행기 400회 출력이 `bd10189`와 바이트로 같다(`cmp` 0). 엔진을 건드리지 않으므로 같아야 한다. 다르면 멈추고 보고한다.
+- **저장 호환:** 저장 형식·키·검증은 그대로다. `bd10189`에서 만든 규칙 1·규칙 2 저장을 이 빌드에서 불러와 같은 상태가 되는지 시험 4로 확인한다.
+- **멈춤 기준:** 첫 화면 gzip이 `bd10189`보다 3,000 B 넘게 줄지 않으면 멈추고 보고한다. 원인으로 의심되는 것(정적 import가 남은 경로 등)을 함께 적는다.
 - **바이트로 같은 화면:** 규칙 1 화면 HTML은 지연 모듈 없이 그려야 하고, 지금과 바이트로 같다. 규칙 2·문화 패널 HTML도 불러온 뒤 지금과 같다.
 - **형 안전:** `any`를 새로 쓰지 않는다. 지연 모듈은 `typeof import('./…')`로 형을 잡는다.
 - **지켜야 할 기존 시험(세션 A 의견, 2026-10-13).** 아래는 단언을 바꾸지 않고 통과해야 한다. 이 시험들이 실패하면 고치지 말고 멈춘다.
@@ -99,12 +99,12 @@
 ## 완료 조건
 
 1. **크기**
-   - 첫 화면 gzip이 **125,500 B 이하**이고 `<BASE>`보다 6,500 B 이상 줄었다.
+   - 첫 화면 gzip이 **125,500 B 이하**이고 `bd10189`보다 6,500 B 이상 줄었다.
    - `CULTURE_KO`까지 나눴다면 124,500 B 이하를 기대한다. 못 미치면 이유를 적는다.
-   - 출력 전체와 `<BASE>` 대비 증감, 두 지연 청크 크기를 결과 보고에 적는다. 빌드 표시를 맞춘 사본으로 잰다.
-2. **검사:** `npm run typecheck`, `npx vitest run`(시작 값 + 새 시험), `python3 tools/validate_data.py`, `node --test tools/browser/lib.test.mjs`, `node --test tools/check_bundle_size.test.mjs`가 모두 통과한다. `bash tools/ai/review_checks.sh <BASE>`와 `--check <BASE>`도 통과한다.
+   - 출력 전체와 `bd10189` 대비 증감, 두 지연 청크 크기를 결과 보고에 적는다. 빌드 표시를 맞춘 사본으로 잰다.
+2. **검사:** `npm run typecheck`, `npx vitest run`(시작 값 + 새 시험), `python3 tools/validate_data.py`, `node --test tools/browser/lib.test.mjs`, `node --test tools/check_bundle_size.test.mjs`가 모두 통과한다. `bash tools/ai/review_checks.sh bd10189`와 `--check bd10189`도 통과한다.
 3. **결정성:** 400회 `cmp` 0.
-4. **바꾼 범위:** `git diff --name-only <BASE>`가 ‘고칠 수 있는 파일’ 안에 있다. `git diff <BASE> -- src/engine src/content data schemas vite.config.ts package.json index.html public tools src/ui/style.css`가 비어 있다.
+4. **바꾼 범위:** `git diff --name-only bd10189`가 ‘고칠 수 있는 파일’ 안에 있다. `git diff bd10189 -- src/engine src/content data schemas vite.config.ts package.json index.html public tools src/ui/style.css`가 비어 있다.
 5. **변형 시험:** 아래를 하나씩 넣고 실패하는 시험 이름을 적는다(되돌릴 때 편집기로).
    - 진입점 하나(규칙 2 시나리오 고르기)에서 `await ensureOpsScreens()`를 빼기.
    - 실패한 약속을 버리지 않기(재시도 불가).
@@ -117,7 +117,7 @@
    - 바꾼 파일과 설계 판단
    - 실행한 검증
    - 크기 표
-   - 옮긴 함수 목록(`<BASE>` 줄 → 새 위치)
+   - 옮긴 함수 목록(`bd10189` 줄 → 새 위치)
    - 진입점 목록
    - 변형 표
    - 세션 B 측정 요청: 아래 ‘세션 B가 잴 것’
@@ -138,12 +138,12 @@
 
 ## 세션 B가 잴 것 (Codex는 하지 않는다)
 
-- **기존 측정 시나리오 15개:** Chromium 7개 프로필. `<BASE>` 빌드 대비 값 차이 0. 문화 패널을 여는 `local-tab-position`·`culture-result-flow3`을 포함한다.
-- **규칙 2 상태(1·8·15일):** TASK-0033 측정의 `measureM2`로 막대·시세표·Tab 순서가 `<BASE>`와 같다.
+- **기존 측정 시나리오 15개:** Chromium 7개 프로필. `bd10189` 빌드 대비 값 차이 0. 문화 패널을 여는 `local-tab-position`·`culture-result-flow3`을 포함한다.
+- **규칙 2 상태(1·8·15일):** TASK-0033 측정의 `measureM2`로 막대·시세표·Tab 순서가 `bd10189`와 같다.
 - **오프라인 흉내:** 첫 화면을 띄운 뒤 두 가지 경우에 네트워크를 끊는다.
   - 미리 받기가 끝난 뒤에 끊으면 규칙 2 고르기와 문화 패널 열기가 된다.
   - 끝나기 전에 끊으면 경고 알림이 뜨고 상태가 그대로이고, 다시 연결한 뒤 재시도하면 된다.
-- **첫 화면 시간(참고):** 4배 느린 CPU 흉내(DevTools CPU throttling 4×)에서 첫 렌더까지의 시간을 `<BASE>`와 비교한다. 판정 기준은 아니다.
+- **첫 화면 시간(참고):** 4배 느린 CPU 흉내(DevTools CPU throttling 4×)에서 첫 렌더까지의 시간을 `bd10189`와 비교한다. 판정 기준은 아니다.
 
 ## 예상 질문과 기본값
 
