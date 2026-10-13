@@ -1391,6 +1391,66 @@
       "sha256": "f8d509195da6794f7eaf58944f694e4dd54d9d7f85646de698ce67c27a9f6cdd"
     },
     {
+      "path": "docs/ai/design/task0033-chromium/README.md",
+      "size_bytes": 7837,
+      "sha256": "6422eb0c3021fa06df3cd3455412359790f92f68b022a7bfd9b992c891aa86ae"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/bar-4359759.jsonl",
+      "size_bytes": 50550,
+      "sha256": "4998de79d6e5bbef7574c9fda9447dc7485651610542276b46bff0b5cc9d771e"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33.js",
+      "size_bytes": 7506,
+      "sha256": "02809dfecb596a111a15cd2c315432c6c891fc72e4b7a0f3a807eaff753a6acb"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33b.js",
+      "size_bytes": 940,
+      "sha256": "04d48354212b1f68717d6c63b51a751676dcadca1622e20c25987e99558bfe10"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33bar.js",
+      "size_bytes": 967,
+      "sha256": "580fe29c823a9fbb8c9026e07631cb33936233ce76cfcb0c481e075f27e808bd"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33w.js",
+      "size_bytes": 2130,
+      "sha256": "0a36c6215a1cbea28055da075283d950b38989f41df246fdf63fca36ab0e077d"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/r2bar.js",
+      "size_bytes": 3168,
+      "sha256": "d97dad780299ee6f6aaddb71023a2ac39f4e7447f65e3784e686b91f5a79f2e3"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/r2kb.js",
+      "size_bytes": 5467,
+      "sha256": "20d87964b2860dcf0e9be336d62f5a0c60ff69d076d3d01ec86add4059bc8334"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/kb-4359759.jsonl",
+      "size_bytes": 2351,
+      "sha256": "e11e64083756d2e27953b2f254f69a26cbdfa93a09087364e16f27dd6ca0075c"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/m33-2e0fe2d.jsonl",
+      "size_bytes": 77133,
+      "sha256": "aec06255bf23ff800135f919b4c3c1fb9da187dfbde71abbe629576ce5cc7de8"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/m33-4359759.jsonl",
+      "size_bytes": 76545,
+      "sha256": "c8308bffeabf3a986b1bda06fe9355ee744baee67983013f8322f883ba6a3add"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/scenarios.txt",
+      "size_bytes": 2387,
+      "sha256": "1866c38c428f430cd9a12268b1cce5a6402e2a3cdac46444460a0d5c5db41df8"
+    },
+    {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
       "size_bytes": 2643,
       "sha256": "4d242b36627b627c05e69c5ef70b600e9b52dcaf72377f9756813084436dee52"
