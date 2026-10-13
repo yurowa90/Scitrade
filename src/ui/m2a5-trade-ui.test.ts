@@ -42,7 +42,7 @@ const usd = (n: number) => formatMoney('USD', n);
 const krw = (n: number) => formatMoney('KRW', n);
 const article = (html: string, key: string) => html.split('<article class="offer').slice(1).find((s) => s.includes(`data-key="${key}"`))!.split('</article>')[0]!;
 const loadedUi = async (state = dayState(generatedDay), config = cfg) => {
-  const ui = await startUi(config);
+  const ui = await startUi(config); await (await import('./main-testkit')).screensReady();
   await ui.change({ action: 'scenario' }, config.id);
   await ui.importText(serializeSave(state));
   return ui;
@@ -58,7 +58,7 @@ const BASELINE = ["\n    <nav class=\"skip-links\" aria-label=\"바로 가기\">
 describe('규칙 1 전체 화면 불변', () => {
   it('1일·첫 수락 뒤·결산을 기준 커밋 전체 문자열과 비교한다', async () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-13T00:00:00Z'));
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(normalized(ui.app.innerHTML)).toBe(BASELINE[0]);
     const pair = tradePairs(legacy)[0]!;
     ui.click({ action: 'accept', buy: pair.buyOfferId, sell: pair.sellOfferId });
@@ -93,7 +93,7 @@ describe('시나리오·생성 견적·시세표', () => {
   });
 
   it('규칙 1 순서를 보존하고 자료 이름으로 규칙 2를 열며 지도·명부·캐릭터를 그린다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const select = ui.app.innerHTML.match(/<select data-action="scenario">([\s\S]*?)<\/select>/)![1]!;
     expect([...select.matchAll(/value="([^"]+)"/g)].map((m) => m[1])).toEqual([...SCENARIO_IDS, ...OPERATIONS_SCENARIO_IDS]);
     expect(select).toContain(esc(cfg.titleKo));
@@ -535,7 +535,7 @@ describe('지급·보고·저장', () => {
     expect(ui.app.innerHTML).not.toContain('<p class="muted small">묶인 돈이 없습니다.</p>');
     expect(ui.app.innerHTML).toContain(`<th>선복 계약 요금 예약</th><td>−${usd(f.reservedCommitments)}</td>`);
     expect(ui.app.innerHTML).toContain(`<th>체결 계약의 남은 지출 예약</th><td>−${usd(f.reserved - f.reservedCommitments)}</td>`);
-    const old = await startUi();
+    const old = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(old.app.innerHTML).not.toContain('창고 임차료 (기간마다 자동)');
     expect(old.app.innerHTML).not.toContain('선복 계약 요금 (출항마다 자동)');
     expect(old.app.innerHTML).not.toContain('선복 계약 요금 예약');
@@ -564,7 +564,7 @@ describe('지급·보고·저장', () => {
     expect(ui.app.innerHTML).toContain(`환전 칸에서 ${cfg.operations!.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.`);
     expect(ui.app.innerHTML).not.toContain('이번 판에는 달러를 원화로 바꾸는 기능이 없습니다');
     expect(krwReportNoteKo(legacy)).not.toContain('환전 명령으로 실제 바꾼 금액');
-    const old = await startUi(); expect(old.app.innerHTML).not.toContain(`환전 칸에서 ${cfg.operations!.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위로`);
+    const old = await startUi(); await (await import('./main-testkit')).screensReady(); expect(old.app.innerHTML).not.toContain(`환전 칸에서 ${cfg.operations!.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위로`);
   });
 
   it('규칙 2 브라우저 저장과 파일 가져오기 뒤 엔진 상태가 같다', async () => {

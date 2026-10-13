@@ -14,9 +14,8 @@ import { payrollRunwayKo } from './growth';
 import { esc } from './html';
 import { qtyKo } from './reports';
 
-export function counterpartyNameKo(config: ScenarioConfig, id: string): string {
-  return config.operations?.market.counterparties.find((p) => p.id === id)?.nameKo ?? '거래처';
-}
+import { counterpartyNameKo } from './ops-labels';
+export { counterpartyNameKo } from './ops-labels';
 
 export function marketBlock(view: GameState, config: ScenarioConfig): string {
   return `<section class="market-table" aria-labelledby="market-h"><h3 id="market-h">시세표</h3><p class="muted small">지수는 돈이 아닙니다</p><div class="table-scroll" id="market-scroll" tabindex="0" role="region" aria-label="시세표 (가로로 넘겨 보기)"><table class="money"><thead><tr><th>도시 · 상품 · 매수/매도</th><th>기준가 (USD/단위)</th><th>지수</th><th>관측</th><th>다음 관측</th><th>견적</th></tr></thead><tbody>${marketTable(view, config).map((r) => `<tr><th>${esc(cityName(config, r.cityId))} · ${esc(goodOf(config, r.goodId).nameKo)} · ${r.side === 'BUY' ? '매수' : '매도'}</th><td>${formatMoney(r.currency, r.basePriceMinor)}/단위</td><td>${r.indexPoints}</td><td>${r.observedDay}일 · ${r.ageDays}일 전 관측</td><td>${view.phase === 'ENDED' ? '없음(캠페인 종료)' : r.nextObservationDay === null ? '새 관측 없음' : `${r.nextObservationDay}일`}</td><td>${r.hasQuoteInBatch ? '이번 묶음 견적 있음' : '—'}</td></tr>`).join('')}</tbody></table></div></section>`;
