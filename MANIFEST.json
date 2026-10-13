@@ -291,6 +291,71 @@
       "sha256": "b301afd628229a06c0ce64678b500d008c5a99085d8b6473b44a95b42703f786"
     },
     {
+      "path": "docs/ai/design/code-split-0059/harness/m59cpu.js",
+      "size_bytes": 1637,
+      "sha256": "3be51a3d4277fc159ee7afec219665bfce8b36b183b8b02649fd1eeb0fc4feec"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/harness/m59imp.js",
+      "size_bytes": 1794,
+      "sha256": "bdbf0004ca9aefd24c41d744cf60381fbda9f3ae9bd5bd0c8acce2f0165ee7ae"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/harness/m59off.js",
+      "size_bytes": 6474,
+      "sha256": "2f795260e9f7800576b2b90736c2eb17e8dc3900b46e5ed51c25dd1fe110d2f1"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/harness/m59off2.js",
+      "size_bytes": 5985,
+      "sha256": "905ea539ce269006e37b5e809ef6d400a18c768a8ef1013daa7b66add490902b"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/harness/r2kbd.js",
+      "size_bytes": 5524,
+      "sha256": "0c18ccaf1f38d956ce742e4c0437c838ab45750c3d94b770eb551c240d39244d"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/bar-b59basex.jsonl",
+      "size_bytes": 20006,
+      "sha256": "07adeb84483931678707bae212582db26e44e9ced5f9345f94a36df92d3156a1"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/bar-b59r1x.jsonl",
+      "size_bytes": 20006,
+      "sha256": "07adeb84483931678707bae212582db26e44e9ced5f9345f94a36df92d3156a1"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/kb-b59basex.jsonl",
+      "size_bytes": 2495,
+      "sha256": "6f7e4e5f1172a416a6ab8fc277ec6bda60683a18c88d2f93475df268afec6173"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/kb-b59r1x.jsonl",
+      "size_bytes": 2495,
+      "sha256": "6f7e4e5f1172a416a6ab8fc277ec6bda60683a18c88d2f93475df268afec6173"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/mkt-b59basex.jsonl",
+      "size_bytes": 673,
+      "sha256": "06365c4f1cfe976bd5d58afda9ec8886518d4e5ffa3426b879d6bc9e5235e582"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/mkt-b59r1x.jsonl",
+      "size_bytes": 673,
+      "sha256": "06365c4f1cfe976bd5d58afda9ec8886518d4e5ffa3426b879d6bc9e5235e582"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/offline-r2-ipadminiL.jsonl",
+      "size_bytes": 5896,
+      "sha256": "169c7889645457608e870c1d20f8b05ca41b1895e4bee96278759fcb1f3d9c45"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/measure/offline-r2-l1366.jsonl",
+      "size_bytes": 5876,
+      "sha256": "dbb43fb02ad6df121cd2c16949b8cd299342953273305d7012bd6110553156dd"
+    },
+    {
       "path": "docs/ai/design/code-split-0059/modules-f38f9cf.txt",
       "size_bytes": 1695,
       "sha256": "b10007905ccaec8029880380e38b08cf38ee936a3c523d1c2e181cf70aca6ef1"
