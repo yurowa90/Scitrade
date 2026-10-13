@@ -1732,8 +1732,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
-      "size_bytes": 19461,
-      "sha256": "cd8f5b609333d9d799d4e4f823766fda080135cb8107e2ec0463fac3ad06a83a"
+      "size_bytes": 22781,
+      "sha256": "09e5e650ba7c23540a6cf2a2b1a7fe47eb43d743e753cd60f557087f52c5b9a5"
     },
     {
       "path": "docs/ai/tasks/TASK-0035-map-detail.md",
@@ -1772,8 +1772,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md",
-      "size_bytes": 14970,
-      "sha256": "84be7f4f4922f3f992979d80af635006a4f88e9f85b709dc98d88ca558c95cc4"
+      "size_bytes": 19666,
+      "sha256": "204a2b4805f019372df12d1ae07612242c05ff04522867d7ac862ddb5fac6a3f"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
