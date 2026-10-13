@@ -2694,6 +2694,39 @@
         "P0-M2A5-04 하루 처리 한도"
       ],
       "test_fixture": {
+        "blocked_repro_market": {
+          "max_lots_choices": [
+            1,
+            2,
+            3
+          ],
+          "rows": [
+            {
+              "city_id": "HAIPHONG",
+              "good_id": "APPAREL",
+              "side": "SELL",
+              "base_price_minor": 1400
+            },
+            {
+              "city_id": "HAIPHONG",
+              "good_id": "COSMETICS",
+              "side": "SELL",
+              "base_price_minor": 4900
+            },
+            {
+              "city_id": "SHANGHAI",
+              "good_id": "APPAREL",
+              "side": "SELL",
+              "base_price_minor": 1350
+            },
+            {
+              "city_id": "SHANGHAI",
+              "good_id": "COSMETICS",
+              "side": "SELL",
+              "base_price_minor": 5000
+            }
+          ]
+        },
         "seed": 42032026,
         "other_seed": 1001,
         "last_day": 90,
