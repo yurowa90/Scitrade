@@ -134,6 +134,8 @@ const opsSave = "{\"format\":\"scitrade-save\",\"formatVersion\":6,\"engineVersi
 type Kind = 'ops' | 'culture';
 const calls = { ops: 0, culture: 0 };
 const failures = { ops: 0, culture: 0 };
+const moduleMapMemory = { ops: false, culture: false };
+const rememberedFailure = { ops: false, culture: false };
 function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((done) => { resolve = done; });
@@ -145,18 +147,25 @@ const hash = async (html: string) => [...new Uint8Array(await crypto.subtle.dige
 const opsId = 'SCENARIO_M2_OPERATIONS';
 const legacyId = 'SCENARIO_M2_MULTI_TRADE';
 const warning = '화면 일부를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.';
+const reloadWarning = '화면 일부를 불러오지 못했습니다. 연결을 확인한 뒤 저장하고 새로 고침해 주세요.';
+const loadReloadWarning = '화면 일부를 불러오지 못했습니다. 새로 고침한 뒤 ‘불러오기’를 다시 눌러 주세요. 저장된 상태는 그대로 있습니다.';
 
 beforeEach(() => {
   calls.ops = calls.culture = failures.ops = failures.culture = 0;
+  moduleMapMemory.ops = moduleMapMemory.culture = rememberedFailure.ops = rememberedFailure.culture = false;
   delete gates.ops; delete gates.culture;
   vi.doMock('./lazy', async (importOriginal) => {
     const original = await importOriginal<typeof import('./lazy')>();
-    return { lazyScreen<T>(loader: () => Promise<T>) {
+    return { ...original, lazyScreen<T>(loader: () => Promise<T>) {
       return original.lazyScreen(async () => {
         const kind: Kind = loader.toString().includes('ops-screens') ? 'ops' : 'culture';
         calls[kind]++;
+        if (rememberedFailure[kind]) throw new Error('시험용 모듈 맵에 남은 실패');
         await gates[kind]?.promise;
-        if (failures[kind]-- > 0) throw new Error('시험용 불러오기 실패');
+        if (failures[kind]-- > 0) {
+          rememberedFailure[kind] = moduleMapMemory[kind];
+          throw new Error('시험용 불러오기 실패');
+        }
         return loader();
       });
     } };
@@ -320,5 +329,99 @@ describe('TASK-0059 지연 화면 진입', () => {
     gates.culture.resolve(); await Promise.all([first, second]);
     expect(await hash(ui.app.innerHTML)).toBe(BASE_HTML.panel);
     expect(ui.scrollIds.filter((id) => id === 'local-h')).toHaveLength(1);
+  });
+  it('모듈 맵 기억: 시나리오 고르기는 두 번 뒤 새로 고침을 안내하고 상태·select·오늘 할 일을 보존한다', async () => {
+    const ui = await freshUi(), items = storage();
+    await ui.click({ action: 'accept' });
+    const state = readState(ui, items), pending = pendingHtml(ui.app.innerHTML);
+    const selector = { ...ui.rendered({ action: 'scenario' }), value: opsId };
+    moduleMapMemory.ops = true; failures.ops = 1;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      selector.value = opsId;
+      await ui.changeTarget(selector);
+      expect(calls.ops).toBe(Math.min(attempt, 2));
+      expect(ui.app.innerHTML).toContain(attempt === 1 ? warning : reloadWarning);
+      expect(ui.app.innerHTML.includes('data-action="reload"')).toBe(attempt > 1);
+      expect(selector.value).toBe(legacyId);
+      expect(ui.doc.title).toContain(loadScenario(legacyId).titleKo);
+      expect(ui.app.innerHTML).toContain(`<option value="${legacyId}" selected>`);
+      expect(pendingHtml(ui.app.innerHTML)).toBe(pending);
+      expect(readState(ui, items)).toBe(state);
+    }
+    // 규칙 2 묶음의 상한은 문화 패널 묶음에 영향을 주지 않는다.
+    await ui.click({ action: 'culture-tab' });
+    expect(calls.culture).toBe(1);
+    expect(ui.app.innerHTML).toContain('id="local"');
+  });
+  it('모듈 맵 기억: 문화 패널은 두 번 뒤 새로 고침을 안내하고 닫힌 채 상태·오늘 할 일을 보존한다', async () => {
+    const ui = await freshUi(), items = storage();
+    await ui.click({ action: 'accept' });
+    const state = readState(ui, items), pending = pendingHtml(ui.app.innerHTML);
+    moduleMapMemory.culture = true; failures.culture = 1;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await ui.click({ action: 'culture-tab' });
+      expect(calls.culture).toBe(Math.min(attempt, 2));
+      expect(ui.app.innerHTML).toContain(attempt === 1 ? warning : reloadWarning);
+      expect(ui.app.innerHTML.includes('data-action="reload"')).toBe(attempt > 1);
+      expect(ui.app.innerHTML).not.toContain('id="local"');
+      expect(ui.focusIds).not.toContain('local-h');
+      expect(ui.doc.title).toContain(loadScenario(legacyId).titleKo);
+      expect(pendingHtml(ui.app.innerHTML)).toBe(pending);
+      expect(readState(ui, items)).toBe(state);
+    }
+  });
+  it.each(['ops', 'culture'] as const)('미리 받기 실패 뒤 %s 첫 진입 실패는 곧바로 새로 고침을 안내한다', async (kind) => {
+    moduleMapMemory[kind] = true; failures[kind] = 1;
+    // 다른 묶음은 진행 중인 채 두어 미리 받기의 실패만 관찰한다.
+    gates[kind === 'ops' ? 'culture' : 'ops'] = deferred();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const ui = await startUi(), before = ui.app.innerHTML;
+    vi.advanceTimersByTime(1); await flush();
+    expect(calls[kind]).toBe(1);
+    expect(warn).toHaveBeenCalledExactlyOnceWith(warning);
+    expect(ui.app.innerHTML).toBe(before);
+    const enter = () => kind === 'ops' ? ui.change({ action: 'scenario' }, opsId) : ui.click({ action: 'culture-tab' });
+    await enter();
+    expect(calls[kind]).toBe(2);
+    expect(ui.app.innerHTML).toContain(reloadWarning);
+    expect(ui.app.innerHTML).toContain('data-action="reload"');
+    await enter();
+    expect(calls[kind]).toBe(2);
+    expect(ui.app.innerHTML).toContain(reloadWarning);
+    expect(ui.app.innerHTML).not.toContain('id="local"');
+    expect(ui.doc.title).toContain(loadScenario(legacyId).titleKo);
+  });
+  it.each(['load', 'import'] as const)('불러오기 문장: %s 상한 실패는 저장 칸을 보존하며 경로에 맞게 안내한다', async (mode) => {
+    const ui = await freshUi(), items = storage();
+    await ui.click({ action: 'accept' });
+    const state = readState(ui, items), pending = pendingHtml(ui.app.innerHTML);
+    items.set('scitrade-save', opsSave);
+    moduleMapMemory.ops = true; failures.ops = 1;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await (mode === 'load' ? ui.click({ action: 'load' }) : ui.importText(opsSave));
+      expect(calls.ops).toBe(Math.min(attempt, 2));
+      expect(ui.app.innerHTML).toContain(attempt === 1 ? warning : mode === 'load' ? loadReloadWarning : reloadWarning);
+      expect(ui.app.innerHTML.includes('data-action="reload"')).toBe(attempt > 1);
+      expect(items.get('scitrade-save')).toBe(opsSave);
+      expect(ui.doc.title).toContain(loadScenario(legacyId).titleKo);
+      expect(pendingHtml(ui.app.innerHTML)).toBe(pending);
+      expect(ui.app.innerHTML).not.toContain('id="local"');
+    }
+    expect(readState(ui, items)).toBe(state);
+  });
+  it('새로 고침 단추는 reload를 한 번 부르고 기존 beforeunload가 저장하지 않은 진행을 확인한다', async () => {
+    const ui = await freshUi();
+    await ui.click({ action: 'accept' });
+    moduleMapMemory.culture = true; failures.culture = 1;
+    await ui.click({ action: 'culture-tab' }); await ui.click({ action: 'culture-tab' });
+    const reload = vi.fn(); vi.stubGlobal('location', { reload });
+    const confirm = vi.mocked(globalThis.confirm); confirm.mockClear();
+    await ui.click({ action: 'reload' });
+    expect(reload).toHaveBeenCalledOnce();
+    expect(confirm).not.toHaveBeenCalled();
+    const event = { preventDefault: vi.fn(), returnValue: undefined as string | undefined };
+    ui.fireWindow('beforeunload', event);
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    expect(event.returnValue).toBe('');
   });
 });

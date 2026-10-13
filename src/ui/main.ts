@@ -21,7 +21,7 @@ import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, ha
 import { offerDef, openTradePairs } from '../engine/market';
 import { exchangePreview, quotePreview, type OperationsQuotePreview } from '../engine/readers';
 import { counterpartyNameKo, routeLabel } from './ops-labels';
-import { lazyScreen } from './lazy';
+import { lazyScreen, ScreenLoadExhaustedError } from './lazy';
 import { paymentDefaultStatus } from '../engine/operations';
 import { cancellationPreviewKo } from './trade';
 import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
@@ -56,8 +56,12 @@ export async function ensureCulturePanel(): Promise<void> {
 }
 let enteringScenario = false;
 const SCREEN_LOAD_WARNING = '화면 일부를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.';
-function screenLoadWarning() {
-  ui.flash = { kind: 'warn', text: SCREEN_LOAD_WARNING };
+function screenLoadWarning(error: unknown, fromSave = false) {
+  ui.flash = error instanceof ScreenLoadExhaustedError
+    ? { kind: 'warn', action: 'reload', text: fromSave
+      ? '화면 일부를 불러오지 못했습니다. 새로 고침한 뒤 ‘불러오기’를 다시 눌러 주세요. 저장된 상태는 그대로 있습니다.'
+      : '화면 일부를 불러오지 못했습니다. 연결을 확인한 뒤 저장하고 새로 고침해 주세요.' }
+    : { kind: 'warn', text: SCREEN_LOAD_WARNING };
   render();
 }
 
@@ -1179,7 +1183,7 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
   app.innerHTML = `
     <nav class="skip-links" aria-label="바로 가기"><button data-action="skip-to" data-target="trade-h">거래로 바로 가기</button><button data-action="skip-to" data-target="queue-h">오늘 할 일로 바로 가기</button></nav>
     ${topbar()}
-    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
+    ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ui.flash.action === 'reload' ? '<button data-action="reload">새로 고침</button>' : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
       ${config.culture ? `<div class="maincol">${ui.cultureOpen ? culturePanel!.culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus) : ''}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
@@ -1264,7 +1268,7 @@ function markCultureSeen() {
 
 async function openCulture(result = false) {
   try { if (!culturePanel) await ensureCulturePanel(); }
-  catch { screenLoadWarning(); return; }
+  catch (error) { screenLoadWarning(error); return; }
   // 같은 약속을 기다린 두 번째 열기는 첫 번째 결과를 그대로 둔다.
   if (enteringScenario || ui.cultureOpen && !result) return;
   ui.cultureTabTop = result ? null : document.getElementById('local-tab')?.getBoundingClientRect().top ?? null;
@@ -1327,6 +1331,9 @@ app.addEventListener('click', (ev) => {
   const d = el.dataset;
   try {
     switch (d.action) {
+      case 'reload':
+        location.reload();
+        return;
       case 'skip-to': {
         if (d.target !== 'trade-h' && d.target !== 'queue-h' && d.target !== 'settlement-h' && d.target !== 'exchange-h') return;
         const heading = document.getElementById(d.target)!;
@@ -1487,7 +1494,7 @@ app.addEventListener('click', (ev) => {
           text = null;
         }
         if (text && !confirm('불러오면 현재 진행과 오늘 할 일이 사라집니다. 저장된 상태를 불러올까요?')) return;
-        return text ? loadText(text) : ((ui.flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
+        return text ? loadText(text, true) : ((ui.flash = { kind: 'warn', text: '저장된 상태가 없습니다.' }), render());
       }
       case 'export': {
         const blob = new Blob([serializeSave(state)], { type: 'application/json' });
@@ -1528,9 +1535,9 @@ app.addEventListener('change', async (ev) => {
       if (loadScenario(id).operations && !opsScreens) await ensureOpsScreens();
       startScenario(id);
       render();
-    } catch {
+    } catch (error) {
       el.value = config.id;
-      screenLoadWarning();
+      screenLoadWarning(error);
     } finally { enteringScenario = false; }
   } else if (el.dataset.action === 'offer-quantity') {
     const buy = offerDef(view, config, el.dataset.key!.split('+')[0]!);
@@ -1575,7 +1582,7 @@ app.addEventListener('change', async (ev) => {
   }
 });
 
-async function loadText(text: string) {
+async function loadText(text: string, fromSave = false) {
   if (enteringScenario) return;
   const loaded = loadSaveText(text);
   if ('errorKo' in loaded) {
@@ -1583,7 +1590,7 @@ async function loadText(text: string) {
   } else {
     enteringScenario = true;
     try { if (loaded.config.operations && !opsScreens) await ensureOpsScreens(); }
-    catch { screenLoadWarning(); return; }
+    catch (error) { screenLoadWarning(error, fromSave); return; }
     finally { enteringScenario = false; }
     config = loaded.config;
     state = loaded.state;
