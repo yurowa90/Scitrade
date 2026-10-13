@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 203189,
-      "sha256": "aee5a212f1c0e84a00163a4e0eddbab5b59fed9e6ffabd861338172b63baeffd"
+      "size_bytes": 204619,
+      "sha256": "55759a37335356930ffd94ce3c14240644004cabf80de8d44d804b233f28b075"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 80327,
-      "sha256": "5316a7010ac3a937f4c04f0947c99c911e29e393078ad047121c3456141122f6"
+      "size_bytes": 80569,
+      "sha256": "21255ff59120ee41b1be00f1f0694f09620c7c5e0a3c7c0685585df021aaac5a"
     },
     {
       "path": "docs/UI_SPEC.md",
