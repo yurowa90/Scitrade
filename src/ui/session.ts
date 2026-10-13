@@ -5,12 +5,12 @@ import { deserializeSave, SaveError } from '../engine/save';
 import type { Command, CommitPlan, GameState, ScenarioConfig } from '../engine/types';
 import type { CrewFilter } from './recruitment';
 
-export type UiCommand = Command | Extract<import('../engine/types').OperationsCommand, { type: 'EXCHANGE_CURRENCY' }>;
+export type UiCommand = Command | Extract<import('../engine/types').OperationsCommand, { type: 'EXCHANGE_CURRENCY' | 'EXPAND_WAREHOUSE' | 'SIGN_SPACE_CONTRACT' }>;
 
 export function initialUiState() {
   return {
     offerQuantities: {} as Record<string, number>, offerQuantitiesDay: null as number | null,
-    exchangeDirection: 'USD_TO_KRW' as import('../engine/types').ExchangeDirection, exchangeUsdMinor: 10_000,
+    exchangeDirection: 'USD_TO_KRW' as import('../engine/types').ExchangeDirection, exchangeLots: 1,
     scheduleOpen: false, schedulePrev: null as Record<string, number | null> | null,
     crewRole: null as string | null, crewAttribute: null as string | null,
     pending: [] as UiCommand[], flash: null as { kind: 'info' | 'warn'; text: string; action?: 'culture-result' } | null,

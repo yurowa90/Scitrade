@@ -1,4 +1,5 @@
 // 오늘 실행 예정 사본에서 읽는 일정. 날짜 예상은 상태나 장부를 바꾸지 않는다.
+import { lateDeliveryReduction } from '../engine/operations';
 import { cityName, routeOf } from '../engine/catalog';
 import { isAvailableFromToday } from '../engine/employees';
 import { formatMoney, type Currency } from '../engine/money';
@@ -63,8 +64,11 @@ export function scheduleItems(s: GameState, config: ScenarioConfig, throughDay =
       if (config.terms.customsDays > 0 && (arrival !== null || sh?.arrivalDay != null)) add(`DLV:${c.id}`, 'DELIVERY', delivery, c.id, '인도', true);
       add(`DUE:${c.id}`, 'DEADLINE', c.deliveryDeadlineDay, c.id,
         c.deliveryDeadlineDay < s.day ? `납기 지남 (${c.deliveryDeadlineDay}일)` : '납기');
-      if (delivery !== null) add(`RCV:${c.id}`, 'RECEIPT', Math.max(c.paymentDueDay, delivery), c.id, '수금', true,
-        { currency: c.currency, amountMinor: c.saleAmountMinor - (delivery > c.deliveryDeadlineDay ? config.terms.lateDeliveryPriceReductionMinor : 0) });
+      if (delivery !== null) {
+        const amountMinor = c.saleAmountMinor - lateDeliveryReduction(config, c.saleAmountMinor, delivery - c.deliveryDeadlineDay);
+        if (amountMinor > 0) add(`RCV:${c.id}`, 'RECEIPT', Math.max(c.paymentDueDay, delivery), c.id, '수금', true,
+          { currency: c.currency, amountMinor });
+      }
     }
     for (const invoice of s.invoices) if (invoice.status !== 'PAID') add(`RCV:${invoice.contractId}`, 'RECEIPT',
       invoice.dueDay, invoice.contractId, '수금', false, { currency: invoice.currency, amountMinor: invoice.amountMinor });

@@ -2,9 +2,9 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: 개발 브랜치 `cf034bb`(TASK-0056·PR #23 병합 뒤, 이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
-  - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0034-m2a5-ops-screens.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
-  - 줄 번호는 개발 브랜치 `b4a851b`(TASK-0033 병합 기록) 기준이다. 0054·0056은 `src/ui/**`를 고치지 않으므로 `<BASE>`에서도 같아야 한다. 다르면 이름으로 찾고 결과 보고에 적는다.
+- 선행: 개발 브랜치 `cf034bb`(TASK-0056·PR #23 병합 뒤, 이하 `cf034bb`). 기준 비교(`review_checks.sh`)는 `cf034bb`로 한다.
+  - `cf034bb`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0034-m2a5-ops-screens.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+  - 줄 번호는 개발 브랜치 `b4a851b`(TASK-0033 병합 기록) 기준이다. 0054·0056은 `src/ui/**`를 고치지 않으므로 `cf034bb`에서도 같아야 한다. 다르면 이름으로 찾고 결과 보고에 적는다.
 - 결정 근거:
   - `docs/ai/design/M2A5-SPEC.md` 16절 3·11, 8절(창고), 9절(선복 계약), 14.5·14.6(읽기 함수).
   - `docs/DECISIONS.md`의 Q12 가(주간 병목 표)와 1464행(‘확장 예정’ 근거 문장 후보).
@@ -156,7 +156,7 @@
 - **시험 자료:** 시험 소스에 자료 ID와 조정값 상수를 쓰지 않는다(TASK-0027 R1). 날짜가 필요하면 무엇의 날인지 주석으로 적는다.
 - **결정성:** 기본 `run` 400회가 바이트로 같다.
 - 색만으로 상태를 구분하지 않는다(UI_SPEC:50). 새 단추는 키보드로 쓸 수 있다.
-- **크기:** 첫 화면 gzip이 `<BASE>`보다 **6,000 B 넘게 늘면** 멈추고 질문에 적는다. 동적 불러오기로 나눌지는 세션 A가 정한다. 다음 지시서도 같은 여유(약 15 KB)를 나눠 쓴다.
+- **크기:** 첫 화면 gzip이 `cf034bb`보다 **6,000 B 넘게 늘면** 멈추고 질문에 적는다. 동적 불러오기로 나눌지는 세션 A가 정한다. 다음 지시서도 같은 여유(약 15 KB)를 나눠 쓴다.
 
 ## 시험(`src/ui/m2a5-ops-ui.test.ts`)
 
@@ -185,7 +185,7 @@
 ## 완료 조건
 
 1. 지시 1~8 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check cf034bb` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |
