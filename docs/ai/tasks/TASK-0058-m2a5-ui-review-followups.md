@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: TASK-0057 병합 기록 뒤 개발 브랜치 머리(이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
+- 선행: TASK-0057 병합 기록 커밋(허브가 병합 뒤 알려 준다, 이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
   - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
   - 아래 줄 번호는 검수 문서가 본 트리(`379a862`) 기준이다. TASK-0034·0057이 같은 파일을 고쳤으므로 **함수·문장 이름으로 찾고**, 실제 줄을 결과 보고에 적는다.
 - 근거: `docs/ai/design/ui-review-0033/README.md`(허브 화면 적대 검수, 2026-10-13). 항목마다 재현 절차·위치·고칠 방향이 있다. 먼저 그 문서의 해당 절을 읽는다.
@@ -83,11 +83,25 @@
 - 본사·창고 표와 병목 표는 접지 않는다. 학생이 매일 읽는 근거이기 때문이다.
 - 세션 B 재측정 항목에 운영 지표 높이(1·8·15·30일, 1024·1366px)를 더한다.
 
+### 10. 환전 칸의 다가오는 USD 고정 지출(TASK-0057 검수)
+
+- 근거: 인수 대본 `P0-M2A5-14`의 첫날에 확장과 선복 계약 두 노선을 넣으면, 대본의 첫 환전이 USD를 모두 원화로 바꿔 23일에 경영 실패한다(TASK-0057 결과 보고). 규칙상 정상 결과다. 다만 학생은 1일 환전 칸에서 이 위험을 볼 수 없다. 쓸 수 있는 USD는 출항 며칠 전부터만 그 편의 선복 요금을 묶기 때문이다.
+- 고침: 규칙 2 환전 칸에서, USD→KRW 방향이고 앞으로 낼 선복 요금이 있으면 한 줄을 더한다.
+  - 문장: ‘앞으로 낼 선복 요금 {합계} USD({편수}편, 다음 {날}일). 출항 {reserveDaysAhead}일 전부터 쓸 수 있는 USD에서 묶입니다.’
+  - 값은 기존 `upcomingPayments`(엔진 `reports.ts`)의 `SPACE_FEE` 행에서 읽는다. 날짜가 있는 행만 센다. 화면에서 요금을 다시 계산하지 않는다.
+  - 선복 계약이 없거나 남은 요금이 없으면 줄을 쓰지 않는다.
+- 시험: 1일에 선복 계약 두 노선을 맺은 상태(계획 상태 아님, 하루 진행 뒤)에서 줄이 나오고, 합계가 `upcomingPayments`의 `SPACE_FEE` 합과 같다. 계약이 없는 상태에서는 줄이 없다.
+
+### 11. 시뮬레이션 시험의 시간 제한
+
+- `src/engine/sim/m2a5-sim.test.ts`의 한 시험(TASK-0034·0057 결과 보고가 적은 줄 근처)이 전체 시험을 함께 돌릴 때 5초 제한을 두 번 넘었다(재실행은 통과).
+- 그 시험에 TASK-0031-R1 검수 때와 같은 방식으로 `60_000` 시간 제한을 준다. 시험 내용과 단언은 바꾸지 않는다. 같은 파일에서 5초에 가까운 다른 시험이 있으면 결과 보고에 실행 시간을 적는다.
+
 ## 고칠 수 있는 파일
 
 - `src/ui/main.ts`, `src/ui/market.ts`, `src/ui/warehouse.ts`(지시 9만), `src/ui/style.css`(필요할 때만).
 - `src/engine/operations-invariants.ts`(지시 8 GAP-3의 견적 수량 검사만).
-- 시험: `src/ui/m2a5-trade-ui.test.ts`, `src/ui/m2a5-ops-ui.test.ts`, `src/ui/m2a5-money-ui.test.ts`(0057이 만든 것), `src/ui/schedule.test.ts`, `src/ui/layout.test.ts`, `src/engine/m2a5-save-references.test.ts`(GAP-3 반례 추가만), 새 시험 파일(필요하면 `src/ui/m2a5-review-followups.test.ts`).
+- 시험: `src/ui/m2a5-trade-ui.test.ts`, `src/ui/m2a5-ops-ui.test.ts`, `src/ui/m2a5-money-ui.test.ts`(0057이 만든 것), `src/ui/schedule.test.ts`, `src/ui/layout.test.ts`, `src/engine/m2a5-save-references.test.ts`(GAP-3 반례 추가만), `src/engine/sim/m2a5-sim.test.ts`(지시 11의 시간 제한만), 새 시험 파일(필요하면 `src/ui/m2a5-review-followups.test.ts`).
 - `docs/ai/tasks/results/TASK-0058.md`, `MANIFEST.json`(생성만).
 
 ## 손대지 않을 파일
@@ -101,7 +115,7 @@
 
 ## 완료 조건
 
-1. 지시 1~9 반영.
+1. 지시 1~11 반영.
 2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
@@ -120,6 +134,7 @@
 | 11 | 막대를 다시 `state`로 그림(급여 가능일) | 막대 범위 시험 |
 | 12 | 지급 상태 경계 조건 `>`를 `>=`로 바꿈 | 지급 상태 경계 시험 |
 | 13 | 투자 칸을 대기열이 있어도 접힌 채로 그림 | 투자 칸 펼침 시험 |
+| 14 | 다가오는 선복 요금 줄을 빼거나 합계를 한 편 요금으로 씀 | 다가오는 USD 고정 지출 시험 |
 
 4. 결과 보고 `docs/ai/tasks/results/TASK-0058.md`(공통 머리말 형식). 바꾼 파일, 설계 판단, 검증, 변형 표, 크기 증감, 범위 밖 발견, 질문을 적는다.
    - 세션 B가 Chromium으로 잴 항목: 환전 단추 초점 유지(아래 끝에 붙은 상태), 수량 변경 알림 낭독, 시세표 칸 열 전환 뒤 초점·가로 위치, 운영 지표 높이(1·8·15·30일, 1024·1366px).
@@ -130,4 +145,5 @@
 - GAP-3의 주 수정은 엔진 불변식(0056과 같은 파일·같은 패턴)이다. 화면 쪽 선택지 계산을 바꾸기보다 어긋난 견적을 가져오기에서 막는 쪽이 안전하다고 판단해 이 작업에 넣었다. 엔진 파일은 그 한 곳만 허용한다.
 - A11Y-2는 검수 문서의 두 방식(연결·알림) 가운데 둘 다 쓴다. `aria-disabled`로 바꾸는 방식은 초점 복원과 시험 판정을 함께 바꿔야 해서 이번에 쓰지 않는다.
 - 세션 B의 TASK-0034 측정(2026-10-13 15:33): 결함 없음. 운영 지표 2.6배는 지시 9로 넣었다. 경고 단계 막대 +17px(1001~1024px)은 받아들인다. KRW→USD 환전이 ‘오늘 급여·임차료를 다 낼 수 없다’ 경고를 띄우고도 들어가는 것은 설계 의도다(경고이지 거절이 아니다. 자동 환전 없음, 학생의 선택). 지시 1이 그 경고를 단추에 연결하고 알린다.
+- TASK-0057 검수(2026-10-13): 결과 `bbee5d7`, 통과. 0057이 고친 곳(환전 칸 `exchange-h`의 `tabindex`, 막대·환전 칸·견적판의 종료 분기, 보고의 환전 권유 문장, `money-alerts.ts`)을 지시 1·6·7이 다시 건드린다. 0057의 종료 분기를 되돌리지 않는다. 0057 뒤 첫 화면 gzip 여유는 약 7.9 KB다.
 - 0057 실행 결과에 따라 줄 번호와 일부 문장 위치가 바뀐다. 0057 병합 뒤 세션 A가 이 지시서를 다시 확인하고 확정 해시를 보낸다.
