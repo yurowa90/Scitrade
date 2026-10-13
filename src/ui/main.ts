@@ -209,6 +209,7 @@ function tryCommand(cmd: Command): CommandResult {
 
 /** 보정은 알림을 결정하기 전에 계산한다. 다시 그리기는 알림을 바꾸지 않는다. */
 function exchangeAdjustment(planned: GameState, before: number): string {
+  if (!config.operations) return '';
   const next = opsScreens!.exchangeSelection(planned, config, ui.exchangeDirection, before);
   if (next.lots >= before) return '';
   return `남은 ${ui.exchangeDirection === 'USD_TO_KRW' ? 'USD' : '원화'}에 맞춰 다음 환전 금액을 ${formatMoney('USD', next.usdMinor)}(${next.lots}묶음)으로 줄였습니다.`;
@@ -866,7 +867,7 @@ function operationsBlock(): string {
   const groups = bottlenecks(state, config);
   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
   // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
-  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${opsScreens!.warehouseBlock(state, view, config, ui.pending, investmentOpen)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${config.operations ? opsScreens!.warehouseBlock(state, view, config, ui.pending, investmentOpen) : ''}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
 }
 
 function settlementBlock(): string {
@@ -922,7 +923,7 @@ function reportPanel(): string {
   return `
   <section class="panel report" aria-labelledby="report-h">
     <h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>
-    ${opsScreens!.paymentAlert(state, config)}${opsScreens!.failureBlock(state, config)}${settlementBlock()}
+    ${config.operations ? opsScreens!.paymentAlert(state, config) + opsScreens!.failureBlock(state, config) : ''}${settlementBlock()}
     <div class="books">
       <table class="money"><caption>거래 장부 · USD</caption>
         ${row('현금', usd(t.cash))}${row(`재고 (${company})`, usd(t.inventory))}${row('선급운임', usd(t.prepaidFreight))}${fwdOn ? row('주선 진행원가', usd(t.forwardingWip)) : ''}${row('매출채권', usd(t.accountsReceivable))}${row('자산 합계', usd(t.totalAssets), 'total')}${row('미지급금', usd(t.accountsPayable))}

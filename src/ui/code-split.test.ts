@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startUi, screensReady } from './main-testkit';
+import { startUi } from './main-testkit';
 import { loadScenario } from '../content/scenario';
-import { createGame, openDay } from '../engine/engine';
+import { commitDay, createGame, openDay } from '../engine/engine';
 import { serializeSave } from '../engine/save';
+import { runToCampaignEnd } from '../engine/testkit';
+import { tradePairs } from '../engine/reports';
+import { initialUiState } from './session';
 
 // bd10189의 정적 import 화면에서 채집. 빌드 표시만 dev로 맞춘 전체 HTML의 SHA-256.
 const BASE_HTML = {"first": "06654dd41520d48e0c625f5b9fd45c130ce434d8e761c76b13c63ab34927c05e", "panel": "e355802ddabce0ea5f1456b5f64a2929627b83b6107b02d6e49c54e86d60701b", "ops": "df35bd3114b220adbcc77ba57de1ee8fb71fc6acad95353814daaa10cdad9d85"};
@@ -162,12 +165,12 @@ beforeEach(() => {
 afterEach(() => {
   vi.doUnmock('./lazy'); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks();
 });
-async function freshUi() {
-  const ui = await startUi();
+async function freshUi(config?: Parameters<typeof startUi>[0]) {
+  const ui = await startUi(config);
   vi.clearAllTimers();
   return ui;
 }
-const pendingHtml = (html: string) => html.split('<section class="panel queue"')[1]?.split('</section>')[0];
+const pendingHtml = (html: string) => html.match(/<ol class="pending">[\s\S]*?<\/ol>/)?.[0];
 function storage() {
   const items = new Map<string, string>();
   vi.stubGlobal('localStorage', { getItem: (key: string) => items.get(key) ?? null, setItem: (key: string, value: string) => items.set(key, value) });
@@ -179,11 +182,23 @@ function readState(ui: Awaited<ReturnType<typeof startUi>>, items: Map<string, s
 }
 
 describe('TASK-0059 지연 화면 진입', () => {
-  it('첫 렌더는 두 묶음 없이 끝나고 규칙 1 기준 HTML과 바이트가 같다', async () => {
+  it('첫 렌더·첫 수락 뒤·결산은 screensReady 없이 TASK-0033 sha256 세 개와 같다', async () => {
     gates.ops = deferred(); gates.culture = deferred();
-    const ui = await freshUi();
-    expect(calls).toEqual({ ops: 0, culture: 0 });
+    vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-13T00:00:00Z'));
+    const ui = await freshUi(), config = loadScenario(legacyId);
+    const culture = await import('./culture');
+    const state = openDay(createGame(config), config).state;
+    expect(culture.culturePanel(state, state, [], config, initialUiState())).toBe('');
+    // hash는 빌드 표시를 dev로 맞추므로 TASK-0033 문자열의 BASE 표시는 별도로 보존한다.
+    const digest = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(/<select data-action="scenario">[\s\S]*?<\/select>/, '').replace(/빌드 [^<]+/, '빌드 BASE'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
+    expect(await digest(ui.app.innerHTML)).toBe('7241637157034d2eb5e9e253e7595505503299b47516a2c675daa17f874e3f9d');
     expect(await hash(ui.app.innerHTML)).toBe(BASE_HTML.first);
+    const pair = tradePairs(config)[0]!;
+    await ui.click({ action: 'accept', buy: pair.buyOfferId, sell: pair.sellOfferId });
+    expect(await digest(ui.app.innerHTML)).toBe('d31254260a801c1089e5c18bf4d559fc6f43bd5634729df44a9bb8082b0dc727');
+    await ui.importText(serializeSave(runToCampaignEnd(createGame(config), config).state));
+    expect(await digest(ui.app.innerHTML)).toBe('ae7ffa7599c6744b708326dd95b067f4125608a5cd5cef231f18ac049887b45a');
+    expect(calls).toEqual({ ops: 0, culture: 0 });
   });
   it('규칙 2 묶음을 기다린 뒤 시나리오·전체 HTML을 바꾼다', async () => {
     gates.ops = deferred();
@@ -238,43 +253,39 @@ describe('TASK-0059 지연 화면 진입', () => {
     await ui.change({ action: 'scenario' }, opsId);
     expect(await hash(ui.app.innerHTML)).toBe(BASE_HTML.ops);
   });
-  it('규칙 1 기준 저장은 지연 화면 없이 같은 엔진 상태로 열린다', async () => {
+  it.each(['load', 'import'] as const)('규칙 1 기준 저장의 %s는 지연 화면 없이 같은 엔진 상태로 열린다', async (mode) => {
     const ui = await freshUi(), items = storage();
-    await ui.importText(legacySave);
+    items.set('scitrade-save', legacySave);
+    await (mode === 'load' ? ui.click({ action: 'load' }) : ui.importText(legacySave));
     expect(readState(ui, items)).toBe(legacySave);
     expect(calls.ops).toBe(0);
   });
   it.each(['culture-tab', 'culture-result'] as const)('%s는 패널을 기다리고 실패하면 닫힌 채 재시도한다', async (action) => {
-    const ui = await freshUi();
+    const original = loadScenario(legacyId);
+    // 이틀 활동을 미리 시작한 저장으로, 패널을 받지 않고 하루 진행에서 결과 단추를 만든다.
+    const config = { ...original, culture: { ...original.culture!, activities: original.culture!.activities.map((a) => ({ ...a, durationDays: 2 })) } };
+    const ui = await freshUi(config);
     if (action === 'culture-result') {
-      const config = loadScenario(legacyId);
-      const { commitDay } = await import('../engine/engine');
-      let state = openDay(commitDay(openDay(createGame(config), config).state, config, []).state, config).state;
-      state = openDay(commitDay(state, config, [{ id: 'CULTURE-TEST', type: 'START_CULTURE_ACTIVITY', activityId: 'CA01', employeeId: 'EMP01' }]).state, config).state;
-      await ui.importText(serializeSave(state));
-      // 저장 불러오기는 문화 알림을 만들지 않으므로 하루 진행 경로에서 만든다.
-      await screensReady();
-      ui.click({ action: 'culture-tab' });
-      ui.click({ action: 'culture-act', activity: 'CA01' });
-      ui.click({ action: 'culture-emp', emp: 'EMP02' });
-      ui.click({ action: 'culture-queue' }); ui.click({ action: 'culture-close' });
-      ui.click({ action: 'end-day' });
-      // 이 경로는 이미 받은 패널을 쓰므로 기다림·실패는 별도 아래 시험에서 검사한다.
-      await ui.click({ action });
-      expect(ui.app.innerHTML).toContain('aria-expanded="true" aria-controls="local-body"');
-      expect(ui.focusIds.at(-1)).toMatch(/^culture-result-h-/);
-      return;
+      const dayTwo = openDay(commitDay(openDay(createGame(config), config).state, config, []).state, config).state;
+      const running = openDay(commitDay(dayTwo, config, [{ id: 'CULTURE-TEST', type: 'START_CULTURE_ACTIVITY', activityId: 'CA01', employeeId: 'EMP01' }]).state, config).state;
+      await ui.importText(serializeSave(running));
+      await ui.click({ action: 'end-day' });
+      expect(calls.culture).toBe(0);
+      expect(ui.app.innerHTML).toContain('data-action="culture-result"');
     }
     gates.culture = deferred(); failures.culture = 1;
+    const button = ui.rendered({ action });
     const opening = ui.click({ action }); await flush();
     expect(ui.app.innerHTML).not.toContain('id="local"');
     expect(ui.focusIds).not.toContain('local-h');
     gates.culture.resolve(); await opening;
     expect(ui.app.innerHTML).not.toContain('id="local"'); expect(ui.app.innerHTML).toContain(warning);
-    await ui.click({ action });
+    vi.advanceTimersByTime(501);
+    await ui.clickTarget(button);
     expect(calls.culture).toBe(2);
     expect(ui.app.innerHTML).toContain('aria-expanded="true" aria-controls="local-body"');
-    expect(ui.focusIds.at(-1)).toBe('local-h'); expect(ui.scrollIds.at(-1)).toBe('local-h');
+    const heading = action === 'culture-result' ? /^culture-result-h-/ : /^local-h$/;
+    expect(ui.focusIds.at(-1)).toMatch(heading); expect(ui.scrollIds.at(-1)).toMatch(heading);
   });
   it('열린 문화 패널 HTML은 정적 import 기준과 바이트가 같다', async () => {
     const ui = await freshUi(); await ui.click({ action: 'culture-tab' });
@@ -288,6 +299,8 @@ describe('TASK-0059 지연 화면 진입', () => {
   });
   it('시나리오를 기다리는 중 두 번 하루 진행·문화 탭에도 상태가 섞이지 않고 import는 한 번이다', async () => {
     const ui = await freshUi(); gates.ops = deferred();
+    const engine = await import('../engine/engine');
+    const create = vi.spyOn(engine, 'createGame');
     const before = ui.app.innerHTML;
     const change = ui.change({ action: 'scenario' }, opsId); await flush();
     ui.clickNow({ action: 'end-day' }); ui.clickNow({ action: 'end-day' });
@@ -295,7 +308,9 @@ describe('TASK-0059 지연 화면 진입', () => {
     expect(ui.app.innerHTML).toBe(before);
     expect(ui.doc.title).toContain(loadScenario(legacyId).titleKo);
     expect(calls).toEqual({ ops: 1, culture: 0 });
+    expect(create).not.toHaveBeenCalled();
     gates.ops.resolve(); await change;
+    expect(create).toHaveBeenCalledOnce();
     expect(await hash(ui.app.innerHTML)).toBe(BASE_HTML.ops);
   });
   it('문화 탭 두 번은 약속 하나와 열기 결과를 공유한다', async () => {

@@ -81,7 +81,7 @@ describe('지도 표시 목록(map.ts)', () => {
 
 describe('지도 고르기 화면(main.ts)', () => {
   it.each([['M1', m1], ['M2', m2]] as const)('%s: 목록은 보이는 지도의 표시를 빠짐없이 한 번씩 담고 처음 값은 ‘고르세요’다', async (_name, config) => {
-    const ui = await startUi(config); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(config);
     for (const mode of MODES) {
       ui.click({ action: 'map-mode', mode });
       const options = optionKeys(ui.app.innerHTML);
@@ -93,7 +93,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('배가 운항 중이면 목록에 배 묶음이 있고 지도 표시와 같다', async () => {
-    const ui = await startUi(m1); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m1);
     await ui.importText(serializeSave(sailing(m1)));
     const options = optionKeys(ui.app.innerHTML).slice(1);
     expect(options.some((k) => k.startsWith('ship:'))).toBe(true);
@@ -102,7 +102,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('목록 · 지도 틀 · 안내 · 상세 칸 · 범례 순서이고 안내 문구가 바뀌었다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     const key = mapMarks(day1(m2), m2, 'route')[0]!.key;
     ui.change({ action: 'map-pick' }, key);
     const html = ui.app.innerHTML;
@@ -116,7 +116,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('목록에서 고르면 지도 고리·상세 칸·목록 값이 같은 표시이고 상세는 그 표시의 글을 모두 보인다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     for (const mark of mapMarks(day1(m2), m2, 'route')) {
       ui.change({ action: 'map-pick' }, mark.key);
       const html = ui.app.innerHTML;
@@ -130,7 +130,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('Esc로 지도 상세를 닫고 목록으로 초점을 돌려주며 500ms 동안 누름을 막는다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     ui.change({ action: 'map-pick' }, mapMarks(day1(m2), m2, 'route')[0]!.key);
     vi.advanceTimersByTime(501);
     const ev = pressEsc(ui);
@@ -145,7 +145,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('닫기 단추로 닫아도 목록으로 초점을 돌려준다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     ui.change({ action: 'map-pick' }, mapMarks(day1(m2), m2, 'route')[0]!.key);
     ui.click({ action: 'map-close' });
     expect(ui.app.innerHTML).not.toContain('id="map-detail"');
@@ -153,7 +153,7 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('지도 범위를 바꿔도 고른 표시가 새 지도에 있으면 남고, 없으면 지운다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     const route = mapMarks(day1(m2), m2, 'route').map((m) => m.key);
     const worldOnly = mapMarks(day1(m2), m2, 'world').find((m) => !route.includes(m.key))!.key;
     ui.change({ action: 'map-pick' }, route[0]!);
@@ -170,14 +170,14 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('처음부터 뒤에는 고른 표시가 없다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     ui.change({ action: 'map-pick' }, mapMarks(day1(m2), m2, 'route')[0]!.key);
     ui.click({ action: 'restart' });
     expect(ui.app.innerHTML).not.toContain('id="map-detail"');
   });
 
   it('지도를 누르면 22px 안의 표시가 하나면 고르고, 여럿이면 후보 단추를, 없으면 아무것도 하지 않는다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     const [a, b] = mapMarks(day1(m2), m2, 'route').map((m) => m.key);
     ui.bounds[`mark:${a}`] = { left: 95, right: 105, top: 95, bottom: 105, width: 10, height: 10 };
     ui.bounds[`mark:${b}`] = { left: 125, right: 135, top: 95, bottom: 105, width: 10, height: 10 };
@@ -195,14 +195,14 @@ describe('지도 고르기 화면(main.ts)', () => {
   });
 
   it('이름표를 누르면 거리와 상관없이 그 표시를 고른다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     const key = mapMarks(day1(m2), m2, 'route')[2]!.key;
     ui.tapMap(5000, 5000, key);
     expect(ui.app.innerHTML).toContain(`<option value="${key}" selected>`);
   });
 
   it('성장 상세를 연 뒤 지도에서 고르면 Esc는 지도 상세부터 닫는다', async () => {
-    const ui = await startUi(m2); await (await import('./main-testkit')).screensReady();
+    const ui = await startUi(m2);
     const first = m2.employees[0]!.id;
     ui.click({ action: 'select-card', emp: first });
     ui.click({ action: 'detail', emp: first });

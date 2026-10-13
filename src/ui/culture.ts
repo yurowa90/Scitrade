@@ -65,7 +65,10 @@ export function cultureToastText(state: GameState, config: ScenarioConfig, rejec
 }
 
 export const culturePanelScreen = lazyScreen(() => import('./culture-panel'));
-export const culturePanel: typeof import('./culture-panel').culturePanel = (...args) => culturePanelScreen.get()!.culturePanel(...args);
+export const culturePanel: typeof import('./culture-panel').culturePanel = (...args) => {
+  if (!args[3].culture || !args[4].cultureOpen) return '';
+  return culturePanelScreen.get()!.culturePanel(...args);
+};
 export const cultureNotebook: typeof import('./culture-panel').cultureNotebook = (...args) => culturePanelScreen.get()!.cultureNotebook(...args);
 export const cultureResults: typeof import('./culture-panel').cultureResults = (...args) => culturePanelScreen.get()!.cultureResults(...args);
 export const cultureVenues: typeof import('./culture-panel').cultureVenues = (...args) => culturePanelScreen.get()!.cultureVenues(...args);
