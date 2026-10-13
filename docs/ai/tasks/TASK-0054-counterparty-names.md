@@ -2,10 +2,10 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `low`
-- 선행 작업: TASK-0033이 들어간 개발 브랜치 `<BASE>` 위에 만든 `codex/TASK-0054`에서 작업한다.
-  - `<BASE>`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0054-counterparty-names.md`의 해시를 쓰고 결과 보고에 적는다.
-  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only <BASE> HEAD`를 실행해 결과 보고에 적는다.
-  - 줄 번호는 `cc8f202` 기준이다. `<BASE>`에서 다르면 코드가 사실이고, 차이를 결과 보고에 적는다.
+- 선행 작업: TASK-0033이 들어간 개발 브랜치 `b4a851b` 위에 만든 `codex/TASK-0054`에서 작업한다.
+  - `b4a851b`는 허브가 실행 전에 해시로 바꾼다. 자리표시가 남아 있으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0054-counterparty-names.md`의 해시를 쓰고 결과 보고에 적는다.
+  - 시작할 때 `git rev-parse --short HEAD`와 `git diff --name-only b4a851b HEAD`를 실행해 결과 보고에 적는다.
+  - 줄 번호는 `cc8f202` 기준이다. `b4a851b`에서 다르면 코드가 사실이고, 차이를 결과 보고에 적는다.
 - 병렬 작업: `tools/validate_data.py`·`tools/test_validate_data.py`를 여는 다른 작업과 동시에 돌리지 않는다.
 - 결정 근거: TASK-0033 Codex·세션 A 검수에서 나온 후속(허브 전달 2026-10-13).
   - `src/engine/engine.ts:403`·`:484`의 로그가 `config.operations.market.counterparties.find(...)!.nameKo`를 읽는다.
@@ -62,5 +62,5 @@
 
 - `python3 tools/test_validate_data.py` 통과. 시험 수 전후를 적는다(지금 95개면 97개).
 - `python3 tools/validate_data.py` PASS. 검사 수 전후를 적는다.
-- `bash tools/ai/review_checks.sh --check <BASE>` 통과.
+- `bash tools/ai/review_checks.sh --check b4a851b` 통과.
 - 바뀐 파일이 위 ‘고칠 수 있는 파일’ 넷뿐이다.

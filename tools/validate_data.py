@@ -841,6 +841,14 @@ def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
     names = {p['id'] for p in market['counterparties']}
+    party_counts = {}
+    for party in market['counterparties']:
+        pid = party['id']
+        name = party.get('name_ko')
+        check(isinstance(name, str) and bool(name.strip()), f'{pid}: 거래처 이름이 비어 있음')
+        party_counts[pid] = party_counts.get(pid, 0) + 1
+    for pid, count in party_counts.items():
+        check(count == 1, f'market_rules: 거래처 ID 중복 {pid}')
     for rule in market['rule_sets']:
         rows = rule['rows']
         check(len(rows) == 6 and len({(r['city_id'], r['good_id'], r['side']) for r in rows}) == 6,
