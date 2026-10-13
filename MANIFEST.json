@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 204619,
-      "sha256": "55759a37335356930ffd94ce3c14240644004cabf80de8d44d804b233f28b075"
+      "size_bytes": 205377,
+      "sha256": "df9e9f65c457e3b0836cc36214201a51fdf58656758465278ec194545470cbc9"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 80569,
-      "sha256": "21255ff59120ee41b1be00f1f0694f09620c7c5e0a3c7c0685585df021aaac5a"
+      "size_bytes": 81620,
+      "sha256": "e4ec4eea6628cf442d28bfed4a00444aedd3725b55b3bfe3439a55e39bb8ab3e"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9586,
-      "sha256": "749b00e81108f0fbf6a5d9af8d6ba3693bcb06ea206d437ebd07376af0618511"
+      "size_bytes": 9765,
+      "sha256": "72d82e7e63b7ca00c261e6d8ca9b1bef69c8f00c6cbdd57cd8bca43fcd5058d1"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1457,8 +1457,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 17791,
-      "sha256": "bd231b82cef806dc278b6b66b1f355d67127400bb48a9f5f242644d277db79de"
+      "size_bytes": 17851,
+      "sha256": "0881b0603c39054913bc391062c0027d6173e310c75100410ee439dffcf57ceb"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1727,8 +1727,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0054-counterparty-names.md",
-      "size_bytes": 5283,
-      "sha256": "42af5a668b7b5678ffbcdf00a759be3472d702e12a7837419e50dd2905ef628f"
+      "size_bytes": 5288,
+      "sha256": "b3dd700728e154b55e13e3b71a39dbd73f8481a67227ab89a140e71d550d1c37"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1737,8 +1737,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0056-m2a5-save-references.md",
-      "size_bytes": 8404,
-      "sha256": "fcd7f904d6c6317b29b8077e8735028c38b0269f203b83a3135f88c2a04509d1"
+      "size_bytes": 8408,
+      "sha256": "8095774189bb88c61d34e9d8a146220849f8f19e0085491a9f51ce82d49ee1c4"
     },
     {
       "path": "docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md",
@@ -2001,9 +2001,19 @@
       "sha256": "1faf2b1554c76f91fe75dfe885910b555fc0c0784a4095e19c1b2d0f0399047a"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0054.md",
+      "size_bytes": 6118,
+      "sha256": "17ae3b27b9ad27d8bfe07b41b139a967edeb2c7a3d483c5eba5b6972fdb04a66"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0056.md",
+      "size_bytes": 8424,
+      "sha256": "60e1f9e8e95bdf7ba2d3e7b4e277611f70d6df73b6d4af77953c64e49e8726e4"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -2452,13 +2462,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 61352,
-      "sha256": "16da534bd3989a44ee0803383345854942e0209c7f3fa5e8d00f7ca5e11029da"
+      "size_bytes": 62088,
+      "sha256": "bf2f58d784c6ccbb87159f978a5c3fb332bdc56aba101bf8a2e0321cd8fc0398"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 72700,
-      "sha256": "f87a1abb03e2e5455e357da6345bdf8aa387d6d0ec2f8bb3e66d9c37e937d88c"
+      "size_bytes": 73103,
+      "sha256": "0bd1b976c9e0d01620b94f0a5b5c7477af061105248e5e2f7967d16f53672416"
     }
   ]
 }
