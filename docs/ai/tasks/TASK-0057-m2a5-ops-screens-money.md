@@ -2,9 +2,9 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: 개발 브랜치 `0990273`(TASK-0034 병합 기록과 화면 검수 문서 뒤, 이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
-  - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
-  - 줄 번호는 개발 브랜치 `957e877` 기준이다. TASK-0034가 `main.ts`를 고쳐 `<BASE>`에서는 조금 달라진다. **이름으로 찾고**, 달라진 줄을 결과 보고에 적는다.
+- 선행: 개발 브랜치 `0990273`(TASK-0034 병합 기록과 화면 검수 문서 뒤, 이하 `0990273`). 기준 비교(`review_checks.sh`)는 `0990273`로 한다.
+  - `0990273`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+  - 줄 번호는 개발 브랜치 `957e877` 기준이다. TASK-0034가 `main.ts`를 고쳐 `0990273`에서는 조금 달라진다. **이름으로 찾고**, 달라진 줄을 결과 보고에 적는다.
 - 결정 근거: `docs/ai/design/M2A5-SPEC.md` 16절 6·7·8·10, 11절(지급 불이행·실패). `docs/DECISIONS.md` D04 가(경영 실패).
 - 먼저 읽을 것:
   - `docs/ai/tasks/TASK-0034-m2a5-ops-screens.md`의 ‘읽는 상태: `state`와 `view`’ 절과 끝의 ‘다음 지시서로 넘긴 범위’.
@@ -143,7 +143,7 @@
 ## 지켜야 할 것
 
 - 규칙 1 불변(TASK-0033 기준 문자열 세 개 sha256, 면담 칸·결산·원화 보고 바이트 같음). 통화 분리. 결정성(기본 `run` 400회 바이트 같음). 시험 소스에 자료 ID·조정값 상수 금지(TASK-0027 R1). 색만으로 상태를 구분하지 않음. 새 단추 키보드 사용.
-- **크기:** 첫 화면 gzip이 `<BASE>`보다 6,000 B 넘게 늘거나 한도 140,000 B까지 3,000 B 안으로 들어오면 멈추고 질문에 적는다.
+- **크기:** 첫 화면 gzip이 `0990273`보다 6,000 B 넘게 늘거나 한도 140,000 B까지 3,000 B 안으로 들어오면 멈추고 질문에 적는다.
 
 ## 시험(`src/ui/m2a5-money-ui.test.ts`)
 
@@ -174,7 +174,7 @@
 ## 완료 조건
 
 1. 지시 1~7 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check 0990273` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |

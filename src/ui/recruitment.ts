@@ -16,6 +16,8 @@ import { levelProgress } from '../engine/growth';
 import { crewStatusKo, taskSchedule } from './crew-status';
 export { taskSchedule } from './crew-status';
 import { esc } from './html';
+import { hiringOutlook } from '../engine/readers';
+import { constraintLabel } from './warehouse';
 export const venueTitle = (id: string) => venues.items.find((v) => v.id === id)?.title_ko ?? id;
 export const species = (id: string) => characters.items.find((c) => c.id === id)?.species_ko ?? '';
 
@@ -79,7 +81,7 @@ export function interviewPreview(s: GameState, config: ScenarioConfig, e: Employ
   };
 }
 
-export function interviewBlock(s: GameState, config: ScenarioConfig, e: EmployeeDef, check: CommandResult, expanded = true, queuedHire = ''): string {
+export function interviewBlock(s: GameState, config: ScenarioConfig, e: EmployeeDef, check: CommandResult, expanded = true, queuedHire = '', state = s): string {
   const p = interviewPreview(s, config, e);
   const won = (n: number) => formatMoney('KRW', n);
   const runway = (state:GameState) => payrollRunwayKo(payrollRunwayDay(state,config),s.day,config.campaignDays);
@@ -93,20 +95,23 @@ export function interviewBlock(s: GameState, config: ScenarioConfig, e: Employee
     afterHire = `<p class="hire-after">고용하면 원화 사용 가능액: 지금 ${won(fundsPosition(s,config,'KRW').available)} → 고용 뒤 ${won(fundsPosition(after,config,'KRW').available)}</p>
       <p class="hire-after">원화 급여 지급 가능일: 지금 ${runway(s)} → 고용하면 ${runway(after)}</p>`;
   }
+  const outlook = config.operations && !queuedHire ? hiringOutlook(state, config, e.id) : null;
+  const names = outlook?.bottleneck.binding.after.map(constraintLabel).join('·');
+  const extra = outlook ? `<ul class="hiring-outlook"><li>이 직원 하루 일급 ${won(outlook.wageKrwPerDay)} — 일주일이면 USD 약 ${formatMoney('USD', outlook.wageUsdLotsPerWeek! * config.operations!.fx.lotUsdMinor)} 환전</li><li>최근 4묶음 작업 견적 ${outlook.recentHandlingOfferedPt}pt / 받은 ${outlook.recentHandlingAcceptedPt}pt</li><li>작업 포함 주선 1건 기여이익 ${formatMoney('USD', outlook.bottleneck.contributionPerJobMinor)}</li><li>다음 주 받을 수 있는 작업 포함 주선: 지금 ${outlook.bottleneck.usableBefore}건 → 고용 뒤 ${outlook.bottleneck.usableAfter}건(가장 좁은 곳: ${names})</li>${outlook.bottleneck.extraJobsPerWeek === 0 ? `<li>이 직원을 뽑아도 ${names}에 막혀 더 받을 수 없습니다</li>` : ''}</ul>` : '';
   return `<div class="interview" id="interview-${esc(e.id)}" role="region" aria-labelledby="interview-h-${esc(e.id)}" ${expanded ? '' : 'hidden'}>
     <h4 id="interview-h-${esc(e.id)}">면담 — ${esc(e.nameKo)}</h4><dl class="interview-facts">
     <div><dt>계약금 (일급×${config.recruitment?.signingFeeWageDays})</dt><dd>${won(p.signingFee)}</dd></div>
     <div><dt>일급</dt><dd>${won(p.dailyWage)}</dd></div>
     <div><dt>남은 기간 급여 (${s.day < config.campaignDays ? `${s.day + 1}~${config.campaignDays}일` : '남은 기간 없음'})</dt><dd>${won(p.remainingWages)}</dd></div>
     <div><dt>하루 처리량</dt><dd>${p.throughput}pt</dd></div>
-    <div><dt>지금 원화 사용 가능액</dt><dd>${won(p.availableKrw)}</dd></div></dl>${afterHire}
+    <div><dt>지금 원화 사용 가능액</dt><dd>${won(p.availableKrw)}</dd></div></dl>${extra}${afterHire}
     <p>지금 인원으로 버티면: 준비 미배정 ${p.unassigned}건 · 출항 불참 위험 ${p.willMiss}건</p>
     ${queuedHire || `<div data-action-slot="hire-${esc(e.id)}"><button data-action="hire" data-candidate="${esc(e.id)}" ${check.status !== 'APPLIED' ? 'disabled' : ''} aria-label="${esc(e.nameKo)} 고용">${esc(e.nameKo)} 고용</button>
     ${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}${p.signingFee === 0 && check.reasonKo.startsWith('영입 계약금 자금이 부족합니다.') && fundsPosition(s, config, 'KRW').unpaidObligations > 0 ? ' 미지급 급여가 남아 있어 계약금이 0원이어도 고용할 수 없습니다.' : ''}</p>` : '<p class="muted small">계약금은 한 번 지급하며, 업무와 급여는 고용 다음 날부터 시작합니다.</p>'}</div>`}
   </div>`;
 }
 
-export function recruitmentPanel(s: GameState, config: ScenarioConfig, selections: Record<string, string>, interviewId: string | null, check: (cmd: Command) => CommandResult, pending: Command[] = [], status = (_slot: string, text: string) => `<span class="pill">${text}</span>`): string {
+export function recruitmentPanel(s: GameState, config: ScenarioConfig, selections: Record<string, string>, interviewId: string | null, check: (cmd: Command) => CommandResult, pending: Command[] = [], status = (_slot: string, text: string) => `<span class="pill">${text}</span>`, state = s): string {
   if (!config.recruitment) return '';
   const employeeSelect = (key: string, label: string, cmd: (id: string) => Command) => {
     const employees = employedDefs(s, config);
@@ -131,7 +136,7 @@ export function recruitmentPanel(s: GameState, config: ScenarioConfig, selection
     return `<article class="recruit-candidate"><h4 id="candidate-h-${esc(e.id)}" tabindex="-1">${esc(e.nameKo)} · ${esc(species(e.id))} ${roleBadge(e.role)}</h4><p>${esc(clue)}</p><p class="pill">${esc(candidateLabel(s, c, config))}</p>
       ${signingFeeRule(e, c, config)}
       ${queuedQuest ? status(`quest-${e.id}`, '영입 의뢰 예정') : c.stage === 'DISCOVERED' ? `<div data-action-slot="quest-${esc(e.id)}">${choice.html}<button aria-label="${esc(e.nameKo)} 영입 의뢰(${config.recruitment!.questWorkUnits}pt)" data-action="recruit-quest" data-candidate="${esc(e.id)}" data-emp="${esc(choice.chosen)}" ${choice.result.status !== 'APPLIED' ? 'disabled' : ''}>영입 의뢰(${config.recruitment!.questWorkUnits}pt)</button>${choice.result.status !== 'APPLIED' ? `<p class="reason">${esc(choice.result.reasonKo)}</p>` : ''}</div>` : ''}
-      ${c.stage === 'INTERVIEW_READY' || queuedHire ? `<button aria-label="${esc(e.nameKo)} 면담" aria-expanded="${interviewId === e.id}" aria-controls="interview-${esc(e.id)}" data-action="interview" data-candidate="${esc(e.id)}">${esc(e.nameKo)} 면담</button>${interviewBlock(s, config, e, check({ id: `PREVIEW-HIRE-${e.id}`, type: 'HIRE_CANDIDATE', candidateId: e.id }), interviewId === e.id, queuedHire ? status(`hire-${e.id}`, '고용 예정') : '')}` : ''}</article>`;
+      ${c.stage === 'INTERVIEW_READY' || queuedHire ? `<button aria-label="${esc(e.nameKo)} 면담" aria-expanded="${interviewId === e.id}" aria-controls="interview-${esc(e.id)}" data-action="interview" data-candidate="${esc(e.id)}">${esc(e.nameKo)} 면담</button>${interviewBlock(s, config, e, check({ id: `PREVIEW-HIRE-${e.id}`, type: 'HIRE_CANDIDATE', candidateId: e.id }), interviewId === e.id, queuedHire ? status(`hire-${e.id}`, '고용 예정') : '', state)}` : ''}</article>`;
   });
   return `<section class="recruitment" aria-labelledby="recruit-h"><h3 id="recruit-h">${esc(cityName(config, config.homeCityId))} 동료 영입</h3>${sites.join('')}<p class="muted">미발견 후보 ${s.recruitment.candidates.filter((c) => c.stage === 'UNDISCOVERED').length}명</p>${candidates.join('')}</section>`;
 }

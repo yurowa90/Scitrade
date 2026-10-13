@@ -8,7 +8,7 @@ import { CULTURE_KO, cultureAnchorBlocks, culturePanel, cultureResultTasks, cult
 import { employedDefs } from '../engine/employees';
 import { ALL_SCENARIO_IDS, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
-import { cityName, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
+import { cityName, createGame, listSailings, openDay, planCommands, planState, restartWithSameSeed } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { campaignSummary, onTimeDeliveryRate, upcomingPayments, companyReport, contractReport, forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../engine/reports';
 import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLoad } from '../engine/reservations';
@@ -21,6 +21,8 @@ import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, ha
 import { offerDef, openTradePairs } from '../engine/market';
 import { quotePreview, type OperationsQuotePreview } from '../engine/readers';
 import { counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
+import { paymentDefaultStatus } from '../engine/operations';
+import { paymentAlert, failureBlock, operationsSettlement } from './money-alerts';
 import { warehouseBlock, routeLabel } from './warehouse';
 import { cancellationPreviewKo } from './trade';
 import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
@@ -44,6 +46,7 @@ const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loa
 let config: ScenarioConfig;
 let state: GameState;
 let savedState: GameState | null = null;
+let previousPaymentLevel: ReturnType<typeof paymentDefaultStatus>['level'] = 'NONE';
 let announcedFlash: ReturnType<typeof initialUiState>['flash'] = null;
 let lastTabAt = -Infinity, tabX = 0, tabY = 0;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
@@ -142,6 +145,7 @@ function startScenario(id: AnyScenarioId) {
 }
 
 function resetUi() {
+  previousPaymentLevel = 'NONE';
   ui = initialUiState();
   resetMapScroll = true;
   mapScrollRatio = undefined;
@@ -192,7 +196,7 @@ function queue(cmd: Command) {
   if (anchor && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
   // 끝난 캠페인에는 하루 진행이 없어 넣은 명령이 실행되지 않는다. 엔진 검증 전에 거절한다.
   const result: CommandResult = state.phase === 'ENDED'
-    ? { commandId: cmd.id, status: 'REJECTED', reasonKo: `${config.campaignDays}일 캠페인이 끝나 새 명령을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.` }
+    ? { commandId: cmd.id, status: 'REJECTED', reasonKo: `${config.operations && state.operations?.outcome === 'FAILED' ? '경영 실패로 캠페인이 끝나 새 명령' : `${config.campaignDays}일 캠페인이 끝나 새 명령`}을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.` }
     : tryCommand(cmd);
   if (result.status !== 'APPLIED') {
     ui.flash = { kind: 'warn', text: result.reasonKo };
@@ -271,11 +275,13 @@ function endDay() {
   ui.cultureResultFresh = ui.flash?.action === 'culture-result';
   if (state.phase === 'ENDED') {
     const text = (rejected.length ? `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')} ` : '')
-      + `${config.campaignDays}일 캠페인이 끝났습니다. 경영 보고의 ${config.campaignDays}일 결산에서 통화별 결과를 확인하세요.`;
+      + (config.operations && state.operations?.outcome === 'FAILED'
+        ? `${state.operations.failure!.day}일 경영 실패로 캠페인이 끝났습니다. 경영 보고에서 원인과 결산을 확인하세요.`
+        : `${config.campaignDays}일 캠페인이 끝났습니다. 경영 보고의 ${config.campaignDays}일 결산에서 통화별 결과를 확인하세요.`);
     ui.flash = { kind: rejected.length ? 'warn' : 'info', text };
     ui.cultureResultFresh = false;
     render();
-    const heading = document.getElementById('settlement-h')!;
+    const heading = document.getElementById(config.operations && state.operations?.outcome === 'FAILED' ? 'failure-h' : 'settlement-h')!;
     heading.scrollIntoView({ block: 'start' });
     heading.focus({ preventScroll: true });
     ignoreClicksUntil = Date.now() + 500;
@@ -512,7 +518,15 @@ function planner(cmd: Command, q: QuotePreview, key: string, originCityId: strin
 /** 화면의 견적 카드가 만든 기본 수락 명령 (키로 다시 찾는다). */
 const offerCommands: Record<string, Command> = {};
 
+/** 실패로 만료 처리가 멈춘 기록도 표시 시점의 유효기간으로 거른다. */
+export function visibleForwardingOffers(view: GameState, config: ScenarioConfig) {
+  const offers = config.operations ? view.offers.filter((o) => o.status === 'OPEN').map((o) => offerDef(view, config, o.id)!) : config.offers;
+  return offers.filter((o) => o.kind === 'forwarding' && view.offers.some((s) => s.id === o.id && s.status === 'OPEN')
+    && o.publishDay <= view.day && o.validUntilDay >= view.day);
+}
+
 function offerBoard(): string {
+  if (config.operations && state.phase === 'ENDED') return `${marketBlock(state, config)}<p>캠페인이 끝나 견적을 받을 수 없습니다</p>`;
   const isOpen = (id: string) => view.offers.find((o) => o.id === id)?.status === 'OPEN';
   const cards: string[] = [];
   for (const pair of (config.operations ? openTradePairs(view, config) : tradePairs(config))) {
@@ -541,8 +555,8 @@ function offerBoard(): string {
       ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
-  for (const offer of (config.operations ? view.offers.filter((o) => o.status === 'OPEN').map((o) => offerDef(view, config, o.id)!) : config.offers).filter((o) => o.kind === 'forwarding')) {
-    if (!isOpen(offer.id) || !offer.destinationCityId) continue;
+  for (const offer of visibleForwardingOffers(view, config)) {
+    if (!offer.destinationCityId) continue;
     const q = config.operations ? quotePreview(view, config, { offerId: offer.id }) : forwardingPreview(config, offer.id, view.day)!;
     const by = reporter('operations');
     const space = cargoSpace(config, offer.goodId, offer.quantity);
@@ -825,7 +839,7 @@ function settlementBlock(): string {
     const first = Math.min(...rows.map((o) => o.incurredDay)), last = Math.max(...rows.map((o) => o.incurredDay));
     unpaid.push(`<p>남은 미지급 ${esc(standing.currency)}: ${esc(formatMoney(standing.currency, rows.reduce((a, o) => a + o.amountMinor, 0)))} — ${rows.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
   }
-  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.campaignDays}일 결산</h3><p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
+  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
 }
 
 function reportPanel(): string {
@@ -846,17 +860,23 @@ function reportPanel(): string {
   if (t.forwardingWip > 0) why.push(esc(`주선 진행원가 ${usd(t.forwardingWip)}는 고객 화물을 실은 운임입니다. 인도해 서비스 매출을 올리는 날 비용이 됩니다.`));
   if (r.customerCargoUnits > 0) why.push(esc(`맡은 고객 화물 ${customer}는 고객 자산이라 위 표 어디에도 없습니다. 우리 몫은 서비스 대금뿐입니다.`));
   if (committedRule() && f.reserved > 0) why.push(esc(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. 체결한 계약이 낼 운임·관세를 미리 묶어 두었기 때문입니다.`));
+  const endedWithUnpaid = config.operations && state.phase === 'ENDED' && state.obligations.some((o) => o.paidDay === null);
+  const exchangeAdvice = config.operations
+    ? state.phase === 'ENDED' ? (endedWithUnpaid ? '캠페인이 끝나 더 갚을 수 없습니다. 남은 미지급은 결산에 있습니다.' : '')
+      : '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.'
+    : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.';
   if (t.profit > 0) {
     const runway = state.phase === 'ENDED' ? '' : `(원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(state, config), state.day, config.campaignDays)})`;
-    why.push(esc(`거래 손익 ${usd(t.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${krw(p.cash)}에서만 나갑니다${runway}. ${config.operations ? '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.' : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.'}`));
-  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여가 ${krw(p.accountsPayable)} 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. ${config.operations ? '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.' : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.'}`));
+    why.push(esc(`거래 손익 ${usd(t.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${krw(p.cash)}에서만 나갑니다${runway}. ${exchangeAdvice}`));
+  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여가 ${krw(p.accountsPayable)} 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. ${exchangeAdvice}`));
+  if (endedWithUnpaid && t.profit <= 0 && p.accountsPayable === 0) why.push(esc(exchangeAdvice));
   if (!why.length) why.push(esc('지금은 현금과 장부가 같은 이야기를 하고 있습니다. 거래를 진행하며 차이가 생기는 순간을 확인해 보세요.'));
   const neg = (minor: number, fmt: (m: number) => string) => (minor === 0 ? fmt(0) : '−' + fmt(minor));
   const row = (k: string, v: string, cls = '') => `<tr class="${esc(cls)}"><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   return `
   <section class="panel report" aria-labelledby="report-h">
     <h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>
-    ${settlementBlock()}
+    ${paymentAlert(state, config)}${failureBlock(state, config)}${settlementBlock()}
     <div class="books">
       <table class="money"><caption>거래 장부 · USD</caption>
         ${row('현금', usd(t.cash))}${row(`재고 (${company})`, usd(t.inventory))}${row('선급운임', usd(t.prepaidFreight))}${fwdOn ? row('주선 진행원가', usd(t.forwardingWip)) : ''}${row('매출채권', usd(t.accountsReceivable))}${row('자산 합계', usd(t.totalAssets), 'total')}${row('미지급금', usd(t.accountsPayable))}
@@ -898,7 +918,7 @@ function crewPanel(): string {
       <tbody>${rows}</tbody>
     </table>
     ${inline ? '' : detail}
-    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), queuedStatus)}
+    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), queuedStatus, state)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
 }
@@ -955,7 +975,7 @@ function queuePanel(): string {
   const pending = ui.pending.length ? `<ol class="pending">${ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-action="unqueue" data-index="${i}" data-command="${esc(c.id)}" aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('')}</ol>` : '';
   return `
   <section class="panel queue" aria-labelledby="queue-h">
-    <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.phase === 'ENDED' ? `${config.campaignDays}일 · 캠페인 종료` : `${state.day}일 · 하루 진행 때 이 순서로 실행`}</small></h2>
+    <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.phase === 'ENDED' ? (config.operations && state.operations?.outcome === 'FAILED' ? `${state.operations.failure!.day}일 · 경영 실패` : `${config.campaignDays}일 · 캠페인 종료`) : `${state.day}일 · 하루 진행 때 이 순서로 실행`}</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
     ${ui.pending.length ? `<p class="muted small amount-basis-note">${config.operations ? '급여 가능일은 대기 중인 명령을 반영합니다. 지급 상태는 확정 기준이고, 하루 진행 뒤 예상을 따로 보입니다.' : '위쪽 막대의 금액은 확정 기준입니다.'} 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>` : ''}
     ${state.phase === 'ENDED' ? `<p class="muted">캠페인이 끝났습니다. 결산은 경영 보고에 있습니다.</p><button class="link" data-action="skip-to" data-target="settlement-h">결산 보기</button>${pending}` : pending || '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
@@ -1119,8 +1139,13 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     if (dy >= 1) window.scrollBy(0, dy);
   }
   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
-  const announcement = nextAnnouncement({ flash: ui.flash, announcedFlash,
+  let announcement = nextAnnouncement({ flash: ui.flash, announcedFlash,
     growthFresh: ui.growthNoticesFresh, growthNotices: ui.growthNotices, growthDay: ui.growthNoticesDay });
+  const paymentLevel = config.operations ? paymentDefaultStatus(state, config).level : 'NONE';
+  if (state.phase !== 'ENDED' && paymentLevel !== previousPaymentLevel && (paymentLevel === 'WARNING' || paymentLevel === 'DANGER')) {
+    announcement = [announcement, `지급 ${paymentLevel === 'WARNING' ? '경고' : '위험'} 단계가 되었습니다`].filter(Boolean).join(' ');
+  }
+  previousPaymentLevel = paymentLevel;
   if (announcement !== null) liveStatus.textContent = liveRegionText(liveStatus.textContent ?? '', announcement);
   announcedFlash = ui.flash;
   ui.growthNoticesFresh = false;
@@ -1237,7 +1262,7 @@ app.addEventListener('click', (ev) => {
   try {
     switch (d.action) {
       case 'skip-to': {
-        if (d.target !== 'trade-h' && d.target !== 'queue-h' && d.target !== 'settlement-h') return;
+        if (d.target !== 'trade-h' && d.target !== 'queue-h' && d.target !== 'settlement-h' && d.target !== 'exchange-h') return;
         const heading = document.getElementById(d.target)!;
         heading.scrollIntoView({ block: 'start' });
         heading.focus({ preventScroll: true });
@@ -1372,7 +1397,11 @@ app.addEventListener('click', (ev) => {
       }
       case 'restart':
         if (!confirm('처음부터 시작하면 현재 진행과 오늘 할 일이 사라집니다. 다시 시작할까요?')) return;
-        startScenario(config.id as AnyScenarioId);
+        if (config.operations && state.operations?.outcome === 'FAILED') {
+          state = openDay(restartWithSameSeed(state, config), config).state;
+          resetUi();
+          savedState = state;
+        } else startScenario(config.id as AnyScenarioId);
         return render();
       case 'save':
         try {

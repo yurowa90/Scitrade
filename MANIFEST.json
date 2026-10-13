@@ -1812,8 +1812,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md",
-      "size_bytes": 24330,
-      "sha256": "384a8054ed04b25ed50b912bc8ebf1b25d59803203fbcde26f24f3dd06dbe9f9"
+      "size_bytes": 24336,
+      "sha256": "a4729983dc68c90251bb7bd43e2f5a8c301b88bf0e5589accb2dd7e08d8cb79b"
     },
     {
       "path": "docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md",
@@ -2094,6 +2094,11 @@
       "path": "docs/ai/tasks/results/TASK-0056.md",
       "size_bytes": 10799,
       "sha256": "fbe296f4128f9f8725842de03cfcef1ad618979b4e1f19d6a761d83fd6210fd5"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0057.md",
+      "size_bytes": 15891,
+      "sha256": "453ad2b383eb097ce01870f1b3260fd5e3e5341691a6aee65094a8b392b8d8bb"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
