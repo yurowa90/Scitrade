@@ -1441,6 +1441,161 @@
       "sha256": "f8d509195da6794f7eaf58944f694e4dd54d9d7f85646de698ce67c27a9f6cdd"
     },
     {
+      "path": "docs/ai/design/research/reference-2026-10-13/README.md",
+      "size_bytes": 3497,
+      "sha256": "069f8042751b9e6bb993f0476cdbbb36696d6bc2311ec371471347f0d0c7f6f4"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/REPORT.md",
+      "size_bytes": 611857,
+      "sha256": "0fb89f81de99691187bfd990a3095e2e27b689fda3429b91d2f9018f572da500"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/claims.jsonl",
+      "size_bytes": 197629,
+      "sha256": "505e40cf975cd0cef61a80a9b376eac61181a6cd9af89b7cd610b1396717caa6"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/critiques.json",
+      "size_bytes": 77756,
+      "sha256": "9b59254d361a66c6bb985db801c9fe602053747a0e520a47fd0f748cc037de3c"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/comps.md",
+      "size_bytes": 63782,
+      "sha256": "8211c31fa951af73cfd34485a35270cfcac3233c27f3318adcb110d5a19f94e5"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/d4.md",
+      "size_bytes": 64184,
+      "sha256": "a32c6c676e40ce9c34dcc494dafc297dd65aa3d53ee7b68f1e881ac3d82bf723"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/dk.md",
+      "size_bytes": 63980,
+      "sha256": "2c4f54414016aa650d86c4d1d0845e4f3b0f4e0ffdd1e4a4e46c01331ab1f095"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/edu.md",
+      "size_bytes": 60218,
+      "sha256": "bf8a9eedfd045536adb60e7147a39a67534fbe612028704384147bc185f251f4"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/envdata.md",
+      "size_bytes": 59576,
+      "sha256": "06cfc8b79cc4384d24a862c0f6ebc288ff70a15ad969ba6266f67c4660f3e2da"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap1.md",
+      "size_bytes": 54112,
+      "sha256": "6bb0a161b305115ac00ec302d13c1d439ae78c927dc3d8152ad9f09c9d0c0304"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap2.md",
+      "size_bytes": 72092,
+      "sha256": "06c9d7072e86ce800e1ff2b3f128ed994b9c6bc987c2317b1eab94d07392d580"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap3.md",
+      "size_bytes": 56012,
+      "sha256": "7b59db17c72393e8831b3e5613ee65714da57a4f8b75b809b6e67f4659344d9d"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap4.md",
+      "size_bytes": 65247,
+      "sha256": "0f49c7c3c6233b9e5ef57a979e0c3f688f9987c27ce0d15f527d01d64abfc1ec"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap5.md",
+      "size_bytes": 60182,
+      "sha256": "019eb87ae3da9f655f91467cf5704a55acb06d7c26a5eccefa1deeae5c235aee"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap6.md",
+      "size_bytes": 68030,
+      "sha256": "cdaeb19b1c2bbaf5caf626cc7d8078994ba2f14776c7f440f3f457ffb80b2109"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap7.md",
+      "size_bytes": 63740,
+      "sha256": "747be7e240e5fa1df0d0e1f013ed56ff467226c72bfb727d673462704b84b165"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gap8.md",
+      "size_bytes": 67198,
+      "sha256": "020e1b007505190eb0070ecaceacfe66de38b9fe22ba1c7c805c334f818ee28a"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/gersang.md",
+      "size_bytes": 65509,
+      "sha256": "feb8a16b0b75d7a9619f084fc459b27a5fae310c80760fb928a6d080ab2a9aca"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/guild.md",
+      "size_bytes": 59640,
+      "sha256": "da85a058972984da82835a1a1fb1cad825aec6bf9539198e68ff7c236a09a76f"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/repo.md",
+      "size_bytes": 41385,
+      "sha256": "6a840df27ecd3d2837006613a52807065900697358e08c2c1e80c5dd561ac372"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/repo2.md",
+      "size_bytes": 6901,
+      "sha256": "46e104a45510779948575af5a19ed085e0e217bca806fb982da209038d24dcd9"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/sp2.md",
+      "size_bytes": 57222,
+      "sha256": "299649aa6e769c2ce3137aa57162e83ba79408fde57cd01281395204b41285c0"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/staff.md",
+      "size_bytes": 60570,
+      "sha256": "02504d55ba7c3a05426b5af5f3af3e65b7a33be75eb29defe42c9044acd9fa37"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/trade.md",
+      "size_bytes": 63387,
+      "sha256": "bd101fcf54e24d23415e12dbd1f0df5387f8a88e8d5bbcacc8bc6069063cc7d6"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/ev/v3.md",
+      "size_bytes": 57428,
+      "sha256": "80b92507e332240911f6a16b00b5c3bd52b427f8fe2abc5dd458dad589baf627"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/evidence.jsonl",
+      "size_bytes": 612996,
+      "sha256": "2001ab569f6d2a79338284ace28149afdca13be1127db545cd2ca3f5cf574a36"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/run_manifest.json",
+      "size_bytes": 2454,
+      "sha256": "bb67360cfd56b8d74c57a36bb01162a630a87ab3955f67f7b41a4bad85dc7e00"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/source_table.md",
+      "size_bytes": 162843,
+      "sha256": "203ec2f68a9dde0be3f1017223f1ab64fc899cd49c9ad12c1e0a5c6a2c16cb08"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/sources.jsonl",
+      "size_bytes": 283122,
+      "sha256": "9a56c2124f65aa4491dce37ef56539de94e7cdd8f03badffe3ed8e458988b66f"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/stage1_stats.json",
+      "size_bytes": 4265,
+      "sha256": "f6fed4bda0fdf17c40b7a78b6617084ea99c29748c926c000a39c3bc0790d38e"
+    },
+    {
+      "path": "docs/ai/design/research/reference-2026-10-13/user_directives.md",
+      "size_bytes": 3288,
+      "sha256": "ff332ba17bc6a2f8c198f3d7af33e425953f79c2310cbd50d9aafb00ceabf948"
+    },
+    {
       "path": "docs/ai/design/task0033-chromium/README.md",
       "size_bytes": 10783,
       "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
