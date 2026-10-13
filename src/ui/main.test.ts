@@ -34,13 +34,13 @@ const employeeSection = (html:string) => html.split('<section class="employee-de
 describe('TASK-0015 평택 본사 화면', () => {
   it('본사·문화 탭·영입 제목을 평택으로 표시한다', async () => {
     expect(config.homeCityId).toBe('PYEONGTAEK');
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(ui.app.innerHTML).toContain('평택 현지');
     expect(ui.app.innerHTML).toContain('<h3 id="recruit-h">평택 동료 영입</h3>');
   });
 
   it('이전 판 저장의 거절 이유를 보이고 현재 게임을 보존한다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({ action: 'accept-fwd', offer: 'OFFER_FWD_01' });
     let saved = '';
     vi.stubGlobal('localStorage', { setItem: (_key: string, value: string) => { saved = value; } });
@@ -56,7 +56,7 @@ describe('TASK-0015 평택 본사 화면', () => {
 
 describe('TASK-0013 실제 화면 표시', () => {
   it('수금일 전날·당일과 도착 전후를 표시한다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({ action: 'accept', buy: 'OFFER_BUY_02', sell: 'OFFER_SELL_02' });
     ui.click({ action: 'assign', emp: 'EMP01' });
     ui.click({ action: 'book', contract: 'CT001', sailing: 'ROUTE02-D002' });
@@ -78,7 +78,7 @@ describe('TASK-0013 실제 화면 표시', () => {
   });
 
   it('금액 기준 안내는 위쪽 막대에 한 번 나오고 오늘 대기 명령을 금액에 반영하지 않는다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const header = () => ui.app.innerHTML.match(/<header class="topbar">([\s\S]*?)<\/header>/)![1]!;
     const original = header();
     // 막대의 ‘오늘 할 일 N건’ 단추는 대기 명령 수를 센다. 금액 칸만 비교한다(TASK-0024).
@@ -103,7 +103,7 @@ describe('TASK-0013 실제 화면 표시', () => {
   });
 
   it('첫 편의 선복 부족은 계약 안내와 한 번에 확정 미리 보기에 나온다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({ action: 'accept-fwd', offer: 'OFFER_FWD_01' });
     ui.click({ action: 'assign', emp: 'EMP01' });
     ui.click({ action: 'book', contract: 'CT001', sailing: 'ROUTE01-D002' });
@@ -117,7 +117,7 @@ describe('TASK-0013 실제 화면 표시', () => {
 
   it('발견·의뢰 중 후보는 일급과 설정 일수의 계약금 금액을 보이고 면담에서도 같은 금액이다', async () => {
     const cfg = structuredClone(config); cfg.recruitment!.signingFeeWageDays = 7;
-    const ui = await startUi(cfg);
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady();
     ui.change({ action: 'recruit-emp', key: 'VEN_PORT' }, 'EMP02');
     ui.click({ action: 'scout', venue: 'VEN_PORT', emp: 'EMP02' });
     ui.click({ action: 'end-day' });
@@ -149,7 +149,7 @@ describe('항만 대기 실제 화면 연결',()=>{
   const ship=(html:string)=>html.match(/<g class="ship [^"]*"[^>]*><title>(.*?)<\/title>/)![0]!;
 
   it('M2 6일 화면·지도 요약·선박은 하역 중단 대기를 표시하지 않는다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});
     ui.click({action:'assign',emp:'EMP01'});
     ui.click({action:'book',contract:'CT001',sailing:'ROUTE02-D002'});
@@ -166,7 +166,7 @@ describe('항만 대기 실제 화면 연결',()=>{
 
   it('M1 7·8일에는 화면·지도 요약·선박에 대기를 표시하고 9일에는 해제한다',async()=>{
     const cfg=loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     await ui.importText(serializeSave(openDay(runDays(createGame(cfg),cfg,6,{1:standardDayOneCommands(cfg)}).state,cfg).state));
     for(const day of [7,8]) {
       const html=ui.app.innerHTML;
@@ -186,14 +186,14 @@ describe('항만 대기 실제 화면 연결',()=>{
 
 describe('A 실제 화면 연결',()=>{
   it('빈 동료 목록 안내는 격자의 모든 열을 차지한다',async()=>{
-    const ui=await startUi();ui.click({action:'crew-filter',filter:'busy'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'crew-filter',filter:'busy'});
     expect(ui.app.innerHTML).toContain('<div class="crew-cards"><p class="muted small">이 조건의 동료가 없습니다.</p></div>');
     const { readFileSync }=await vi.importActual<{readFileSync:(path:URL,encoding:string)=>string}>('node:fs');
     const css=readFileSync(new URL('./style.css',import.meta.url),'utf8');
     expect(css).toMatch(/\.crew-cards > p\s*\{\s*grid-column:\s*1\s*\/\s*-1;\s*\}/);
   });
   it.each([['ROUTE01','OFFER_BUY_01','OFFER_SELL_01','150.00'],['ROUTE02','OFFER_BUY_02','OFFER_SELL_02','130.00']])('%s 예약 계약의 실제 취소 안내는 엔진 환급액이다',async(route,buy,sell,refund)=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({action:'accept',buy,sell});ui.click({action:'assign',emp:'EMP01'});
     expect(ui.app.innerHTML).toContain('<dt>담당</dt><dd>귀솔</dd>');
     expect(ui.app.innerHTML).not.toContain('EMP01)');
@@ -202,13 +202,13 @@ describe('A 실제 화면 연결',()=>{
     expect(line).toContain(`운임 ${refund} USD 환급·취소비 50.00 USD`);
   });
   it('운영 장부의 여덟 행은 실제 화면에서 지정 순서로 나온다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const table=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
     expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','현지 활동비','운영 손익','미지급 급여','현금']);
     expect(table).toContain('<td colspan="2" class="muted small">급여는 원화로 매일 지급하며 계약금·훈련비·현지 활동비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.</td>');
   });
   it.each(['restart','scenario'])('%s 뒤 지난 게임의 flash 알림을 비운다',async(mode)=>{
-    const ui=await startUi();ui.click({action:'scout',venue:'VEN_PORT'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'scout',venue:'VEN_PORT'});
     expect(ui.app.innerHTML).toContain('<div class="flash-toast flash info">오늘 할 일에 넣었습니다.');
     expect(ui.announcements.at(-1)).toContain('오늘 할 일에 넣었습니다.');
     if(mode==='restart')ui.click({action:'restart'});
@@ -224,7 +224,7 @@ describe('A 실제 화면 연결',()=>{
       {id:'D',type:'CANCEL_CONTRACT',contractId:'CT001'},
       {id:'S',type:'SCOUT_SITE',venueId:'VEN_PORT',employeeId:'EMP02'},
     ]}).state,config).state;
-    const ui=await startUi();await ui.importText(serializeSave(discovered));
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.importText(serializeSave(discovered));
     ui.click({action:'recruit-quest',candidate:'EMP04',emp:'EMP01'});
     ui.click({action:'scout',emp:'EMP02'});
     ui.click({action:'accept',buy:'OFFER_BUY_01',sell:'OFFER_SELL_01'});
@@ -244,7 +244,7 @@ describe('A 실제 화면 연결',()=>{
   it.each(['load','import','restart','scenario'])('%s 성공은 대기·선택·필터·수동 계획을 초기화한다',async(mode)=>{
     const cfg=structuredClone(config);for(const offer of cfg.offers)offer.validUntilDay=90;
     const ready=()=>readySave(cfg);
-    const ui=await startUi(cfg);await ui.importText(ready());
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();await ui.importText(ready());
     ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
     ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP02'});
     ui.click({action:'interview',candidate:'EMP04'});
@@ -286,7 +286,7 @@ describe('A 실제 화면 연결',()=>{
     expect(selectOptions(ui.app.innerHTML,key)).toContain('value="EMP01" selected');
   });
   it('불러오기 실패는 현재 게임·대기 명령·선택을 유지한다',async()=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});
     ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});
     ui.click({action:'end-day'});
     ui.click({action:'accept-fwd',offer:'OFFER_FWD_01'});
@@ -298,7 +298,7 @@ describe('A 실제 화면 연결',()=>{
     expect(ui.app.innerHTML).toContain('JSON 형식 오류');
   });
   it('하루 진행 예외는 실제 화면에서 게임·대기 명령을 보존하고 한국어 알림을 보여 준다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const engine=await import('../engine/engine');
     const spy=vi.spyOn(engine,'commitDay').mockImplementation(()=>{throw new Error('결산 검증 실패');});
     ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});
@@ -320,7 +320,7 @@ describe('A 실제 화면 연결',()=>{
     for(const l of s.cargoLots)if(l.contractId===old)l.contractId=unsafe;
     for(const e of s.ledger.entries)if(e.contractId===old)e.contractId=unsafe;
     s.notices.push({id:'SAFE-NOTICE',day:1,titleKo:unsafe,bodyKo:unsafe,evidenceKo:unsafe,kind:'PORT_RESTRICTION',eventInstanceId:'TEST',affectedShipmentIds:[]});
-    const ui=await startUi(cfg);
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();
     ui.click({action:'accept-fwd',offer:'OFFER_FWD_01'});
     expect(ui.app.innerHTML).not.toContain(unsafe);expect(ui.app.innerHTML).toContain(`${esc(unsafe)}에게`);
     expect(ui.app.innerHTML).toContain('오늘 실행 예정');
@@ -361,7 +361,7 @@ describe('A 실제 화면 연결',()=>{
 
 describe('B 실제 성장 화면 연결',()=>{
   it('쉬는 직원과 조사 중인 직원은 훈련 빼기·진행 안내를 표시하지 않는다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     const noTrainingNotice=()=>{
       const detail=employeeSection(ui.app.innerHTML);
@@ -376,7 +376,7 @@ describe('B 실제 성장 화면 연결',()=>{
 
   it('같은 성장 알림도 진행 전 날짜로 구분하고 대기 목록 뒤에 표시한다',async()=>{
     const cfg=structuredClone(config);cfg.employees[0]!.growth!.startXp=300;
-    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)?.[2]).toBe('<h3 class="small">1일 하루 진행 — 경험치·레벨 변화</h3><p>귀솔 +60 경험치</p>');
     expect(ui.announcements.at(-1)).toContain(growthNotice(ui.app.innerHTML)![2]!.includes('2일 하루 진행') ? '2일 하루 진행 — 경험치·레벨 변화:' : '1일 하루 진행 — 경험치·레벨 변화:');
@@ -394,7 +394,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.announcements.at(-1)).toContain('+60 경험치');
   });
   it('하루 진행 예외 뒤 이전 성장 알림은 날짜와 함께 남고 다시 읽지 않는다',async()=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     const notice=growthNotice(ui.app.innerHTML)![2];
     expect(notice).toContain('1일 하루 진행 — 경험치·레벨 변화');expect(notice).toContain('귀솔 +60 경험치');
@@ -413,7 +413,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.announcements.at(-1)).not.toContain('경험치');
   });
   it('경험치·레벨 변화 없는 다음 하루를 성공적으로 진행하면 이전 성장 알림을 비운다',async()=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)?.[2]).toContain('귀솔 +60 경험치');
     ui.click({action:'end-day'});
@@ -425,7 +425,7 @@ describe('B 실제 성장 화면 연결',()=>{
   });
   it('오늘 대기 훈련만 빼기를 안내하고 진행 중 3일 훈련의 진행 정도는 한 번만 표시한다',async()=>{
     const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
-    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});
     for(const progress of [0,1]) {
       const detail=employeeSection(ui.app.innerHTML);
@@ -447,7 +447,7 @@ describe('B 실제 성장 화면 연결',()=>{
   it('훈련 대기의 급여 날짜는 이미 반영한 훈련비를 두 번 빼지 않는다',async()=>{
     // 370,000원에서 훈련비를 한 번 빼면 이틀 급여 320,000원, 두 번 빼면 하루분만 남는다.
     const cfg=structuredClone(config);cfg.startingCash.KRW=370_000;
-    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});
     const detail=employeeSection(ui.app.innerHTML);
     expect(detail).toContain('훈련비 50,000원 반영됨');
@@ -455,7 +455,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(detail).not.toContain('훈련하면');
   });
   it('1일과 3pt 동료 고용 후 5일의 상세·직원 각주는 실제 처리량을 표시한다',async()=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     expect(employeeSection(ui.app.innerHTML)).toContain('<p>레벨·능력이 올라도 하루 처리량은 2pt 그대로입니다. 훈련하는 날은 다른 업무를 맡을 수 없습니다.</p>');
     expect(crewNote(ui.app.innerHTML)).toBe('레벨·능력은 성장 기록으로 보여 주며 아직 처리량(하루 2pt)에는 쓰지 않습니다. 레벨이 올라도 급여·직책은 바뀌지 않습니다. 일급 80,000원.');
     const day5=openDay(runDays(createGame(config),config,4,{
@@ -471,7 +471,7 @@ describe('B 실제 성장 화면 연결',()=>{
   });
 
   it('조사 중인 직원은 훈련 반영 상태 대신 가정 금액과 엔진 거절 이유를 표시한다',async()=>{
-    const ui=await startUi();ui.click({action:'scout',venue:'VEN_PORT',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'scout',venue:'VEN_PORT',emp:'EMP01'});
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     const detail=employeeSection(ui.app.innerHTML);
     expect(detail).not.toContain('반영됨');
@@ -483,7 +483,7 @@ describe('B 실제 성장 화면 연결',()=>{
 
   it.each([false,true])('꺼진 훈련 버튼 클릭은 아무 일도 하지 않는다 (안쪽 자식: %s)',async(fromChild)=>{
     const cfg=structuredClone(config);cfg.growth!.ordinaryTraining.durationDays=3;
-    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'},fromChild);ui.click({action:'end-day'});
     expect(ui.rendered({action:'train',emp:'EMP01'}).disabled).toBe(true);
     const before=ui.app.innerHTML;
@@ -492,7 +492,7 @@ describe('B 실제 성장 화면 연결',()=>{
   });
 
   it.each(['load','import','restart','scenario'])('%s 성공은 이전 성장 알림을 비운다',async(mode)=>{
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     ui.click({action:'train',emp:'EMP01'});ui.click({action:'end-day'});
     expect(growthNotice(ui.app.innerHTML)?.[2]).toContain('귀솔 +60 경험치');
     if(mode==='import')await ui.importText(readySave());
@@ -507,7 +507,7 @@ describe('B 실제 성장 화면 연결',()=>{
   });
   it('훈련 버튼 속성·상세 접근 참조는 허용 상태와 거절 상태 모두 유지된다',async()=>{
     const cfg=structuredClone(config);cfg.startingCash.KRW=500_000;
-    const ui=await startUi(cfg);ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     expect(ui.app.innerHTML).toContain('지금 3일까지 → 훈련하면 2일까지');
     expect(ui.app.innerHTML).toContain('성장 변화는 완료할 때 반영됩니다');
     for(const allowed of [true,false]) {
@@ -532,14 +532,14 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(employeeSection(ui.app.innerHTML)).not.toContain('훈련하면');
   });
   it('영입 버튼의 초점 대안도 실제 선택자 결합과 대상 영역을 따른다',async()=>{
-    const ui=await startUi();ui.doc.activeElement=ui.rendered({action:'scout',venue:'VEN_PORT'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.doc.activeElement=ui.rendered({action:'scout',venue:'VEN_PORT'});
     ui.click({action:'scout',venue:'VEN_PORT'});
     expect(ui.focusIds).toEqual(['site-h-VEN_PORT']);
     expect(ui.closestSelectors).toContain('.employee-detail, .recruit-site, .recruit-candidate');
   });
   it('훈련 대기→완료→레벨 알림→저장 재개를 연결하고 버튼이 꺼지면 상세 제목으로 초점을 옮긴다',async()=>{
     const cfg=structuredClone(config);cfg.employees[0]!.growth!.startXp=90;
-    const ui=await startUi(cfg);
+    const ui=await startUi(cfg); await (await import('./main-testkit')).screensReady();
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});
     expect(ui.app.innerHTML).toContain('aria-expanded="true" aria-controls="growth-EMP01"');
     ui.focus.mockClear();ui.focusIds.length=0;
@@ -607,7 +607,7 @@ describe('B 실제 성장 화면 연결',()=>{
     const s=openDay(createGame(config),config).state;
     // 단계별 배정·예약 기록만 준비하고 해당 계약은 취소해 현재 직원 시간을 비운다.
     const p=planState(s,config,[{id:'A',type:'ACCEPT_FORWARDING',offerId:'OFFER_FWD_01'},{id:'ASSIGN',type:'ASSIGN_TASK',taskId:'TASK001',employeeId:'EMP02'},{id:'BOOK',type:'BOOK_SAILING',contractId:'CT001',sailingId:'ROUTE01-D002'},{id:'CANCEL',type:'CANCEL_CONTRACT',contractId:'CT001'}]).state;
-    const ui=await startUi();await ui.importText(serializeSave(p));
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.importText(serializeSave(p));
     ui.click({action:'select-card',emp:'EMP01'});ui.click({action:'detail',emp:'EMP01'});ui.click({action:'train',emp:'EMP01'});
     const html=ui.app.innerHTML;
     expect(html.match(/<ul class="crew-time">([\s\S]*?)<\/ul>/)![1]).toContain('◆ 교육 중 0/1일');
@@ -618,7 +618,7 @@ describe('B 실제 성장 화면 연결',()=>{
     expect(ui.app.innerHTML.match(/<button[^>]*data-action="train"[^>]*>/)![0]).not.toContain('disabled');
   });
   it('M1 전체 화면에는 훈련·경험치가 없다',async()=>{
-    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');ui.click({action:'select-card',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');ui.click({action:'select-card',emp:'EMP01'});
     expect(ui.app.innerHTML).not.toContain('data-action="train"');expect(ui.app.innerHTML).not.toContain('경험치');
     expect(ui.app.innerHTML).toContain('레벨 1 · 강화 +0');
     expect(ui.app.innerHTML).toContain('aria-label="귀솔 직원 카드, 영업, 레벨 1, 대기 — 배정 가능"');
@@ -639,7 +639,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
   const cosmetics = { action:'accept', buy:'OFFER_BUY_02', sell:'OFFER_SELL_02' };
   const pendingCount = (html:string) => (html.match(/<ol class="pending">([\s\S]*?)<\/ol>/)?.[1]?.match(/<li\b/g) ?? []).length;
   it.each(['accept','accept-fwd','accept-plan'])('포인터 %s 뒤 새 계약 제목을 스크롤·초점 대상으로 쓴다', async(action) => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     if (action === 'accept-plan') {
       const initial = openDay(createGame(config),config).state;
       const unlocked = planState(initial,config,[
@@ -664,7 +664,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.app.innerHTML).toContain('<p class="flash info">오늘 할 일에 넣었습니다.');
   });
   it('배정·예약은 스크롤을 요청하지 않고 같은 칸에 예정 표시와 키보드 초점을 남긴다', async() => {
-    const ui = await startUi();ui.click(cosmetics);
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);
     ui.scroll.mockClear();ui.focus.mockClear();ui.focusIds.length=0;
     ui.click({action:'assign',emp:'EMP01'});
     expect(ui.focusIds).toEqual(['status-assign-TASK001']);
@@ -679,7 +679,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.app.innerHTML).toContain('운송편 예약 예정');
   });
   it.each(['scout','recruit-quest','hire','train'])('%s 뒤에도 스크롤 없이 누른 칸에 예정 표시가 남는다', async(action) => {
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     if(action==='recruit-quest') {
       const discovered=openDay(runDays(createGame(config),config,1,{
         1:[{id:'S',type:'SCOUT_SITE',venueId:'VEN_PORT',employeeId:'EMP02'}],
@@ -698,33 +698,33 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.doc.activeElement).not.toBeNull();
   });
   it('포인터로 사라지는 버튼을 눌러도 오늘 할 일 제목으로 대체하지 않는다', async() => {
-    const ui=await startUi();ui.click(cosmetics);vi.advanceTimersByTime(500);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);vi.advanceTimersByTime(500);
     ui.focus.mockClear();ui.focusIds.length=0;
     ui.clickNow({action:'unqueue',index:'0'},1);
     expect(ui.focusIds).not.toContain('queue-h');
     expect(ui.focus).not.toHaveBeenCalled();
   });
   it('키보드로 사라진 버튼을 누르면 body 대신 가까운 제목으로 초점을 옮긴다', async() => {
-    const ui=await startUi();ui.click(cosmetics);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);
     ui.click({action:'unqueue',index:'0'});
     expect(ui.doc.activeElement.id).toBe('queue-h');
     expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
   });
   it('대안 제목 가운데가 고정 막대에 가려지면 보이는 하루 진행에 초점을 둔다', async() => {
-    const ui=await startUi();ui.click(cosmetics);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);
     ui.bounds['status-assign-TASK001']={top:20,bottom:60,height:40};
     ui.click({action:'assign',emp:'EMP01'});
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
     expect(ui.scrollIds).toEqual(['contract-h-CT001']);
   });
   it('대안 제목 가운데가 아래쪽 알림에 가려져도 보이는 하루 진행에 초점을 둔다', async() => {
-    const ui=await startUi();ui.click(cosmetics);ui.setToastTop(700);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);ui.setToastTop(700);
     ui.bounds['status-assign-TASK001']={top:720,bottom:760,height:40};
     ui.click({action:'assign',emp:'EMP01'});
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
   });
   it('배정 뒤 위쪽 내용이 늘면 늘어난 만큼 스크롤해 예정 표시를 누른 높이에 둔다', async() => {
-    const ui=await startUi();ui.click(cosmetics);ui.scrollBy.mockClear();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);ui.scrollBy.mockClear();
     ui.afterRender(()=>{ui.slotTops['assign-TASK001']=230;});
     ui.click({action:'assign',emp:'EMP01'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
@@ -732,14 +732,14 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.app.innerHTML).toContain('justify-content:flex-start;padding-top:20px"><span class="pill" id="status-assign-TASK001"');
   });
   it('배정 뒤 위쪽 내용이 줄면 스크롤하지 않는다', async() => {
-    const ui=await startUi();ui.click(cosmetics);ui.scrollBy.mockClear();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);ui.scrollBy.mockClear();
     ui.afterRender(()=>{ui.slotTops['assign-TASK001']=150;});
     ui.click({action:'assign',emp:'EMP01'});
     expect(ui.scrollBy).not.toHaveBeenCalled();
     expect(ui.doc.activeElement.id).toBe('status-assign-TASK001');
   });
   it.each([[340,40],[275,-25]])('하루 진행 뒤 읽던 계약 제목이 %ipx로 가면 %ipx 스크롤해 같은 높이에 둔다', async(after,dy) => {
-    const ui=await startUi();ui.click(cosmetics);ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);ui.click({action:'end-day'});
     ui.bounds['contract-h-CT001']={top:300,bottom:330,height:30};ui.scrollBy.mockClear();
     ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:after,bottom:after+30,height:30};});
     ui.click({action:'end-day'});
@@ -747,12 +747,12 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,dy);
   });
   it('하루 진행 뒤 계약 제목이 그대로면 스크롤하지 않는다', async() => {
-    const ui=await startUi();ui.click(cosmetics);ui.click({action:'end-day'});ui.scrollBy.mockClear();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click(cosmetics);ui.click({action:'end-day'});ui.scrollBy.mockClear();
     ui.click({action:'end-day'});
     expect(ui.scrollBy).not.toHaveBeenCalled();
   });
   it('알림이 있으면 가리는 높이를 --toast-h로 알리고 없어지면 0px로 되돌린다', async() => {
-    const ui=await startUi();const set=vi.mocked(ui.doc.documentElement.style.setProperty);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();const set=vi.mocked(ui.doc.documentElement.style.setProperty);
     ui.setToastTop(690);ui.click(cosmetics);
     expect(set).toHaveBeenCalledWith('--toast-h','118px');
     set.mockClear();ui.click({action:'end-day'});
@@ -760,7 +760,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(set).not.toHaveBeenCalledWith('--toast-h','118px');
   });
   it('500ms 안의 다른 명령 클릭도 막고 500ms 뒤에는 받는다', async() => {
-    const ui=await startUi();ui.clickNow(cosmetics,1);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.clickNow(cosmetics,1);
     ui.clickNow({action:'assign',emp:'EMP01'},1);
     expect(pendingCount(ui.app.innerHTML)).toBe(1);
     vi.advanceTimersByTime(499);ui.clickNow({action:'assign',emp:'EMP01'},1);
@@ -769,13 +769,13 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(pendingCount(ui.app.innerHTML)).toBe(2);
   });
   it('하루 진행을 두 번 눌러도 하루만 진행하고 차단 시간 뒤에는 다음 날로 간다', async() => {
-    const ui=await startUi();ui.clickNow({action:'end-day'},1);ui.clickNow({action:'end-day'},1);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.clickNow({action:'end-day'},1);ui.clickNow({action:'end-day'},1);
     expect(ui.app.innerHTML).toContain('<b>2일</b>');expect(ui.app.innerHTML).not.toContain('<b>3일</b>');
     vi.advanceTimersByTime(500);ui.clickNow({action:'end-day'},1);
     expect(ui.app.innerHTML).toContain('<b>3일</b>');
   });
   it.each(['restart','scenario','load','import'])('%s 확인을 거절하면 진행과 대기 명령이 유지된다', async(action) => {
-    const ui=await startUi();ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'end-day'});
     ui.click({action:'scout',venue:'VEN_PORT'});
     const before=ui.app.innerHTML;
     vi.mocked(confirm).mockReturnValue(false);
@@ -788,7 +788,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
   });
   it('적용 가능한 배정·예약 버튼에는 title이 없고 거절 이유는 버튼 밖에도 있다', async() => {
-    const ui=await startUi();ui.click({action:'accept-fwd',offer:'OFFER_FWD_01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'accept-fwd',offer:'OFFER_FWD_01'});
     const buttons=ui.app.innerHTML.match(/<button[^>]*data-action="(?:assign|book)"[^>]*>/g)!;
     expect(buttons.length).toBeGreaterThan(0);
     for(const button of buttons)if(!button.includes('disabled'))expect(button).not.toContain('title=');
@@ -800,7 +800,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(blocked![2]).toContain('이 출항편의 남은 화물 공간이 부족합니다');
   });
   it('카드를 두 번 눌러도 선택이 유지되고 성장 상세 버튼을 화면 안으로 가져온다', async() => {
-    const ui=await startUi();ui.click({action:'select-card',emp:'EMP01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card',emp:'EMP01'});
     ui.click({action:'select-card',emp:'EMP01'});
     expect(ui.app.innerHTML).toMatch(/<article class="[^"]*is-selected"[^>]*data-action="select-card"[^>]*data-emp="EMP01"/);
     expect(ui.app.innerHTML).toContain('귀솔 성장·훈련 상세');
@@ -808,14 +808,14 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.doc.activeElement.dataset.action).toBe('detail');
   });
   it('문서 제목은 새 시나리오와 불러온 시나리오를 따른다', async() => {
-    const ui=await startUi();expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
     const m1=loadScenario('SCENARIO_M1_ONE_TRADE');
     await ui.change({action:'scenario'},m1.id);expect(ui.doc.title).toBe(`Scitrade — ${m1.titleKo}`);
     await ui.importText(serializeSave(openDay(createGame(config),config).state));
     expect(ui.doc.title).toBe(`Scitrade — ${config.titleKo}`);
   });
   it('M1도 견적 수락·배정·예약에서 수금·종결까지 진행한다', async() => {
-    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
     ui.click({action:'accept',buy:'OFFER_BUY_01',sell:'OFFER_SELL_01'});
     ui.click({action:'assign',emp:'EMP01'});
     ui.click({action:'book',contract:'CT001',sailing:'ROUTE01-D002'});
@@ -826,7 +826,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
     expect(ui.app.innerHTML).not.toContain('id="recruit-h"');
   });
   it('고정되는 상태 막대의 실제 높이를 ResizeObserver로 CSS에 갱신한다', async() => {
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     expect(ui.doc.documentElement.style.setProperty).toHaveBeenLastCalledWith('--topbar-h','100px');
     ui.resizeStatusbar(140);
     expect(ui.doc.documentElement.style.setProperty).toHaveBeenLastCalledWith('--topbar-h','140px');
@@ -862,7 +862,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
       const [dark,light]=[luminance(color('warn')),luminance(color(background))].sort((a,b)=>a-b);
       expect((light!+.05)/(dark!+.05)).toBeGreaterThanOrEqual(4.5);
     }
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const masthead=ui.app.innerHTML.split('<div class="masthead">')[1]!.split('<div class="statusbar"')[0]!;
     expect(masthead).toContain('data-action="restart"');expect(masthead).not.toContain('data-action="end-day"');
     const bar=ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]!;
@@ -872,7 +872,7 @@ describe('TASK-0014 휴대폰·태블릿 조작', () => {
 
 describe('3판 표시 수정 (Codex 사용성 점검 2026-10-07)', () => {
   it('견적의 대금일은 계약 조건으로 적고, 인도가 늦으면 실제로 받는 날을 따로 알린다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     // 1일 화장품: 계약상 대금일 12일이 인도보다 늦으므로 그대로 받는다.
     expect(ui.app.innerHTML).toContain('계약상 대금일은 12일입니다.');
     expect(ui.app.innerHTML).toContain('<li>대금은 12일에 받을 예정</li>');
@@ -910,7 +910,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     };
   }
   it('한 바퀴(a): 연 채 진행·선택 500ms·F1 예정 초점·결과 단일 알림',async()=>{
-    const ui=await startUi();await select(ui);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);
     expect(ui.scrollIds).toContain('local-h');expect(ui.focusIds).toContain('local-h');
     expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');expect(ui.app.innerHTML).toContain('id="culture-preview"');
     vi.advanceTimersByTime(499);ui.clickNow({action:'culture-queue',activity:'CA01',emp:'EMP01'});
@@ -944,7 +944,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(toast(ui.app.innerHTML)).toContain('결과 보기');expect(toast(ui.app.innerHTML)).not.toContain('role="status"');
   });
   it('한 바퀴(b): 닫고 진행은 스크롤 없이 새 기록 표시, 결과 보기만 제목으로 이동한다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});
     ui.scrollBy.mockClear();ui.scrollIds.length=0;ui.click({action:'end-day'});
     expect(ui.scrollBy).not.toHaveBeenCalled();expect(ui.scrollIds).toEqual([]);expect(tab(ui.app.innerHTML)).toContain('새 기록 있음');
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
@@ -958,7 +958,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
   });
   it('안 본 결과는 이틀 진행 뒤에도 남고 열어 본 다음 다시 열 때 사라진다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-close',where:'head'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-close',where:'head'});
     ui.click({action:'end-day'});ui.click({action:'end-day'});expect(ui.app.innerHTML).toContain('<b>4일</b>');
     expect(tab(ui.app.innerHTML)).toContain('새 기록 있음');expect(toast(ui.app.innerHTML)).toBe('');
     ui.click({action:'culture-tab'});
@@ -968,7 +968,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).not.toContain('class="cul-result"');
   });
   it.each(['tab','head','end'])('닫기 %s는 열기 전 탭 위치로 한 번 복원하고 초점·500ms를 지킨다',async(where)=>{
-    const ui=await startUi();ui.bounds['local-tab']={top:240,bottom:284,height:44};
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.bounds['local-tab']={top:240,bottom:284,height:44};
     ui.click({action:'culture-tab'});expect(ui.doc.activeElement.id).toBe('local-h');
     ui.clickNow({action:'culture-tab'});expect(ui.app.innerHTML).toContain('id="local"');
     ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:310,bottom:354,height:44};});
@@ -979,13 +979,13 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     vi.advanceTimersByTime(1);ui.clickNow({action:'culture-tab'});expect(ui.app.innerHTML).toContain('id="local"');
   });
   it('결과 보기로 연 뒤 닫을 때는 탭을 막대 아래·알림 위로 최소 이동한다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});ui.click({action:'end-day'});ui.click({action:'culture-result'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'culture-tab'});ui.click({action:'end-day'});ui.click({action:'culture-result'});
     ui.scrollBy.mockClear();ui.afterRender(()=>{ui.bounds['local-tab']={top:50,bottom:94,height:44};});
     ui.click({action:'culture-close',where:'end'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,-58);expect(ui.doc.activeElement.id).toBe('local-tab');
   });
   it('읽던 직원 제목은 결과 높이만큼 한 번 보정하고 사라지는 미리 보기는 기준이 아니다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-queue'});
     ui.bounds['culture-h']={top:50,bottom:80,height:30};
     ui.bounds['culture-emp-h']={top:180,bottom:210,height:30};
     ui.bounds['culture-pv-h']={top:280,bottom:310,height:30};
@@ -996,14 +996,14 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.app.innerHTML).not.toContain('id="culture-pv-h"');expect(ui.doc.activeElement.dataset.action).toBe('end-day');
   });
   it('읽던 첫 결과가 남고 여러 후보 중 가장 위의 제목을 쓴다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
     const heading=`culture-result-h-${taskId}`;ui.bounds[heading]={top:170,bottom:200,height:30};
     ui.bounds['culture-h']={top:400,bottom:430,height:30};ui.bounds['culture-emp-h']={top:550,bottom:580,height:30};
     ui.afterRender(()=>{ui.bounds[heading]={top:150,bottom:180,height:30};});ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,-20);
   });
   it('직원 고르기는 한 번의 최소 스크롤 뒤 누른 직원에 초점을 둔다',async()=>{
-    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
     ui.bounds['culture-emp-h']={top:600,bottom:630,height:30};ui.bounds['culture-slot']={top:960,bottom:1050,height:90};
     ui.bounds['culture-emp-EMP01']={top:700,bottom:744,height:44};
     ui.setToastTop(620);ui.click({action:'save'});ui.scrollBy.mockClear();
@@ -1013,21 +1013,21 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.focus).toHaveBeenLastCalledWith({preventScroll:true});
   });
   it('미리 보기 넘침은 누른 직원의 막대 아래 8px 상한을 우선한다',async()=>{
-    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});
     ui.bounds['culture-emp-h']={top:160,bottom:190,height:30};ui.bounds['culture-emp-EMP01']={top:180,bottom:224,height:44};
     ui.bounds['culture-slot']={top:910,bottom:1000,height:90};ui.scrollBy.mockClear();
     ui.click({action:'culture-emp',emp:'EMP01'});expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,72);
     expect(ui.doc.activeElement.id).toBe('culture-emp-EMP01');
   });
   it('활동·직원의 같은 선택은 유지하고 다른 활동을 고르면 직원·미리 보기만 지운다',async()=>{
-    const ui=await startUi();await select(ui);ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-act',activity:'CA01'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await select(ui);ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-act',activity:'CA01'});
     expect(ui.app.innerHTML).toContain('id="culture-preview"');
     ui.click({action:'culture-act',activity:'CA02'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
     ui.clickNow({action:'culture-emp',emp:'EMP01'});expect(ui.app.innerHTML).not.toContain('id="culture-preview"');
     vi.advanceTimersByTime(500);ui.clickNow({action:'culture-emp',emp:'EMP01'});expect(ui.app.innerHTML).toContain('id="culture-preview"');
   });
   it('P0-CITY-01 열람·선택·미리 보기·결과 보기 전후 저장 문자열과 위쪽 막대는 같다',async()=>{
-    const ui=await startUi();const read=await exportReader(ui);const saved=await read(),bar=header(ui.app.innerHTML);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();const read=await exportReader(ui);const saved=await read(),bar=header(ui.app.innerHTML);
     for(const action of [{action:'culture-tab'},{action:'culture-book'},{action:'culture-book'},
       {action:'culture-act',activity:'CA01'},{action:'culture-emp',emp:'EMP01'},
       {action:'culture-close',where:'head'},{action:'culture-tab'},{action:'culture-close',where:'end'}] as Record<string,string>[]) {
@@ -1041,7 +1041,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.doc.createElement.mock.calls.length).toBe(11);
   });
   it('P0-CITY-01 금융센터는 미구현 표시가 있고 주식·상장 단추가 없다',async()=>{
-    const ui=await startUi();ui.click({action:'culture-tab'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'culture-tab'});
     expect(ui.app.innerHTML).toContain('금융센터</dt><dd>주식 거래와 상장(회사 주식을 시장에 내놓기)은 이번 판에 없습니다.');
     const list=ui.app.innerHTML.match(/<dl class="local-venues">([\s\S]*?)<\/dl>/)![1]!;
     expect([...list.matchAll(/<dt>/g)]).toHaveLength(5);expect(list).not.toContain('<button');
@@ -1049,7 +1049,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
   });
   it.each(['restart','load','import','scenario'])('%s 뒤 펼침·기록장·활동·직원 선택은 초기화된다',async(mode)=>{
     const s=openDay(runDays(createGame(config),config,2,{2:[{id:'C',type:'START_CULTURE_ACTIVITY',activityId:'CA01',employeeId:'EMP01'}]}).state,config).state;
-    const ui=await startUi();await ui.importText(serializeSave(s));ui.click({action:'end-day'});ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.importText(serializeSave(s));ui.click({action:'end-day'});ui.click({action:'culture-tab'});ui.click({action:'culture-book'});
     ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP01'});
     if(mode==='load'){vi.stubGlobal('localStorage',{getItem:()=>serializeSave(s)});ui.click({action:'load'});}
     else if(mode==='import')await ui.importText(serializeSave(s));
@@ -1064,12 +1064,12 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,50);
   });
   it('M1 전체 화면에는 문화 탭·패널·비용·감싸는 칸이 없다',async()=>{
-    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
     for(const text of ['id="local-tab"','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
     ui.click({action:'end-day'});for(const text of ['id="local-tab"','현지 활동비','data-action="culture-','class="maincol"'])expect(ui.app.innerHTML).not.toContain(text);
   });
   it('CA01 하루 뒤 원화 비용 행의 합과 운영 손익·현금식은 일치한다',async()=>{
-    const ui=await startUi();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'culture-tab'});ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});ui.click({action:'end-day'});
     const table=ui.app.innerHTML.split('<caption>운영 장부 · KRW</caption>')[1]!.split('</table>')[0]!;
     expect([...table.matchAll(/<th>(.*?)<\/th>/g)].map((m)=>m[1])).toEqual(['시작 운영 자금','급여','영입 계약금','훈련비','현지 활동비','운영 손익','미지급 급여','현금']);
     expect([...table.matchAll(/<td>(.*?)<\/td>/g)].map((m)=>m[1])).toEqual(['10,000,000원','−160,000원','0원','0원','−20,000원','−180,000원','0원','9,820,000원']);
@@ -1086,7 +1086,7 @@ describe('TASK-0012 문화 활동 실제 화면 연결',()=>{
     expect(css).toMatch(/\.flash-toast button\s*\{[^}]*pointer-events:\s*auto/);
     expect(css).toMatch(/\.flash-toast button\s*\{[^}]*min-height:\s*44px/);
     expect(css).toMatch(/\.trade\s*\{[^}]*position:\s*relative/);expect(css).toMatch(/\.local-tab\s*\{[^}]*position:\s*absolute/);
-    const ui=await startUi();expect(ui.app.innerHTML).toMatch(/<h2 id="trade-h"[^>]*>[\s\S]*?<\/h2>\s*<button id="local-tab"/);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();expect(ui.app.innerHTML).toMatch(/<h2 id="trade-h"[^>]*>[\s\S]*?<\/h2>\s*<button id="local-tab"/);
     expect(ui.app.innerHTML).not.toMatch(/id="local-tab"[^>]*aria-controls/);
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-controls="local-body"/);
   });
@@ -1101,7 +1101,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     ui.click({action:'culture-act',activity:'CA01'});ui.click({action:'culture-emp',emp:'EMP01'});ui.click({action:'culture-queue'});
   }
   it.each([false,true])('M2에서도 제목이 막대 위인 읽던 계약 본문의 위치를 복원한다 (패널 열림 %s)',async(open)=>{
-    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});ui.click({action:'end-day'});
     if(open){ui.click({action:'culture-tab'});
       // 계약 카드가 보이면 거래 칸 전체(견적판 기준)보다 계약 제목이 우선이다.
       ui.bounds.trade={top:-1000,bottom:900,height:1900};ui.bounds['trade-h']={top:-990,bottom:-960,height:30};}
@@ -1112,14 +1112,14 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
   });
   it('결과 카드는 제목이 막대 위여도 블록이 보이면 읽던 자리 기준이다',async()=>{
-    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);ui.click({action:'end-day'});
     ui.bounds[`culture-result-h-${taskId}`]={top:40,bottom:70,height:30};ui.bounds[`culture-result-${taskId}`]={top:30,bottom:520,height:490};
     ui.afterRender(()=>{ui.bounds[`culture-result-h-${taskId}`]={top:300,bottom:330,height:30};});
     ui.scrollBy.mockClear();ui.click({action:'end-day'});
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,260);
   });
   it('읽던 자리 후보는 DOM 순서가 아니라 화면 위에서부터 고른다',async()=>{
-    const ui=await startUi();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});await queued(ui);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'accept',buy:'OFFER_BUY_02',sell:'OFFER_SELL_02'});await queued(ui);
     ui.bounds['culture-h']={top:50,bottom:80,height:30};ui.bounds['culture-emp-h']={top:180,bottom:210,height:30};
     ui.bounds['culture-book-h']={top:780,bottom:810,height:30};ui.bounds['contract-h-CT001']={top:600,bottom:630,height:30};
     // 계약 후보는 먼저 모으지만 화면에서는 직원 제목이 위다. 두 후보의 이동량을 다르게 둔다.
@@ -1128,7 +1128,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
   });
   it('패널을 연 채 견적판을 읽으면 위 패널 높이가 바뀌어도 거래 칸을 제자리에 둔다',async()=>{
-    const ui=await startUi();await queued(ui);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);
     for(const [id,top] of [['culture-h',-900],['culture-emp-h',-700],['culture-employees',-680],['culture-book-h',20],['trade-h',-40]] as const)ui.bounds[id]={top,bottom:top+30,height:30};
     ui.bounds.trade={top:-50,bottom:900,height:950};
     ui.afterRender(()=>{ui.bounds['trade-h']={top:390,bottom:420,height:30};});
@@ -1136,7 +1136,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,430);expect(ui.doc.activeElement.dataset.action).toBe('end-day');
   });
   it('직원 줄이 보이면 그 제목이 막대 위여도 결과 높이만큼 보정한다',async()=>{
-    const ui=await startUi();await queued(ui);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);
     ui.bounds['culture-h']={top:-300,bottom:-270,height:30};ui.bounds['culture-emp-h']={top:70,bottom:91,height:21};
     ui.bounds['culture-employees']={top:120,bottom:164,height:44};ui.bounds['culture-book-h']={top:900,bottom:930,height:30};
     ui.afterRender(()=>{ui.bounds['culture-emp-h']={top:493,bottom:514,height:21};});
@@ -1144,7 +1144,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,423);
   });
   it('기록장을 펼친 채 제목과 보고서가 함께 보여도 보고서 자리를 지킨다',async()=>{
-    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
     for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
       ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],[`culture-report-${taskId}`,260,700],[`culture-report-h-${taskId}`,270,300]] as const)
       ui.bounds[id]={top,bottom,height:bottom-top};
@@ -1153,7 +1153,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,350);
   });
   it('펼친 기록장에 띠에 걸친 보고서가 없으면 기록장 제목이 기준이다',async()=>{
-    const ui=await startUi();await queued(ui);ui.click({action:'culture-book'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);ui.click({action:'culture-book'});
     for(const [id,top,bottom] of [['culture-h',-450,-420],['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',120,150],['trade-h',700,730]] as const)
       ui.bounds[id]={top,bottom,height:bottom-top};
     ui.bounds.trade={top:690,bottom:3000,height:2310};
@@ -1162,7 +1162,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,380);
   });
   it('기록장 보고서를 읽는 중이면 그 보고서 자리를 지킨다',async()=>{
-    const ui=await startUi();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);ui.click({action:'end-day'});ui.click({action:'culture-book'});
     for(const [id,top,bottom] of [[`culture-result-${taskId}`,-900,-500],[`culture-result-h-${taskId}`,-890,-860],['culture-h',-450,-420],
       ['culture-emp-h',-420,-400],['culture-employees',-400,-350],['culture-book-h',20,50],[`culture-report-${taskId}`,30,500],[`culture-report-h-${taskId}`,40,70]] as const)
       ui.bounds[id]={top,bottom,height:bottom-top};
@@ -1171,7 +1171,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0,360);
   });
   it.each(['open','closed'])('탭으로 먼저 연 뒤(%s) 결과 보기를 눌러도 방금 마감한 날의 카드로 간다',async(after)=>{
-    const ui=await startUi();await queued(ui);ui.click({action:'culture-close',where:'head'});ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);ui.click({action:'culture-close',where:'head'});ui.click({action:'end-day'});
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toContain(`id="culture-result-h-${taskId}"`);
     if(after==='closed')ui.click({action:'culture-tab'});
     expect(toast(ui.app.innerHTML)).toContain('data-action="culture-result"');
@@ -1182,14 +1182,14 @@ describe('TASK-0012 Claude 검수 보강',()=>{
     ui.click({action:'culture-close',where:'head'});expect(tab(ui.app.innerHTML)).toContain('장소 5곳');
   });
   it('같은 날 결과가 두 건이면 결과 보기는 화면의 첫 결과 카드로 간다',async()=>{
-    const ui=await startUi();await queued(ui);
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await queued(ui);
     ui.click({action:'culture-act',activity:'CA02'});ui.click({action:'culture-emp',emp:'EMP02'});ui.click({action:'culture-queue'});
     ui.click({action:'end-day'});ui.scrollIds.length=0;ui.click({action:'culture-result'});
     const ids=[...ui.app.innerHTML.matchAll(/id="(culture-result-h-[^"]+)"/g)].map((m)=>m[1]);
     expect(ids).toHaveLength(2);expect(ui.scrollIds).toEqual([ids[0]]);expect(ui.focusIds.at(-1)).toBe(ids[0]);
   });
   it('탭·기록장·활동·직원의 상태 속성과 거래 위 패널 배치',async()=>{
-    const ui=await startUi();ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'end-day'});
     expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="false"/);
     ui.click({action:'culture-tab'});expect(ui.app.innerHTML).toMatch(/id="local-tab"[^>]*aria-expanded="true"/);
     expect(ui.app.innerHTML).toMatch(/<div class="maincol"><section class="panel local"[\s\S]*?<\/section>\s*<section class="panel trade"/);
@@ -1204,7 +1204,7 @@ describe('TASK-0012 Claude 검수 보강',()=>{
 
 describe('TASK-0012 M1 동작 보존',()=>{
   it('M1에서는 제목이 막대 위라도 읽던 계약 본문의 위치를 복원한다',async()=>{
-    const ui=await startUi();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');
     ui.click({action:'accept',buy:'OFFER_BUY_01',sell:'OFFER_SELL_01'});
     ui.bounds['contract-h-CT001']={top:20,bottom:50,height:30};
     ui.afterRender(()=>{ui.bounds['contract-h-CT001']={top:70,bottom:100,height:30};});
@@ -1219,7 +1219,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     ui.click({action:'culture-tab'});ui.click({action:'culture-act'});ui.click({action:'culture-emp'});
   };
   it('빼기 두 번은 명령 하나만 빼고 500ms 뒤에는 다음 명령을 뺀다',async()=>{
-    const ui=await startUi();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
     expect(pending(ui.app.innerHTML)).toBe(2);
     vi.advanceTimersByTime(501);
     ui.clickNow({action:'unqueue',index:'0'},1);ui.clickNow({action:'unqueue',index:'0'},1);
@@ -1228,14 +1228,14 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(pending(ui.app.innerHTML)).toBe(0);
   });
   it('빼기는 명령 ID로 찾고, 이미 빠진 명령의 단추는 아무것도 빼지 않는다',async()=>{
-    const ui=await startUi();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'accept'});ui.click({action:'accept-fwd'});
     const stale=ui.rendered({action:'unqueue',index:'0'});
     ui.click({action:'unqueue',index:'0'});expect(pending(ui.app.innerHTML)).toBe(1);
     vi.advanceTimersByTime(501);ui.clickTarget(stale,1);
     expect(pending(ui.app.innerHTML)).toBe(1);
   });
   it.each(['detail','interview','culture-book'])('열고 닫기 두 번(%s)',async(action)=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     if(action==='detail') ui.click({action:'select-card'});
     if(action==='interview') await ui.importText(readySave());
     if(action==='culture-book') ui.click({action:'culture-tab'});
@@ -1246,7 +1246,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(button).toContain('aria-expanded="false"');
   });
   it('떠나기 전 확인은 시작·대기·진행·저장 성공과 실패·불러오기·가져오기·처음부터·내보내기를 구분한다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const leaving=(dirty:boolean)=>{
       const ev={preventDefault:vi.fn(),returnValue:'원래'};ui.fireWindow('beforeunload',ev);
       expect(ev.preventDefault.mock.calls.length).toBe(dirty ? 1 : 0);expect(ev.returnValue).toBe(dirty ? '' : '원래');
@@ -1276,7 +1276,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(css).toMatch(/\.skip-links:focus-within\s*\{[^}]*position: fixed;[^}]*top: .5rem;[^}]*left: .5rem;[^}]*z-index: 30/);
   });
   it('화면 코드 순서는 세 열의 거래·동료·자원·오늘 할 일·지도·보고·기록이다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const checkOrder=()=>{
       const html=ui.app.innerHTML;
       const trade=html.includes('<div class="maincol">') ? '<div class="maincol">' : '<section class="panel trade"';
@@ -1290,7 +1290,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');checkOrder();
   });
   it('건너뛰기 두 단추는 첫 정지점이며 제목으로 스크롤하고 초점을 옮긴다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     expect([...ui.app.innerHTML.matchAll(/data-action="([^"]+)"/g)].slice(0,2).map((m)=>m[1])).toEqual(['skip-to','skip-to']);
     for(const target of ['trade-h','queue-h']) {
       ui.scrollIds.length=0;ui.focusIds.length=0;ui.focus.mockClear();
@@ -1298,7 +1298,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     }
   });
   it.each(['기본','튐 없음','Tab 없음','고정 영역 밖','200ms 뒤','결과 보기','Enter 뒤'])('Shift+Tab 튐 복원(%s)',async(kind)=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     if(kind==='결과 보기') {await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});}
     ui.win.scrollY=1200;
     if(kind!=='Tab 없음')ui.fireDoc('keydown',{key:'Tab',shiftKey:true});
@@ -1313,18 +1313,18 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     else expect(ui.win.scrollTo).not.toHaveBeenCalled();
   });
   it('가져오기 입력은 키보드 초점을 받고 같은 label에 이름이 있다',async()=>{
-    const ui=await startUi(),label=ui.app.innerHTML.match(/<label class="file-btn">[^<]*<input[^>]+>[\s\S]*?<\/label>/)![0];
+    const ui=await startUi(),label=ui.app.innerHTML.match(/<label class="file-btn">[^<]*<input[^>]+>[\s\S]*?<\/label>/)![0]; await (await import('./main-testkit')).screensReady();
     expect(label).toContain('가져오기');const input=label.match(/<input[^>]+>/)![0];
     expect(input).toContain('type="file"');expect(input).toContain('data-action="import"');expect(input).toContain('class="visually-hidden"');
     expect(input).not.toMatch(/\shidden\b/);expect(input).not.toContain('tabindex="-1"');
   });
   it('결과 보기 Tab 한 번: 하루 진행 다음 동작은 결과 보기다',async()=>{
-    const ui=await startUi();await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();await culture(ui);ui.click({action:'culture-queue'});ui.click({action:'end-day'});
     expect(ui.doc.activeElement.dataset.action).toBe('end-day');
     expect(ui.app.innerHTML.split('data-action="end-day"')[1]!.match(/data-action="([^"]+)"/)![1]).toBe('culture-result');
   });
   it('알림 영역은 한 번 만들고 다시 그리기는 읽지 않으며 같은 새 알림은 공백을 바꾼다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const noRole=()=>{expect(ui.app.innerHTML).not.toContain('role="status"');expect(ui.app.innerHTML).not.toContain('aria-live');};
     noRole();expect(ui.doc.body.insertAdjacentHTML).toHaveBeenCalledExactlyOnceWith('beforeend','<div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>');
     expect(ui.announcements).toHaveLength(0);ui.click({action:'accept'});noRole();expect(ui.announcements).toHaveLength(1);
@@ -1351,7 +1351,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(ui.doc.body.insertAdjacentHTML).toHaveBeenCalledOnce();
   });
   it('카드·운영표는 선택 글자와 의미를 가지며 막대는 이름 있는 영역이다',async()=>{
-    const ui=await startUi();ui.click({action:'select-card'});
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();ui.click({action:'select-card'});
     const cards=[...ui.app.innerHTML.matchAll(/<article class="card [\s\S]*?<\/article>/g)].map((m)=>m[0]);
     expect(cards.filter((c)=>c.includes('aria-pressed="true"'))).toHaveLength(1);
     expect(cards[0]).toContain('✓ 선택됨');expect(cards[1]).toContain('aria-pressed="false"');expect(cards[1]).not.toContain('✓ 선택됨');
@@ -1366,7 +1366,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     ui.keydown(button,' ');expect(ui.app.innerHTML).toBe(before);
   });
   it('개발 단계 부호 0건은 성장·문화·M1·지연 대응 화면에 적용된다',async()=>{
-    const ui=await startUi();
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();
     const clean=()=>expect(ui.app.innerHTML).not.toMatch(/M2a|M2b|LEGACY_FIXED|규칙 M1|규칙 M2|rules-1|M3 사건|DESIGN 가상값|개발용 가상값/);
     clean();expect(ui.app.innerHTML).toContain('가상값');
     ui.click({action:'culture-tab'});ui.click({action:'select-card'});ui.click({action:'detail'});clean();
@@ -1381,7 +1381,7 @@ describe('TASK-0018 키보드·입력 안전·알림·문구',()=>{
     expect(ui.app.innerHTML).toContain('data-action="keep"');clean();
   });
   it('빌드 표시는 머리 문구에 있고 고정 막대에는 없다',async()=>{
-    const ui=await startUi();const header=/<span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)<\/span>/;
+    const ui=await startUi(); await (await import('./main-testkit')).screensReady();const header=/<span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)<\/span>/;
     expect(ui.app.innerHTML).toMatch(header);
     ui.change({action:'scenario'},'SCENARIO_M1_ONE_TRADE');expect(ui.app.innerHTML).toMatch(header);
     expect(ui.app.innerHTML.split('<div class="statusbar"')[1]!.split('</header>')[0]).not.toContain('빌드');
@@ -1431,7 +1431,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     values.forEach((value, i) => expect(value).toMatch(i % summary.currencies.length === 0 ? /^(?:—|.*USD)$/ : /^(?:—|.*원)$/));
   };
   it('보고 머리·미지급금과 확정 기준 문구 수를 유지한다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' });
     expect(panel(ui.app.innerHTML, 'report')).toContain('<h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>');
     const rows = [...book(ui.app.innerHTML, '거래 장부 · USD').matchAll(/<tr[^>]*><th>(.*?)<\/th><td>(.*?)<\/td><\/tr>/g)];
     const index = rows.findIndex((r) => r[1] === '자산 합계');
@@ -1439,7 +1439,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML.match(/금액은 확정 기준/g)).toHaveLength(2);
   });
   it('정시 인도율은 미인도와 늦은 종결 계약을 분리하고 종결 링크를 만들지 않는다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(panel(ui.app.innerHTML, 'report')).toContain('<p>정시 인도율: 아직 인도한 계약이 없습니다.</p>');
     const l = late(), past = savedAt(l.c.deliveryDeadlineDay + 1, l.commands);
     await ui.importText(serializeSave(past));
@@ -1451,7 +1451,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML).not.toContain(`data-contract="${l.c.id}"`);
   });
   it('앞으로 낼 돈은 통화별 표와 미지급 묶음 줄로 보인다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const s = savedAt(initial().day + 1, [{ id: 'A', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }]);
     assertDue(panel(ui.app.innerHTML, 'report'), s);
     const p = poor(); expect(p.s.obligations.length).toBeGreaterThanOrEqual(2);
@@ -1462,7 +1462,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(list).toBe(`<li><span>${first}일부터</span>밀린 지급 ${unpaid.length}건 (현금이 들어오면 먼저 갚음) <b>${formatMoney(config.payrollCurrency, -fundsPosition(p.s, config, config.payrollCurrency).unpaidObligations)}</b></li>`);
   });
   it('업무 부하·막힌 곳의 원인 문장과 사람 외 막힘 건수를 보인다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const s = savedAt(initial().day + 1, [{ id: 'A', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }]);
     const html = panel(ui.app.innerHTML, 'report'), groups = bottlenecks(s, config);
     for (const line of workloadLinesKo(workloadSummary(s, config), config)) expect(html).toContain(`<li>${esc(line)}</li>`);
@@ -1471,7 +1471,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(html).toContain(`<p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${n}건은 풀리지 않습니다.</p>`);
   });
   it('계약 링크는 취소 대기 사본에서 사라지고 초점·500ms 막기를 지킨다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const button = ui.rendered({ action: 'goto-contract' }), id = button.dataset.contract!;
     ui.scrollIds.length = 0; ui.focusIds.length = 0; ui.focus.mockClear();
     const count = ui.announcements.length;
@@ -1492,7 +1492,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.scrollIds).toEqual([`contract-h-${id}`]);
   });
   it('품목별 화물 화면은 개·상자를 합치지 않고 두 곳에 같은 목록을 쓴다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const offers = config.offers.filter((o) => o.kind === 'forwarding');
     for (const o of offers) ui.click({ action: 'accept-fwd', offer: o.id });
     ui.click({ action: 'end-day' });
@@ -1510,7 +1510,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(html).not.toContain(`맡은 고객 화물 ${companyReport(s, config).customerCargoUnits}개`);
   });
   it('결산은 끝난 저장에서만 보이며 통화별 표·계약·미지급·종료 표시가 일치한다', async () => {
-    const ui = await startUi(); expect(ui.app.innerHTML).not.toContain('id="settlement-h"');
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); expect(ui.app.innerHTML).not.toContain('id="settlement-h"');
     const s = runToCampaignEnd(initial(), config, { 1: acceptAllFeasible(initial(), config) }).state;
     await ui.importText(serializeSave(s));
     const sum = campaignSummary(s, config), report = panel(ui.app.innerHTML, 'report');
@@ -1546,7 +1546,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML).toContain(`${config.campaignDays}일 상태를 이 브라우저에 저장했습니다. 대기 중인 명령은 저장하지 않습니다.`);
   });
   it('결산 하루 진행 종료는 읽던 자리 복원 없이 제목으로 이동하고 한 번 알린다', async () => {
-    const ui = await startUi(), cmds: Command[] = [{ id: 'UNASSIGNED', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }];
+    const ui = await startUi(), cmds: Command[] = [{ id: 'UNASSIGNED', type: 'ACCEPT_TRADE', ...tradePairs(config)[0]! }]; await (await import('./main-testkit')).screensReady();
     const s = savedAt(config.campaignDays, cmds); await ui.importText(serializeSave(s));
     const head = `contract-h-${s.contracts[0]!.id}`;
     ui.bounds[head] = { top: 180, bottom: 220, height: 40 };
@@ -1561,7 +1561,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML).not.toContain(`${config.campaignDays + 1}일`);
   });
   it('일정 화면은 접힘 기본값·500ms 막기·다시 그리기·알림을 지킨다', async () => {
-    const ui = await startUi(), count = ui.announcements.length;
+    const ui = await startUi(), count = ui.announcements.length; await (await import('./main-testkit')).screensReady();
     expect(ui.app.innerHTML).toContain('aria-expanded="false" aria-controls="schedule-body"');
     expect(ui.app.innerHTML).not.toContain('id="schedule-body"');
     const header = ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0];
@@ -1574,7 +1574,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0]).toBe(header);
   });
   it.each(['load', 'import', 'restart', 'scenario'])('일정 화면 초기화 (%s)', async (how) => {
-    const ui = await startUi(); ui.click({ action: 'end-day' }); ui.click({ action: 'schedule-toggle' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'end-day' }); ui.click({ action: 'schedule-toggle' });
     expect(ui.app.innerHTML).toContain('id="schedule-body"');
     await restore(ui, how);
     expect(ui.app.innerHTML).toContain('aria-expanded="false" aria-controls="schedule-body"');
@@ -1588,7 +1588,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(panel(ui.app.innerHTML, 'queue')).not.toContain('날짜 바뀜');
   });
   it('일정 화면 수락·배정·예약 대기 계약도 링크와 담당 업무 완료 글을 보인다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' });
     const id = ui.rendered({ action: 'cancel' }).dataset.contract!;
     const assignment = ui.rendered({ action: 'assign' }).dataset;
     ui.click({ action: 'assign' }); ui.click({ action: 'book' }); ui.click({ action: 'schedule-toggle' });
@@ -1602,12 +1602,12 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const sh = end.shipments[0]!, c = end.contracts.find((c) => c.id === sh.contractId)!, day = sh.arrivalDay!;
     cfg.portRestrictions = [{ eventInstanceId: 'SYNTH-WAIT', templateId: 'SYNTH', cityId: c.destinationCityId,
       announceDay: 1, startDay: day, endDay: day, forecastKo: '시험용 가상 공지' }];
-    const ui = await startUi(cfg); await ui.importText(serializeSave(savedAt(day, commands, cfg)));
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(savedAt(day, commands, cfg)));
     ui.click({ action: 'end-day' }); ui.click({ action: 'schedule-toggle' });
     expect(panel(ui.app.innerHTML, 'queue')).toContain(`<span class="tag">날짜 바뀜 (원래 ${day}일)</span>`);
   });
   it('일정 화면 칸 구조와 보고의 칸 구조는 안쪽 section을 만들지 않는다', async () => {
-    const ui = await startUi(); ui.click({ action: 'schedule-toggle' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'schedule-toggle' });
     const queue = ui.app.innerHTML.split('<section class="panel queue"')[1]!.split('<section class="panel world"')[0]!;
     expect(queue.match(/<section/g) ?? []).toHaveLength(0); expect(queue.match(/<\/section>/g)).toHaveLength(1);
     const cut = panel(ui.app.innerHTML, 'queue'); expect(cut).toContain('id="schedule-toggle"');
@@ -1620,7 +1620,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
   });
   const crewIds = (html: string, tag: 'article' | 'tr') => [...html.matchAll(new RegExp(`<${tag}[^>]*data-action="select-card"[^>]*data-emp="([^"]+)"`, 'g'))].map((m) => m[1]!);
   it('동료 필터는 공개 선택지만 쓰고 카드·운영표를 함께 거르며 알림·막대를 유지한다', async () => {
-    const ui = await startUi(), entries = crewEntries(initial(), config, 'all');
+    const ui = await startUi(), entries = crewEntries(initial(), config, 'all'); await (await import('./main-testkit')).screensReady();
     const options = { roles: [...new Set(entries.map(({ def }) => def.role))],
       attributes: [...new Set(entries.map(({ def }) => def.character.attribute ?? 'none'))] };
     expect(crewFacetOptions(initial(), config)).toEqual(options);
@@ -1648,18 +1648,18 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.app.innerHTML.match(/<header class="topbar">[\s\S]*?<\/header>/)![0]).toBe(header);
   });
   it.each(['load', 'import', 'restart', 'scenario'])('동료 필터 초기화 (%s)', async (how) => {
-    const ui = await startUi(); ui.change({ action: 'crew-role' }, config.employees[0]!.role);
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.change({ action: 'crew-role' }, config.employees[0]!.role);
     ui.change({ action: 'crew-attr' }, config.employees[0]!.character.attribute!); await restore(ui, how);
     for (const action of ['crew-role', 'crew-attr']) expect(ui.app.innerHTML.split(`data-action="${action}"`)[1]!.split('</select>')[0]).toContain('<option value="" selected>전체</option>');
     expect(crewIds(ui.app.innerHTML, 'article')).toEqual(crewEntries(initial(), config, 'all').map(({ def }) => def.id));
     expect(crewIds(ui.app.innerHTML, 'tr')).toEqual(crewIds(ui.app.innerHTML, 'article'));
   });
   it('동료 필터 M1은 선택지가 하나라 필터를 그리지 않는다', async () => {
-    const ui = await startUi(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
     expect(ui.app.innerHTML).not.toContain('class="crew-facets"');
   });
   it('구조·키보드 회귀는 새 조작을 기존 영역 안에 두고 양수 tabindex를 쓰지 않는다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const html = ui.app.innerHTML;
     for (const [marker, before, after] of [
       ['class="crew-facets"', '<aside class="panel crew"', '<section class="panel resources"'],
@@ -1680,7 +1680,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     s.cargoLots.forEach((lot) => { if (lot.contractId === old) lot.contractId = c.id; });
     s.tasks.forEach((t) => { if (t.contractId === old) t.contractId = c.id; });
     const assigned = planState(s, cfg, [{ id: 'ASSIGN', type: 'ASSIGN_TASK', taskId: c.prepTaskId, employeeId: cfg.employees[0]!.id }]).state;
-    const ui = await startUi(cfg); await ui.importText(serializeSave(assigned)); ui.click({ action: 'schedule-toggle' });
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(assigned)); ui.click({ action: 'schedule-toggle' });
     expect(ui.app.innerHTML).not.toContain(bad); expect(ui.app.innerHTML).toContain(esc(bad));
     expect(panel(ui.app.innerHTML, 'report')).toContain(linkHtml(assigned.contracts[0]!.id));
     expect(panel(ui.app.innerHTML, 'queue')).toContain(esc(bad));
@@ -1697,7 +1697,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     .flatMap((currency) => { const m = rows.filter((r) => r.currency === currency); return m.length ? [formatMoney(currency, m.reduce((a, r) => a + r.amountMinor, 0))] : []; }).join(' · ');
   it('끝난 캠페인에서는 새 명령을 거절하고 숨은 대기 명령을 만들지 않는다', async () => {
     const end = runToCampaignEnd(initial(), config, { 1: [firstTrade()] }).state, id = end.contracts[0]!.id;
-    const ui = await startUi(); await ui.importText(serializeSave(end));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(end));
     const notice = `${config.campaignDays}일 캠페인이 끝나 새 명령을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.`;
     for (const dataset of [{ action: 'cancel', contract: id }, { action: 'assign' }] as Record<string, string>[]) {
       ui.click(dataset);
@@ -1722,13 +1722,13 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     // 터치 크기는 any-pointer로만 건다. 주 입력이 마우스인 터치 노트북에서도 44px가 되어야 한다.
     expect(css).not.toMatch(/\(\s*pointer\s*:\s*coarse\s*\)/);
     expect(css).toMatch(/@media \(any-pointer: coarse\)\s*\{[^}]*#schedule-toggle[^}]*min-height:\s*44px/);
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' }); ui.click({ action: 'schedule-toggle' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' }); ui.click({ action: 'schedule-toggle' });
     const q = panel(ui.app.innerHTML, 'queue');
     expect(q).toContain(' <span class="tag tag-estimate">예상</span>');
     expect(q).not.toContain('<span class="tag">예상</span>');
   });
   it('앞으로 낼 돈은 날짜 미정 지급을 원인별 문장으로 표 밖에 적는다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const c = planState(initial(), config, [firstTrade()]).state.contracts[0]!;
     const route = routeBetween(config, c.originCityId, c.destinationCityId)!;
     const lastDeparture = Math.max(...listSailings(config, route.id).map((sailing) => sailing.departureDay));
@@ -1754,7 +1754,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
   it('끝난 결산의 정시 인도율은 끝난 상태 문장으로 한 번만 보인다', async () => {
     const end = runToCampaignEnd(initial(), config, { 1: [firstTrade()] }).state, r = onTimeDeliveryRate(end);
     expect(r.delivered).toBe(0); expect(r.pastDeadlineUndelivered).toBeGreaterThan(0);
-    const ui = await startUi(); await ui.importText(serializeSave(end));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(end));
     const report = panel(ui.app.innerHTML, 'report');
     const links = end.contracts.filter((c) => c.status !== 'CANCELLED' && c.deliveredDay === null && c.deliveryDeadlineDay < end.day).map((c) => linkHtml(c.id)).join(', ');
     const lines = `<p>정시 인도율: 인도한 계약이 없습니다.</p><p>납기 안에 인도하지 못하고 캠페인이 끝난 계약: ${links} (인도하지 않아 정시 인도율에 넣지 않았습니다)</p>`;
@@ -1770,7 +1770,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(duty.length).toBeGreaterThan(0); expect(wages.length).toBeGreaterThan(0);
     for (const o of duty) expect(o.reasonKo).not.toMatch(/\d일/);
     for (const o of wages) expect(o.reasonKo).toContain(`${o.incurredDay}일`);
-    const ui = await startUi(cfg); await ui.importText(serializeSave(end));
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(end));
     const list = panel(ui.app.innerHTML, 'report').split(`<summary>남은 미지급 목록 (${unpaid.length}건)</summary><ul>`)[1]!.split('</ul>')[0]!;
     expect(list).toBe(unpaid.map((o) => `<li>${o.currency === cfg.tradeCurrency ? `${o.incurredDay}일 ` : ''}${esc(o.reasonKo)} ${formatMoney(o.currency, o.amountMinor)}</li>`).join(''));
   });
@@ -1781,7 +1781,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const unpaid = fundsPosition(s, cfg, cfg.tradeCurrency).unpaidObligations, ap = companyReport(s, cfg).trade.accountsPayable;
     expect(unpaid).toBeGreaterThan(0); expect(ap).toBeGreaterThan(0);
     expect(fundsPosition(s, cfg, cfg.payrollCurrency).unpaidObligations).toBe(0);
-    const ui = await startUi(cfg); await ui.importText(serializeSave(s));
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     const report = panel(ui.app.innerHTML, 'report');
     const rows = [...book(ui.app.innerHTML, '거래 장부 · USD').matchAll(/<tr[^>]*><th>(.*?)<\/th><td>(.*?)<\/td><\/tr>/g)];
     expect(rows[rows.findIndex((r) => r[1] === '자산 합계') + 1]!.slice(1, 3)).toEqual(['미지급금', formatMoney(cfg.tradeCurrency, ap)]);
@@ -1796,14 +1796,14 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
   it('거래 이익이 없고 원화 급여가 밀리면 이유 줄과 막힌 곳은 금액 뒤 조사 없이 쓴다', async () => {
     const p = poor(), r = companyReport(p.s, p.cfg);
     expect(r.trade.profit).toBeLessThanOrEqual(0); expect(r.payroll.accountsPayable).toBeGreaterThan(0);
-    const ui = await startUi(p.cfg); await ui.importText(serializeSave(p.s));
+    const ui = await startUi(p.cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(p.s));
     const report = panel(ui.app.innerHTML, 'report');
     expect(report).toContain(`<li>${esc(`원화 미지급 급여가 ${formatMoney(p.cfg.payrollCurrency, r.payroll.accountsPayable)} 있습니다. 달러 현금 ${formatMoney(p.cfg.tradeCurrency, r.trade.cash)}로는 원화 급여를 낼 수 없습니다. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`)}</li>`);
     expect(report).toContain(`<li>미지급금이 ${formatMoney(p.cfg.payrollCurrency, fundsPosition(p.s, p.cfg, p.cfg.payrollCurrency).unpaidObligations)} 있습니다. 현금이 들어오면 먼저 갚습니다.</li>`);
     for (const wrong of ['원가 있습니다', '원이 있습니다', 'USD이 있습니다']) expect(report).not.toContain(wrong);
   });
   it('경영 보고는 대기 명령이 있어도 확정 상태만 읽는다', async () => {
-    const ui = await startUi(), before = panel(ui.app.innerHTML, 'report');
+    const ui = await startUi(), before = panel(ui.app.innerHTML, 'report'); await (await import('./main-testkit')).screensReady();
     expect(before).toContain(`<ul class="workload">${workloadLinesKo(workloadSummary(initial(), config), config).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>`);
     expect(before).toContain('<ul class="bottleneck"><li><b>돈</b> 없음</li><li><b>시간</b> 없음</li><li><b>사람</b> 없음</li><li><b>선복</b> 없음</li></ul>');
     ui.click({ action: 'accept' });
@@ -1817,7 +1817,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(panel(ui.app.innerHTML, 'report')).toBe(day2);
   });
   it('보고와 일정의 7일 창은 캠페인 마지막 날에서 자른다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     for (const day of [initial().day + 1, config.campaignDays - 5, config.campaignDays - 4, config.campaignDays]) {
       await ui.importText(serializeSave(savedAt(day, [])));
       const to = Math.min(config.campaignDays, day + 6);
@@ -1827,7 +1827,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     }
   });
   it('결산 표의 행 이름·값·합계 줄과 결산 문장은 정한 순서와 같다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     for (const s of [runToCampaignEnd(initial(), config, { 1: acceptAllFeasible(initial(), config) }).state, runToCampaignEnd(initial(), config).state]) {
       await ui.importText(serializeSave(s));
       const sum = campaignSummary(s, config), report = panel(ui.app.innerHTML, 'report');
@@ -1852,7 +1852,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     }
   });
   it('동료 필터에서 고른 값은 다시 그린 뒤에도 선택된 채 남는다', async () => {
-    const ui = await startUi(), role = config.employees[0]!.role, attr = config.employees[0]!.character.attribute!;
+    const ui = await startUi(), role = config.employees[0]!.role, attr = config.employees[0]!.character.attribute!; await (await import('./main-testkit')).screensReady();
     const select = (action: string) => ui.app.innerHTML.split(`data-action="${action}"`)[1]!.split('</select>')[0]!;
     ui.change({ action: 'crew-role' }, role);
     expect(select('crew-role')).toContain(`<option value="${role}" selected>`); expect(select('crew-role')).not.toContain('<option value="" selected>');
@@ -1866,13 +1866,13 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const commands = acceptAllFeasible(initial(), config), end = runToCampaignEnd(initial(), config, { 1: commands }).state;
     const s = savedAt(Math.max(...end.contracts.map((c) => c.deliveredDay!)) + 1, commands);
     for (const owner of ['COMPANY', 'CUSTOMER']) expect(s.cargoLots.some((l) => l.owner === owner && l.status === 'DELIVERED')).toBe(true);
-    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     const report = panel(ui.app.innerHTML, 'report');
     expect(report).toContain('<th>재고 (없음)</th>');
     expect(report).toContain('맡은 고객 화물 없음 — 회사 자산이 아니라 표에 넣지 않습니다.');
   });
   it('끝나는 하루 진행 직후 500ms 안의 누름은 무시하고 그 뒤에는 받는다', async () => {
-    const ui = await startUi(); await ui.importText(serializeSave(savedAt(config.campaignDays, [firstTrade()])));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(savedAt(config.campaignDays, [firstTrade()])));
     ui.click({ action: 'end-day' });
     ui.scrollIds.length = 0; ui.clickNow({ action: 'skip-to', target: 'settlement-h' });
     expect(ui.scrollIds).toEqual([]);
@@ -1881,7 +1881,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
   });
   it('마지막 날 거절된 명령이 있으면 종료 알림은 경고로 거절 이유를 앞에 둔다', async () => {
     const cfg = structuredClone(config); cfg.campaignDays = initial().day;
-    const ui = await startUi(cfg);
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady();
     ui.click({ action: 'accept' });
     const assign = ui.rendered({ action: 'assign' }).dataset;
     ui.click({ action: 'assign', task: assign.task!, emp: assign.emp! });
@@ -1895,7 +1895,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(ui.announcements.slice(count)).toEqual([text]);
   });
   it('막힌 곳 목록은 묶음마다 건수와 계약 막힘 문장을 정한 순서로 보인다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const s = savedAt(initial().day + 1, [firstTrade()]), c = s.contracts[0]!, blockers = contractProgress(s, config, c).blockers;
     expect(blockers.map((b) => b.code)).toEqual(['TASK_UNASSIGNED', 'NO_BOOKING', 'NEXT_SAILING_LATE']);
     const one = (code: string) => `1건<ul><li>${linkHtml(c.id)} ${esc(blockers.find((b) => b.code === code)!.messageKo)}</li></ul>`;
@@ -1903,7 +1903,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     expect(panel(ui.app.innerHTML, 'report')).toContain(`<ul class="bottleneck"><li><b>돈</b> 없음</li><li><b>시간</b> ${one('NEXT_SAILING_LATE')}</li><li><b>사람</b> ${one('TASK_UNASSIGNED')}</li><li><b>선복</b> ${one('NO_BOOKING')}</li></ul><p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${notPeople}건은 풀리지 않습니다.</p>`);
   });
   it('운임·관세 목록 줄·매출채권 이유 줄·끝난 표와 종료 안내는 전체 문장으로 보인다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     const s = savedAt(initial().day + 1, [firstTrade()]);
     const [freight, duty] = upcomingPayments(s, config).filter((r) => r.kind === 'FREIGHT' || r.kind === 'DUTY');
     expect([freight!.kind, freight!.day !== null, duty!.kind, duty!.day]).toEqual(['FREIGHT', true, 'DUTY', null]);
@@ -1926,13 +1926,13 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const open = waiting.invoices.filter((i) => i.status !== 'PAID').sort((a, b) => a.dueDay - b.dueDay);
     expect(open.length).toBeGreaterThan(0);
     for (const i of open) expect(['ACTIVE', 'IN_PROGRESS']).toContain(waiting.contracts.find((c) => c.id === i.contractId)!.status);
-    const ui2 = await startUi(cfg); await ui2.importText(serializeSave(waiting));
+    const ui2 = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui2.importText(serializeSave(waiting));
     expect(panel(ui2.app.innerHTML, 'report')).toContain(`<li>매출 ${formatMoney(cfg.tradeCurrency, companyReport(waiting, cfg).trade.accountsReceivable)}는 이미 이익에 들어갔지만 현금은 나중에 들어옵니다 (매출채권: ${open.map((i) => `${linkHtml(i.contractId)} ${i.dueDay}일 ${formatMoney(i.currency, i.amountMinor)}`).join(', ')}).</li>`);
   });
   it('동료 필터 선택지 글은 직무·속성의 한국어 이름이다', async () => {
     const roles: Record<string, string> = { sales: '영업', operations: '운영' };
     const attributes: Record<string, string> = { water: '물', fire: '불', wind: '바람', earth: '대지', light: '빛', shadow: '그림자', none: '속성 미정' };
-    const ui = await startUi(), options = crewFacetOptions(initial(), config);
+    const ui = await startUi(), options = crewFacetOptions(initial(), config); await (await import('./main-testkit')).screensReady();
     const facets = ui.app.innerHTML.split('<div class="crew-facets"')[1]!.split('</div>')[0]!;
     expect(options.roles.length).toBeGreaterThan(1); expect(options.attributes.length).toBeGreaterThan(1);
     for (const role of options.roles) expect(facets).toContain(`<option value="${role}" >${roles[role]}</option>`);
@@ -1946,7 +1946,7 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const past = add('PAST', { status: 'ACTIVE', deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day - 1 });
     add('TODAY', { status: 'ACTIVE', deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day });
     add('CANCEL', { status: 'CANCELLED', cancelledDay: s.day - 3, deliveredDay: null, completedDay: null, deliveryDeadlineDay: s.day - 2 });
-    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     const r = onTimeDeliveryRate(s);
     expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>정시 인도율 ${rateKo(r.rateBasisPoints!)} — 인도 ${r.delivered}건 중 납기 안 ${r.onTime}건</p><p>납기를 넘겨 인도한 계약: ${esc(l.c.id)}</p><p>납기가 지났는데 아직 인도하지 못한 계약: ${linkHtml(past.id)} (인도하면 정시 인도율에 들어갑니다)</p>`);
   });
@@ -1958,11 +1958,11 @@ describe('TASK-0023 경영 보고·일정·결산·필터', () => {
     const s = openDay(runDays(initial(), config, deadline + 1, { 1: [firstTrade(), forwarding],
       2: [{ id: 'CANCEL', type: 'CANCEL_CONTRACT', contractId: cancelled.id }] }).state, config).state;
     expect(s.contracts.find((c) => c.id === cancelled.id)!.status).toBe('CANCELLED');
-    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     expect(panel(ui.app.innerHTML, 'report')).toContain(`<p>납기가 지났는데 아직 인도하지 못한 계약: ${linkHtml(kept.id)} (인도하면 정시 인도율에 들어갑니다)</p>`);
   });
   it('하루 진행 전에 대기 명령으로 보던 일정은 다음 날 새 일정이 아니다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' });
     ui.click({ action: 'schedule-toggle' });
     expect(panel(ui.app.innerHTML, 'queue')).toContain('data-action="goto-contract"');
     ui.click({ action: 'end-day' });
@@ -1978,7 +1978,7 @@ describe('경영 보고 문장과 결산 잔여 항목', () => {
     const end = runToCampaignEnd(start, config, { [start.day]: commands }).state;
     const day = Math.max(...end.contracts.map((c) => c.completedDay!)) + 1;
     const s = openDay(runDays(start, config, day - 1, { [start.day]: commands }).state, config).state;
-    const ui = await startUi(); await ui.importText(serializeSave(s));
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     const r = companyReport(s, config), runway = payrollRunwayKo(payrollRunwayDay(s, config), s.day, config.campaignDays);
     expect(r.trade.profit).toBeGreaterThan(0);
     expect(ui.app.innerHTML).toContain(`<li>거래 손익 ${formatMoney(config.tradeCurrency, r.trade.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${formatMoney(config.payrollCurrency, r.payroll.cash)}에서만 나갑니다(원화 급여 지급 가능일: ${runway}). 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.</li>`);
@@ -1989,7 +1989,7 @@ describe('경영 보고 문장과 결산 잔여 항목', () => {
     cfg.startingCash[cfg.payrollCurrency] = cfg.employees.reduce((a, e) => a + e.salaryPerDayMinor, 0) * cfg.campaignDays;
     const start = openDay(createGame(cfg), cfg).state;
     const s = runToCampaignEnd(start, cfg, { [start.day]: acceptAllFeasible(start, cfg) }).state;
-    const ui = await startUi(cfg); await ui.importText(serializeSave(s));
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.importText(serializeSave(s));
     const sum = campaignSummary(s, cfg); expect(sum.openInvoices.length).toBeGreaterThan(0);
     const expected = sum.openInvoices.map((i) => `<button class="link" data-action="goto-contract" data-contract="${i.contractId}" aria-label="${i.contractId} 계약으로 가기">${i.contractId}</button> ${i.dueDay}일 ${formatMoney(i.currency, i.amountMinor)}`).join(', ');
     expect(ui.app.innerHTML).toContain(`<p>받지 못한 대금: ${expected}</p>`);

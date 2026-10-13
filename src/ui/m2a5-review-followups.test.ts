@@ -27,7 +27,7 @@ const exchange = (html: string) => html.split('<section class="exchange"')[1]!.s
 const bar = (html: string) => html.split('id="status-h"')[1]!.split('</header>')[0]!;
 const reportWhy = (html: string) => html.split('<div class="why">')[1]!.split('</div>')[0]!;
 async function openedUi(c = cfg) {
-  const ui = await startUi(c); await ui.change({ action: 'scenario' }, c.id); return ui;
+  const ui = await startUi(c); await (await import('./main-testkit')).screensReady(); await ui.change({ action: 'scenario' }, c.id); return ui;
 }
 const spaceCommands = (c = cfg): EngineCommand[] => c.operations!.spaceContract.routeIds.map((routeId, i) => ({ id: `REVIEW-SPACE-${i}`, type: 'SIGN_SPACE_CONTRACT', routeId }));
 
@@ -254,7 +254,7 @@ describe('TASK-0058 화면 검수 후속', () => {
   });
 
   it('규칙 1 시나리오 select의 현재 항목이 selected다', async () => {
-    const legacy = loadScenario(SCENARIO_IDS[0]), ui = await startUi();
+    const legacy = loadScenario(SCENARIO_IDS[0]), ui = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(ui.app.innerHTML.match(/<select data-action="scenario">([\s\S]*?)<\/select>/)![1]).toContain(`<option value="${legacy.id}" selected>`);
   });
 });

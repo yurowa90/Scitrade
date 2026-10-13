@@ -4,7 +4,7 @@
 import './style.css';
 import { applyPixelScale } from './pixel';
 import { esc } from './html';
-import { CULTURE_KO, cultureAnchorBlocks, culturePanel, cultureResultTasks, cultureTab, cultureToastText } from './culture';
+import { CULTURE_KO, cultureAnchorBlocks, culturePanelScreen, cultureResultTasks, cultureTab, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
 import { ALL_SCENARIO_IDS, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
@@ -20,10 +20,9 @@ import { batchUnlocked, crewEntryCard, crewRow, crewEntries, crewFacetOptions, r
 import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
 import { offerDef, openTradePairs } from '../engine/market';
 import { exchangePreview, quotePreview, type OperationsQuotePreview } from '../engine/readers';
-import { fxLotKo, counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
+import { counterpartyNameKo, routeLabel } from './ops-labels';
+import { lazyScreen } from './lazy';
 import { paymentDefaultStatus } from '../engine/operations';
-import { paymentAlert, failureBlock, operationsSettlement } from './money-alerts';
-import { warehouseBlock, routeLabel } from './warehouse';
 import { cancellationPreviewKo } from './trade';
 import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
@@ -43,6 +42,25 @@ const SAVE_KEY = 'scitrade-save';
 const LEGACY_SAVE_KEY = 'scitrade-m1-save';
 const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loadScenario(id).titleKo])) as Record<AnyScenarioId, string>;
 
+let opsScreens: typeof import('./ops-screens') | null = null;
+let culturePanel: typeof import('./culture-panel') | null = null;
+const opsScreen = lazyScreen(() => import('./ops-screens'));
+/** 시험 준비도 실제 진입과 같은 약속을 공유한다. */
+export async function ensureOpsScreens(): Promise<void> {
+  await opsScreen.ensure();
+  opsScreens = opsScreen.get();
+}
+export async function ensureCulturePanel(): Promise<void> {
+  await culturePanelScreen.ensure();
+  culturePanel = culturePanelScreen.get();
+}
+let enteringScenario = false;
+const SCREEN_LOAD_WARNING = '화면 일부를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.';
+function screenLoadWarning() {
+  ui.flash = { kind: 'warn', text: SCREEN_LOAD_WARNING };
+  render();
+}
+
 let config: ScenarioConfig;
 let state: GameState;
 let savedState: GameState | null = null;
@@ -54,7 +72,7 @@ let view: GameState;
 let ui = initialUiState();
 let investmentOpen: boolean | undefined;
 let investmentSignature = '';
-let selectedExchange: ReturnType<typeof exchangeSelection> | undefined;
+let selectedExchange: ReturnType<typeof import('./ops-screens').exchangeSelection> | undefined;
 let mapMode: MapMode = 'route';
 const mapMeasurements = new MapMeasurementMemory();
 const MAP_BASE_OUTSIDE_SVG = false;
@@ -191,7 +209,7 @@ function tryCommand(cmd: Command): CommandResult {
 
 /** 보정은 알림을 결정하기 전에 계산한다. 다시 그리기는 알림을 바꾸지 않는다. */
 function exchangeAdjustment(planned: GameState, before: number): string {
-  const next = exchangeSelection(planned, config, ui.exchangeDirection, before);
+  const next = opsScreens!.exchangeSelection(planned, config, ui.exchangeDirection, before);
   if (next.lots >= before) return '';
   return `남은 ${ui.exchangeDirection === 'USD_TO_KRW' ? 'USD' : '원화'}에 맞춰 다음 환전 금액을 ${formatMoney('USD', next.usdMinor)}(${next.lots}묶음)으로 줄였습니다.`;
 }
@@ -397,7 +415,7 @@ function topbar(): string {
     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
-    ${config.operations ? operationsTopbar(view, config, state, ui.pending) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+    ${config.operations ? opsScreens!.operationsTopbar(view, config, state, ui.pending) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
     ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">${config.operations ? '다른 금액은 확정 기준' : '금액은 확정 기준'}</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
   </div>
   </header>`;
@@ -549,7 +567,7 @@ export function visibleForwardingOffers(view: GameState, config: ScenarioConfig)
 }
 
 function offerBoard(): string {
-  if (config.operations && state.phase === 'ENDED') return `${marketBlock(state, config)}<p>캠페인이 끝나 견적을 받을 수 없습니다</p>`;
+  if (config.operations && state.phase === 'ENDED') return `${opsScreens!.marketBlock(state, config)}<p>캠페인이 끝나 견적을 받을 수 없습니다</p>`;
   const isOpen = (id: string) => view.offers.find((o) => o.id === id)?.status === 'OPEN';
   const cards: string[] = [];
   for (const pair of (config.operations ? openTradePairs(view, config) : tradePairs(config))) {
@@ -575,7 +593,7 @@ function offerBoard(): string {
     <article class="offer">
       <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
       <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
-      ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity, quoteCheck(q, cmd).status !== 'APPLIED' ? `quote-reason-${key}` : undefined) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
+      ${config.operations ? opsScreens!.quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity, quoteCheck(q, cmd).status !== 'APPLIED' ? `quote-reason-${key}` : undefined) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? opsScreens!.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
   for (const offer of visibleForwardingOffers(view, config)) {
@@ -597,12 +615,12 @@ function offerBoard(): string {
       ${quoteBlock(q, rows, cmd, [
         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}는 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
-        ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : []),
+        ...(config.operations ? opsScreens!.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : []),
       ].filter(Boolean), offer.validUntilDay, offer.id, offer.cityId)}
     </article>`);
   }
-  if (!cards.length) return config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : '';
-  return `${config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
+  if (!cards.length) return config.operations ? opsScreens!.marketBlock(view, config) + opsScreens!.exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : '';
+  return `${config.operations ? opsScreens!.marketBlock(view, config) + opsScreens!.exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
 }
 
 function contractPanel(c: Contract): string {
@@ -848,7 +866,7 @@ function operationsBlock(): string {
   const groups = bottlenecks(state, config);
   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
   // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
-  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${warehouseBlock(state, view, config, ui.pending, investmentOpen)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${opsScreens!.warehouseBlock(state, view, config, ui.pending, investmentOpen)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
 }
 
 function settlementBlock(): string {
@@ -862,7 +880,7 @@ function settlementBlock(): string {
     const first = Math.min(...rows.map((o) => o.incurredDay)), last = Math.max(...rows.map((o) => o.incurredDay));
     unpaid.push(`<p>남은 미지급 ${esc(standing.currency)}: ${esc(formatMoney(standing.currency, rows.reduce((a, o) => a + o.amountMinor, 0)))} — ${rows.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
   }
-  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
+  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? opsScreens!.operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
 }
 
 function reportPanel(): string {
@@ -891,7 +909,7 @@ function reportPanel(): string {
   const endedWithUnpaid = config.operations && state.phase === 'ENDED' && state.obligations.some((o) => o.paidDay === null);
   const exchangeAdvice = config.operations
     ? state.phase === 'ENDED' ? (endedWithUnpaid ? '캠페인이 끝나 더 갚을 수 없습니다. 남은 미지급은 결산에 있습니다.' : '')
-      : `환전 칸에서 ${fxLotKo(config)} 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.`
+      : `환전 칸에서 ${opsScreens!.fxLotKo(config)} 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.`
     : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.';
   if (t.profit > 0) {
     const runway = state.phase === 'ENDED' ? '' : `(원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(state, config), state.day, config.campaignDays)})`;
@@ -904,7 +922,7 @@ function reportPanel(): string {
   return `
   <section class="panel report" aria-labelledby="report-h">
     <h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>
-    ${paymentAlert(state, config)}${failureBlock(state, config)}${settlementBlock()}
+    ${opsScreens!.paymentAlert(state, config)}${opsScreens!.failureBlock(state, config)}${settlementBlock()}
     <div class="books">
       <table class="money"><caption>거래 장부 · USD</caption>
         ${row('현금', usd(t.cash))}${row(`재고 (${company})`, usd(t.inventory))}${row('선급운임', usd(t.prepaidFreight))}${fwdOn ? row('주선 진행원가', usd(t.forwardingWip)) : ''}${row('매출채권', usd(t.accountsReceivable))}${row('자산 합계', usd(t.totalAssets), 'total')}${row('미지급금', usd(t.accountsPayable))}
@@ -1131,9 +1149,11 @@ function tapMap(target: Element, x: number, y: number) {
 }
 
 function render(skipFocus = false, anchor: QueueAnchor | null = null) {
+  if (config.operations && !opsScreens) throw new Error('규칙 2 화면 묶음을 먼저 불러와야 합니다.');
+  if (ui.cultureOpen && !culturePanel) throw new Error('문화 패널 묶음을 먼저 불러와야 합니다.');
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
-  selectedExchange = config.operations ? exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
+  selectedExchange = config.operations ? opsScreens!.exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
   if (selectedExchange) ui.exchangeLots = selectedExchange.lots;
   if (ui.offerQuantitiesDay !== view.day) { ui.offerQuantities = {}; ui.offerQuantitiesDay = view.day; }
   for (const key of Object.keys(ui.offerQuantities)) {
@@ -1160,7 +1180,7 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
     ${topbar()}
     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
-      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
+      ${config.culture ? `<div class="maincol">${ui.cultureOpen ? culturePanel!.culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus) : ''}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
     </main>`;
@@ -1241,7 +1261,11 @@ function markCultureSeen() {
   ui.cultureSeenDay = state.day;
 }
 
-function openCulture(result = false) {
+async function openCulture(result = false) {
+  try { if (!culturePanel) await ensureCulturePanel(); }
+  catch { screenLoadWarning(); return; }
+  // 같은 약속을 기다린 두 번째 열기는 첫 번째 결과를 그대로 둔다.
+  if (enteringScenario || ui.cultureOpen && !result) return;
   ui.cultureTabTop = result ? null : document.getElementById('local-tab')?.getBoundingClientRect().top ?? null;
   markCultureSeen();
   // ‘결과 보기’는 같은 날 탭으로 먼저 열었어도 방금 마감한 날의 결과를 보여 준다.
@@ -1297,7 +1321,7 @@ function showCulturePreview(employeeId: string) {
 app.addEventListener('click', (ev) => {
   const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
   if (!el && (ev.target as HTMLElement).closest('[data-map-frame]') && Date.now() >= ignoreClicksUntil) return tapMap(ev.target as Element, ev.clientX, ev.clientY);
-  if (!el || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
+  if (!el || enteringScenario || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
   activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
   try {
@@ -1437,6 +1461,7 @@ app.addEventListener('click', (ev) => {
         return queue({ ...base, id: newId('PLAN'), plan: { ...ui.plans[d.key!] } });
       }
       case 'restart':
+        if (config.operations && !opsScreens) throw new Error('규칙 2 화면 묶음을 먼저 불러와야 합니다.');
         if (!confirm('처음부터 시작하면 현재 진행과 오늘 할 일이 사라집니다. 다시 시작할까요?')) return;
         if (config.operations && state.operations?.outcome === 'FAILED') {
           state = openDay(restartWithSameSeed(state, config), config).state;
@@ -1495,8 +1520,17 @@ app.addEventListener('change', async (ev) => {
       el.value = config.id;
       return;
     }
-    startScenario(el.value as AnyScenarioId);
-    render();
+    if (enteringScenario) { el.value = config.id; return; }
+    const id = el.value as AnyScenarioId;
+    enteringScenario = true;
+    try {
+      if (loadScenario(id).operations && !opsScreens) await ensureOpsScreens();
+      startScenario(id);
+      render();
+    } catch {
+      el.value = config.id;
+      screenLoadWarning();
+    } finally { enteringScenario = false; }
   } else if (el.dataset.action === 'offer-quantity') {
     const buy = offerDef(view, config, el.dataset.key!.split('+')[0]!);
     const sell = offerDef(view, config, el.dataset.key!.split('+')[1]!);
@@ -1536,15 +1570,20 @@ app.addEventListener('change', async (ev) => {
     render();
   } else if (el.dataset.action === 'import' && el instanceof HTMLInputElement && el.files?.[0]) {
     if (!confirm('가져오면 현재 진행과 오늘 할 일이 사라집니다. 파일을 불러올까요?')) { el.value = ''; return; }
-    loadText(await el.files[0].text());
+    await loadText(await el.files[0].text());
   }
 });
 
-function loadText(text: string) {
+async function loadText(text: string) {
+  if (enteringScenario) return;
   const loaded = loadSaveText(text);
   if ('errorKo' in loaded) {
     ui.flash = { kind: 'warn', text: loaded.errorKo };
   } else {
+    enteringScenario = true;
+    try { if (loaded.config.operations && !opsScreens) await ensureOpsScreens(); }
+    catch { screenLoadWarning(); return; }
+    finally { enteringScenario = false; }
     config = loaded.config;
     state = loaded.state;
     savedState = state;
@@ -1556,3 +1595,10 @@ function loadText(text: string) {
 
 startScenario('SCENARIO_M2_MULTI_TRADE');
 render();
+
+// 첫 그리기를 마친 뒤 한가할 때 받는다. 실패는 진입점에서 다시 시도한다.
+const prefetchScreens = () => {
+  void Promise.all([ensureOpsScreens(), ensureCulturePanel()]).catch(() => console.warn(SCREEN_LOAD_WARNING));
+};
+if (window.requestIdleCallback) window.requestIdleCallback(prefetchScreens);
+else setTimeout(prefetchScreens, 1);

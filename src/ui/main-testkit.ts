@@ -167,6 +167,7 @@ export async function startUi(config?: ScenarioConfig) {
     // 지도 틀 안의 점을 누른다. label이 있으면 그 표시의 이름표를 누른다.
     tapMap:(x:number,y:number,label?:string)=>{vi.advanceTimersByTime(501);return listeners.click!({detail:1,clientX:x,clientY:y,target:{closest:(selector:string)=>selector==='[data-action]' ? null : selector==='[data-map-frame]' ? {} : selector==='.ribbon, .gate-label' && label ? {closest:()=>({dataset:{mark:label}})} : null}});},
     resizeStatusbar:(height:number)=>{statusbarHeight=height;resizeStatus!();},
+    changeTarget:(target:unknown)=>listeners.change!({target}),
     change:(dataset:Record<string,string>,value:string)=>listeners.change!({target:{...rendered(dataset),value}}),
     importText:async(text:string)=>{const input=new Input(); input.files=[{text:async()=>text}]; await listeners.change!({target:input});},
     focusTrain:(emp:string)=>{ doc.activeElement=rendered({action:'train',emp}); },
@@ -176,4 +177,13 @@ export async function startUi(config?: ScenarioConfig) {
     mediaQueries,
     setOneColumn:(on:boolean)=>{oneColumn=on;mediaListeners.forEach((callback)=>callback({matches:on}));},
   };
+}
+
+/** 기존 화면 시험은 지연 화면을 미리 받은 상태에서 동기 조작을 검증한다. */
+export async function screensReady() {
+  const culture = await import('./culture');
+  await culture.culturePanelScreen.ensure();
+  if (typeof document === 'undefined') { await import('./ops-screens'); return; }
+  const main = await import('./main');
+  await Promise.all([main.ensureOpsScreens(), main.ensureCulturePanel()]);
 }

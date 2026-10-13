@@ -27,7 +27,7 @@ const atDay = (day: number, script: DayScript = {}, config = cfg) => openDay(run
 const next = (s: GameState, cmds: EngineCommand[] = [], config = cfg) => openDay(commitDay(s, config, cmds).state, config).state;
 const expand: EngineCommand = { id: 'TEST-EXPAND', type: 'EXPAND_WAREHOUSE' };
 const loadedUi = async (s = fresh(), config = cfg) => {
-  const ui = await startUi(config); await ui.change({ action: 'scenario' }, config.id);
+  const ui = await startUi(config); await (await import('./main-testkit')).screensReady(); await ui.change({ action: 'scenario' }, config.id);
   await ui.importText(serializeSave(s)); return ui;
 };
 const sha256 = async (value: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map((n) => n.toString(16).padStart(2, '0')).join('');
@@ -219,7 +219,7 @@ describe('창고 막힘·빈 견적·정리', () => {
   });
 
   it('규칙 2 첫 화면은 이번 표·창고 행·지급 기준 설명을 빼면 정리 전 전체 문자열과 같다', async () => {
-    const ui = await startUi(cfg); await ui.change({ action: 'scenario' }, cfg.id);
+    const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.change({ action: 'scenario' }, cfg.id);
     // cf034bb와 비교할 때 지시서가 새로 넣거나 바꾼 부분만 제외한다. 환전·시세표 접근성 속성은 TASK-0058에서 추가한 부분만 제외한다.
     const html = ui.app.innerHTML.replace(/빌드 [^<]+/, '빌드 BASE')
       .replace(/<section class="warehouse"[\s\S]*?(?=<h4>업무 부하)/, '')

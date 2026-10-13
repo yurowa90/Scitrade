@@ -17,7 +17,7 @@ import { crewStatusKo, taskSchedule } from './crew-status';
 export { taskSchedule } from './crew-status';
 import { esc } from './html';
 import { hiringOutlook } from '../engine/readers';
-import { constraintLabel } from './warehouse';
+import { constraintLabel } from './ops-labels';
 export const venueTitle = (id: string) => venues.items.find((v) => v.id === id)?.title_ko ?? id;
 export const species = (id: string) => characters.items.find((c) => c.id === id)?.species_ko ?? '';
 
