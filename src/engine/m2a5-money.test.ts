@@ -332,7 +332,7 @@ describe('M2a-5 문장 반례', () => {
   });
   it('S17 계약 체결 기록은 거래처 이름을 쓰고 내부 ID와 겹조사는 없다', () => {
     const p = planned(caseOf('P0-M2A5-02'));
-    expect(p.state.log.find((l) => l.textKo.startsWith('계약 CT001 체결'))!.textKo).toBe('계약 CT001 체결: 의류 공급자 → 상하이 의류 고객, 의류 200개 매입 1,980.00 USD 현금 지급, 판매 2,810.00 USD (납기 15일)');
+    expect(p.state.log.find((l) => l.textKo.startsWith('계약 CT001 체결'))!.textKo).toBe('계약 CT001 체결: 의류 공급자 → 상하이 의류 고객, 의류 200개 매입 1,980.00 USD 현금 지급, 판매 3,028.00 USD (납기 15일)');
     const q = planned(caseOf('P0-M2A5-04'));
     expect(q.state.log.find((l) => l.textKo.startsWith('계약 CT002 체결'))!.textKo).toBe('계약 CT002 체결(운송 주선): 전자제품 화주 화물 전자제품 300상자, 평택 → 하이퐁');
     for (const text of [...p.state.log, ...q.state.log].filter((l) => l.textKo.startsWith('계약 ')).map((l) => l.textKo)) {
@@ -361,7 +361,7 @@ describe('M2a-5 문장 반례', () => {
     const ct = s.contracts[0]!, cfg = structuredClone(config);
     cfg.portRestrictions.push({ eventInstanceId: 'TEST-WAIT', templateId: 'TEST-WAIT', cityId: ct.destinationCityId,
       announceDay: s.day, startDay: s.day, endDay: s.day, forecastKo: '시험 하역 중단' });
-    expect(contractProgress(s, cfg, ct).blockers[0]!.messageKo).toBe('상하이항 하역 중단으로 바다에서 대기 중입니다 (0일째). 납기 15일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 2,810.00 USD까지 감액됩니다.');
+    expect(contractProgress(s, cfg, ct).blockers[0]!.messageKo).toBe('상하이항 하역 중단으로 바다에서 대기 중입니다 (0일째). 납기 15일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 3,028.00 USD까지 감액됩니다.');
     const legacy = { ...loadScenario(SCENARIO_IDS[0]), portRestrictions: cfg.portRestrictions };
     expect(contractProgress(s, legacy, ct).blockers[0]!.messageKo).toBe('상하이항 하역 중단으로 바다에서 대기 중입니다 (0일째). 납기 15일을 넘기면 50.00 USD 감액됩니다.');
   });
@@ -436,7 +436,7 @@ describe('M2a-5 문장 반례', () => {
     expect(flatText).not.toContain('늦은 하루마다'); expect(flatText).not.toContain('NaN');
     const proportional = { ...cfg, operations: null };
     const perDayText = contractProgress(s, proportional, ct).blockers[0]!.messageKo;
-    expect(perDayText).toBe('상하이항 하역 중단으로 바다에서 대기 중입니다 (0일째). 납기 15일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 2,810.00 USD까지 감액됩니다.');
+    expect(perDayText).toBe('상하이항 하역 중단으로 바다에서 대기 중입니다 (0일째). 납기 15일을 넘기면 늦은 하루마다 50.00 USD씩, 최대 3,028.00 USD까지 감액됩니다.');
     expect(perDayText).not.toContain('넘기면 50.00 USD 감액');
   });
 });

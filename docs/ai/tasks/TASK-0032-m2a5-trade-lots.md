@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- 선행 작업: TASK-0031(+R1) 병합 기록 뒤 개발 브랜치 `<BASE>`(이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0032-m2a5-trade-lots.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다. 이 지시서는 개발 브랜치 `a9303af`(TASK-0031 병합 기록) 위에서 썼다.
+- 선행 작업: TASK-0031(+R1) 병합 기록 뒤 개발 브랜치 `a9303af`(이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0032-m2a5-trade-lots.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다. 이 지시서는 개발 브랜치 `a9303af`(TASK-0031 병합 기록) 위에서 썼다.
 - 결정 근거: Q13 가(물량 배수 확대), Q13-2 나(2026-10-12 사용자 결정, 물량 {1~5} + 마진 ×1.3). 측정 근거는 `docs/ai/design/m2a5-review/QUESTIONS3.md`다.
   - 물량 배수만 키우면 직접 무역 비중이 최대 17.6%에 그쳤다. 늘어난 것은 자금 거절이었다.
   - {1~5}와 k = 1.25를 함께 쓰면 25.29%였다. 하한에 너무 붙어 있어서 k = 1.3으로 여유를 둔다.
@@ -62,7 +62,7 @@
 ## 완료 조건
 
 1. 지시 1~3 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0, 규칙 1 골든·기본 `run` 바이트 같음.
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check a9303af` 실패 0, 규칙 1 골든·기본 `run` 바이트 같음.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |

@@ -97,8 +97,8 @@
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 11369,
-      "sha256": "7e3d75783fd8ff1d7e48ce298103a98c1711562c2aeadde23811698a5d1b09ac"
+      "size_bytes": 11396,
+      "sha256": "5b8ab4522c198c02d97168f2faab39056722141c36ef484466a8d302cbcdaa1a"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1611,9 +1611,14 @@
       "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
     },
     {
+      "path": "docs/ai/tasks/TASK-0032-R1-m2a5-judge-q14.md",
+      "size_bytes": 6659,
+      "sha256": "dfd3de3f9454ed00cd7c68421c055ece64de774a6edc9f69bb20ffa1ea1be440"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0032-m2a5-trade-lots.md",
-      "size_bytes": 6883,
-      "sha256": "b12d3110bf9a62fd820d2ffb4c8031cf10edb38659a463602f47cf0d8ed59f17"
+      "size_bytes": 6885,
+      "sha256": "19bfb68f6160d6fafc0ab2b828b634472d82beb9e7931cd3e88390fdc85deb6d"
     },
     {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
@@ -1854,6 +1859,31 @@
       "path": "docs/ai/tasks/results/TASK-0031.md",
       "size_bytes": 77526,
       "sha256": "fed352207da13a3cc268f78025252a269c89d0577b0adce38532252fecef6227"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-cap30.md",
+      "size_bytes": 10653,
+      "sha256": "1b91bd77a837dd78948b66fad97a634ee559d71a110ca1dab761705ab7302419"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-flat200.md",
+      "size_bytes": 10431,
+      "sha256": "4154bf23833faea8ec8bd61157ba19b2c687457282ce022f10df4dc5b75c394e"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-oos.md",
+      "size_bytes": 19337,
+      "sha256": "f14ecf1e8e013b3d4a117b528764b7056dfdb163a5d661d97eb9a0e4e63e1811"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03.md",
+      "size_bytes": 19016,
+      "sha256": "3edc32bc36fb92274c72daae255b600b9f53ec8ef3d21c7747e5575333f71bb4"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032.md",
+      "size_bytes": 33986,
+      "sha256": "702ea7727b21351dd932c197874707f41ff09b6fb78d5516e7a482ef1cf40439"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",
@@ -2143,7 +2173,7 @@
     {
       "path": "tests/acceptance_cases.json",
       "size_bytes": 207592,
-      "sha256": "9a281a6949e72291865a3a7ca2452de0e446b9e9d8990e33d08ffb1906887bbc"
+      "sha256": "aff0ec9087ff713588b96301874b61c82f3307ce06fdb76fc6f16cb57a7bb696"
     },
     {
       "path": "tests/character_acceptance_cases.json",
