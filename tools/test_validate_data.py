@@ -1056,6 +1056,22 @@ class MarketRulesTest(unittest.TestCase):
             d['market_rules']['counterparties'] = [p for p in d['market_rules']['counterparties'] if p['id'] != pid]
             self.assertIn(f'{ident}: 거래처 이름 없음 {pid}', self.errors(d, t))
 
+    def test_counterparty_name(self):
+        for name in ('', '   '):
+            with self.subTest(name=name):
+                d, t = self.fixtures()
+                party = d['market_rules']['counterparties'][0]
+                party['name_ko'] = name
+                self.assertIn(f"{party['id']}: 거래처 이름이 비어 있음", self.errors(d, t))
+
+    def test_duplicate_counterparty_id(self):
+        d, t = self.fixtures()
+        parties = d['market_rules']['counterparties']
+        duplicate = copy.deepcopy(parties[0])
+        duplicate['name_ko'] = '다른 거래처 이름'
+        parties.append(duplicate)
+        self.assertEqual(self.errors(d, t).count(f"market_rules: 거래처 ID 중복 {duplicate['id']}"), 1)
+
     def test_prep(self):
         for grade, value in [('HANDLING', None), ('HANDLING', 1), ('HANDLING', 2.5), ('STANDARD', 2)]:
             d, t = self.fixtures()
