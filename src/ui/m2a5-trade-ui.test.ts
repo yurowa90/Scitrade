@@ -69,6 +69,29 @@ describe('규칙 1 전체 화면 불변', () => {
 });
 
 describe('시나리오·생성 견적·시세표', () => {
+  it('시세표 스크롤 칸에 영역 역할과 가로 스크롤 이름이 있다', async () => {
+    const ui = await loadedUi();
+    const attrs = ui.app.innerHTML.match(/<div class="table-scroll"([^>]*)>/)![1]!;
+    expect(attrs.match(/role="([^"]+)"/)![1]).toBe('region');
+    expect(attrs.match(/aria-label="([^"]+)"/)?.[1]).toBe('시세표 (가로로 넘겨 보기)');
+  });
+
+  it('규칙 2 막대 칸 이름은 짧고 title·접근 가능한 설명으로 계획 기준을 알린다', async () => {
+    const ui = await loadedUi();
+    const bar = ui.app.innerHTML.split('id="status-h"')[1]!.split('</header>')[0]!;
+    const stats = [...bar.matchAll(/<div class="stat"([^>]*)><span>(.*?)<\/span><b>.*?<\/b><small id="([^"]+)" class="visually-hidden">(.*?)<\/small><\/div>/g)];
+    expect(stats[0]?.[2]).toBe('원화 급여 가능일');
+    expect(stats[1]?.[2]).toBe('지급 상태');
+    for (const [i, description] of ['임차료 포함 · 대기 중인 명령 반영', '대기 중인 명령 반영'].entries()) {
+      const stat = stats[i]!;
+      expect(stat[1]!.match(/title="([^"]+)"/)![1]).toBe(description);
+      expect(stat[1]!.match(/aria-describedby="([^"]+)"/)![1]).toBe(stat[3]);
+      expect(stat[4]).toBe(description);
+      expect(stat[2]).not.toContain('(');
+    }
+    expect(bar.indexOf('queue-chip')).toBeLessThan(bar.indexOf('data-action="end-day"'));
+  });
+
   it('규칙 1 순서를 보존하고 자료 이름으로 규칙 2를 열며 지도·명부·캐릭터를 그린다', async () => {
     const ui = await startUi();
     const select = ui.app.innerHTML.match(/<select data-action="scenario">([\s\S]*?)<\/select>/)![1]!;
@@ -139,6 +162,23 @@ describe('시나리오·생성 견적·시세표', () => {
 });
 
 describe('견적 수량·계획 상태', () => {
+  it('선택지 하나인 수량은 글이며 Tab 대상에서 빠지고 둘 이상이면 select다', async () => {
+    const state = dayState(1), ui = await loadedUi(state);
+    for (const pair of openTradePairs(state, cfg)) {
+      const buy = offerDef(state, cfg, pair.buyOfferId)!, q = quotePreview(state, cfg, pair);
+      expect(q.maxQuantity).toBe(buy.quantity);
+      const html = ui.app.innerHTML.split('<article class="offer').slice(1)
+        .find((s) => s.includes(`data-buy="${pair.buyOfferId}"`) && s.includes(`data-sell="${pair.sellOfferId}"`))!.split('</article>')[0]!;
+      expect(html.match(/<span class="quantity-value">(.*?)<\/span>/)?.[1]).toBe(`수량 ${esc(qtyKo(cfg, buy.goodId, buy.quantity))}`);
+      expect(html).not.toContain('<select data-action="offer-quantity"');
+      expect(html.match(/<span class="quantity-value"[^>]*>/)![0]).not.toMatch(/tabindex|role="button"/);
+    }
+    const multiple = dayState(generatedDay), pair = quantityPair(multiple);
+    const other = await loadedUi(multiple), html = article(other.app.innerHTML, `${pair.buyOfferId}+${pair.sellOfferId}`);
+    expect(html).toContain('<select data-action="offer-quantity"');
+    expect(html).not.toContain('class="quantity-value"');
+  });
+
   it.each(['accept', 'accept-plan'])('수량을 바꾸면 %s 명령·표·대기열에 같은 수량을 쓴다', async (path) => {
     const state = dayState(generatedDay, cfg, true), ui = await loadedUi(state), pair = quantityPair(state);
     expect(pair).toBeDefined();
@@ -194,8 +234,8 @@ describe('견적 수량·계획 상태', () => {
     const next = openTradePairs(view, cfg)[0]!, q = quotePreview(view, cfg, next);
     expect(article(ui.app.innerHTML, `${next.buyOfferId}+${next.sellOfferId}`)).toContain(`보관 후 사용량/한도 ${fmtM3(q.storageAfterLiters)} / ${fmtM3(q.storageCapacityLiters)}`);
     expect(ui.app.innerHTML).toContain(exchangeBlock(view, cfg, 'USD_TO_KRW', 5));
-    expect(ui.app.innerHTML).toContain('원화 급여 가능일 (임차료 포함 · 대기 중인 명령 반영)');
-    expect(ui.app.innerHTML).toContain('지급 상태 (대기 중인 명령 반영)');
+    expect(ui.app.innerHTML).toContain('<span>원화 급여 가능일</span>');
+    expect(ui.app.innerHTML).toContain('<span>지급 상태</span>');
     expect(ui.app.innerHTML).toContain('다른 금액은 확정 기준');
     expect(ui.app.innerHTML).toContain('위쪽 막대의 급여 가능일·지급 상태는 대기 중인 명령을 반영합니다. 다른 금액은 확정 기준입니다.');
     expect(ui.app.innerHTML).toContain(payrollRunwayKo(payrollRunwayDay(view, cfg), view.day, cfg.campaignDays));
@@ -314,6 +354,38 @@ describe('조건 문장과 반례', () => {
 });
 
 describe('환전', () => {
+  it('환전 0묶음에서도 금액 글·엔진 거절·단추를 보이고 R1과 같은 1묶음 명령을 거절한다', async () => {
+    const poor = structuredClone(cfg); poor.startingCash.USD = lot - 1;
+    const state = dayState(1, poor), ui = await loadedUi(state, poor);
+    const q = exchangePreview(state, poor, 'USD_TO_KRW', lot);
+    expect(q.allowed).toBe(false);
+    const html = ui.app.innerHTML.split('<section class="exchange"')[1]!.split('</section>')[0]!;
+    expect(html.match(/<span class="exchange-amount-value">(.*?)<\/span>/)?.[1]).toBe(`금액 ${usd(lot)} (1묶음)`);
+    expect(html).not.toContain('<select data-action="exchange-amount"');
+    expect(html).not.toContain('<label>금액');
+    expect(html.match(/<span class="exchange-amount-value"[^>]*>/)![0]).not.toContain('tabindex');
+    expect(html.match(/<p class="reason">(.*?)<\/p>/)?.[1]).toBe(esc(q.reasonKo!));
+    expect(ui.rendered({ action: 'exchange' }).disabled).toBe(false);
+    // R1은 자금이 없어도 최소 1묶음을 선택해 검증하며, 거절된 명령은 대기열·상태에 넣지 않는다.
+    const engine = await import('../engine/engine'), planned = vi.spyOn(engine, 'planCommands');
+    ui.click({ action: 'exchange' });
+    const command = planned.mock.calls.flatMap((call) => call[2]).find((c) => c.type === 'EXCHANGE_CURRENCY')!;
+    expect(command).toEqual({ id: expect.any(String), type: 'EXCHANGE_CURRENCY', direction: 'USD_TO_KRW', usdAmountMinor: lot });
+    const r1 = planState(state, poor, [command]);
+    expect(r1.results[0]!.status).toBe('REJECTED');
+    expect(r1.results[0]!.reasonKo).toBe(q.reasonKo);
+    expect(ui.announcements.at(-1)).toBe(r1.results[0]!.reasonKo);
+    expect(ui.app.innerHTML).not.toContain(`환전 USD→KRW ${usd(lot)}`);
+    let saved = ''; vi.stubGlobal('localStorage', { setItem: (_key: string, text: string) => { saved = text; } });
+    ui.click({ action: 'save' });
+    const loaded = loadSaveText(saved); if ('errorKo' in loaded) throw new Error(loaded.errorKo);
+    // R1도 거절된 미리 보기의 processedCommands를 확정 상태에 복사하지 않는다.
+    expect(loaded.state).toEqual(state);
+    const multiple = await loadedUi();
+    expect(multiple.app.innerHTML).toContain('<select data-action="exchange-amount"');
+    expect(multiple.app.innerHTML).not.toContain('class="exchange-amount-value"');
+  });
+
   it.each(['USD_TO_KRW', 'KRW_TO_USD'] as const)('방향 %s의 표시 금액을 exchangePreview와 비교한다', async (direction) => {
     const state = dayState(generatedDay), ui = await loadedUi(state), amount = 2 * lot;
     await ui.change({ action: 'exchange-direction' }, direction);
@@ -380,7 +452,7 @@ describe('환전', () => {
     await poorUi.change({ action: 'exchange-amount' }, '2');
     expect(poorUi.app.innerHTML).toContain('<option value="2" selected>');
     poorUi.click({ action: 'end-day' });
-    expect(poorUi.app.innerHTML).toContain('<option value="1" selected>');
+    expect(poorUi.app.innerHTML).toContain(`<span class="exchange-amount-value">금액 ${usd(lot)} (1묶음)</span>`);
     expect(poorUi.app.innerHTML).not.toContain('<option value="2"');
     const rich = structuredClone(cfg); rich.startingCash.USD = lot * 100;
     expect(exchangeSelection(dayState(1, rich), rich, 'USD_TO_KRW', 100).maxLots).toBe(50);

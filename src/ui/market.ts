@@ -16,7 +16,7 @@ export function counterpartyNameKo(config: ScenarioConfig, id: string): string {
 }
 
 export function marketBlock(view: GameState, config: ScenarioConfig): string {
-  return `<section class="market-table" aria-labelledby="market-h"><h3 id="market-h">시세표</h3><p class="muted small">지수는 돈이 아닙니다</p><div class="table-scroll"><table class="money"><thead><tr><th>도시 · 상품 · 매수/매도</th><th>기준가 (USD/단위)</th><th>지수</th><th>관측</th><th>다음 관측</th><th>견적</th></tr></thead><tbody>${marketTable(view, config).map((r) => `<tr><th>${esc(cityName(config, r.cityId))} · ${esc(goodOf(config, r.goodId).nameKo)} · ${r.side === 'BUY' ? '매수' : '매도'}</th><td>${formatMoney(r.currency, r.basePriceMinor)}/단위</td><td>${r.indexPoints}</td><td>${r.observedDay}일 · ${r.ageDays}일 전 관측</td><td>${r.nextObservationDay === null ? '새 관측 없음' : `${r.nextObservationDay}일`}</td><td>${r.hasQuoteInBatch ? '이번 묶음 견적 있음' : '—'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  return `<section class="market-table" aria-labelledby="market-h"><h3 id="market-h">시세표</h3><p class="muted small">지수는 돈이 아닙니다</p><div class="table-scroll" role="region" aria-label="시세표 (가로로 넘겨 보기)"><table class="money"><thead><tr><th>도시 · 상품 · 매수/매도</th><th>기준가 (USD/단위)</th><th>지수</th><th>관측</th><th>다음 관측</th><th>견적</th></tr></thead><tbody>${marketTable(view, config).map((r) => `<tr><th>${esc(cityName(config, r.cityId))} · ${esc(goodOf(config, r.goodId).nameKo)} · ${r.side === 'BUY' ? '매수' : '매도'}</th><td>${formatMoney(r.currency, r.basePriceMinor)}/단위</td><td>${r.indexPoints}</td><td>${r.observedDay}일 · ${r.ageDays}일 전 관측</td><td>${r.nextObservationDay === null ? '새 관측 없음' : `${r.nextObservationDay}일`}</td><td>${r.hasQuoteInBatch ? '이번 묶음 견적 있음' : '—'}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 
 /** 계약 카드 제목과 같은 종류·번호·화물·항로 문구. */
@@ -29,6 +29,7 @@ export function quantityControl(key: string, q: OperationsQuotePreview, config: 
   for (let n = minimum; n <= q.maxQuantity; n += q.quantityStep) {
     options.push(`<option value="${n}"${n === q.quantity ? ' selected' : ''}>${esc(qtyKo(config, goodId, n))}</option>`);
   }
+  if (options.length === 1) return `<span class="quantity-value">수량 ${esc(qtyKo(config, goodId, minimum))}</span>`;
   return `<label>수량 고르기 <select data-action="offer-quantity" data-key="${esc(key)}">${options.join('')}</select></label>`;
 }
 
@@ -78,7 +79,10 @@ export function exchangeBlock(view: GameState, config: ScenarioConfig, direction
   const q = exchangePreview(view, config, direction, usdMinor), fx = config.operations!.fx;
   const usd = (n: number) => formatMoney('USD', n), krw = (n: number) => formatMoney('KRW', n);
   const runway = (n: number | null) => payrollRunwayKo(n, view.day, config.campaignDays);
-  return `<section class="exchange" aria-labelledby="exchange-h"><h3 id="exchange-h">환전</h3><p>게임용 고정 환율 ${fx.buyKrwPerUsd.toLocaleString('ko-KR')}원(받을 때) · ${fx.sellKrwPerUsd.toLocaleString('ko-KR')}원(살 때)</p><label>방향 <select data-action="exchange-direction"><option value="USD_TO_KRW"${direction === 'USD_TO_KRW' ? ' selected' : ''}>USD→KRW</option><option value="KRW_TO_USD"${direction === 'KRW_TO_USD' ? ' selected' : ''}>KRW→USD</option></select></label> <label>금액 (100 USD 단계) <select data-action="exchange-amount">${options}</select></label><dl><dt>내는 금액</dt><dd>${direction === 'USD_TO_KRW' ? usd(usdMinor) : krw(q.krwMinor)}</dd><dt>받는 금액</dt><dd>${direction === 'USD_TO_KRW' ? krw(q.krwMinor) : usd(usdMinor)}</dd><dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd><dt>쓸 수 있는 USD (전 → 후)</dt><dd>${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}</dd><dt>원화 급여 가능일 (임차료 포함, 전 → 후)</dt><dd>${runway(q.runwayBefore)} → ${runway(q.runwayAfter)}</dd></dl><p>자동 환전은 없습니다</p>${q.warningKo ? `<p class="reason">${esc(q.warningKo)}</p>` : ''}${q.reasonKo ? `<p class="reason">${esc(q.reasonKo)}</p>` : ''}<button data-action="exchange">환전을 오늘 할 일에 넣기</button></section>`;
+  const amountControl = maxLots === 1
+    ? `<span class="exchange-amount-value">금액 ${usd(usdMinor)} (${lots}묶음)</span>`
+    : `<label>금액 (100 USD 단계) <select data-action="exchange-amount">${options}</select></label>`;
+  return `<section class="exchange" aria-labelledby="exchange-h"><h3 id="exchange-h">환전</h3><p>게임용 고정 환율 ${fx.buyKrwPerUsd.toLocaleString('ko-KR')}원(받을 때) · ${fx.sellKrwPerUsd.toLocaleString('ko-KR')}원(살 때)</p><label>방향 <select data-action="exchange-direction"><option value="USD_TO_KRW"${direction === 'USD_TO_KRW' ? ' selected' : ''}>USD→KRW</option><option value="KRW_TO_USD"${direction === 'KRW_TO_USD' ? ' selected' : ''}>KRW→USD</option></select></label> ${amountControl}<dl><dt>내는 금액</dt><dd>${direction === 'USD_TO_KRW' ? usd(usdMinor) : krw(q.krwMinor)}</dd><dt>받는 금액</dt><dd>${direction === 'USD_TO_KRW' ? krw(q.krwMinor) : usd(usdMinor)}</dd><dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd><dt>쓸 수 있는 USD (전 → 후)</dt><dd>${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}</dd><dt>원화 급여 가능일 (임차료 포함, 전 → 후)</dt><dd>${runway(q.runwayBefore)} → ${runway(q.runwayAfter)}</dd></dl><p>자동 환전은 없습니다</p>${q.warningKo ? `<p class="reason">${esc(q.warningKo)}</p>` : ''}${q.reasonKo ? `<p class="reason">${esc(q.reasonKo)}</p>` : ''}<button data-action="exchange">환전을 오늘 할 일에 넣기</button></section>`;
 }
 
 export function paymentStatusKo(view: GameState, config: ScenarioConfig): string {
@@ -91,5 +95,5 @@ export function paymentStatusKo(view: GameState, config: ScenarioConfig): string
 }
 
 export function operationsTopbar(view: GameState, config: ScenarioConfig): string {
-  return `<div class="stat"><span>원화 급여 가능일 (임차료 포함 · 대기 중인 명령 반영)</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b></div><div class="stat"><span>지급 상태 (대기 중인 명령 반영)</span><b>${esc(paymentStatusKo(view, config))}</b></div>`;
+  return `<div class="stat" title="임차료 포함 · 대기 중인 명령 반영" aria-describedby="runway-description"><span>원화 급여 가능일</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b><small id="runway-description" class="visually-hidden">임차료 포함 · 대기 중인 명령 반영</small></div><div class="stat" title="대기 중인 명령 반영" aria-describedby="payment-description"><span>지급 상태</span><b>${esc(paymentStatusKo(view, config))}</b><small id="payment-description" class="visually-hidden">대기 중인 명령 반영</small></div>`;
 }

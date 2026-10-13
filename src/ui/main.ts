@@ -371,7 +371,7 @@ function topbar(): string {
       <button data-action="restart">처음부터</button>
     </div>
   </div>
-  <div class="statusbar" id="status-h" tabindex="-1" role="region" aria-label="오늘 상태">
+  <div class="statusbar${config.operations ? ' operations-statusbar' : ''}" id="status-h" tabindex="-1" role="region" aria-label="오늘 상태">
     <div class="day"><div class="date"><b>${Math.min(state.day, config.campaignDays)}일</b> / ${config.campaignDays}</div><span>${phaseText}</span></div>
     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
