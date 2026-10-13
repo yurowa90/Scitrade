@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 205377,
-      "sha256": "df9e9f65c457e3b0836cc36214201a51fdf58656758465278ec194545470cbc9"
+      "size_bytes": 208865,
+      "sha256": "9558ab0a78ff3214c40b8000ae5bfe30e2ba2843ab4315802b2a18b94db787d7"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 81620,
-      "sha256": "e4ec4eea6628cf442d28bfed4a00444aedd3725b55b3bfe3439a55e39bb8ab3e"
+      "size_bytes": 83013,
+      "sha256": "d4bd5e8cbf3fc5d436edc56f59ea134bd8381de4f1766a8c3b3c32a359622ecc"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 50635,
-      "sha256": "cc39e1c028c9f28a38752080f90892d4cc4a38f840c0f2edba4a30b8a65b70f1"
+      "size_bytes": 51073,
+      "sha256": "6cc78b7e422c4d380220a5e172447c1dfd7583ad261cdd2ec5bbf1542ef63dd2"
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9765,
-      "sha256": "72d82e7e63b7ca00c261e6d8ca9b1bef69c8f00c6cbdd57cd8bca43fcd5058d1"
+      "size_bytes": 9776,
+      "sha256": "24aa61de43fdd9f5f3300616e949645186d845af46c3859160b340da4da8c652"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1382,8 +1382,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 16032,
-      "sha256": "acf96f9ef425775ddfc3e0f153f0cf0fc3ab8a24ab896718545a681e4dd3820e"
+      "size_bytes": 16448,
+      "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1392,8 +1392,8 @@
     },
     {
       "path": "docs/ai/design/task0033-chromium/README.md",
-      "size_bytes": 10058,
-      "sha256": "d38eae214789b55f08f98f9d58d48e169a47c9c34cd159d71560bb3bca8810dc"
+      "size_bytes": 10783,
+      "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
     },
     {
       "path": "docs/ai/design/task0033-chromium/bar-4359759.jsonl",
@@ -1431,6 +1431,11 @@
       "sha256": "20d87964b2860dcf0e9be336d62f5a0c60ff69d076d3d01ec86add4059bc8334"
     },
     {
+      "path": "docs/ai/design/task0033-chromium/harness/r2w.js",
+      "size_bytes": 2079,
+      "sha256": "85c150906329fb7bb2e22b96be2b4066ef09477d3e7c4fb2255e0051001d438b"
+    },
+    {
       "path": "docs/ai/design/task0033-chromium/kb-4359759.jsonl",
       "size_bytes": 2351,
       "sha256": "e11e64083756d2e27953b2f254f69a26cbdfa93a09087364e16f27dd6ca0075c"
@@ -1457,8 +1462,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 17851,
-      "sha256": "0881b0603c39054913bc391062c0027d6173e310c75100410ee439dffcf57ceb"
+      "size_bytes": 18477,
+      "sha256": "1f665878905d2d0eb5fa590051dc7c09ef2101a6ec4324e9b6229e26a3a0048e"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
