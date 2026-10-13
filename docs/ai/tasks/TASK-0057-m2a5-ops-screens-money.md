@@ -108,9 +108,14 @@
 - 규칙 1의 행 목록과 순서는 바이트로 같다.
 - 표의 값만으로 항등식 ‘시작 운영 자금 − (급여 + 계약금 + 훈련비 + 활동비 + 임차료 + 설치비 + 환전 차감) + 통화 간 이체 = 현금 − 미지급’이 맞는지 확인하는 시험을 둔다(적대 검토가 환전 없는 실패 상태에서 실측으로 맞음을 확인했다).
 
+### 6. 본사·창고 표의 선복 줄 문구(TASK-0034 검수에서 넘어옴)
+
+- `src/ui/warehouse.ts`의 선복 줄은 출항편 ID(`노선-D일` 꼴)를 그대로 보인다. 학생용 문구로 ‘{노선 이름} {출항일}일 편’으로 바꾼다.
+- 노선 이름은 `routeLabel`(같은 파일), 출항일은 `findSailing` 등 기존 공개 함수로 읽는다. 사용량/한도 값과 순서는 그대로다.
+
 ## 고칠 수 있는 파일
 
-- `src/ui/main.ts`, `src/ui/recruitment.ts`, `src/ui/reports.ts`, 새 `src/ui/money-alerts.ts`(쓸 때), `src/ui/warehouse.ts`(지시 1의 제약 이름 공통 함수만), `src/ui/market.ts`(`exchange-h`의 `tabindex`만), `src/ui/style.css`.
+- `src/ui/main.ts`, `src/ui/recruitment.ts`, `src/ui/reports.ts`, 새 `src/ui/money-alerts.ts`(쓸 때), `src/ui/warehouse.ts`(지시 1의 제약 이름 공통 함수와 지시 6만), `src/ui/market.ts`(`exchange-h`의 `tabindex`만), `src/ui/style.css`.
 - 새 시험 `src/ui/m2a5-money-ui.test.ts`. 기존 UI 시험은 규칙 2 기대 문자열 줄만 고친다.
 - `docs/ai/tasks/results/TASK-0057.md`, `MANIFEST.json`(생성만).
 
@@ -148,7 +153,7 @@
 
 ## 완료 조건
 
-1. 지시 1~5 반영.
+1. 지시 1~6 반영.
 2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
