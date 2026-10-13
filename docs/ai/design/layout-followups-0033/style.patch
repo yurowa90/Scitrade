@@ -1,0 +1,26 @@
+diff --git a/src/ui/style.css b/src/ui/style.css
+index 58926df..f0ce5d4 100644
+--- a/src/ui/style.css
++++ b/src/ui/style.css
+@@ -132,7 +132,7 @@ table.money tr.total th, table.money tr.total td { font-weight: 700; color: var(
+ table.money caption { text-align: left; font-weight: 700; padding-bottom: .3rem; }
+ .market-table .table-scroll { max-width: 100%; overflow-x: auto; }
+ .market-table .table-scroll:focus-visible { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
+-.market-table table { min-width: 42rem; }
++.market-table table { min-width: 39rem; }
+ .market-table th, .market-table td { padding: .35rem .5rem; }
+ .exchange { margin: 1rem 0; padding: .75rem; border: 1px solid var(--line); border-radius: .5rem; }
+ .exchange label { display: inline-flex; gap: .4rem; align-items: center; flex-wrap: wrap; margin: .25rem 0; }
+@@ -564,10 +564,10 @@ main.layout { padding-bottom: 5.5rem; }
+ /* 배치안 A: 고정 막대의 ‘오늘 할 일 N건’. 하루 진행 바로 왼쪽. */
+ .queue-chip { margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; padding: .3rem .7rem; font-size: .85rem; white-space: nowrap; border-color: var(--sky-deep); color: var(--sky-deep); background: #f6fbff; }
+ .queue-chip b { font-size: 1rem; color: var(--navy); }
+-.queue-chip + .day-action { margin-left: 0; }
++@media (min-width: 1001px) { .queue-chip + .day-action { margin-left: 0; } }
+ 
+ /* 규칙 2는 두 상태 칸이 더 있어도 하루 진행을 같은 줄의 마지막에 둔다. */
+-@media (min-width: 1024px) {
++@media (min-width: 1001px) {
+   .operations-statusbar { flex-wrap: nowrap; column-gap: clamp(.5rem, 1vw, 1.2rem); }
+   .operations-statusbar .queue-chip, .operations-statusbar .day-action { flex-shrink: 0; }
+   .operations-statusbar .primary { white-space: nowrap; }
