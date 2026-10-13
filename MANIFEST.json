@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 203189,
-      "sha256": "aee5a212f1c0e84a00163a4e0eddbab5b59fed9e6ffabd861338172b63baeffd"
+      "size_bytes": 204619,
+      "sha256": "55759a37335356930ffd94ce3c14240644004cabf80de8d44d804b233f28b075"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 79940,
-      "sha256": "fdd993599c3d1ca0f931fe523d37cdf0e175ab77a14bc85979375c4c2aeb8add"
+      "size_bytes": 80569,
+      "sha256": "21255ff59120ee41b1be00f1f0694f09620c7c5e0a3c7c0685585df021aaac5a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 50398,
-      "sha256": "90df289375350f3e6940681978f49a549c2b43fe09e979a37ef91329d18d8d43"
+      "size_bytes": 50635,
+      "sha256": "cc39e1c028c9f28a38752080f90892d4cc4a38f840c0f2edba4a30b8a65b70f1"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -1382,13 +1382,73 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 14646,
-      "sha256": "3c1c50dd18468fc442fdf4af37c1e8bdfc4cc6afdfbe60c71671aa925f6f14df"
+      "size_bytes": 16032,
+      "sha256": "acf96f9ef425775ddfc3e0f153f0cf0fc3ab8a24ab896718545a681e4dd3820e"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
       "size_bytes": 11543,
       "sha256": "f8d509195da6794f7eaf58944f694e4dd54d9d7f85646de698ce67c27a9f6cdd"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/README.md",
+      "size_bytes": 10058,
+      "sha256": "d38eae214789b55f08f98f9d58d48e169a47c9c34cd159d71560bb3bca8810dc"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/bar-4359759.jsonl",
+      "size_bytes": 50550,
+      "sha256": "4998de79d6e5bbef7574c9fda9447dc7485651610542276b46bff0b5cc9d771e"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33.js",
+      "size_bytes": 7506,
+      "sha256": "02809dfecb596a111a15cd2c315432c6c891fc72e4b7a0f3a807eaff753a6acb"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33b.js",
+      "size_bytes": 940,
+      "sha256": "04d48354212b1f68717d6c63b51a751676dcadca1622e20c25987e99558bfe10"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33bar.js",
+      "size_bytes": 967,
+      "sha256": "580fe29c823a9fbb8c9026e07631cb33936233ce76cfcb0c481e075f27e808bd"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/m33w.js",
+      "size_bytes": 2130,
+      "sha256": "0a36c6215a1cbea28055da075283d950b38989f41df246fdf63fca36ab0e077d"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/r2bar.js",
+      "size_bytes": 3168,
+      "sha256": "d97dad780299ee6f6aaddb71023a2ac39f4e7447f65e3784e686b91f5a79f2e3"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/r2kb.js",
+      "size_bytes": 5467,
+      "sha256": "20d87964b2860dcf0e9be336d62f5a0c60ff69d076d3d01ec86add4059bc8334"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/kb-4359759.jsonl",
+      "size_bytes": 2351,
+      "sha256": "e11e64083756d2e27953b2f254f69a26cbdfa93a09087364e16f27dd6ca0075c"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/m33-2e0fe2d.jsonl",
+      "size_bytes": 77133,
+      "sha256": "aec06255bf23ff800135f919b4c3c1fb9da187dfbde71abbe629576ce5cc7de8"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/m33-4359759.jsonl",
+      "size_bytes": 76545,
+      "sha256": "c8308bffeabf3a986b1bda06fe9355ee744baee67983013f8322f883ba6a3add"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/scenarios.txt",
+      "size_bytes": 2387,
+      "sha256": "1866c38c428f430cd9a12268b1cce5a6402e2a3cdac46444460a0d5c5db41df8"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -1664,6 +1724,11 @@
       "path": "docs/ai/tasks/TASK-0053-conservation-tests.md",
       "size_bytes": 3678,
       "sha256": "38797ea86dc12d16b69c2905e8c1213a9b2abf6fd68cfd35a545e39d6f909889"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0054-counterparty-names.md",
+      "size_bytes": 5283,
+      "sha256": "42af5a668b7b5678ffbcdf00a759be3472d702e12a7837419e50dd2905ef628f"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
