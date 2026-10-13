@@ -1,5 +1,5 @@
 // 본사 운영 값은 엔진 읽기 함수와 실제 명령 계획에서 읽는다.
-import { cityName, routeOf } from '../engine/catalog';
+import { cityName, routeOf, findSailing } from '../engine/catalog';
 import { planState } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { handlingCapacityPt, storageCapacityLiters } from '../engine/operations';
@@ -12,6 +12,7 @@ const m3 = (liters: number) => `${liters / 1000} m³`;
 const labels: Record<BottleneckConstraint, string> = {
   DEMAND: '수요', STAFF: '직원', WAREHOUSE_HANDLING: '창고 처리', STORAGE: '보관', SAILING: '선복',
 };
+export const constraintLabel = (constraint: BottleneckConstraint) => labels[constraint];
 export function routeLabel(config: ScenarioConfig, routeId: string): string {
   const route = routeOf(config, routeId);
   return `${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}`;
@@ -29,7 +30,7 @@ export function weeklyBottleneckTable(state: GameState, view: GameState, config:
   return `<table class="weekly-bottleneck"><caption>다음 주에 받을 수 있는 작업 포함 주선(건/주) — 추정</caption><thead><tr><th scope="col">제약</th><th scope="col">지금</th></tr></thead><tbody>${q.rows.map((r) => {
     const basis = [r.constraint === 'STAFF' ? `다른 일에 주당 ${q.otherPtPerWeek}pt` : '', r.constraint === 'STORAGE' ? storage : '',
       expansion && (r.constraint === 'STORAGE' || r.constraint === 'WAREHOUSE_HANDLING') ? `${expansion.effectiveDay}일 확장 뒤 한도는 아직 넣지 않았습니다` : ''].filter(Boolean).join('. ');
-    return `<tr data-constraint="${r.constraint}"><th scope="row">${labels[r.constraint]}${basis ? `<small>${esc(basis)}</small>` : ''}</th><td>${r.before === null ? '아직 묶음 없음' : r.before}${q.binding.before.includes(r.constraint) ? ' <span>← 가장 좁음</span>' : ''}</td></tr>`;
+    return `<tr data-constraint="${r.constraint}"><th scope="row">${constraintLabel(r.constraint)}${basis ? `<small>${esc(basis)}</small>` : ''}</th><td>${r.before === null ? '아직 묶음 없음' : r.before}${q.binding.before.includes(r.constraint) ? ' <span>← 가장 좁음</span>' : ''}</td></tr>`;
   }).join('')}</tbody></table><p class="muted small">이 표는 지난 기록의 평균·최고를 다음 주에 그대로 놓은 추정입니다. 도착이 몰리면 실제로는 더 적게 처리합니다.</p>`;
 }
 
@@ -65,7 +66,7 @@ export function warehouseBlock(state: GameState, view: GameState, config: Scenar
     ['직원', `본사 하루 처리 ${q.staff.workUnitsPerDay}pt · 오늘 남는 ${q.staff.idleWorkUnitsToday}pt`],
     ['창고 처리', `오늘 한도 ${q.handling.capacityPtToday}pt · 계획 사용 ${q.handling.plannedUsePtToday}pt · 대기 업무 ${q.handling.waitTaskCount}건·대기 ${q.handling.waitPt}pt`],
     ['보관', `사용 ${m3(q.storage.usedLiters)} / 한도 ${m3(q.storage.capacityLiters)} · 미배정 회사 화물 ${m3(q.storage.heldUnallocatedLiters)}`],
-    ['선복', q.sailings.map((s) => `${s.sailingId}: 사용 ${m3(s.usedLiters)} / 한도 ${m3(s.capacityLiters)} · ${s.usedGrams / 1000} / ${s.capacityGrams / 1000} kg`).join(' · ') || '다음 출항편 없음'],
+    ['선복', q.sailings.map((s) => { const sailing = findSailing(config, s.sailingId)!; return `${routeLabel(config, sailing.routeId)} ${sailing.departureDay}일 편: 사용 ${m3(s.usedLiters)} / 한도 ${m3(s.capacityLiters)} · ${s.usedGrams / 1000} / ${s.capacityGrams / 1000} kg`; }).join(' · ') || '다음 출항편 없음'],
   ];
   const changed = state.operations?.expansions[0]?.effectiveDay === state.day
     ? `<p>한도가 ${storageCapacityLiters(state, config, state.day - 1) / 1000} → ${m3(storageCapacityLiters(state, config, state.day))}로 늘어 사용률이 내려갔습니다</p>` : '';

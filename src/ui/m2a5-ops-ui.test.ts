@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import acceptance from '../../tests/acceptance_cases.json';
 import { loadScenario, OPERATIONS_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
-import { listSailings, routeBetween } from '../engine/catalog';
+import { listSailings, routeBetween, findSailing } from '../engine/catalog';
 import * as engine from '../engine/engine';
 import { createGame, commitDay, openDay, planState } from '../engine/engine';
 import { offerDef, openTradePairs } from '../engine/market';
@@ -18,7 +18,7 @@ import { startUi } from './main-testkit';
 import { bottlenecks, BOTTLENECK_OF } from './reports';
 import { scheduleBlock, scheduleItems } from './schedule';
 import { initialUiState } from './session';
-import { investmentBlock, warehouseBlock, weeklyBottleneckTable } from './warehouse';
+import { investmentBlock, warehouseBlock, weeklyBottleneckTable, routeLabel } from './warehouse';
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const cfg = loadScenario(OPERATIONS_SCENARIO_IDS[0]), legacy = loadScenario(SCENARIO_IDS[0]);
@@ -59,7 +59,7 @@ describe('본사·창고와 주간 병목', () => {
       `<th scope="row">직원</th><td>본사 하루 처리 ${q.staff.workUnitsPerDay}pt · 오늘 남는 ${q.staff.idleWorkUnitsToday}pt</td>`,
       `<th scope="row">창고 처리</th><td>오늘 한도 ${q.handling.capacityPtToday}pt · 계획 사용 ${q.handling.plannedUsePtToday}pt · 대기 업무 ${q.handling.waitTaskCount}건·대기 ${q.handling.waitPt}pt</td>`,
       `<th scope="row">보관</th><td>사용 ${q.storage.usedLiters / 1000} m³ / 한도 ${q.storage.capacityLiters / 1000} m³ · 미배정 회사 화물 ${q.storage.heldUnallocatedLiters / 1000} m³</td>`,
-      `<th scope="row">선복</th><td>${esc(q.sailings.map((s) => `${s.sailingId}: 사용 ${s.usedLiters / 1000} m³ / 한도 ${s.capacityLiters / 1000} m³ · ${s.usedGrams / 1000} / ${s.capacityGrams / 1000} kg`).join(' · '))}</td>`,
+      `<th scope="row">선복</th><td>${esc(q.sailings.map((s) => { const sailing = findSailing(cfg, s.sailingId)!; return `${routeLabel(cfg, sailing.routeId)} ${sailing.departureDay}일 편: 사용 ${s.usedLiters / 1000} m³ / 한도 ${s.capacityLiters / 1000} m³ · ${s.usedGrams / 1000} / ${s.capacityGrams / 1000} kg`; }).join(' · '))}</td>`,
     ]);
     expect(ui.app.innerHTML.indexOf('id="warehouse-h"')).toBeLessThan(ui.app.innerHTML.indexOf('<h4>업무 부하'));
     await ui.change({ action: 'scenario' }, legacy.id);
@@ -224,6 +224,8 @@ describe('창고 막힘·빈 견적·정리', () => {
     const html = ui.app.innerHTML.replace(/빌드 [^<]+/, '빌드 BASE')
       .replace(/<section class="warehouse"[\s\S]*?(?=<h4>업무 부하)/, '')
       .replace('<li><b>창고</b> 없음</li>', '')
+      .replace('<th>미지급(급여·임차료)</th>', '<th>미지급 급여</th>')
+      .replace('<h3 id="exchange-h" tabindex="-1">', '<h3 id="exchange-h">')
       .replace('title="확정 기준" aria-describedby="payment-description"', 'title="대기 중인 명령 반영" aria-describedby="payment-description"')
       .replace('id="payment-description" class="visually-hidden">확정 기준</small>', 'id="payment-description" class="visually-hidden">대기 중인 명령 반영</small>');
     expect(await sha256(html)).toBe('60fd0707fde9953b9201e4c71a243d01f4e7e7a6267b58cf60064b90a36a516d');
