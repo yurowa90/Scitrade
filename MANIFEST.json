@@ -132,8 +132,8 @@
     },
     {
       "path": "data/sources.json",
-      "size_bytes": 49781,
-      "sha256": "72547295c8c281f93c687f4729cdf1b413de692f4c7afdda92d918b1de3832df"
+      "size_bytes": 58838,
+      "sha256": "50a7cfd7e44eb1b92e23e6e6ae083ba3a103fc9449d003ae0ce34f08072f0f62"
     },
     {
       "path": "data/team_synergies.json",
@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 196527,
-      "sha256": "ba8afffe1971a9b625dd15c75beff948f5ad26d768f66a582dbae9bb5e3bc002"
+      "size_bytes": 203189,
+      "sha256": "aee5a212f1c0e84a00163a4e0eddbab5b59fed9e6ffabd861338172b63baeffd"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 18856,
-      "sha256": "9403160043381171dda351020c0361a24b6039023a2750f091d1f9437925763a"
+      "size_bytes": 19336,
+      "sha256": "91c5becd13e295ef8c03327ba060cc4ad4e6ea76df6fe51f49c0e68b68595528"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 76550,
-      "sha256": "483c443533adc8de63a76f551709b02277e7c319d8b1fe27fca9917937331791"
+      "size_bytes": 79940,
+      "sha256": "fdd993599c3d1ca0f931fe523d37cdf0e175ab77a14bc85979375c4c2aeb8add"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -207,13 +207,13 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 49743,
-      "sha256": "95ae6ff5f545807b6cc15b0c65c7ce3b3bda1270b0102868eaf47f6beb0ea229"
+      "size_bytes": 50398,
+      "sha256": "90df289375350f3e6940681978f49a549c2b43fe09e979a37ef91329d18d8d43"
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9522,
-      "sha256": "6dea67f030b211653705d03ebfcd87a9e1c26492ebcd47c49ed600b0c784ee92"
+      "size_bytes": 9586,
+      "sha256": "749b00e81108f0fbf6a5d9af8d6ba3693bcb06ea206d437ebd07376af0618511"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1361,6 +1361,11 @@
       "sha256": "e9ab91ee3fdcc4ea80e942f289afc452c662c787dd8a1f6ba7a74604fe1015f8"
     },
     {
+      "path": "docs/ai/design/research/ARCTIC-TRIAL-2026.md",
+      "size_bytes": 11365,
+      "sha256": "1600075660b7669cba3a1ca6dd9fc11711e80e7c9e8735cae51f0db2fec747a6"
+    },
+    {
       "path": "docs/ai/design/research/CONSERVATION-BULK.md",
       "size_bytes": 15196,
       "sha256": "25fce75d7ab82b62942898a93d641ab2f9b4f8be7b96dd2717a11b2c00c04063"
@@ -1377,8 +1382,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 13268,
-      "sha256": "2ab0d428aee842e27a01f804ea203be0bc5901be305758983af7745a68fc982a"
+      "size_bytes": 14646,
+      "sha256": "3c1c50dd18468fc442fdf4af37c1e8bdfc4cc6afdfbe60c71671aa925f6f14df"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1392,8 +1397,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 16107,
-      "sha256": "5d2a934bd29ef008c014ae0d10b98135acb2d94378d1ace853ca260836cfd6f3"
+      "size_bytes": 17791,
+      "sha256": "bd231b82cef806dc278b6b66b1f355d67127400bb48a9f5f242644d277db79de"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1932,8 +1937,8 @@
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
-      "size_bytes": 12338,
-      "sha256": "6c6a5099e5912d0fd472040bd30641931d9269b7c2e601020e146e6b9dc17ada"
+      "size_bytes": 12517,
+      "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
     },
     {
       "path": "docs/art/FONT_LICENSES.md",
