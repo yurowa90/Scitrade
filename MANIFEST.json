@@ -1626,6 +1626,11 @@
       "sha256": "04e785771ceddeb176aeebfeaa29aa037ade8ccd2c5d00b5fcce59315ea77624"
     },
     {
+      "path": "docs/ai/tasks/TASK-0033-R2-m2a5-topbar-layout.md",
+      "size_bytes": 4905,
+      "sha256": "3256b3a3b8fe1ad54604b74a24310d88df77a429ff09c0fb31224960b95b23a5"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
       "size_bytes": 15832,
       "sha256": "456f5c2c0efcdbc54e51f595dbf43591f7f3cd01239a1679d0a065805c01dca6"
