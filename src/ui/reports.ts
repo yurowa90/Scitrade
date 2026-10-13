@@ -1,3 +1,4 @@
+import { warehouseSummary } from '../engine/readers';
 import { formatMoney } from '../engine/money';
 import { contractProgress, type BlockerCode } from '../engine/progress';
 import { fundsPosition } from '../engine/reservations';
@@ -101,7 +102,7 @@ export function workloadLinesKo(summary: WorkloadSummary, config: ScenarioConfig
   return lines.length ? lines : ['직원과 남은 업무가 없습니다.'];
 }
 
-export type BottleneckKind = '돈' | '시간' | '사람' | '선복';
+export type BottleneckKind = '돈' | '시간' | '사람' | '선복' | '창고';
 export const BOTTLENECK_OF: Record<BlockerCode, BottleneckKind | null> = {
   TASK_UNASSIGNED: '사람', TASK_WILL_MISS_SAILING: '사람', NO_BOOKING: '선복', NO_SAILING_LEFT: '선복',
   NEXT_SAILING_LATE: '시간', BOOKED_SAILING_LATE: '시간', WAITING_PORT_RESTRICTION: '시간',
@@ -111,7 +112,7 @@ export const BOTTLENECK_OF: Record<BlockerCode, BottleneckKind | null> = {
 export function bottlenecks(s: GameState, config: ScenarioConfig): {
   kind: BottleneckKind; items: { contractId: string | null; textKo: string }[];
 }[] {
-  const groups = (['돈', '시간', '사람', '선복'] as const).map((kind) => ({ kind,
+  const groups = (['돈', '시간', '사람', '선복', ...(config.operations ? ['창고' as const] : [])] as BottleneckKind[]).map((kind) => ({ kind,
     items: [] as { contractId: string | null; textKo: string }[] }));
   for (const currency of new Set([config.tradeCurrency, config.payrollCurrency])) {
     const unpaid = fundsPosition(s, config, currency).unpaidObligations;
@@ -124,6 +125,13 @@ export function bottlenecks(s: GameState, config: ScenarioConfig): {
   for (const c of s.contracts) for (const blocker of contractProgress(s, config, c).blockers) {
     const kind = BOTTLENECK_OF[blocker.code];
     if (blocker.severity !== 'info' && kind !== null) groups.find((g) => g.kind === kind)!.items.push({ contractId: c.id, textKo: blocker.messageKo });
+  }
+  if (config.operations) {
+    const q = warehouseSummary(s, config), items = groups.find((g) => g.kind === '창고')!.items;
+    for (const wait of q.handling.waits) items.push({ contractId: wait.contractId,
+      textKo: `${wait.contractId} 준비 업무가 창고 처리 한도에 걸려 오늘 ${wait.gotPt}/${wait.wantPt}pt만 진행합니다` });
+    if (q.storage.usedLiters >= q.storage.capacityLiters * 0.9) items.push({ contractId: null,
+      textKo: `창고 보관 ${q.storage.usedLiters / 1000}/${q.storage.capacityLiters / 1000} m³ — 새 화물을 받기 어렵습니다` });
   }
   return groups;
 }

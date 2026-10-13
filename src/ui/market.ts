@@ -1,4 +1,6 @@
 // 규칙 2 화면은 계획 상태의 읽기 함수가 돌려준 금액과 예측만 표시한다.
+import { commitDay } from '../engine/engine';
+import type { UiCommand } from './session';
 import { cityName, goodOf } from '../engine/catalog';
 import { marketTable } from '../engine/market';
 import { formatMoney } from '../engine/money';
@@ -70,8 +72,8 @@ export function exchangeSelection(view: GameState, config: ScenarioConfig, direc
   return { lots, maxLots, usdMinor: lots * lot };
 }
 
-export function exchangeBlock(view: GameState, config: ScenarioConfig, direction: ExchangeDirection, selectedLots: number): string {
-  const { lots, maxLots, usdMinor } = exchangeSelection(view, config, direction, selectedLots);
+export function exchangeBlock(view: GameState, config: ScenarioConfig, direction: ExchangeDirection, selectedLots: number, selection?: ReturnType<typeof exchangeSelection>): string {
+  const { lots, maxLots, usdMinor } = selection ?? exchangeSelection(view, config, direction, selectedLots);
   const options = Array.from({ length: maxLots }, (_, i) => {
     const n = i + 1;
     return `<option value="${n}"${n === lots ? ' selected' : ''}>${formatMoney('USD', n * config.operations!.fx.lotUsdMinor)} (${n}묶음)</option>`;
@@ -94,6 +96,11 @@ export function paymentStatusKo(view: GameState, config: ScenarioConfig): string
   return `${stage} · 실패까지 ${remaining}일${status.failAtCloseOfDay! > config.campaignDays ? ` · ${config.campaignDays}일 캠페인이 끝날 때까지 갚지 못하면 미지급을 남기고 끝납니다` : ''}`;
 }
 
-export function operationsTopbar(view: GameState, config: ScenarioConfig): string {
-  return `<div class="stat" title="임차료 포함 · 대기 중인 명령 반영" aria-describedby="runway-description"><span>원화 급여 가능일</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b><small id="runway-description" class="visually-hidden">임차료 포함 · 대기 중인 명령 반영</small></div><div class="stat" title="대기 중인 명령 반영" aria-describedby="payment-description"><span>지급 상태</span><b>${esc(paymentStatusKo(view, config))}</b><small id="payment-description" class="visually-hidden">대기 중인 명령 반영</small></div>`;
+export function operationsTopbar(view: GameState, config: ScenarioConfig, state = view, pending: UiCommand[] = []): string {
+  const level = paymentDefaultStatus(state, config).level;
+  let forecast = '';
+  if (pending.length && (level === 'WARNING' || level === 'DANGER')) {
+    try { forecast = `<small class="payment-forecast">하루 진행 뒤 예상: ${esc(paymentStatusKo(commitDay(state, config, pending).state, config))}</small>`; } catch { /* 실행 불가능한 계획은 예상 줄을 생략한다. */ }
+  }
+  return `<div class="stat" title="임차료 포함 · 대기 중인 명령 반영" aria-describedby="runway-description"><span>원화 급여 가능일</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b><small id="runway-description" class="visually-hidden">임차료 포함 · 대기 중인 명령 반영</small></div><div class="stat" title="확정 기준" aria-describedby="payment-description"><span>지급 상태</span><b>${esc(paymentStatusKo(state, config))}</b><small id="payment-description" class="visually-hidden">확정 기준</small>${forecast}</div>`;
 }

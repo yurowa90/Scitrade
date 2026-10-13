@@ -21,6 +21,7 @@ import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, ha
 import { offerDef, openTradePairs } from '../engine/market';
 import { quotePreview, type OperationsQuotePreview } from '../engine/readers';
 import { counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
+import { warehouseBlock, routeLabel } from './warehouse';
 import { cancellationPreviewKo } from './trade';
 import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
@@ -47,11 +48,8 @@ let announcedFlash: ReturnType<typeof initialUiState>['flash'] = null;
 let lastTabAt = -Infinity, tabX = 0, tabY = 0;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
-function tradeUiState() {
-  const { exchangeUsdMinor: _oldAmount, ...initial } = initialUiState();
-  return { ...initial, exchangeLots: 1 };
-}
-let ui = tradeUiState();
+let ui = initialUiState();
+let selectedExchange: ReturnType<typeof exchangeSelection> | undefined;
 let mapMode: MapMode = 'route';
 const mapMeasurements = new MapMeasurementMemory();
 const MAP_BASE_OUTSIDE_SVG = false;
@@ -144,7 +142,7 @@ function startScenario(id: AnyScenarioId) {
 }
 
 function resetUi() {
-  ui = tradeUiState();
+  ui = initialUiState();
   resetMapScroll = true;
   mapScrollRatio = undefined;
   mapMeasurements.clear();
@@ -376,7 +374,7 @@ function topbar(): string {
     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
-    ${config.operations ? operationsTopbar(view, config) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+    ${config.operations ? operationsTopbar(view, config, state, ui.pending) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
     ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">${config.operations ? '다른 금액은 확정 기준' : '금액은 확정 기준'}</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
   </div>
   </header>`;
@@ -566,8 +564,8 @@ function offerBoard(): string {
       ].filter(Boolean), offer.validUntilDay, offer.id, offer.cityId)}
     </article>`);
   }
-  if (!cards.length) return config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots) : '';
-  return `${config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
+  if (!cards.length) return config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : '';
+  return `${config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
 }
 
 function contractPanel(c: Contract): string {
@@ -704,6 +702,11 @@ function delayPanel(): string {
 function tradePanel(): string {
   const active = view.contracts.filter((c) => c.status === 'ACTIVE' || c.status === 'IN_PROGRESS');
   const anyExpired = view.offers.some((o) => o.status === 'EXPIRED');
+  const publish = config.operations?.market.publish;
+  let nextPublish: number | null = null;
+  if (publish) for (let day = publish.firstDay; day <= publish.lastDay; day += publish.intervalDays) {
+    if (day > view.day) { nextPublish = day; break; }
+  }
   return `
   <section class="panel trade" aria-labelledby="trade-h">
     <h2 id="trade-h" tabindex="-1">거래·계약 <small>진행 중 ${active.length}건</small></h2>${config.culture ? `
@@ -712,7 +715,7 @@ function tradePanel(): string {
     ${offerBoard()}
     ${active.map(contractPanel).join('')}
     ${closedContracts()}
-    ${!view.contracts.length && anyExpired ? '<p class="muted">견적이 만료되었습니다. ‘처음부터’로 다시 시작할 수 있습니다.</p>' : ''}
+    ${!view.contracts.length && anyExpired ? `<p class="muted">${nextPublish === null ? '견적이 만료되었습니다. ‘처음부터’로 다시 시작할 수 있습니다.' : `다음 견적 묶음은 ${nextPublish}일에 나옵니다`}</p>` : ''}
   </section>`;
 }
 
@@ -808,7 +811,7 @@ function operationsBlock(): string {
   const groups = bottlenecks(state, config);
   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
   // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
-  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${warehouseBlock(state, view, config, ui.pending)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
 }
 
 function settlementBlock(): string {
@@ -895,7 +898,7 @@ function crewPanel(): string {
       <tbody>${rows}</tbody>
     </table>
     ${inline ? '' : detail}
-    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY'), queuedStatus)}
+    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), queuedStatus)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
 }
@@ -922,6 +925,10 @@ function commandLabel(c: Command): string {
       const o = offerDef(view, config, c.offerId);
       return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})${planLabel(c.plan)}`;
     }
+    case 'EXPAND_WAREHOUSE':
+      return '창고 확장';
+    case 'SIGN_SPACE_CONTRACT':
+      return `선복 계약 ${routeLabel(config, c.routeId)}`;
     case 'EXCHANGE_CURRENCY':
       return `환전 ${c.direction === 'USD_TO_KRW' ? 'USD→KRW' : 'KRW→USD'} ${formatMoney('USD', c.usdAmountMinor)}`;
     case 'SCOUT_SITE':
@@ -950,7 +957,7 @@ function queuePanel(): string {
   <section class="panel queue" aria-labelledby="queue-h">
     <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.phase === 'ENDED' ? `${config.campaignDays}일 · 캠페인 종료` : `${state.day}일 · 하루 진행 때 이 순서로 실행`}</small></h2>
     ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
-    ${ui.pending.length ? `<p class="muted small amount-basis-note">${config.operations ? '위쪽 막대의 급여 가능일·지급 상태는 대기 중인 명령을 반영합니다. 다른 금액은 확정 기준입니다.' : '위쪽 막대의 금액은 확정 기준입니다.'} 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>` : ''}
+    ${ui.pending.length ? `<p class="muted small amount-basis-note">${config.operations ? '급여 가능일은 대기 중인 명령을 반영합니다. 지급 상태는 확정 기준이고, 하루 진행 뒤 예상을 따로 보입니다.' : '위쪽 막대의 금액은 확정 기준입니다.'} 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>` : ''}
     ${state.phase === 'ENDED' ? `<p class="muted">캠페인이 끝났습니다. 결산은 경영 보고에 있습니다.</p><button class="link" data-action="skip-to" data-target="settlement-h">결산 보기</button>${pending}` : pending || '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}
     ${ui.growthNoticesDay === null ? '' : growthStatus(ui.growthNotices, ui.growthNoticesDay)}
     ${state.phase === 'ENDED' ? '' : scheduleBlock(view, config, { open: ui.scheduleOpen, prev: ui.schedulePrev, link: contractLink })}
@@ -1078,7 +1085,8 @@ function tapMap(target: Element, x: number, y: number) {
 function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
-  if (config.operations) ui.exchangeLots = exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots).lots;
+  selectedExchange = config.operations ? exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
+  if (selectedExchange) ui.exchangeLots = selectedExchange.lots;
   if (ui.offerQuantitiesDay !== view.day) { ui.offerQuantities = {}; ui.offerQuantitiesDay = view.day; }
   for (const key of Object.keys(ui.offerQuantities)) {
     if (key.split('+').some((id) => view.offers.find((o) => o.id === id)?.status !== 'OPEN')) delete ui.offerQuantities[key];
@@ -1098,7 +1106,7 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     ${topbar()}
     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
-      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
+      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
     </main>`;
@@ -1309,6 +1317,10 @@ app.addEventListener('click', (ev) => {
       }
       case 'accept':
         return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell!, ...(config.operations ? { quantity: ui.offerQuantities[`${d.buy}+${d.sell}`] ?? offerDef(view, config, d.buy!)!.quantity } : {}) });
+      case 'expand-warehouse':
+        return queue({ id: newId('EXPAND'), type: 'EXPAND_WAREHOUSE' });
+      case 'sign-space-contract':
+        return queue({ id: newId('SPACE'), type: 'SIGN_SPACE_CONTRACT', routeId: el.dataset.route! });
       case 'exchange':
         return queue({ id: newId('FX'), type: 'EXCHANGE_CURRENCY', direction: ui.exchangeDirection, usdAmountMinor: ui.exchangeLots * config.operations!.fx.lotUsdMinor });
       case 'accept-fwd':
