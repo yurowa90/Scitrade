@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 205377,
-      "sha256": "df9e9f65c457e3b0836cc36214201a51fdf58656758465278ec194545470cbc9"
+      "size_bytes": 206138,
+      "sha256": "c892f4b9bdf1abaa542721c7bef22082721f8433a0772608c2a35e62bae0df86"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 81620,
-      "sha256": "e4ec4eea6628cf442d28bfed4a00444aedd3725b55b3bfe3439a55e39bb8ab3e"
+      "size_bytes": 81980,
+      "sha256": "cad9936626c9edf3f95ab6c9adf36ebb4255932bd0e703a264bcd825ae86378d"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1392,8 +1392,8 @@
     },
     {
       "path": "docs/ai/design/task0033-chromium/README.md",
-      "size_bytes": 10058,
-      "sha256": "d38eae214789b55f08f98f9d58d48e169a47c9c34cd159d71560bb3bca8810dc"
+      "size_bytes": 10783,
+      "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
     },
     {
       "path": "docs/ai/design/task0033-chromium/bar-4359759.jsonl",
@@ -1431,6 +1431,11 @@
       "sha256": "20d87964b2860dcf0e9be336d62f5a0c60ff69d076d3d01ec86add4059bc8334"
     },
     {
+      "path": "docs/ai/design/task0033-chromium/harness/r2w.js",
+      "size_bytes": 2079,
+      "sha256": "85c150906329fb7bb2e22b96be2b4066ef09477d3e7c4fb2255e0051001d438b"
+    },
+    {
       "path": "docs/ai/design/task0033-chromium/kb-4359759.jsonl",
       "size_bytes": 2351,
       "sha256": "e11e64083756d2e27953b2f254f69a26cbdfa93a09087364e16f27dd6ca0075c"
@@ -1457,8 +1462,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 17851,
-      "sha256": "0881b0603c39054913bc391062c0027d6173e310c75100410ee439dffcf57ceb"
+      "size_bytes": 18237,
+      "sha256": "b5c529eeda37e3557a4d85725fe92d3144a9a3c637c5e9aedb98a0dd2dad3d0f"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
