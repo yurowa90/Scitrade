@@ -2,8 +2,8 @@
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `medium`
-- 선행: TASK-0054 병합 기록 뒤 개발 브랜치 머리(이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
-  - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0056-m2a5-save-references.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+- 선행: TASK-0054 병합 기록 뒤 개발 브랜치 머리(이하 `e1f36b6`). 기준 비교(`review_checks.sh`)는 `e1f36b6`로 한다.
+  - `e1f36b6`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0056-m2a5-save-references.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
 - 순서: 0033-R2 → 0033 병합 → 0054 → **0056** → 0034. 0054(검사기)와 고치는 파일이 겹치지 않는다.
 - 근거: 세션 C의 코드 읽기와 세션 A의 반례 실행(2026-10-13).
   - 규칙 2 시나리오를 8일까지 진행해 저장한 뒤, 생성 견적 하나의 `counterpartyId`를 설정에 없는 값으로 바꿨다. 그 저장을 `deserializeSave`로 가져왔다.
@@ -70,7 +70,7 @@
 ## 완료 조건
 
 1. 지시 1·2 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 규칙 1 골든과 기본 `run` 400회가 바이트로 같다(`cmp`).
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check e1f36b6` 실패 0. 규칙 1 골든과 기본 `run` 400회가 바이트로 같다(`cmp`).
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |
