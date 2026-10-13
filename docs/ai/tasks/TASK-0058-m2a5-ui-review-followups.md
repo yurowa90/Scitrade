@@ -2,8 +2,8 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: TASK-0057 병합 기록 커밋(허브가 병합 뒤 알려 준다, 이하 `<BASE>`). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
-  - `<BASE>`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
+- 선행: TASK-0057 병합 기록 커밋(허브가 병합 뒤 알려 준다, 이하 `f38f9cf`). 기준 비교(`review_checks.sh`)는 `f38f9cf`로 한다.
+  - `f38f9cf`가 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다.
   - 아래 줄 번호는 검수 문서가 본 트리(`379a862`) 기준이다. TASK-0034·0057이 같은 파일을 고쳤으므로 **함수·문장 이름으로 찾고**, 실제 줄을 결과 보고에 적는다.
 - 근거: `docs/ai/design/ui-review-0033/README.md`(허브 화면 적대 검수, 2026-10-13). 항목마다 재현 절차·위치·고칠 방향이 있다. 먼저 그 문서의 해당 절을 읽는다.
   - 이 지시서에 넣은 것: A11Y-1~5, F4·GAP-4, F5·GAP-5, GAP-2·3·6·7(시험 범위)·8.
@@ -111,12 +111,12 @@
 ## 지켜야 할 것
 
 - 규칙 1 불변(TASK-0033 기준 문자열 세 개 sha256). 통화 분리. 결정성(기본 `run` 400회 바이트 같음). 시험 소스에 자료 ID·조정값 상수 금지(TASK-0027 R1). 색만으로 상태를 구분하지 않음.
-- **크기:** 첫 화면 gzip이 `<BASE>`보다 3,000 B 넘게 늘거나 한도 140,000 B까지 2,000 B 안으로 들어오면 멈추고 질문에 적는다.
+- **크기:** 첫 화면 gzip이 `f38f9cf`보다 3,000 B 넘게 늘거나 한도 140,000 B까지 2,000 B 안으로 들어오면 멈추고 질문에 적는다.
 
 ## 완료 조건
 
 1. 지시 1~11 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check f38f9cf` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |
