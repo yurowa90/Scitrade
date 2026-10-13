@@ -130,9 +130,14 @@
         "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
       },
       "conservation": {
+        "scientific_name": "Vulpes zerda",
+        "scientific_name_rank": "species",
         "iucn_status": "LC",
         "note_ko": "사막여우는 북아프리카 사막에 산다. 큰 귀로 열을 내보내고 소리를 듣는다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반"
@@ -245,9 +250,14 @@
         "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
       },
       "conservation": {
+        "scientific_name": "Lutra lutra",
+        "scientific_name_rank": "species",
         "iucn_status": "NT",
         "note_ko": "수달(유라시아수달)은 세계적으로 준위협(NT). 한국에서는 천연기념물이자 멸종위기 야생생물 I급이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 I급",
         "sources": [
           "작성자 지식 기반"
@@ -360,9 +370,14 @@
         "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
       },
       "conservation": {
+        "scientific_name": "Pteromys volans",
+        "scientific_name_rank": "species",
         "iucn_status": "LC",
         "note_ko": "하늘다람쥐는 세계적으로 관심대상(LC)이지만 한국에서는 천연기념물이자 멸종위기 야생생물 II급이다. 비막으로 활공한다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재(Pteromys 없음)",
         "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 II급",
         "sources": [
           "작성자 지식 기반"
@@ -593,9 +608,14 @@
         "note_ko": "처음 만나는 지역. 국적·능력·근무 지역 제한이 아니다."
       },
       "conservation": {
+        "scientific_name": "Ailurus fulgens",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "레서판다는 히말라야와 중국 남서부 산림에 사는 위기(EN) 종이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반"
@@ -1454,9 +1474,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Panthera tigris",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "호랑이 종 전체 기준 위기(EN). 한반도 남부에서는 야생 개체가 사라진 것으로 본다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "멸종위기 야생생물 Ⅰ급(아종 Panthera tigris altaica로 지정)",
         "sources": [
           "IUCN Red List (Panthera tigris) — 작성자 확인 필요",
@@ -1574,9 +1599,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Platalea minor",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "세계 개체 수가 늘어 위기(EN)에서 취약(VU)으로 하향 조정되었다. 한국 서해안 무인도 등에서 번식한다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재(같은 속 P. leucorodia만 Ⅱ)",
         "national_protection_ko": "멸종위기 야생생물 Ⅰ급, 천연기념물, 해양보호생물",
         "sources": [
           "BirdLife DataZone: Black-faced Spoonbill https://datazone.birdlife.org/species/factsheet/black-faced-spoonbill-platalea-minor",
@@ -1695,9 +1725,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Ailuropoda melanoleuca",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "서식지 보호와 복원으로 2016년 위기(EN)에서 취약(VU)으로 하향되었다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "중국 국가 1급 보호동물 (확인 필요)",
         "sources": [
           "National Geographic (2016) https://www.nationalgeographic.com/news/2016/09/pandas-vulnerable-endangered-species/"
@@ -1809,9 +1844,14 @@
         "secondary_stat": "negotiation"
       },
       "conservation": {
+        "scientific_name": "Rhinopithecus roxellana",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "중국 중부·남서부 산림의 고유종. 서식지 감소로 위기(EN).",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 들창코원숭이속 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Golden snub-nosed monkey https://en.wikipedia.org/wiki/Golden_snub-nosed_monkey",
@@ -2153,9 +2193,14 @@
         "secondary_stat": "technology"
       },
       "conservation": {
+        "scientific_name": "Macaca fuscata",
+        "scientific_name_rank": "species",
         "iucn_status": "LC",
         "note_ko": "일본 고유종. 겨울에 온천에 들어가는 무리로 알려져 있다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 영장목 전종 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반",
@@ -2268,9 +2313,14 @@
         "secondary_stat": "exploration"
       },
       "conservation": {
+        "scientific_name": "Prionailurus bengalensis iriomotensis",
+        "scientific_name_rank": "subspecies",
         "iucn_status": "CR",
         "note_ko": "이리오모테섬에만 사는 아종. 성체 100~150마리 수준으로 추정되며 위급(CR).",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 고양이과 전종 Ⅱ(Ⅰ은 P. b. bengalensis 방글라데시·인도·태국 개체군만)",
         "national_protection_ko": "일본 특별천연기념물 (확인 필요)",
         "sources": [
           "Wikipedia: Iriomote cat https://en.wikipedia.org/wiki/Iriomote_cat",
@@ -2722,9 +2772,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Bubalus bubalis",
+        "scientific_name_rank": "species",
         "iucn_status": null,
         "note_ko": "농사와 운반에 쓰여 온 가축이다. 야생 물소(Bubalus arnee)는 별도 종으로 위기 상태다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 가축화된 Bubalus bubalis는 협약 적용 제외(야생 B. arnee는 Ⅲ, 네팔)",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반"
@@ -2834,9 +2889,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Pseudoryx nghetinhensis",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "1992년에 처음 학계에 알려진 종. 베트남·라오스 안남산맥에만 살며 덫 사냥 피해로 위급(CR). 이미 사라졌을 가능성도 거론된다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Saola https://en.wikipedia.org/wiki/Saola",
@@ -2952,9 +3012,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Manis",
+        "scientific_name_rank": "genus",
         "iucn_status": "CR",
         "note_ko": "순다천산갑·중국천산갑은 위급(CR). 8종 모두 2017년 1월부터 CITES 부속서 I로 국제 상업 거래가 금지되었다. 가장 많이 밀거래되는 포유류로 꼽힌다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ(M. javanica·M. pentadactyla 모두)",
         "national_protection_ko": null,
         "sources": [
           "Mongabay (2016) https://news.mongabay.com/2016/09/commercial-trade-in-all-eight-pangolin-species-has-just-been-banned/",
@@ -3068,9 +3133,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Trachypithecus delacouri",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "베트남 북부 고유종으로 전체 약 250~300마리. 닌빈성 반롱 보호구역에 가장 큰 무리가 산다. 위급(CR).",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 영장목 전종 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "Fauna & Flora: Delacour's langur https://www.fauna-flora.org/projects/conserving-delacours-langur-vietnam/",
@@ -3414,9 +3484,14 @@
         "secondary_stat": "negotiation"
       },
       "conservation": {
+        "scientific_name": "Tragulus kanchil",
+        "scientific_name_rank": "species",
         "iucn_status": "LC",
         "note_ko": "작은쥐사슴은 세계에서 가장 작은 발굽동물 중 하나다. 말레이·인도네시아 설화의 꾀 많은 주인공 ‘상 칸칠’로 친숙하다(악어 등을 밟고 강을 건너는 이야기).",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반"
@@ -3528,9 +3603,14 @@
         "secondary_stat": "exploration"
       },
       "conservation": {
+        "scientific_name": "Anthracoceros albirostris",
+        "scientific_name_rank": "species",
         "iucn_status": "LC",
         "note_ko": "얼룩코뿔새는 1800년대 중반 싱가포르에서 사라졌다가 1994년 우빈섬에서 다시 관찰되었고, 인공 둥지 상자 사업으로 무리가 돌아오고 있다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 검은코뿔새속 전종 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "NParks: Return of the Hornbills https://www.nparks.gov.sg/nparksbuzz/issue-02-vol-2-2009/conservation/return-of-the-hornbills",
@@ -3643,9 +3723,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Varanus komodoensis",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "2021년 기후 변화와 해수면 상승에 따른 서식지 감소 위험으로 취약(VU)에서 위기(EN)로 상향되었다. 성체 1,400마리 미만.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Natural History Museum (2021) https://www.nhm.ac.uk/discover/news/2021/september/komodo-dragon-is-now-listed-as-endangered-from-rising-sea-levels.html"
@@ -3758,9 +3843,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Pongo",
+        "scientific_name_rank": "genus",
         "iucn_status": "CR",
         "note_ko": "‘숲의 사람(orang hutan)’이라는 말레이어에서 온 이름. 보르네오·수마트라 오랑우탄은 위급(CR)이며 타파눌리 오랑우탄도 위급으로 알려져 있다. 팜유 농장 확대 등 서식지 감소가 주된 위협이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ(Pongo 3종 모두)",
         "national_protection_ko": null,
         "sources": [
           "Jane Goodall Institute (2016) https://news.janegoodall.org/2016/09/13/iucn-conservation-congress-giant-pandas-are-conservation-symbol-of-success"
@@ -3872,9 +3962,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Rhinoceros sondaicus",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "인도네시아 우중쿨론 국립공원에만 산다. 공식 추정은 70마리대이나 밀렵 수사와 조사 결과에 따라 실제 수가 더 적을 수 있다는 지적이 있다. 위급(CR).",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 코뿔소과 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "International Rhino Foundation: Javan rhino https://rhinos.org/about-rhinos/rhino-species/javan-rhino/"
@@ -3987,9 +4082,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Paradisaeidae",
+        "scientific_name_rank": "family",
         "iucn_status": null,
         "note_ko": "뉴기니섬 일대에 사는 극락조과 새들. 과거 유럽 모자 장식용 깃털 거래로 많이 사냥되었다. 종별 상태가 달라 대표 종 확정 후 다시 확인한다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 극락조과 전종 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "작성자 지식 기반",
@@ -4219,9 +4319,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Ursus thibetanus",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "세계적으로 취약(VU). 한국에서는 2004년 지리산에 세 쌍을 방사한 복원 사업으로 80마리 넘게 늘었고, 주민과의 공존이 과제로 남아 있다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "천연기념물, 멸종위기 야생생물 Ⅰ급(아종 Ursus thibetanus ussuricus로 지정)",
         "sources": [
           "IUCN: Saving wild Asiatic black bears in Korea https://iucn.org/node/17022",
@@ -4339,9 +4444,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Neophocaena asiaeorientalis",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "2017년부터 위기(EN). 서해 개체군이 2005년 약 3만 6천에서 2011년 약 1만 3천으로 줄었다는 추정이 있으며, 안강망 등 그물 혼획이 가장 큰 위협이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ(고시 국명 ‘양쯔강상괭이’)",
         "national_protection_ko": "해양보호생물",
         "sources": [
           "IUCN SSC Cetacean Specialist Group https://iucn-csg.org/conservation-action-for-endangered-narrow-ridged-finless-porpoises-in-the-republic-of-korea/",
@@ -4458,9 +4568,14 @@
         "secondary_stat": "exploration"
       },
       "conservation": {
+        "scientific_name": "Ciconia boyciana",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "위기(EN). 한국에서는 야생 개체가 사라졌다가 복원·방사로 2016년부터 야생 번식이 이어지고 있다. ‘한새(큰 새)’는 황새의 옛말로 알려져 있다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "한국 천연기념물, 멸종위기 야생생물 I급",
         "sources": [
           "YESAN-STORK-HISTORY (황새생태연구원 황새복원사)",
@@ -4577,9 +4692,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Alligator sinensis",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "세계에서 가장 위급한 악어류로 꼽히며 위급(CR). 야생 개체가 매우 적다(출처마다 약 100~수백 마리로 다름). 서식지 감소·오염이 주된 원인이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "EDGE of Existence: Chinese alligator https://www.edgeofexistence.org/species/chinese-alligator",
@@ -4693,9 +4813,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Andrias davidianus",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "세계에서 가장 큰 양서류 무리로, 지난 수십 년간 80% 넘게 줄어 위급(CR). 식용·약용 남획과 서식지 오염이 원인이다. 울음소리가 아기 같다 하여 ‘와와위(娃娃鱼)’라고도 부른다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 장수도롱뇽속 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "ZSL: World's largest amphibian heading for extinction https://www.zsl.org/news-and-events/news/worlds-largest-amphibian-heading-extinction",
@@ -4811,9 +4936,14 @@
         "secondary_stat": "negotiation"
       },
       "conservation": {
+        "scientific_name": "Pentalagus furnessi",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "아마미오시마·도쿠노시마에만 사는 위기(EN) 종. 들여온 몽구스·들고양이 등의 포식이 큰 위협이었고, 아마미오시마에서는 몽구스 퇴치가 선언되었다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재",
         "national_protection_ko": "일본 특별천연기념물 (확인 필요)",
         "sources": [
           "Wikipedia: Amami rabbit https://en.wikipedia.org/wiki/Amami_rabbit",
@@ -4926,9 +5056,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Nipponia nippon",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "위기(EN). 한때 중국 산시성 양현에만 남았다가 복원되었다. 일본은 2008년 사도섬 방사, 2012년 36년 만의 야생 부화를 확인했고, 한국은 2019년 창녕 우포늪에서 40마리를 처음 방사했다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Crested ibis https://en.wikipedia.org/wiki/Crested_ibis",
@@ -5044,9 +5179,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Pygathrix nemaeus",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "2020년 위급(CR)으로 상향되었다. 사냥과 불법 거래, 서식지 감소가 위협이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 납작코원숭이속 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "World Land Trust: Red-shanked douc https://www.worldlandtrust.org/species/red-shanked-douc/",
@@ -5162,9 +5302,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Rafetus swinhoei",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "양쯔강대왕자라(Rafetus swinhoei)는 확인된 개체가 2~3마리뿐이라 위급(CR)이며 사실상 야생 절멸 위기로 평가된다. 하노이 호안끼엠 호수에 살던 전설의 거북도 이 무리로 알려졌다(2016년 사망).",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅱ(고시 국명 ‘상하이자라’)",
         "national_protection_ko": null,
         "sources": [
           "TIME (2023) https://time.com/6275373/giant-yangtze-softshell-turtle-female-dies/",
@@ -5280,9 +5425,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Presbytis femoralis",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "위급(CR). 전체 300~400마리 중 싱가포르에 약 60~70마리가 산다(2021년 68마리). 도시 개발로 서식지가 크게 줄었다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 영장목 전종 Ⅱ",
         "national_protection_ko": null,
         "sources": [
           "NParks (2016) National strategy to conserve Raffles' Banded Langur https://www.nparks.gov.sg/news/2016/8/national-strategy-to-conserve-elusive-native-raffles-banded-langur-launched",
@@ -5398,9 +5548,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Leucopsar rothschildi",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "위급(CR). 애완조 불법 포획과 서식지 감소로 2001년 무렵 야생 개체가 극소수까지 줄었고, 복원 노력 중이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Bali myna https://en.wikipedia.org/wiki/Bali_myna",
@@ -5515,9 +5670,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Tapirus indicus",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "2008년부터 위기(EN). 성숙 개체 2,500마리 미만으로 추정되며 서식지 단편화, 덫, 도로 사고가 위협이다. 일본 요괴 바쿠(꿈바)와 이름을 함께 쓰는 실제 동물이다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 맥과 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Malayan tapir https://en.wikipedia.org/wiki/Malayan_tapir",
@@ -5634,9 +5794,14 @@
         "secondary_stat": "coordination"
       },
       "conservation": {
+        "scientific_name": "Grus japonensis",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "취약(VU). 한국 철원 등 비무장지대 주변이 주요 월동지다. 일본 홋카이도와 중국에도 무리가 있다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ",
         "national_protection_ko": "천연기념물, 멸종위기 야생생물 Ⅰ급",
         "sources": [
           "작성자 지식 기반 (VU 등급, 철원·홋카이도·중국 무리)",
@@ -5754,9 +5919,14 @@
         "secondary_stat": "exploration"
       },
       "conservation": {
+        "scientific_name": "Sousa chinensis",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "인도태평양혹등돌고래(중국흰돌고래)는 취약(VU). 주강 하구 일대에 세계에서 가장 큰 무리(2,000마리 이상)가 살며, 선박 교통·해안 개발의 영향을 받는다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 혹등참흰돌고래속 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Frontiers in Marine Science (2022) https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2022.1048959/full",
@@ -5983,9 +6153,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Calidris pygmaea",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "넓적부리도요는 위급(CR)으로 세계에 수백 마리만 남았다. 약 8,000km 이동 경로에서 중국 장쑤성 루둥 갯벌이 가장 중요한 중간 기착지로 확인되었고, 한국 서해안 갯벌도 들른다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재",
         "national_protection_ko": "멸종위기 야생생물 Ⅰ급",
         "sources": [
           "BTO: New hope for two of the most threatened birds https://bto.org/about-bto/press-releases/new-hope-two-most-threatened-birds-world",
@@ -6102,9 +6277,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Phoebastria albatrus",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "취약(VU). 19~20세기 초 깃털 이불 재료로 수백만 마리가 잡혀 깃털이 주로 일본에서 수출되었고, 1949년 멸종으로 여겨졌다가 1951년 다시 발견되었다. 현재 약 4,200마리이며 대부분 도리시마에서 번식한다. ‘신천옹(信天翁)’이라고도 부른다.",
         "cites_appendix": "II",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-12",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 부속서 Ⅱ(제2023-45호부터). 미국 어류야생동물국 공지(2023-01-13)가 CoP19 Ⅰ→Ⅱ 이동(2023-02-23 발효, CITES Notification 2023/005)을 적음",
         "national_protection_ko": null,
         "sources": [
           "BirdLife DataZone: Short-tailed Albatross https://datazone.birdlife.org/species/factsheet/short-tailed-albatross-phoebastria-albatrus/text",
@@ -6334,9 +6514,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Tachypleus tridentatus",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "2019년 정보 부족에서 위기(EN)로 지정되었다. 일본 남부에서 인도네시아까지 살며, 서식지 감소·식용 남획·세균 독소 검사 시약(TAL) 생산이 위협이다. 피가 구리를 포함한 헤모시아닌 때문에 푸른색을 띠는 ‘살아 있는 화석’이다.",
         "cites_appendix": null,
+        "cites_status": "not_listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 미등재",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Tachypleus tridentatus https://en.wikipedia.org/wiki/Tachypleus_tridentatus",
@@ -6449,9 +6634,14 @@
         "secondary_stat": "exploration"
       },
       "conservation": {
+        "scientific_name": "Eretmochelys imbricata",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "위급(CR)이며 CITES 부속서 I. 등딱지(대모갑)를 얻기 위한 남획으로 크게 줄었다. 싱가포르 해협의 산호초에서 관찰되고 남쪽 해변에서 둥지가 발견되기도 한다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 바다거북과 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "NParks Flora & Fauna Web https://nparks.gov.sg/florafaunaweb/fauna/2/6/262"
@@ -6677,9 +6867,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Macrocephalon maleo",
+        "scientific_name_rank": "species",
         "iucn_status": "CR",
         "note_ko": "위급(CR). 술라웨시와 부톤섬에만 산다. 알을 품지 않고 지열이나 햇볕으로 데워진 모래에 깊이 묻어 부화시킨다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ(고시 국명 ‘셀레베스메거포우드’)",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Maleo https://en.wikipedia.org/wiki/Maleo",
@@ -6795,9 +6990,14 @@
         "secondary_stat": "operations"
       },
       "conservation": {
+        "scientific_name": "Latimeria menadoensis",
+        "scientific_name_rank": "species",
         "iucn_status": "VU",
         "note_ko": "취약(VU)이며 실러캔스 전 종이 CITES 부속서 I. 1997년 9월 술라웨시 마나도 어시장에서 처음 확인되었고 1998년 표본이 잡혔다. 살 지느러미를 가진 육기어류로 척추동물이 물에서 뭍으로 올라온 진화를 이해하는 데 중요한 무리다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 실러캔스속 전종 Ⅰ",
         "national_protection_ko": null,
         "sources": [
           "Wikipedia: Indonesian coelacanth https://en.wikipedia.org/wiki/Indonesian_coelacanth"
@@ -6909,9 +7109,14 @@
         "secondary_stat": "analysis"
       },
       "conservation": {
+        "scientific_name": "Rhincodon typus",
+        "scientific_name_rank": "species",
         "iucn_status": "EN",
         "note_ko": "2016년 취약(VU)에서 위기(EN)로 상향되었다. 지난 75년 동안 약 절반이 줄었다고 추정된다. 서파푸아 첸데라와시만에서는 어선의 그물(바간)에서 작은 물고기를 빨아 먹는 행동이 관찰된다.",
         "cites_appendix": "I",
+        "cites_status": "listed",
+        "cites_checked_on": "2026-10-11",
+        "cites_basis": "「국제적멸종위기종 목록」 기후에너지환경부고시 제2026-63호: 종 단위 Ⅰ(개정이유: CoP20 Ⅱ→Ⅰ)",
         "national_protection_ko": null,
         "sources": [
           "Antara News https://en.antaranews.com/news/295338/a-massive-undertaking-to-protect-whale-sharks-in-indonesia",

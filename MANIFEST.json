@@ -42,8 +42,8 @@
     },
     {
       "path": "data/characters.json",
-      "size_bytes": 334548,
-      "sha256": "77bed168ce598caaea7c2ab319d9899377f5cd4414b25711339106b0b86ea853"
+      "size_bytes": 347260,
+      "sha256": "73dd763ab918ac1732198c1d9c80e8dfcb9379d8da08e42f9c7c3599ccbdb6be"
     },
     {
       "path": "data/contacts.json",
@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 191039,
-      "sha256": "85bfbccea5ba7200476f02c58676056e0d9a22bed94a6064df41d3efe20eb1c0"
+      "size_bytes": 196101,
+      "sha256": "c424d6b2b13fae741105dacea43ab2ae502382d9ef2dd52c05b304c04ff0a974"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 73036,
-      "sha256": "c1bc660724051d056bf3018435699c726a50bd66240fb1a37426ed133b1e2037"
+      "size_bytes": 75169,
+      "sha256": "5bf6e3b847a56755e84c73b27b0b7b71a7e9ac17805180af387b8b1351554f2a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9465,
-      "sha256": "a91d6c7b9560009ecc065a639ac0720c95a69989da890d33825b4913799da61c"
+      "size_bytes": 9497,
+      "sha256": "c02d6678c80c2b87967b3c90ec5bfa5e21d892acdb2791f5f7f0ab2035f11ea0"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1382,8 +1382,8 @@
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
-      "size_bytes": 4080,
-      "sha256": "9c3a1394f26fa616123178274f1ff36d95c68ac46db8173268e8e5daef99eee5"
+      "size_bytes": 11543,
+      "sha256": "f8d509195da6794f7eaf58944f694e4dd54d9d7f85646de698ce67c27a9f6cdd"
     },
     {
       "path": "docs/ai/tasks/CODEX_PREAMBLE.md",
@@ -1392,8 +1392,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 14848,
-      "sha256": "5f16acac1617234510f82689475acd3821be0e014551a487b58046c4f673be3e"
+      "size_bytes": 16253,
+      "sha256": "ebbc0e37f1f0acbf7232702ac50102a4e325ee98768b0b70da4217daf68669c7"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1637,8 +1637,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0050-conservation-fields.md",
-      "size_bytes": 12994,
-      "sha256": "6309517c82dfd33a894c6f4079855606c0aac06002ff971c16e1e9e6534a911c"
+      "size_bytes": 13000,
+      "sha256": "98e2fb385fbacbc8c9e73ff9166e3c9a94f750d5d76ae835c8cfb83f148cd3b2"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0053-conservation-tests.md",
+      "size_bytes": 3678,
+      "sha256": "38797ea86dc12d16b69c2905e8c1213a9b2abf6fd68cfd35a545e39d6f909889"
     },
     {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
@@ -1861,6 +1866,16 @@
       "sha256": "e16bb18d88c6ba7da84cca833636e93d6d1f0a871ea881e0abd3cbcdd12c5529"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0050.md",
+      "size_bytes": 8012,
+      "sha256": "373160fdc011b0e471c42ea2fc72da8db43d368960c6d5081a199b67504235a0"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0053.md",
+      "size_bytes": 4607,
+      "sha256": "1faf2b1554c76f91fe75dfe885910b555fc0c0784a4095e19c1b2d0f0399047a"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
@@ -2012,8 +2027,8 @@
     },
     {
       "path": "schemas/characters.schema.json",
-      "size_bytes": 17947,
-      "sha256": "4a9688ff24a1331c9e9f15b0c7942252158fb7bdc58c57e69539db3a852b457c"
+      "size_bytes": 19535,
+      "sha256": "b9a2e7f66972048af532b01fe3bbee26763f88d0390c00754bbf27bd7db8113a"
     },
     {
       "path": "schemas/contacts.schema.json",
@@ -2312,13 +2327,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 56992,
-      "sha256": "6179fd93f59e6524b06bd33ab54dd189a428e9c1d7ede06555ad71f3ccb5dfb5"
+      "size_bytes": 61352,
+      "sha256": "16da534bd3989a44ee0803383345854942e0209c7f3fa5e8d00f7ca5e11029da"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 70626,
-      "sha256": "0c59277270ef7fc16d9cdafc29fe0e9cd09a695553fc292d7c1210cdf4c0901e"
+      "size_bytes": 72700,
+      "sha256": "f87a1abb03e2e5455e357da6345bdf8aa387d6d0ec2f8bb3e66d9c37e937d88c"
     }
   ]
 }
