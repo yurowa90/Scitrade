@@ -15,7 +15,8 @@ export function krwReportRows(report: CompanyReport, config: ScenarioConfig): st
     ['시작 운영 자금', p.openingEquity], ['급여', -p.wageExpense],
     ...(config.recruitment || config.growth ? [['영입 계약금', -p.recruitmentExpense], ['훈련비', -p.trainingExpense]] as [string, number][] : []),
     ...(config.culture ? [['현지 활동비', -p.cultureExpense]] as [string, number][] : []),
-    ['운영 손익', p.profit], ['미지급 급여', p.accountsPayable], ['현금', p.cash],
+    ...(config.operations ? ([['창고 임차료', -p.rentExpense], ['창고 확장 설치비', -p.facilitySetupExpense], ['환전 차감', -p.fxSpreadExpense], ['통화 간 이체(환전)', p.currencyTransferNet]] as [string, number][]).filter(([, value]) => value !== 0) : []),
+    ['운영 손익', p.profit], [config.operations ? '미지급(급여·임차료)' : '미지급 급여', p.accountsPayable], ['현금', p.cash],
   ];
   return rows.map(([label, amount]) => `<tr><th>${label}</th><td>${esc(formatMoney(config.payrollCurrency, amount))}</td></tr>`).join('');
 }
@@ -150,5 +151,6 @@ export function settlementRows(st: CurrencyStanding, config: ScenarioConfig): [s
   rows.push(['자산 합계', st.totalAssets, true], ['미지급금', st.accountsPayable, false],
     ['순자산 (자산 − 미지급금)', st.netAssets, true], ['시작 자본', st.openingEquity, false], ['손익', st.profit, false]);
   if (st.currency === config.tradeCurrency || st.contractContribution !== 0) rows.push(['계약 기여이익 합계', st.contractContribution, false]);
+  if (config.operations && st.currencyTransferNet !== 0) rows.push(['통화 간 이체(환전)', st.currencyTransferNet, false]);
   return rows;
 }

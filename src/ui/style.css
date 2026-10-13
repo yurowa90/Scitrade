@@ -603,3 +603,9 @@ main.layout { padding-bottom: 5.5rem; }
 .warehouse-summary th, .warehouse-summary td, .weekly-bottleneck th, .weekly-bottleneck td {
   text-align: left; vertical-align: top; padding: .35rem .25rem; border-bottom: 1px solid var(--line);
 }
+
+/* 지급 단계는 제목 글과 테두리로 함께 구분한다. */
+.payment-alert, .failure { margin-block: 1rem; padding: .8rem; border: 2px solid var(--line); border-radius: .4rem; }
+.payment-alert h3, .failure h3 { margin-top: 0; }
+.hiring-outlook { padding-left: 1.4rem; }
+.failure ul, .payment-alert ul { overflow-wrap: anywhere; }
