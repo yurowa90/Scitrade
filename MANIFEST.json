@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
-      "size_bytes": 5975,
-      "sha256": "b873b535c6524a2494392c22ff856b4391814928d6a8f484fd764f45e29bf3e9"
+      "size_bytes": 19461,
+      "sha256": "cd8f5b609333d9d799d4e4f823766fda080135cb8107e2ec0463fac3ad06a83a"
     },
     {
       "path": "docs/ai/tasks/TASK-0035-map-detail.md",
@@ -1742,8 +1742,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0056-m2a5-save-references.md",
-      "size_bytes": 8404,
-      "sha256": "fcd7f904d6c6317b29b8077e8735028c38b0269f203b83a3135f88c2a04509d1"
+      "size_bytes": 8408,
+      "sha256": "8095774189bb88c61d34e9d8a146220849f8f19e0085491a9f51ce82d49ee1c4"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0057-m2a5-ops-screens-money.md",
+      "size_bytes": 14970,
+      "sha256": "84be7f4f4922f3f992979d80af635006a4f88e9f85b709dc98d88ca558c95cc4"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
@@ -2009,6 +2014,11 @@
       "path": "docs/ai/tasks/results/TASK-0055.md",
       "size_bytes": 13626,
       "sha256": "72574f5e15b7f39462f0106b3f1b5a751e5566391d233c828a56aa91d295e92d"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0056.md",
+      "size_bytes": 10799,
+      "sha256": "fbe296f4128f9f8725842de03cfcef1ad618979b4e1f19d6a761d83fd6210fd5"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",

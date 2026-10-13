@@ -28,6 +28,31 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
   if (new Set(allIds).size !== allIds.length || new Set(s.offers.map((v) => v.id)).size !== s.offers.length) problems.push('생성 견적 ID는 유일해야 합니다');
   if (s.offers.length !== allIds.length || allIds.some((id) => !s.offers.some((v) => v.id === id))
     || o.batches.flatMap((b) => b.offerIds).some((id) => !allIds.includes(id))) problems.push('공개 묶음과 견적 정의·상태가 다릅니다');
+  const counterpartyIds = new Set(c.market.counterparties.map((v) => v.id));
+  const cityIds = new Set(config.cities.map((v) => v.id));
+  const goodIds = new Set(config.goods.map((v) => v.id));
+  const templateIds = new Set(c.market.forwarding.templates.map((v) => v.id));
+  for (const offer of o.offers) {
+    if (!counterpartyIds.has(offer.counterpartyId)) problems.push('생성 견적이 설정에 없는 거래처를 가리킵니다');
+    if (!cityIds.has(offer.cityId)) problems.push('생성 견적이 설정에 없는 도시를 가리킵니다');
+    if (offer.destinationCityId !== null && !cityIds.has(offer.destinationCityId)) problems.push('생성 견적이 설정에 없는 도착 도시를 가리킵니다');
+    if (!goodIds.has(offer.goodId)) problems.push('생성 견적이 설정에 없는 품목을 가리킵니다');
+    if (offer.templateId !== null && !templateIds.has(offer.templateId)) problems.push('생성 견적이 설정에 없는 견본을 가리킵니다');
+  }
+  for (const batch of o.batches) {
+    for (const row of batch.rows) {
+      if (!cityIds.has(row.cityId)) problems.push('공개 묶음 시세 행이 설정에 없는 도시를 가리킵니다');
+      if (!goodIds.has(row.goodId)) problems.push('공개 묶음 시세 행이 설정에 없는 품목을 가리킵니다');
+    }
+    for (const row of batch.index) if (!goodIds.has(row.goodId)) problems.push('공개 묶음 지수가 설정에 없는 품목을 가리킵니다');
+    for (const row of batch.counterpartyPct ?? []) if (!goodIds.has(row.goodId)) problems.push('공개 묶음 거래처 보정률이 설정에 없는 품목을 가리킵니다');
+    for (const row of batch.maxLots ?? []) if (!goodIds.has(row.goodId)) problems.push('공개 묶음 최대 묶음 수가 설정에 없는 품목을 가리킵니다');
+    for (const row of batch.destinations ?? []) {
+      if (!cityIds.has(row.cityId)) problems.push('공개 묶음 목적지가 설정에 없는 도시를 가리킵니다');
+      if (!goodIds.has(row.goodId)) problems.push('공개 묶음 목적지가 설정에 없는 품목을 가리킵니다');
+    }
+    for (const id of batch.templateIds) if (!templateIds.has(id)) problems.push('공개 묶음 견본 목록이 설정에 없는 견본을 가리킵니다');
+  }
   for (const fx of o.exchanges) {
     const usd = s.ledger.entries.filter((e) => e.id === `${fx.id}-USD` && e.currency === 'USD');
     const krw = s.ledger.entries.filter((e) => e.id === `${fx.id}-KRW` && e.currency === 'KRW');

@@ -497,6 +497,23 @@ describe('환전', () => {
 });
 
 describe('지급·보고·저장', () => {
+  it('거래처 변조 저장은 경고로 표시하고 가져오기 전 전체 게임 상태를 유지한다', async () => {
+    const state = dayState(generatedDay), ui = await loadedUi(state);
+    let saved = '';
+    vi.stubGlobal('localStorage', { setItem: (_key: string, text: string) => { saved = text; } });
+    ui.click({ action: 'save' });
+    const before = JSON.parse(saved);
+    const broken = JSON.parse(serializeSave(dayState(generatedDay + 1)));
+    const pair = openTradePairs(broken.state, cfg).find((p) => offerDef(broken.state, cfg, p.buyOfferId)!.batchK! > 0)!;
+    broken.state.operations.offers.find((o: { id: string }) => o.id === pair.buyOfferId).counterpartyId = `${cfg.operations!.market.counterparties[0]!.id}-없음`;
+    await ui.importText(JSON.stringify(broken));
+    expect(ui.app.innerHTML.match(/<[^>]+class="flash warn"[^>]*>([\s\S]*?)<\/div>/)?.[1])
+      .toContain('생성 견적이 설정에 없는 거래처를 가리킵니다');
+    ui.click({ action: 'save' });
+    // 날짜·통화별 현금을 포함한 저장 전체가 같다.
+    expect(JSON.parse(saved)).toEqual(before);
+  });
+
   it('RENT·SPACE_FEE 일정과 보고 이름표, 상세 목록, 선복 요금 예약을 표시한다', async () => {
     // 임차료 납기 당일에 선복을 계약하고 다음 날 공개 상태의 지급 목록을 비교한다.
     const state = dayState(cfg.operations!.fixedCosts.rent.firstDueDay), signed = planState(state, cfg, [{ id: 'SPACE', type: 'SIGN_SPACE_CONTRACT', routeId: cfg.operations!.spaceContract.routeIds[0]! }]);
