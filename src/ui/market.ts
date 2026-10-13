@@ -39,10 +39,14 @@ export function operationsQuoteFacts(q: OperationsQuotePreview, view: GameState,
     facts.push(`준비 1pt당 기여이익 ${formatMoney('USD', q.contributionPerPrepPtMinor)}`);
   }
   if (q.lateDeliveryReductionMinor > 0 && q.arrivalDay !== null) {
-    const days = q.arrivalDay + config.terms.customsDays - q.deliveryDeadlineDay;
-    const cap = config.terms.lateDeliveryCapBasisPoints;
-    const limit = cap === 10_000 ? '계약 금액' : `계약 금액의 ${(cap ?? 0) / 100}%`;
-    facts.push(`납기 ${days}일 늦으면 하루 ${formatMoney('USD', config.terms.lateDeliveryPriceReductionMinor)}씩, 최대 ${limit}까지 감액됩니다 — 이 계획으로는 ${formatMoney('USD', q.lateDeliveryReductionMinor)}`);
+    const amount = formatMoney('USD', config.terms.lateDeliveryPriceReductionMinor);
+    const reduction = formatMoney('USD', q.lateDeliveryReductionMinor);
+    if (config.terms.lateDeliveryBasis === 'PER_LATE_DAY_CAPPED') {
+      const days = q.arrivalDay + config.terms.customsDays - q.deliveryDeadlineDay;
+      const cap = config.terms.lateDeliveryCapBasisPoints;
+      const limit = cap === null ? '' : `, 최대 계약 금액의 ${cap / 100}%까지`;
+      facts.push(`납기 ${days}일 늦으면 하루 ${amount}씩${limit} 감액됩니다 — 이 계획으로는 ${reduction}`);
+    } else facts.push(`납기를 넘기면 한 번 ${amount} 감액됩니다 — 이 계획으로는 ${reduction}`);
   }
   for (const affected of q.affectedContracts.filter((c) => c.missesSailing)) {
     const contract = view.contracts.find((c) => c.id === affected.contractId)!;
@@ -54,11 +58,27 @@ export function operationsQuoteFacts(q: OperationsQuotePreview, view: GameState,
   return facts;
 }
 
-export function exchangeBlock(view: GameState, config: ScenarioConfig, direction: ExchangeDirection, usdMinor: number): string {
+/** 묶음 수만 UI에 보관한다. 자금이 줄어도 최소 한 묶음을 보여 거절 이유를 읽을 수 있게 한다. */
+export function exchangeSelection(view: GameState, config: ScenarioConfig, direction: ExchangeDirection, selectedLots: number) {
+  const lot = config.operations!.fx.lotUsdMinor;
+  const one = exchangePreview(view, config, direction, lot);
+  const availableLots = direction === 'USD_TO_KRW'
+    ? Math.floor(one.usdAvailableBefore / lot) : Math.floor(one.krwAvailableBefore / one.krwMinor);
+  const maxLots = Math.max(1, Math.min(50, availableLots));
+  const lots = Number.isSafeInteger(selectedLots) ? Math.max(1, Math.min(maxLots, selectedLots)) : 1;
+  return { lots, maxLots, usdMinor: lots * lot };
+}
+
+export function exchangeBlock(view: GameState, config: ScenarioConfig, direction: ExchangeDirection, selectedLots: number): string {
+  const { lots, maxLots, usdMinor } = exchangeSelection(view, config, direction, selectedLots);
+  const options = Array.from({ length: maxLots }, (_, i) => {
+    const n = i + 1;
+    return `<option value="${n}"${n === lots ? ' selected' : ''}>${formatMoney('USD', n * config.operations!.fx.lotUsdMinor)} (${n}묶음)</option>`;
+  }).join('');
   const q = exchangePreview(view, config, direction, usdMinor), fx = config.operations!.fx;
   const usd = (n: number) => formatMoney('USD', n), krw = (n: number) => formatMoney('KRW', n);
   const runway = (n: number | null) => payrollRunwayKo(n, view.day, config.campaignDays);
-  return `<section class="exchange" aria-labelledby="exchange-h"><h3 id="exchange-h">환전</h3><p>게임용 고정 환율 ${fx.buyKrwPerUsd.toLocaleString('ko-KR')}원(받을 때) · ${fx.sellKrwPerUsd.toLocaleString('ko-KR')}원(살 때)</p><label>방향 <select data-action="exchange-direction"><option value="USD_TO_KRW"${direction === 'USD_TO_KRW' ? ' selected' : ''}>USD→KRW</option><option value="KRW_TO_USD"${direction === 'KRW_TO_USD' ? ' selected' : ''}>KRW→USD</option></select></label> <label>금액 (100 USD 단계) <input type="number" data-action="exchange-amount" min="${fx.lotUsdMinor / 100}" step="${fx.lotUsdMinor / 100}" value="${usdMinor / 100}" /></label><dl><dt>내는 금액</dt><dd>${direction === 'USD_TO_KRW' ? usd(usdMinor) : krw(q.krwMinor)}</dd><dt>받는 금액</dt><dd>${direction === 'USD_TO_KRW' ? krw(q.krwMinor) : usd(usdMinor)}</dd><dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd><dt>쓸 수 있는 USD (전 → 후)</dt><dd>${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}</dd><dt>원화 급여 가능일 (임차료 포함, 전 → 후)</dt><dd>${runway(q.runwayBefore)} → ${runway(q.runwayAfter)}</dd></dl><p>자동 환전은 없습니다</p>${q.warningKo ? `<p class="reason">${esc(q.warningKo)}</p>` : ''}${q.reasonKo ? `<p class="reason">${esc(q.reasonKo)}</p>` : ''}<button data-action="exchange">환전을 오늘 할 일에 넣기</button></section>`;
+  return `<section class="exchange" aria-labelledby="exchange-h"><h3 id="exchange-h">환전</h3><p>게임용 고정 환율 ${fx.buyKrwPerUsd.toLocaleString('ko-KR')}원(받을 때) · ${fx.sellKrwPerUsd.toLocaleString('ko-KR')}원(살 때)</p><label>방향 <select data-action="exchange-direction"><option value="USD_TO_KRW"${direction === 'USD_TO_KRW' ? ' selected' : ''}>USD→KRW</option><option value="KRW_TO_USD"${direction === 'KRW_TO_USD' ? ' selected' : ''}>KRW→USD</option></select></label> <label>금액 (100 USD 단계) <select data-action="exchange-amount">${options}</select></label><dl><dt>내는 금액</dt><dd>${direction === 'USD_TO_KRW' ? usd(usdMinor) : krw(q.krwMinor)}</dd><dt>받는 금액</dt><dd>${direction === 'USD_TO_KRW' ? krw(q.krwMinor) : usd(usdMinor)}</dd><dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd><dt>쓸 수 있는 USD (전 → 후)</dt><dd>${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}</dd><dt>원화 급여 가능일 (임차료 포함, 전 → 후)</dt><dd>${runway(q.runwayBefore)} → ${runway(q.runwayAfter)}</dd></dl><p>자동 환전은 없습니다</p>${q.warningKo ? `<p class="reason">${esc(q.warningKo)}</p>` : ''}${q.reasonKo ? `<p class="reason">${esc(q.reasonKo)}</p>` : ''}<button data-action="exchange">환전을 오늘 할 일에 넣기</button></section>`;
 }
 
 export function paymentStatusKo(view: GameState, config: ScenarioConfig): string {
@@ -71,5 +91,5 @@ export function paymentStatusKo(view: GameState, config: ScenarioConfig): string
 }
 
 export function operationsTopbar(view: GameState, config: ScenarioConfig): string {
-  return `<div class="stat"><span>원화 급여 가능일 (임차료 포함 · 오늘 할 일 반영)</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b></div><div class="stat"><span>지급 상태 (오늘 할 일 반영)</span><b>${esc(paymentStatusKo(view, config))}</b></div>`;
+  return `<div class="stat"><span>원화 급여 가능일 (임차료 포함 · 대기 중인 명령 반영)</span><b>${payrollRunwayKo(payrollRunwayDay(view, config), view.day, config.campaignDays)}</b></div><div class="stat"><span>지급 상태 (대기 중인 명령 반영)</span><b>${esc(paymentStatusKo(view, config))}</b></div>`;
 }
