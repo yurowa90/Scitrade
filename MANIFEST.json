@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 19875,
-      "sha256": "dfcaa3c3e799e46ecfbd467068dc65479cdefdc846c7560465e6474799f9104b"
+      "size_bytes": 20101,
+      "sha256": "f5cf863a8fd497323dc0f8dbf21127a13bb823cfe708deed99929b8941a2bc89"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 87747,
-      "sha256": "3ad829d6e2634122adab7c81a9d210f246360f2690d5d4291fe62ef236d9a6e0"
+      "size_bytes": 89488,
+      "sha256": "fd2184836edc2255def1f0e037fda126ce8e4ed4c9d4626dc40ca5b646adfbe6"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9876,
-      "sha256": "f6ee0de0779fd00ea127d78f15da6696064c5fcf87f743067d83b060d276aa52"
+      "size_bytes": 9932,
+      "sha256": "6c98250306fca72893c03ebcfcebe277239f52735531ca58e6a7628a1b2b49ab"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -284,6 +284,31 @@
       "path": "docs/ai/design/TASK-0012-scene-compare.md",
       "size_bytes": 7643,
       "sha256": "5a1b8dfbc8260cd577a89a1a6c3f9fa918bce02874ec4b4cf4e127bab600e24b"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/README.md",
+      "size_bytes": 6020,
+      "sha256": "b301afd628229a06c0ce64678b500d008c5a99085d8b6473b44a95b42703f786"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/modules-f38f9cf.txt",
+      "size_bytes": 1695,
+      "sha256": "b10007905ccaec8029880380e38b08cf38ee936a3c523d1c2e181cf70aca6ef1"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/proto-f38f9cf.diff",
+      "size_bytes": 32782,
+      "sha256": "71749859f2d0aa6e954c3dc96f1dbb3ae09b2a5cb2210c5ab7de298f456a1fa2"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/srcattr.cjs",
+      "size_bytes": 1438,
+      "sha256": "c6b8ce9474ebec5d2985ba91ab4382ce22c74b911ddf1f57c15420c0d273936c"
+    },
+    {
+      "path": "docs/ai/design/code-split-0059/stub.config.ts",
+      "size_bytes": 826,
+      "sha256": "50349630c542f48cde0c9cadc4eaa4fa77c28e4e8e16cf5f851751a43989061e"
     },
     {
       "path": "docs/ai/design/integration-3/README.md",
@@ -1527,8 +1552,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 19539,
-      "sha256": "5084dfa7c64ab048e418955f92ceed9126b71702d36774aa79d9b882ba345372"
+      "size_bytes": 20035,
+      "sha256": "3958c27151972892a4c0daab07708428ef1b5e3734867a36bd21b62cd6b960a1"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -1819,6 +1844,11 @@
       "path": "docs/ai/tasks/TASK-0058-m2a5-ui-review-followups.md",
       "size_bytes": 16611,
       "sha256": "124dc1276c97cb4c0f8869a9f692698bca7925dcc48913468cbb3d631bd7b919"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0059-code-split.md",
+      "size_bytes": 15869,
+      "sha256": "7967bd21af3b31e1e8813df5f12b12ba1493901ad3c10a9830b65b36ef0a6f2d"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",

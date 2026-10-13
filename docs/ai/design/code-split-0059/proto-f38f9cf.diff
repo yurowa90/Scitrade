@@ -1,0 +1,297 @@
+diff --git aa/src/ui/main.ts bb/src/ui/main.ts
+index 0000000..e44dcd1 100644
+--- aa/src/ui/main.ts
++++ bb/src/ui/main.ts
+@@ -1,10 +1,15 @@
++let CP: any = {};
++void import('./culture-panel').then((x) => { CP = x; });
++// 시제품: 규칙 2 화면 지연 불러오기
++let OPS: any = {};
++void import('./ops-screens').then((x) => { OPS = x; });
+ // 최소 화면: 견적판·계약(UI_TRADE), 자원 예약, 세계지도(UI_WORLD), 경영 보고(UI_REPORT), 동료 카드.
+ // 화면은 엔진 상태를 읽고 명령을 대기열에 넣을 뿐, 현금·재고·예약을 따로 들고 있지 않다.
+ 
+ import './style.css';
+ import { applyPixelScale } from './pixel';
+ import { esc } from './html';
+-import { CULTURE_KO, cultureAnchorBlocks, culturePanel, cultureResultTasks, cultureTab, cultureToastText } from './culture';
++import { CULTURE_KO, cultureAnchorBlocks, cultureResultTasks, cultureTab, cultureToastText } from './culture';
+ import { employedDefs } from '../engine/employees';
+ import { ALL_SCENARIO_IDS, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
+ import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
+@@ -20,10 +25,7 @@ import { batchUnlocked, crewEntryCard, crewRow, crewEntries, crewFacetOptions, r
+ import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
+ import { offerDef, openTradePairs } from '../engine/market';
+ import { quotePreview, type OperationsQuotePreview } from '../engine/readers';
+-import { counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
+ import { paymentDefaultStatus } from '../engine/operations';
+-import { paymentAlert, failureBlock, operationsSettlement } from './money-alerts';
+-import { warehouseBlock, routeLabel } from './warehouse';
+ import { cancellationPreviewKo } from './trade';
+ import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
+ import { crewNoteKo, crewStatusKo } from './crew-status';
+@@ -176,7 +178,7 @@ const PARTY_KO: Record<string, string> = {
+   SHIPPER_DEMO_FURNITURE: '가구 화주',
+   SHIPPER_DEMO_AUTOPARTS: '자동차 부품 화주',
+ };
+-const partyKo = (id: string | null) => (id ? (PARTY_KO[id] ?? counterpartyNameKo(config, id)) : '-');
++const partyKo = (id: string | null) => (id ? (PARTY_KO[id] ?? OPS.counterpartyNameKo(config, id)) : '-');
+ const qtyKo = (goodId: string, quantity: number) => reportQtyKo(config, goodId, quantity);
+ const employeeName = (id: string | null) => config.employees.find((e) => e.id === id)?.nameKo ?? '미배정';
+ 
+@@ -380,7 +382,7 @@ function topbar(): string {
+     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
+     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
+     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
+-    ${config.operations ? operationsTopbar(view, config, state, ui.pending) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
++    ${config.operations ? OPS.operationsTopbar(view, config, state, ui.pending) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+     ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">${config.operations ? '다른 금액은 확정 기준' : '금액은 확정 기준'}</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
+   </div>
+   </header>`;
+@@ -526,7 +528,7 @@ export function visibleForwardingOffers(view: GameState, config: ScenarioConfig)
+ }
+ 
+ function offerBoard(): string {
+-  if (config.operations && state.phase === 'ENDED') return `${marketBlock(state, config)}<p>캠페인이 끝나 견적을 받을 수 없습니다</p>`;
++  if (config.operations && state.phase === 'ENDED') return `${OPS.marketBlock(state, config)}<p>캠페인이 끝나 견적을 받을 수 없습니다</p>`;
+   const isOpen = (id: string) => view.offers.find((o) => o.id === id)?.status === 'OPEN';
+   const cards: string[] = [];
+   for (const pair of (config.operations ? openTradePairs(view, config) : tradePairs(config))) {
+@@ -552,7 +554,7 @@ function offerBoard(): string {
+     <article class="offer">
+       <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
+       <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
+-      ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
++      ${config.operations ? OPS.quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? OPS.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
+     </article>`);
+   }
+   for (const offer of visibleForwardingOffers(view, config)) {
+@@ -574,12 +576,12 @@ function offerBoard(): string {
+       ${quoteBlock(q, rows, cmd, [
+         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
+         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}는 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
+-        ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : []),
++        ...(config.operations ? OPS.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : []),
+       ].filter(Boolean), offer.validUntilDay, offer.id, offer.cityId)}
+     </article>`);
+   }
+-  if (!cards.length) return config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : '';
+-  return `${config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
++  if (!cards.length) return config.operations ? OPS.marketBlock(view, config) + OPS.exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : '';
++  return `${config.operations ? OPS.marketBlock(view, config) + OPS.exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeLots, selectedExchange) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
+ }
+ 
+ function contractPanel(c: Contract): string {
+@@ -825,7 +827,7 @@ function operationsBlock(): string {
+   const groups = bottlenecks(state, config);
+   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
+   // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
+-  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${warehouseBlock(state, view, config, ui.pending)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
++  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${OPS.warehouseBlock(state, view, config, ui.pending)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+ }
+ 
+ function settlementBlock(): string {
+@@ -839,7 +841,7 @@ function settlementBlock(): string {
+     const first = Math.min(...rows.map((o) => o.incurredDay)), last = Math.max(...rows.map((o) => o.incurredDay));
+     unpaid.push(`<p>남은 미지급 ${esc(standing.currency)}: ${esc(formatMoney(standing.currency, rows.reduce((a, o) => a + o.amountMinor, 0)))} — ${rows.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
+   }
+-  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
++  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? OPS.operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
+ }
+ 
+ function reportPanel(): string {
+@@ -876,7 +878,7 @@ function reportPanel(): string {
+   return `
+   <section class="panel report" aria-labelledby="report-h">
+     <h2 id="report-h">경영 보고 <small>하루 진행으로 확정된 상태 · 오늘 할 일은 하루 진행 뒤 반영</small></h2>
+-    ${paymentAlert(state, config)}${failureBlock(state, config)}${settlementBlock()}
++    ${OPS.paymentAlert(state, config)}${OPS.failureBlock(state, config)}${settlementBlock()}
+     <div class="books">
+       <table class="money"><caption>거래 장부 · USD</caption>
+         ${row('현금', usd(t.cash))}${row(`재고 (${company})`, usd(t.inventory))}${row('선급운임', usd(t.prepaidFreight))}${fwdOn ? row('주선 진행원가', usd(t.forwardingWip)) : ''}${row('매출채권', usd(t.accountsReceivable))}${row('자산 합계', usd(t.totalAssets), 'total')}${row('미지급금', usd(t.accountsPayable))}
+@@ -948,7 +950,7 @@ function commandLabel(c: Command): string {
+     case 'EXPAND_WAREHOUSE':
+       return '창고 확장';
+     case 'SIGN_SPACE_CONTRACT':
+-      return `선복 계약 ${routeLabel(config, c.routeId)}`;
++      return `선복 계약 ${OPS.routeLabel(config, c.routeId)}`;
+     case 'EXCHANGE_CURRENCY':
+       return `환전 ${c.direction === 'USD_TO_KRW' ? 'USD→KRW' : 'KRW→USD'} ${formatMoney('USD', c.usdAmountMinor)}`;
+     case 'SCOUT_SITE':
+@@ -1105,7 +1107,7 @@ function tapMap(target: Element, x: number, y: number) {
+ function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
+   document.title = `Scitrade — ${config.titleKo}`;
+   view = planState(state, config, ui.pending).state;
+-  selectedExchange = config.operations ? exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
++  selectedExchange = config.operations ? OPS.exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
+   if (selectedExchange) ui.exchangeLots = selectedExchange.lots;
+   if (ui.offerQuantitiesDay !== view.day) { ui.offerQuantities = {}; ui.offerQuantitiesDay = view.day; }
+   for (const key of Object.keys(ui.offerQuantities)) {
+@@ -1126,7 +1128,7 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null
+     ${topbar()}
+     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
+     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
+-      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
++      ${config.culture ? `<div class="maincol">${CP.culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
+       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
+         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
+     </main>`;
+diff --git aa/src/ui/culture.ts bb/src/ui/culture.ts
+index 0000000..64bcc5b 100644
+--- aa/src/ui/culture.ts
++++ bb/src/ui/culture.ts
+@@ -129,118 +129,6 @@ export function cultureTab(state: GameState, config: ScenarioConfig, ui: Culture
+   return `<button id="local-tab" class="local-tab" data-action="culture-tab" aria-expanded="${ui.cultureOpen}"${ui.cultureOpen ? ' aria-controls="local-body"' : ''}><span>${esc(label)}</span><small>${esc(hint)}</small></button>`;
+ }
+ 
+-export function cultureVenues(config: ScenarioConfig): string {
+-  if (!config.culture) return '';
+-  return `<dl class="local-venues">${localVenues(config).map((v) => {
+-    const scout = config.recruitment?.scoutSites.some((s) => s.venueId === v.id) ?? false;
+-    const texts = CULTURE_KO.venues[v.id]!;
+-    return `<div><dt>${esc(v.title_ko)}</dt><dd>${esc(texts[scout ? 1 : 0] ?? texts[0]!)}</dd></div>`;
+-  }).join('')}</dl>`;
+-}
+-
+-function recordFour(report: Report): string {
+-  if (!report.reportKo) return '';
+-  return `<ol class="rec4">${CULTURE_KO.fields.map(([label, hint, field]) => `<li class="rec-field"${field === 'notClaimedKo' ? ' data-limit="true"' : ''}><div class="rec-label"><b>${label}</b><small>${hint}</small>${field === 'notClaimedKo' ? `<small class="rec-limit">${CULTURE_KO.limit}</small>` : ''}</div><p>${esc(report.reportKo![field])}</p></li>`).join('')}</ol>`;
+-}
+-
+-/** 결과와 기록장은 같은 네 칸을 쓰고, 업무 공백·비용은 결과에서만 보여 준다. */
+-function recordCard(report: Report, activity: CultureActivityDef, config: ScenarioConfig, task?: Task): string {
+-  const employee = employeeName(config, task ? task.assignedEmployeeId : report.reporterEmployeeId);
+-  const headingId = task ? `culture-result-h-${task.id}` : `culture-report-h-${report.taskId}`;
+-  const sources = CULTURE_KO.source(report.sourceContactIds.map((id) => contactName(config, id)));
+-  const level = task ? 'h3' : 'h5';
+-  return `<article class="${task ? 'cul-result' : 'cul-report'}" id="${esc(task ? `culture-result-${task.id}` : `culture-report-${report.taskId}`)}" aria-labelledby="${esc(headingId)}"><${level} id="${esc(headingId)}" tabindex="-1">${esc(activity.topic.titleKo)}${task ? ` <small>${esc(CULTURE_KO.recordDate(task.completedDay, activity.titleKo, report.taskId === task.id))}</small>` : ''}</${level}>
+-    ${task && report.taskId !== task.id ? `<p class="rec-meta">${esc(CULTURE_KO.existingReport(report.day, employee))}</p>` : ''}
+-    <p class="rec-meta">${task ? '' : `${report.day}일 · `}${esc(CULTURE_KO.reporter(employeeName(config, report.reporterEmployeeId)))} · ${esc(sources)}${report.status === 'UNVERIFIED' ? ` · ${CULTURE_KO.unverified}` : ''}</p>
+-    ${recordFour(report)}${task ? `<p class="spent"><b>${CULTURE_KO.spent}</b> ${esc(CULTURE_KO.spentText(employee, task.startedDay, task.completedDay, formatMoney(activity.currency, activity.costMinor)))}</p><p class="unchanged"><b>${CULTURE_KO.unchangedResult}</b> ${CULTURE_UNCHANGED_KO}</p>` : ''}</article>`;
+-}
+-
+-export function cultureResults(state: GameState, config: ScenarioConfig, fromDay: number): string {
+-  if (!config.culture) return '';
+-  const book = cultureBook(state, config);
+-  return cultureResultTasks(state, config, fromDay).map((task) => {
+-    const activity = config.culture!.activities.find((a) => a.id === task.subjectId);
+-    const report = book.reports.find((r) => r.activityId === task.subjectId);
+-    return activity && report ? recordCard(report, activity, config, task) : '';
+-  }).join('');
+-}
+-
+-export function cultureNotebook(state: GameState, config: ScenarioConfig, open: boolean): string {
+-  if (!config.culture) return '';
+-  const city = cityName(config, config.homeCityId);
+-  const book = cultureBook(state, config);
+-  const reports = newest(book.reports, (r) => r.day);
+-  const experiences = newest(book.employees.flatMap((e) => e.experiences), (e) => e.verifiedDay);
+-  const events = newest(book.relations.flatMap((r) => r.events), (e) => e.day);
+-  const met = new Set(events.map((e) => e.contactId));
+-  const activityTitle = (id: string) => config.culture!.activities.find((a) => a.id === id)?.titleKo ?? '';
+-  return `<section class="culture-book"><h3 id="culture-book-h" tabindex="-1">${esc(CULTURE_KO.book(city))} <small>${CULTURE_KO.bookHint}</small></h3><button data-action="culture-book" aria-expanded="${open}"${open ? ' aria-controls="culture-book-body"' : ''}>${esc(CULTURE_KO.bookToggle(city, open))}</button>${open ? `<div id="culture-book-body">
+-    <h4>${CULTURE_KO.reports}</h4>${reports.map((r) => recordCard(r, config.culture!.activities.find((a) => a.id === r.activityId)!, config)).join('') || `<p>${CULTURE_KO.emptyReports}</p>`}
+-    <h4>${CULTURE_KO.experiences}</h4><p class="small muted">${CULTURE_KO.experienceHint}</p>${experiences.length ? `<ul>${experiences.map((e) => `<li>${esc(CULTURE_KO.experienceEntry(employeeName(config, e.employeeId), activityTitle(e.activityId), e.verifiedDay))}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyExperiences}</p>`}
+-    <h4>${CULTURE_KO.relations}</h4><p class="small muted">${CULTURE_KO.relationHint}</p>${events.length ? `<ul>${events.map((e) => `<li>${esc(CULTURE_KO.relationEntry(employeeName(config, e.employeeId), contactName(config, e.contactId), activityTitle(e.activityId), e.day))}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyRelations}</p>`}
+-    <h4>${CULTURE_KO.contacts}</h4>${met.size ? `<ul>${config.culture.contacts.filter((c) => met.has(c.id)).map((c) => `<li>${esc(c.nameKo)} — ${esc(c.informationScopeKo)}</li>`).join('')}</ul>` : `<p>${CULTURE_KO.emptyContacts}</p>`}
+-    <p class="book-trust">${CULTURE_KO.trust}</p></div>` : ''}</section>`;
+-}
+-
+-function previewHtml(p: Preview, state: GameState, config: ScenarioConfig, activity: CultureActivityDef, employee: string, otherPending: boolean): string {
+-  const unchanged = `<p class="unchanged"><b>${CULTURE_KO.unchanged}</b> ${esc(p.unchangedKo)}</p>`;
+-  const title = `<h4 id="culture-pv-h">${esc(CULTURE_KO.preview(employee, activity.titleKo))}</h4>`;
+-  if (!p.allowed) return `<div id="culture-preview">${title}<p class="reason">${esc(CULTURE_KO.denied(p.reasonKo!))}</p><p>${CULTURE_KO.noNewRecords}</p>${unchanged}</div>`;
+-  const money = (minor: number) => formatMoney(p.cost.currency, minor);
+-  const beyondCampaign = p.busyUntilDay !== null && p.busyUntilDay > config.campaignDays;
+-  const runway = (day: number | null) => day === null ? CULTURE_KO.runwayEnd(config.campaignDays)
+-    : day < state.day ? CULTURE_KO.runwayUnpaid : CULTURE_KO.runwayDay(day);
+-  const alreadyUnpaid = p.payrollRunwayBefore !== null && p.payrollRunwayBefore < state.day;
+-  const unpaid = p.payrollRunwayAfter !== null && p.payrollRunwayAfter < state.day;
+-  const records = [p.newRecords.companyReport === 'NEW' ? CULTURE_KO.companyNew(activity.topic.titleKo) : CULTURE_KO.companyExists,
+-    ...(p.newRecords.actorExperience ? [CULTURE_KO.experience(employee)] : []),
+-    ...(p.newRecords.relationContactIds.length ? [CULTURE_KO.together(p.newRecords.relationContactIds.map((id) => `${employee} — ${contactName(config, id)}`))] : []),
+-    ...(p.newRecords.firstCompletionXp ? [CULTURE_KO.xp(p.newRecords.firstCompletionXp)] : [])];
+-  return `<div id="culture-preview">${title}
+-    <p class="culture-cost"><b>${CULTURE_KO.costLabel}:</b> ${esc(CULTURE_KO.cost(p.durationDays, money(p.cost.minor)))}</p>
+-    <p>${esc(CULTURE_KO.busy(employee, p.busyFromDay, p.busyUntilDay))}</p>
+-    ${p.waitingTasks.length ? `${p.waitingTasks.map(({task, reservedDepartureDay}) => `<p class="reason">${esc(CULTURE_KO.waiting(taskSubjectKo(config, task) ?? '', taskName(task.kind), task.requiredWorkUnits - task.progressWorkUnits, reservedDepartureDay))}</p>`).join('')}<p>${esc(CULTURE_KO.otherEmployees(cityName(config, activity.cityId), p.otherFreeLocalEmployeeIds.map((id) => employeeName(config, id))))}</p>` : ''}
+-    ${beyondCampaign ? `<p class="reason">${esc(CULTURE_KO.campaignWarning(config.campaignDays))}</p>` : p.durationDays > 1 ? `<p>${esc(CULTURE_KO.finish(p.busyUntilDay))}</p>` : ''}
+-    <p>${esc(CULTURE_KO.funds(money(p.availableBeforeMinor), money(p.availableAfterMinor), otherPending))}</p>
+-    <p>${esc(CULTURE_KO.runway(runway(p.payrollRunwayBefore), runway(p.payrollRunwayAfter)))}${unpaid ? '' : `<br>${CULTURE_KO.wages}`}</p>
+-    ${unpaid ? `<p class="reason">${esc(CULTURE_KO.unpaid(state.day, alreadyUnpaid))}</p>` : ''}
+-    ${beyondCampaign ? '' : `<div class="culture-new"><p>${CULTURE_KO.newRecords(p.newRecords.firstCompletionXp > 0)}</p><ul>${records.map((text) => `<li>${esc(text)}</li>`).join('')}</ul></div>`}
+-    ${unchanged}</div>`;
+-}
+-
+-/** 대기 중인 쌍은 그 명령 하나만 빼고 비교한다. 그 밖의 예약과 비용은 계획 상태에 남긴다. */
+-export function culturePanel(state: GameState, view: GameState, pending: Command[], config: ScenarioConfig, ui: CultureUi,
+-  status: Status = (slot, text) => `<span class="pill" id="status-${esc(slot)}" tabindex="-1">${text}</span>`): string {
+-  if (!config.culture || !ui.cultureOpen) return '';
+-  const city = cityName(config, config.homeCityId);
+-  const cultureVenue = venues.items.find((v) => v.id === 'VEN_CULTURE')!;
+-  const activity = config.culture.activities.find((a) => a.id === ui.cultureActivityId);
+-  const employee = view.employees.find((e) => e.id === ui.cultureEmployeeId);
+-  const pair = pending.find((cmd) => cmd.type === 'START_CULTURE_ACTIVITY' && cmd.activityId === activity?.id && cmd.employeeId === employee?.id);
+-  const previewState = pair ? planState(state, config, pending.filter((cmd) => cmd !== pair)).state : view;
+-  const p = activity && employee ? culturePreview(previewState, config, activity.id, employee.id) : null;
+-  const activities = config.culture.activities.map((a) => {
+-    const queued = pending.find((cmd) => cmd.type === 'START_CULTURE_ACTIVITY' && cmd.activityId === a.id);
+-    return `<button data-action="culture-act" data-activity="${esc(a.id)}" aria-pressed="${a.id === ui.cultureActivityId}"><b>${esc(a.titleKo)}</b><small>${esc(CULTURE_KO.activityFacts(formatMoney(a.currency, a.costMinor), a.durationDays, a.contactIds.map((id) => contactName(config, id)).join(' · ')))}</small><small>${esc(CULTURE_KO.topic(a.topic.titleKo))}</small>${queued?.type === 'START_CULTURE_ACTIVITY' ? `<small>${esc(CULTURE_KO.inQueue(employeeName(config, queued.employeeId)))}</small>` : ''}</button>`;
+-  }).join('');
+-  const employees = activity ? view.employees.filter((e) => e.employmentStatus === 'employed' && e.locationCityId === activity.cityId).map((e) => {
+-    const task = runningTaskOf(view, e.id);
+-    const queued = task?.kind === 'CULTURE' && task.subjectId === activity.id && pending.some((cmd) => cmd.type === 'START_CULTURE_ACTIVITY' && cmd.activityId === activity.id && cmd.employeeId === e.id);
+-    const available = isAvailableFromToday(view, e.id);
+-    const label = !available ? CULTURE_KO.starts(e.availableFromDay) : `${crewStatusKo(task)}${task && !queued ? ` — ${taskSchedule(task, config)}` : ''}`;
+-    return `<button id="culture-emp-${esc(e.id)}" data-action="culture-emp" data-activity="${esc(activity.id)}" data-emp="${esc(e.id)}" aria-pressed="${ui.cultureEmployeeId === e.id}"${available && (!task || queued) ? '' : ' disabled'}>${esc(employeeName(config, e.id))} · ${esc(label)}</button>`;
+-  }).join('') : '';
+-  const slot = activity && employee && p ? `<div id="culture-slot" data-action-slot="culture-${esc(activity.id)}-${esc(employee.id)}">${pair ? `${status(`culture-${activity.id}-${employee.id}`, CULTURE_KO.queued)}<p class="small muted">${CULTURE_KO.unqueueHint}</p>` : `<button class="primary" data-action="culture-queue" data-activity="${esc(activity.id)}" data-emp="${esc(employee.id)}"${p.allowed ? '' : ' disabled'}>${CULTURE_KO.queue}</button>${p.allowed ? `<p class="small muted">${CULTURE_KO.queueHint}</p>` : ''}`}</div>` : '';
+-  return `<section class="panel local" id="local" aria-labelledby="local-h"><div class="local-head"><h2 id="local-h" tabindex="-1">${esc(CULTURE_KO.local(city))}</h2><button data-action="culture-close" data-where="head">${CULTURE_KO.close}</button></div><div id="local-body">
+-    ${cultureResults(state, config, ui.cultureShowFromDay ?? state.day - 1)}
+-    <p class="local-intro">${CULTURE_KO.intro}</p>${cultureVenues(config)}
+-    <section class="culture-activity" aria-labelledby="culture-h"><h3 id="culture-h" tabindex="-1">${esc(cultureVenue.title_ko)}</h3><div class="culture-frame"><p>${CULTURE_KO.frame}</p><ol>${CULTURE_KO.fields.map(([label, hint]) => `<li>${label} — ${hint}</li>`).join('')}</ol></div>
+-    <h4>${CULTURE_KO.chooseActivity}</h4><div class="culture-choices" role="group" aria-label="${CULTURE_KO.activityGroup}">${activities}</div>
+-    ${activity ? `<h4 id="culture-emp-h" tabindex="-1">${CULTURE_KO.chooseEmployee}</h4><p class="small muted">${esc(CULTURE_KO.employeeHint(cityName(config, activity.cityId)))}</p><div class="culture-employees" id="culture-employees">${employees}</div>` : ''}
+-    ${p && activity && employee ? previewHtml(p, state, config, activity, employeeName(config, employee.id), pending.some((cmd) => cmd !== pair)) : ''}${slot}</section>
+-    ${cultureNotebook(state, config, ui.cultureBookOpen)}<button class="local-end" data-action="culture-close" data-where="end">${esc(CULTURE_KO.closeLocal(city))}</button></div></section>`;
+-}
+-
+ export function cultureToastText(state: GameState, config: ScenarioConfig, rejected: CommandResult[] = []) {
+   const tasks = cultureResultTasks(state, config, state.day - 1).filter((t) => t.completedDay === state.day - 1);
+   if (!tasks.length) return null;
+@@ -255,3 +143,5 @@ export function cultureToastText(state: GameState, config: ScenarioConfig, rejec
+         : report && report.taskId !== first.id ? CULTURE_KO.toastRepeat(state.day - 1, topic(first), employee, report.day)
+           : CULTURE_KO.toastOne(state.day - 1, topic(first), employee) };
+ }
++
++export { employeeName, contactName, localVenues, newest };
+diff --git aa/src/ui/warehouse.ts bb/src/ui/warehouse.ts
+index 0000000..4f79e6d 100644
+--- aa/src/ui/warehouse.ts
++++ bb/src/ui/warehouse.ts
+@@ -9,10 +9,8 @@ import { esc } from './html';
+ import type { UiCommand } from './session';
+ 
+ const m3 = (liters: number) => `${liters / 1000} m³`;
+-const labels: Record<BottleneckConstraint, string> = {
+-  DEMAND: '수요', STAFF: '직원', WAREHOUSE_HANDLING: '창고 처리', STORAGE: '보관', SAILING: '선복',
+-};
+-export const constraintLabel = (constraint: BottleneckConstraint) => labels[constraint];
++import { constraintLabel } from './ops-labels';
++export { constraintLabel };
+ export function routeLabel(config: ScenarioConfig, routeId: string): string {
+   const route = routeOf(config, routeId);
+   return `${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}`;
+diff --git aa/src/ui/recruitment.ts bb/src/ui/recruitment.ts
+index 0000000..558c7ce 100644
+--- aa/src/ui/recruitment.ts
++++ bb/src/ui/recruitment.ts
+@@ -17,7 +17,7 @@ import { crewStatusKo, taskSchedule } from './crew-status';
+ export { taskSchedule } from './crew-status';
+ import { esc } from './html';
+ import { hiringOutlook } from '../engine/readers';
+-import { constraintLabel } from './warehouse';
++import { constraintLabel } from './ops-labels';
+ export const venueTitle = (id: string) => venues.items.find((v) => v.id === id)?.title_ko ?? id;
+ export const species = (id: string) => characters.items.find((c) => c.id === id)?.species_ko ?? '';
+ 
