@@ -366,6 +366,26 @@
       "sha256": "bbc2fdeb924bb826f69ab54a86883e0973a90bc8dbd6991058b5a593e280ae4a"
     },
     {
+      "path": "docs/ai/design/layout-followups-0033/README.md",
+      "size_bytes": 5018,
+      "sha256": "2d7ceeb745576c74c153ff8e3d8b691ac080ac039ecd3bc02f6709a498644fc8"
+    },
+    {
+      "path": "docs/ai/design/layout-followups-0033/bar-v34.jsonl",
+      "size_bytes": 30284,
+      "sha256": "d0d26f548f5a9142c8ad2da495b767b65e71e090428bd05b65afcd04da52f8b8"
+    },
+    {
+      "path": "docs/ai/design/layout-followups-0033/style.patch",
+      "size_bytes": 1813,
+      "sha256": "0ffd1399f4ee992b6d00a2dd43c6e83323146e0473f7b9fa4f95cea3722bcadd"
+    },
+    {
+      "path": "docs/ai/design/layout-followups-0033/v34mkt.js",
+      "size_bytes": 1407,
+      "sha256": "24713f15c6dfef60bd5a986b8b48d542cc402e9cd6ca2763df1221313f3b94d9"
+    },
+    {
       "path": "docs/ai/design/layout-ux04-05/README.md",
       "size_bytes": 39972,
       "sha256": "ac4a04868e7905b68642d7daafc160b89f69794619da4080df70bf0b21cb4f14"
