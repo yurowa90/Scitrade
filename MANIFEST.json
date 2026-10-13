@@ -1627,8 +1627,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0033-R2-m2a5-topbar-layout.md",
-      "size_bytes": 4905,
-      "sha256": "3256b3a3b8fe1ad54604b74a24310d88df77a429ff09c0fb31224960b95b23a5"
+      "size_bytes": 6299,
+      "sha256": "f5118fb61fa33bde77ac95ab6ab91db793bc4fc2eaccf59c97a4fdfce8450013"
     },
     {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
@@ -1897,8 +1897,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0033.md",
-      "size_bytes": 29423,
-      "sha256": "9a8c574f84771cbcddc70252099e2e4351cdae935c31cfdddd44ccfa1b5d6aa2"
+      "size_bytes": 32447,
+      "sha256": "bf4ddcc84fec1ff153322c0109da9e846d8bc82c1e419178bb9557068aa8ae53"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",
