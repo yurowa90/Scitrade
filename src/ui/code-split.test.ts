@@ -409,19 +409,59 @@ describe('TASK-0059 지연 화면 진입', () => {
     }
     expect(readState(ui, items)).toBe(state);
   });
-  it('새로 고침 단추는 reload를 한 번 부르고 기존 beforeunload가 저장하지 않은 진행을 확인한다', async () => {
+  it('새로 고침 단추: 저장 안 함 → 취소하면 대기열·알림 띠를 보존하고 이탈 확인도 유지한다', async () => {
+    const ui = await freshUi();
+    await ui.click({ action: 'accept' });
+    moduleMapMemory.culture = true; failures.culture = 1;
+    await ui.click({ action: 'culture-tab' }); await ui.click({ action: 'culture-tab' });
+    const before = ui.app.innerHTML, pending = pendingHtml(before);
+    expect(pending).toContain('<li');
+    expect(before).toContain(reloadWarning);
+    expect(before).toContain('data-action="reload"');
+    const reload = vi.fn(); vi.stubGlobal('location', { reload });
+    const confirm = vi.mocked(globalThis.confirm); confirm.mockClear(); confirm.mockReturnValue(false);
+    await ui.click({ action: 'reload' });
+    expect(confirm).toHaveBeenCalledExactlyOnceWith('새로 고침하면 저장하지 않은 진행과 오늘 할 일이 사라집니다. 새로 고칠까요?');
+    expect(reload).not.toHaveBeenCalled();
+    expect(ui.app.innerHTML).toBe(before);
+    expect(pendingHtml(ui.app.innerHTML)).toBe(pending);
+    const event = { preventDefault: vi.fn(), returnValue: undefined as string | undefined };
+    ui.fireWindow('beforeunload', event);
+    expect(event.preventDefault).toHaveBeenCalledOnce();
+    expect(event.returnValue).toBe('');
+  });
+  it('새로 고침 단추: 저장 안 함 → 수락하면 한 번만 새로 고치고 다음 이탈 확인 한 번만 건너뛴다', async () => {
     const ui = await freshUi();
     await ui.click({ action: 'accept' });
     moduleMapMemory.culture = true; failures.culture = 1;
     await ui.click({ action: 'culture-tab' }); await ui.click({ action: 'culture-tab' });
     const reload = vi.fn(); vi.stubGlobal('location', { reload });
+    const confirm = vi.mocked(globalThis.confirm); confirm.mockClear(); confirm.mockReturnValue(true);
+    await ui.click({ action: 'reload' });
+    expect(confirm).toHaveBeenCalledExactlyOnceWith('새로 고침하면 저장하지 않은 진행과 오늘 할 일이 사라집니다. 새로 고칠까요?');
+    expect(reload).toHaveBeenCalledOnce();
+    const first = { preventDefault: vi.fn(), returnValue: undefined as string | undefined };
+    ui.fireWindow('beforeunload', first);
+    expect(first.preventDefault).not.toHaveBeenCalled();
+    expect(first.returnValue).toBeUndefined();
+    const second = { preventDefault: vi.fn(), returnValue: undefined as string | undefined };
+    ui.fireWindow('beforeunload', second);
+    expect(second.preventDefault).toHaveBeenCalledOnce();
+    expect(second.returnValue).toBe('');
+  });
+  it('새로 고침 단추: 저장함 → 바로 새로 고치며 앱 확인은 묻지 않는다', async () => {
+    const ui = await freshUi();
+    await ui.click({ action: 'accept' });
+    await ui.click({ action: 'end-day' });
+    storage();
+    await ui.click({ action: 'save' });
+    expect(pendingHtml(ui.app.innerHTML)).toBeUndefined();
+    moduleMapMemory.culture = true; failures.culture = 1;
+    await ui.click({ action: 'culture-tab' }); await ui.click({ action: 'culture-tab' });
+    const reload = vi.fn(); vi.stubGlobal('location', { reload });
     const confirm = vi.mocked(globalThis.confirm); confirm.mockClear();
     await ui.click({ action: 'reload' });
-    expect(reload).toHaveBeenCalledOnce();
     expect(confirm).not.toHaveBeenCalled();
-    const event = { preventDefault: vi.fn(), returnValue: undefined as string | undefined };
-    ui.fireWindow('beforeunload', event);
-    expect(event.preventDefault).toHaveBeenCalledOnce();
-    expect(event.returnValue).toBe('');
+    expect(reload).toHaveBeenCalledOnce();
   });
 });
