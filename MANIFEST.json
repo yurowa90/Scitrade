@@ -1936,6 +1936,11 @@
       "sha256": "eb2d2b5a4c83662e048e1aec51161d3d614dc1585f9014ab28c9f3b071f991cf"
     },
     {
+      "path": "docs/ai/tasks/TASK-0059-R3-reload-confirm.md",
+      "size_bytes": 6159,
+      "sha256": "1aaa9fc5919f29d2accf6b72253028a4e6cebb0617b0aa2aada860c117526eac"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0059-code-split.md",
       "size_bytes": 15887,
       "sha256": "09c6f2fc26f49b2db50dd0201a772b83593864757762a024a160942ce0c5b137"
