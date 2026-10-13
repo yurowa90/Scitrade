@@ -13,12 +13,13 @@ export interface SimIo {
 }
 const USAGE = `사용법:
   sim run [--scenarios A,B] [--policies X,Y] [--seeds N] [--out PATH]
-  sim d03 [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
+  sim d03 [--seed-base N] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
   sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
-시드 수 N은 고정 시드의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
+시드 수 N은 선택한 시드 목록의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
+D03의 --seed-base N은 시드 목록을 N~N+19로 바꿉니다. 분할 번호는 이 목록에 적용됩니다.
 `;
 function integer(value: string, min: number, max: number, label: string): number {
   const n = Number(value);
@@ -41,16 +42,18 @@ export function d03Options(args: readonly string[]) {
   const options = new Map<string, string>();
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i]!, value = args[i + 1];
-    if (!['--policies', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
+    if (!['--policies', '--seed-base', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
     options.set(key, value);
   }
   const count = integer(options.get('--seeds') ?? '20', 1, 20, '시드 수');
-  // 분할 범위는 고정 시드 목록의 1부터 시작하는 번호다.
+  const seedBase = options.has('--seed-base') ? integer(options.get('--seed-base')!, 0, Number.MAX_SAFE_INTEGER - 19, '시드 기준값') : undefined;
+  const seeds = seedBase === undefined ? SIM_SEEDS : Array.from({ length: 20 }, (_, i) => seedBase + i);
+  // 분할 범위는 선택한 시드 목록의 1부터 시작하는 번호다.
   const from = integer(options.get('--seed-from') ?? '1', 1, count, '시드 시작 번호');
   const to = integer(options.get('--seed-to') ?? String(count), from, count, '시드 끝 번호');
   const late = options.get('--late') ?? 'base';
   if (!['base', 'cap30', 'flat200'].includes(late)) throw new Error(`알 수 없는 감액: ${late}`);
-  return { ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: SIM_SEEDS.slice(from - 1, to), late: late as LateMode,
+  return { ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: seeds.slice(from - 1, to), late: late as LateMode,
     workers: integer(options.get('--workers') ?? '1', 1, 32, '워커 수'), out: options.get('--out'), tablesFrom: options.get('--tables-from')?.split(',') };
 }
 export function writeD03(output: SimOutput, io: SimIo, out?: string) {

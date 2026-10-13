@@ -64,7 +64,7 @@
           "side": "SELL",
           "base_price": {
             "currency": "USD",
-            "amount": 14.0
+            "amount": 15.2
           }
         },
         {
@@ -73,7 +73,7 @@
           "side": "SELL",
           "base_price": {
             "currency": "USD",
-            "amount": 49.0
+            "amount": 51.7
           }
         },
         {
@@ -82,7 +82,7 @@
           "side": "SELL",
           "base_price": {
             "currency": "USD",
-            "amount": 13.5
+            "amount": 14.55
           }
         },
         {
@@ -91,7 +91,7 @@
           "side": "SELL",
           "base_price": {
             "currency": "USD",
-            "amount": 50.0
+            "amount": 53.0
           }
         }
       ],
@@ -138,7 +138,9 @@
         "max_lots_choices": [
           1,
           2,
-          3
+          3,
+          4,
+          5
         ],
         "sell_deadline_offset_days": 7,
         "payment_offset_days": [

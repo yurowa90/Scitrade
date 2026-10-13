@@ -4,6 +4,10 @@ import { policyById } from './policies';
 import { simulate, SIM_FORMAT, SIM_SEEDS, type SimOutput, type SimRun } from './sim';
 import { d03PolicyIds, parseVariant, variantName, withLateMode, type Investment, type LateMode } from './variants';
 
+// 모형 판정 4의 개연성 점검. 상한은 Q14(2026-10-13)에서 시작 분석값의 1.8배 → 2.0배로 다시 정함.
+const J4_NET_MIN_MINOR = 1060000;
+const J4_NET_MAX_MINOR = 2120000;
+
 export function median(values: readonly number[]): number {
   if (!values.length) return NaN;
   const sorted = [...values].sort((a, b) => a - b), i = Math.floor(sorted.length / 2);
@@ -122,11 +126,11 @@ export function d03Tables(output: SimOutput): string {
       const b = r.metrics.operations!.currencies.USD!.business, total = b.directTrade + b.handlingForwarding + b.standardForwarding;
       return { direct: total ? b.directTrade * 100 / total : 0, handling: total ? b.handlingForwarding * 100 / total : 0, standard: total ? b.standardForwarding * 100 / total : 0 };
     });
-    lines.push('', '## ⑤ J1~J7 판정과 근거 수', '', '| 판정 | 결과 | 근거 |', '|---|---|---|');
-    const judge = (id: string, pass: boolean | null, evidence: string) => lines.push(`| ${id} | ${pass === null ? mode !== 'base' && ['J2b', 'J3', 'J5'].includes(id) ? '해당 없음' : '미측정' : pass ? '통과' : '실패'} | ${evidence} |`);
+    lines.push('', '## ⑤ J1~J7 판정과 근거 수', '', 'J4는 개연성 점검이다(묶음 견적 수·준비 pt·환전 없이 실패·기준 순자산 범위).', '', '| 판정 | 결과 | 근거 |', '|---|---|---|');
+    const judge = (id: string, pass: boolean | null, evidence: string) => lines.push(`| ${id} | ${pass === null ? mode !== 'base' && id === 'J2' ? '진단(Q14)' : mode !== 'base' && ['J2b', 'J3', 'J5'].includes(id) ? '해당 없음' : '미측정' : pass ? '통과' : '실패'} | ${evidence} |`);
     judge('J1', n ? baseline.every(healthy) : null, `기준 ${n}시드, 실패 ${baseline.filter((r) => r.metrics.operations!.outcome === 'FAILED').length}, 끝 원화 미지급 ${baseline.filter((r) => unpaid(r) > 0).length}`);
     const groups = ['MAX_CONTRIBUTION', 'LATE_OK'].map((p) => { const cs = coreHires.filter((id) => parseVariant(id)!.acceptance === p).map((id) => stats(id)); return { p, count: cs.length, up: cs.filter((c) => c.arrow === '↑').length, down: cs.filter((c) => c.arrow === '↓').length }; });
-    judge('J2', groups.every((g) => g.count === 24) && n >= 10 ? groups.every((g) => g.up > 0 && g.down > 0) : null, groups.map((g) => `${g.p}: ${g.count}칸 ↑${g.up} ↓${g.down}`).join('; '));
+    judge('J2', mode !== 'base' ? null : groups.every((g) => g.count === 24) && n >= 10 ? groups.every((g) => g.up > 0 && g.down > 0) : null, (mode !== 'base' ? '감액 변형은 비교용 규칙이라 판정하지 않음 — ' : '') + groups.map((g) => `${g.p}: ${g.count}칸 ↑${g.up} ↓${g.down}`).join('; '));
     const middle = coreHires.filter((id) => parseVariant(id)!.hires[0]!.day === 30 && stats(id).arrow);
     const stable = middle.filter((id) => { const v = parseVariant(id)!, c = stats(id); return [29, 31].every((day) => {
       const x = stats(variantName({ ...v, hires: [{ ...v.hires[0]!, day }] })); return x.n > 0 && (!x.arrow || x.arrow === c.arrow) && Math.sign(x.median) === Math.sign(c.median);
@@ -136,7 +140,7 @@ export function d03Tables(output: SimOutput): string {
     const nofx = get('NO_FX'), nofxFailed = nofx.filter((r) => r.metrics.operations!.outcome === 'FAILED').length;
     const shape = baseline.every((r) => { const o = r.metrics.operations!; return o.maxBatchOffers <= 10 && o.forwardingPrepMin >= 2 && o.forwardingPrepMax <= 12 && r.metrics.currencies.KRW!.cash >= 0; });
     const net = median(baseline.map(usdAssets));
-    judge('J4', n && nofx.length ? shape && nofxFailed >= 0.75 * nofx.length && net >= 1060000 && net <= 1910000 : null, `기준 ${n}시드, 최대 묶음 ${Math.max(0, ...baseline.map((r) => r.metrics.operations!.maxBatchOffers))}견적, 준비 ${Math.min(...baseline.map((r) => r.metrics.operations!.forwardingPrepMin))}~${Math.max(0, ...baseline.map((r) => r.metrics.operations!.forwardingPrepMax))}pt; NO_FX 실패 ${nofxFailed}/${nofx.length}; USD 중앙 ${dollars(net)}`);
+    judge('J4', n && nofx.length ? shape && nofxFailed >= 0.75 * nofx.length && net >= J4_NET_MIN_MINOR && net <= J4_NET_MAX_MINOR : null, `기준 ${n}시드, 최대 묶음 ${Math.max(0, ...baseline.map((r) => r.metrics.operations!.maxBatchOffers))}견적, 준비 ${Math.min(...baseline.map((r) => r.metrics.operations!.forwardingPrepMin))}~${Math.max(0, ...baseline.map((r) => r.metrics.operations!.forwardingPrepMax))}pt; NO_FX 실패 ${nofxFailed}/${nofx.length}; USD 중앙 ${dollars(net)}; 상한 ${dollars(J4_NET_MAX_MINOR)}까지 여유 ${Number.isNaN(net) ? '미측정' : ((J4_NET_MAX_MINOR - net) / J4_NET_MAX_MINOR * 100).toFixed(1) + '%'}`);
     const double = ids.find((id) => parseVariant(id)!.hires.length === 2), doubleCell = double ? stats(double) : null;
     judge('J5', mode !== 'base' || !doubleCell?.n ? null : doubleCell.gains <= 0.15 * doubleCell.n, mode !== 'base' ? '줄인 묶음에 두 명 고용 진단이 없음' : `두 명 고용 이득 ${doubleCell?.gains ?? 0}/${doubleCell?.n ?? 0}시드`);
     const matches = j6.filter((c) => c.matched).length;

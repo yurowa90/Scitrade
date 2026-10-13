@@ -1,10 +1,8 @@
-# TASK-0032 M2a-5 직접 무역 물량 배수·판매 마진 조정(Q13-2 나)과 J1~J7 재측정 — 초안
-
-> **초안이다. 실행하지 않는다.** TASK-0031이 병합된 뒤 세션 A가 기준 커밋과 행 번호를 맞춰 확정본으로 고치고 [실행 요청]을 보낸다.
+# TASK-0032 M2a-5 직접 무역 물량 배수·판매 마진 조정(Q13-2 나)과 J1~J7 재측정
 
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- 선행 작업: TASK-0031 병합 뒤 개발 브랜치 `<BASE>`.
+- 선행 작업: TASK-0031(+R1) 병합 기록 뒤 개발 브랜치 `a9303af`(이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0032-m2a5-trade-lots.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다. 이 지시서는 개발 브랜치 `a9303af`(TASK-0031 병합 기록) 위에서 썼다.
 - 결정 근거: Q13 가(물량 배수 확대), Q13-2 나(2026-10-12 사용자 결정, 물량 {1~5} + 마진 ×1.3). 측정 근거는 `docs/ai/design/m2a5-review/QUESTIONS3.md`다.
   - 물량 배수만 키우면 직접 무역 비중이 최대 17.6%에 그쳤다. 늘어난 것은 자금 거절이었다.
   - {1~5}와 k = 1.25를 함께 쓰면 25.29%였다. 하한에 너무 붙어 있어서 k = 1.3으로 여유를 둔다.
@@ -64,7 +62,7 @@
 ## 완료 조건
 
 1. 지시 1~3 반영.
-2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0, 규칙 1 골든·기본 `run` 바이트 같음.
+2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check a9303af` 실패 0, 규칙 1 골든·기본 `run` 바이트 같음.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |
@@ -74,7 +72,9 @@
 
 4. 결과 보고 `docs/ai/tasks/results/TASK-0032.md`(공통 머리말 형식).
 
-## 확정 전 세션 A 확인 항목
+## 세션 A 확인 기록(확정 때)
 
-- TASK-0031(과 그 후속 R1)의 최종 병목 표 정의. 마진이 오르면 직접 무역 계약이 늘어 창고 점유가 바뀐다. 그러면 J6 칸 예측도 바뀌므로 재측정 보고에 J6 변화를 꼭 넣는다.
-- 판매가 손계산 네 값이 자료와 같은지 확인한다.
+- 병목 표 정의는 TASK-0031(+R1)로 확정됐다(보관 칸 최고 점유, 묶음 0 제외). 마진이 오르면 직접 무역 계약이 늘어 창고 점유가 바뀌고 J6 칸 예측도 바뀐다. 그래서 재측정 보고에 J6 변화를 꼭 넣는다.
+- 판매가 손계산 네 값은 `data/market_rules.json`의 지금 값(의류 매입 10.0, 하이퐁 14.0, 상하이 13.5; 화장품 매입 40.0, 하이퐁 49.0, 상하이 50.0)에서 계산했다.
+- `schemas/market_rules.schema.json`의 `max_lots_choices`는 정수 배열이라는 제약만 있다. 스키마는 고칠 필요가 없을 것이다.
+- `pick`은 `Math.floor(draw() × 목록 길이)`로 한 번만 뽑는다(`src/engine/market.ts:23`). 그래서 목록 길이가 바뀌어도 추첨 수는 같고, 같은 추첨값이 다른 배수로 바뀔 뿐이다.
