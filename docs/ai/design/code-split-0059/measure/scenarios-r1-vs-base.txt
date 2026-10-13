@@ -1,0 +1,13 @@
+campaign-end           runs 7/7 diffRuns 0 ok True/True errs 0
+card-detail            runs 7/7 diffRuns 0 ok True/True errs 0
+card-detail-low        runs 7/7 diffRuns 0 ok True/True errs 0
+crew-facet             runs 7/7 diffRuns 0 ok True/True errs 0
+culture-result-flow3   runs 7/7 diffRuns 0 ok True/True errs 0
+day-anchor             runs 7/7 diffRuns 0 ok True/True errs 0
+interview-hire         runs 7/7 diffRuns 0 ok True/True errs 0
+local-tab-position     runs 7/7 diffRuns 0 ok True/True errs 0
+map-detail             runs 7/7 diffRuns 0 ok True/True errs 0
+queue-chip             runs 7/7 diffRuns 0 ok True/True errs 0
+report-contract-link   runs 7/7 diffRuns 0 ok True/True errs 0
+route-map-fit          runs 7/7 diffRuns 0 ok True/True errs 0
+schedule-toggle        runs 7/7 diffRuns 0 ok True/True errs 0

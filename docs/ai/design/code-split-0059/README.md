@@ -101,7 +101,8 @@
 ### 5.2 기존 측정 시나리오 15개 × 7개 프로필 (`tools/browser/measure.mjs`)
 
 - **R1:** 15개 모두 기준과 `runs` 값이 같다(차이 0). 기대 판정은 모두 통과했고, 쪽 오류 0이다. 문화 패널을 여는 `local-tab-position`·`culture-result-flow3`도 포함한다.
-- **R2:** 결과는 아래 5.6절에 붙인다.
+- **R2:** 15개 모두 기준과 `runs` 값이 같다(차이 0). 기대 판정은 모두 통과했고, 쪽 오류 0이다.
+- 비교표는 `measure/scenarios-r1-vs-base.txt`·`scenarios-r2-vs-base.txt`에 있다. `side-anchor`·`smoke`는 프로필마다 따로 돌렸고(`measure/pp/`), 다른 13개는 `--profiles all`로 돌렸다.
 - **측정 도구에서 본 것:**
   - `side-anchor`를 `--profiles all`로 한 프로세스에서 돌리면 기준 빌드에서도 30분 넘게 끝나지 않았다.
   - 프로필마다 따로 돌리면 각 20초 안팎에 끝나고, 세 빌드 값이 같다. 빌드 문제는 아니다. 원인은 찾지 않았다(세션 B 도구 몫).
