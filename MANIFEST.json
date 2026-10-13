@@ -1666,6 +1666,11 @@
       "sha256": "38797ea86dc12d16b69c2905e8c1213a9b2abf6fd68cfd35a545e39d6f909889"
     },
     {
+      "path": "docs/ai/tasks/TASK-0054-counterparty-names.md",
+      "size_bytes": 5288,
+      "sha256": "b3dd700728e154b55e13e3b71a39dbd73f8481a67227ab89a140e71d550d1c37"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
