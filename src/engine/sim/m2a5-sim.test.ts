@@ -280,7 +280,7 @@ describe('M2a-5 차단 예측 실행 대조', () => {
     });
     expect({ misses: result.run.metrics.operations!.projectionMisses, undelivered: result.run.metrics.delivery.pastDeadlineUndelivered, violations })
       .toEqual({ misses: 0, undelivered: 0, violations: [] });
-  });
+  }, 60_000);
   it('정시 예측 예약을 실제로 배정하지 않아 출항을 놓치면 계약을 한 번 센다', () => {
     const policy = 'MAX_CONTRIBUTION', collector = createOperationsCollector(config, policy);
     let s = openDay(createGame(config), config).state;

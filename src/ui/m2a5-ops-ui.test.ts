@@ -220,12 +220,13 @@ describe('창고 막힘·빈 견적·정리', () => {
 
   it('규칙 2 첫 화면은 이번 표·창고 행·지급 기준 설명을 빼면 정리 전 전체 문자열과 같다', async () => {
     const ui = await startUi(cfg); await ui.change({ action: 'scenario' }, cfg.id);
-    // cf034bb와 비교할 때 지시서가 새로 넣거나 바꾼 부분만 제외한다. 환전 칸은 그대로 비교한다.
+    // cf034bb와 비교할 때 지시서가 새로 넣거나 바꾼 부분만 제외한다. 환전·시세표 접근성 속성은 TASK-0058에서 추가한 부분만 제외한다.
     const html = ui.app.innerHTML.replace(/빌드 [^<]+/, '빌드 BASE')
       .replace(/<section class="warehouse"[\s\S]*?(?=<h4>업무 부하)/, '')
       .replace('<li><b>창고</b> 없음</li>', '')
       .replace('<th>미지급(급여·임차료)</th>', '<th>미지급 급여</th>')
       .replace('<h3 id="exchange-h" tabindex="-1">', '<h3 id="exchange-h">')
+      .replace('id="market-scroll" tabindex="0" ', '')
       .replace('title="확정 기준" aria-describedby="payment-description"', 'title="대기 중인 명령 반영" aria-describedby="payment-description"')
       .replace('id="payment-description" class="visually-hidden">확정 기준</small>', 'id="payment-description" class="visually-hidden">대기 중인 명령 반영</small>');
     expect(await sha256(html)).toBe('60fd0707fde9953b9201e4c71a243d01f4e7e7a6267b58cf60064b90a36a516d');
@@ -302,7 +303,7 @@ describe('일정 수령액·지급 상태 기준', () => {
     // 환전을 빼도 대기열에 선복 명령이 남아 환전 없는 마감 예상을 표시한다.
     ui.click({ action: 'sign-space-contract', route: cfg.operations!.spaceContract.routeIds[0]! });
     await ui.change({ action: 'exchange-amount' }, String(lots)); ui.click({ action: 'exchange' });
-    expect(ui.app.innerHTML).toContain(`<span>지급 상태</span><b>${esc(paymentStatusKo(s, cfg))}</b><small id="payment-description" class="visually-hidden">확정 기준</small><small class="payment-forecast">하루 진행 뒤 예상: ${esc(forecast)}</small>`);
+    expect(ui.app.innerHTML.split('id="status-h"')[1]!.split('</header>')[0]).toContain(`<span>지급 상태</span><b>${esc(paymentStatusKo(s, cfg))}</b><small id="payment-description" class="visually-hidden">확정 기준</small><small class="payment-forecast">하루 진행 뒤 예상: ${esc(forecast)}</small>`);
     expect(ui.app.innerHTML).toContain('title="확정 기준"');
     expect(ui.app.innerHTML).toContain('지급 상태는 확정 기준이고, 하루 진행 뒤 예상을 따로 보입니다.');
     ui.click({ action: 'unqueue', index: '1' });

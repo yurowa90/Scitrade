@@ -34,7 +34,7 @@ export function weeklyBottleneckTable(state: GameState, view: GameState, config:
   }).join('')}</tbody></table><p class="muted small">이 표는 지난 기록의 평균·최고를 다음 주에 그대로 놓은 추정입니다. 도착이 몰리면 실제로는 더 적게 처리합니다.</p>`;
 }
 
-export function investmentBlock(state: GameState, view: GameState, config: ScenarioConfig, pending: UiCommand[]): string {
+export function investmentBlock(state: GameState, view: GameState, config: ScenarioConfig, pending: UiCommand[], open?: boolean): string {
   const o = config.operations;
   if (!o) return '';
   const expansion = view.operations?.expansions[0], effectiveDay = state.day + o.facility.expansion.effectiveAfterDays;
@@ -55,10 +55,14 @@ export function investmentBlock(state: GameState, view: GameState, config: Scena
     const period = contract ? `${contract.firstSailingDay}일 편부터 ${contract.lastSailingDay}일 편까지 ${contract.sailingCount}편` : '';
     return `<div class="space-contract"><h5>${esc(routeLabel(config, routeId))}</h5><p>편당 ${formatMoney('USD', o.spaceContract.feeMinor)} · 편마다 +${m3(o.spaceContract.extraLiters)}·+${o.spaceContract.extraGrams / 1000} kg · 쓰지 않아도 냄, 해지 없음</p>${existing ? `<p>${period} 계약됨</p>` : `${period ? `<p>계약 예정: ${period}</p>` : ''}${result?.status !== 'APPLIED' ? `<p class="reason">${esc(result?.reasonKo ?? '')}</p>` : ''}<button data-action="sign-space-contract" data-route="${esc(routeId)}">선복 계약을 오늘 할 일에 넣기</button>`}</div>`;
   }).join('');
-  return `<section class="investments" aria-labelledby="investment-h"><h4 id="investment-h">투자</h4><div class="investment"><h5>창고 확장</h5>${warehouse}</div><div class="investment"><h5>선복 장기 계약</h5>${space}</div></section>`;
+  const waiting = pending.filter((c) => c.type === 'EXPAND_WAREHOUSE' || c.type === 'SIGN_SPACE_CONTRACT').length;
+  const signed = view.operations!.spaceContracts.length;
+  const summary = [expansion ? `창고 확장${expansion.effectiveDay > view.day ? ` 예정 ${expansion.effectiveDay}일` : ' 적용됨'}` : '창고 확장', signed ? `선복 계약 ${signed}노선` : '선복 계약'].join('·');
+  const expanded = open ?? (waiting > 0 || !!expansion || signed > 0);
+  return `<details class="investments" id="investment-details"${expanded ? ' open' : ''}><summary id="investment-h">투자 — ${summary}${waiting ? `(대기 ${waiting}건)` : ''}</summary><div class="investment"><h5>창고 확장</h5>${warehouse}</div><div class="investment"><h5>선복 장기 계약</h5>${space}</div></details>`;
 }
 
-export function warehouseBlock(state: GameState, view: GameState, config: ScenarioConfig, pending: UiCommand[]): string {
+export function warehouseBlock(state: GameState, view: GameState, config: ScenarioConfig, pending: UiCommand[], open?: boolean): string {
   if (!config.operations) return '';
   const q = warehouseSummary(view, config), expansion = pendingExpansion(state, view);
   const rows: [string, string][] = [
@@ -71,5 +75,5 @@ export function warehouseBlock(state: GameState, view: GameState, config: Scenar
   const changed = state.operations?.expansions[0]?.effectiveDay === state.day
     ? `<p>한도가 ${storageCapacityLiters(state, config, state.day - 1) / 1000} → ${m3(storageCapacityLiters(state, config, state.day))}로 늘어 사용률이 내려갔습니다</p>` : '';
   const planned = expansion ? `<p>${expansion.effectiveDay}일부터 창고 한도가 ${m3(storageCapacityLiters(view, config, expansion.effectiveDay))}·처리 ${handlingCapacityPt(view, config, expansion.effectiveDay)}pt로 늘어납니다(확장 예정)</p>` : '';
-  return `<section class="warehouse" aria-labelledby="warehouse-h"><h4 id="warehouse-h">본사·창고</h4><table class="warehouse-summary"><tbody>${rows.map(([name, value]) => `<tr><th scope="row">${name}</th><td>${esc(value)}</td></tr>`).join('')}</tbody></table>${changed}${planned}${weeklyBottleneckTable(state, view, config)}${investmentBlock(state, view, config, pending)}</section>`;
+  return `<section class="warehouse" aria-labelledby="warehouse-h"><h4 id="warehouse-h">본사·창고</h4><table class="warehouse-summary"><tbody>${rows.map(([name, value]) => `<tr><th scope="row">${name}</th><td>${esc(value)}</td></tr>`).join('')}</tbody></table>${changed}${planned}${weeklyBottleneckTable(state, view, config)}${investmentBlock(state, view, config, pending, open)}</section>`;
 }
