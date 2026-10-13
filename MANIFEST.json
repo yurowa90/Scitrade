@@ -287,8 +287,8 @@
     },
     {
       "path": "docs/ai/design/code-split-0059/README.md",
-      "size_bytes": 6020,
-      "sha256": "b301afd628229a06c0ce64678b500d008c5a99085d8b6473b44a95b42703f786"
+      "size_bytes": 11756,
+      "sha256": "c72f9052ab7de9e648f884e64ee8e1a6c95cd2759294ffcdb00583d00a88bfd3"
     },
     {
       "path": "docs/ai/design/code-split-0059/harness/m59cpu.js",
