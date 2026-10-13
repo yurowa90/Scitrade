@@ -68,6 +68,7 @@ function screenLoadWarning(error: unknown, fromSave = false) {
 let config: ScenarioConfig;
 let state: GameState;
 let savedState: GameState | null = null;
+let skipNextBeforeUnload = false;
 let previousPaymentLevel: ReturnType<typeof paymentDefaultStatus>['level'] = 'NONE';
 let announcedFlash: ReturnType<typeof initialUiState>['flash'] = null;
 let lastTabAt = -Infinity, tabX = 0, tabY = 0;
@@ -156,6 +157,7 @@ document.addEventListener('focusin', (ev) => {
   if (window.scrollX !== tabX || window.scrollY !== tabY) window.scrollTo(tabX, tabY);
 });
 window.addEventListener('beforeunload', (ev) => {
+  if (skipNextBeforeUnload) { skipNextBeforeUnload = false; return; }
   if (!hasUnsavedWork(ui.pending, state, savedState)) return;
   ev.preventDefault();
   ev.returnValue = '';
@@ -1332,6 +1334,8 @@ app.addEventListener('click', (ev) => {
   try {
     switch (d.action) {
       case 'reload':
+        if (hasUnsavedWork(ui.pending, state, savedState) && !confirm('새로 고침하면 저장하지 않은 진행과 오늘 할 일이 사라집니다. 새로 고칠까요?')) return;
+        skipNextBeforeUnload = true;
         location.reload();
         return;
       case 'skip-to': {
