@@ -115,19 +115,14 @@
   - `render`(`main.ts:1081`)의 결과를 `exchangeBlock`의 **다섯 번째 선택 인자**로 넘긴다.
   - 기존 시그니처 `exchangeBlock(view, config, direction, lots)`는 유지한다. 기존 시험(`m2a5-trade-ui.test.ts:236`·`394`·`427-430`)이 직접 부르기 때문이다.
 
-### 6. TASK-0033 측정에서 넘어온 배치 고침(세션 B, `docs/ai/design/task0033-chromium/README.md` 6절)
+### 6. TASK-0033 측정에서 넘어온 배치 고침 — 이 작업에서 하지 않는다
 
-- **시세표 최소 폭(우선, 시험 기기):** iPad mini 가로 1024px에서 시세표 칸은 636px이고 표 최소 폭은 42rem(672px)이라 36px 넘친다.
-  - `.market-table table`의 최소 폭을 39rem(624px) 이하로 낮춘다. 그래도 넘치면 첫 열(도시·상품·매수/매도)의 줄바꿈을 허용한다.
-  - 열을 빼거나 글자 크기를 줄이지 않는다. 스크롤 칸 이름·초점 테두리(R2)는 그대로 둔다.
-- **규칙 2 막대 한 줄 시작 폭:** `.operations-statusbar`의 `nowrap` 시작 폭을 1024px에서 1001px로 낮춘다(`style.css` 569행 근처 `@media (min-width: 1024px)`).
-  - 1001~1023px에서 넘침이 없는지는 jsdom으로 잴 수 없다. 세션 B가 Chromium으로 다시 잰다. 넘치면 R1에서 1024px로 되돌린다.
-- **768px 하루 진행 위치:** 규칙 2 막대가 두 줄일 때 ‘하루 진행’이 둘째 줄 왼쪽에 오게 해 규칙 1과 맞춘다. 규칙 1의 CSS 적용은 바꾸지 않는다.
-- 시세표 칸의 Home·End 동작은 고치지 않는다(브라우저 기본 동작).
+- 세 고침(시세표 최소 폭 39rem, 규칙 2 막대 `nowrap` 시작 1001px, 좁은 폭 하루 진행 위치)은 세션 B가 CSS 세 줄로 만들어 Chromium으로 쟀다(`docs/ai/design/layout-followups-0033/`, PR #23). 그 PR이 `<BASE>`에 들어 있어야 한다.
+- 이 작업은 `style.css`의 그 세 줄을 되돌리거나 바꾸지 않는다. 새 표·칸이 시세표 폭이나 막대 줄 수를 바꾸면 결과 보고에 적는다.
 
 ## 고칠 수 있는 파일
 
-- `src/ui/main.ts`, `src/ui/reports.ts`, `src/ui/session.ts`(지시 3의 `UiCommand`, 지시 5의 초기 상태만), `src/ui/market.ts`(지시 5의 선택 인자와 지시 6에 필요한 클래스만), 새 `src/ui/warehouse.ts`, `src/ui/style.css`.
+- `src/ui/main.ts`, `src/ui/reports.ts`, `src/ui/session.ts`(지시 3의 `UiCommand`, 지시 5의 초기 상태만), `src/ui/market.ts`(지시 5의 선택 인자만), 새 `src/ui/warehouse.ts`, `src/ui/style.css`.
 - 새 시험 `src/ui/m2a5-ops-ui.test.ts`. 기존 UI 시험은 규칙 2 기대 문자열 줄만 고친다. 규칙 1 기준 문자열은 고치지 않는다.
 - `docs/ai/tasks/results/TASK-0034.md`, `MANIFEST.json`(생성만).
 
@@ -168,7 +163,7 @@
 
 ## 완료 조건
 
-1. 지시 1~6 반영.
+1. 지시 1~5 반영. 지시 6은 PR #23이 `<BASE>`에 있는지 확인만 한다.
 2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
@@ -182,7 +177,7 @@
 | 6 | 미리보기를 `planState(view, …[...pending, cmd])`로 계산 | 투자 미리보기 또는 대기열 시험 |
 
 4. 결과 보고 `docs/ai/tasks/results/TASK-0034.md`(공통 머리말 형식). 바꾼 파일, 설계 판단, 검증, 변형 표, 크기 증감, 범위 밖 발견, 질문을 적는다.
-   - 세션 B가 Chromium으로 잴 항목도 적는다: 운영 지표의 1·8·15·30일 높이, 병목 표가 390px에서 넘치는지, 투자 단추의 Tab 순서, iPad mini 가로 1024px 시세표 넘침, 1001~1023px 규칙 2 막대 줄 수·넘침, 768px 하루 진행 위치(규칙 1과 비교).
+   - 세션 B가 Chromium으로 잴 항목도 적는다: 운영 지표의 1·8·15·30일 높이, 병목 표가 390px에서 넘치는지, 투자 단추의 Tab 순서, 그리고 PR #23의 세 측정(iPad mini 1024px 시세표, 1001~1023px 막대, 768px 하루 진행)이 이 작업 뒤에도 같은지.
 
 ## 세션 A 확인 기록(확정 때, 2026-10-13)
 
