@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행: 개발 브랜치에 들어갈 `claude/m2a5-engine` `58c4cd5`(TASK-0059 R1 검수 병합 뒤, 이하 `<BASE>`). `codex/TASK-0059` `6bb8921`과 코드가 같다(`58c4cd5`는 검수 절과 `MANIFEST.json`만 더 있다). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
+- 선행: 개발 브랜치에 들어갈 `claude/m2a5-engine` `58c4cd5`(TASK-0059 R1 검수 병합 뒤, 이하 `<BASE>`). `codex/TASK-0059` `6bb8921`과 `src/`가 같다(`58c4cd5`는 검수 기록·측정 자료·`MANIFEST.json`이 더 있다). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
 - 이번 작업은 `<BASE>`의 구현을 이어서 고친다. 원 지시서 `docs/ai/tasks/TASK-0059-code-split.md`의 원칙·손대지 않을 파일·지켜야 할 것은 이 문서가 바꾼 곳 말고 그대로다. 원 지시서 3절 ‘다음 시도에서 다시 `import()`한다’와 경고 문장은 이 문서가 바꾼다.
 - 근거: 세션 B의 Chromium 오프라인 흉내 측정(2026-10-13)과 허브 판단.
 
