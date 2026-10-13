@@ -287,8 +287,8 @@
     },
     {
       "path": "docs/ai/design/code-split-0059/README.md",
-      "size_bytes": 5468,
-      "sha256": "c198a270fd02aeefdf122af3c9fe76abe6a9c29fad330f875ab5e82c90e1ae66"
+      "size_bytes": 6020,
+      "sha256": "b301afd628229a06c0ce64678b500d008c5a99085d8b6473b44a95b42703f786"
     },
     {
       "path": "docs/ai/design/code-split-0059/modules-f38f9cf.txt",
@@ -1847,8 +1847,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0059-code-split.md",
-      "size_bytes": 13550,
-      "sha256": "863ec3f3ed0c5324bce3a3c259c174b06339a84e0c08ca4b148bf35af49c594f"
+      "size_bytes": 15869,
+      "sha256": "7967bd21af3b31e1e8813df5f12b12ba1493901ad3c10a9830b65b36ef0a6f2d"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
