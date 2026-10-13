@@ -157,7 +157,15 @@ describe('M2a-5 준비 예측과 실제 진행', () => {
 
 describe('M2a-5 차단 기간 예측', () => {
   it('23일의 12pt 대기 업무를 차단될 직원에게 맡기지 않고 실제 완료일까지 예측한다', () => {
-    const cfg = { ...config, seed: 1001 }, policy = policyById('MAX_CONTRIBUTION~inv:SE~hire:2pt@30')!;
+    const cfg = structuredClone(config), policy = policyById('MAX_CONTRIBUTION~inv:SE~hire:2pt@30')!;
+    cfg.seed = 1001;
+    // 차단 기간 결함을 재현했던 시장 조건은 인수 명세에서 읽어 사본에만 적용한다.
+    const market = c4.test_fixture.blocked_repro_market;
+    cfg.operations!.market.trade.maxLotsChoices = [...market.max_lots_choices];
+    for (const fixed of market.rows) {
+      const row = cfg.operations!.market.rows.find((r) => r.cityId === fixed.city_id && r.goodId === fixed.good_id && r.side === fixed.side)!;
+      row.basePriceMinor = fixed.base_price_minor;
+    }
     let s = createGame(cfg), rng = createRng(cfg.seed);
     while (s.day < 23) {
       const opened = openDay(s, cfg).state, decision = policy.decide(opened, cfg, rng);

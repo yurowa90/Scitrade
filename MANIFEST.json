@@ -97,8 +97,8 @@
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 11369,
-      "sha256": "7e3d75783fd8ff1d7e48ce298103a98c1711562c2aeadde23811698a5d1b09ac"
+      "size_bytes": 11396,
+      "sha256": "5b8ab4522c198c02d97168f2faab39056722141c36ef484466a8d302cbcdaa1a"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1191,6 +1191,11 @@
       "sha256": "3aa0392e7b163448983c01020ef74fa610bc48c0f0d2386a742712d2e05e09b7"
     },
     {
+      "path": "docs/ai/design/m2a5-review/QUESTIONS4.md",
+      "size_bytes": 6403,
+      "sha256": "7d9408f3b439c2000f0a2592423493c110a9a46c342cf4fba88f5d909a9448b9"
+    },
+    {
       "path": "docs/ai/design/m2a5-review/README.md",
       "size_bytes": 2094,
       "sha256": "d5a66f6f6167f52c4569771d9c5ff3a4a94dd071da9fcb56573cf2d354e336f6"
@@ -1606,9 +1611,14 @@
       "sha256": "2b623f58319339144148281da0d3e31e69b2cd4f250d4dcc69b1d0fa3af98f97"
     },
     {
+      "path": "docs/ai/tasks/TASK-0032-R1-m2a5-judge-q14.md",
+      "size_bytes": 6659,
+      "sha256": "dfd3de3f9454ed00cd7c68421c055ece64de774a6edc9f69bb20ffa1ea1be440"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0032-m2a5-trade-lots.md",
-      "size_bytes": 6250,
-      "sha256": "20d651452df6992d5be7103f67340ae27aa13719ba5f5c9071428e2ee00a48a7"
+      "size_bytes": 6885,
+      "sha256": "19bfb68f6160d6fafc0ab2b828b634472d82beb9e7931cd3e88390fdc85deb6d"
     },
     {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
@@ -1849,6 +1859,31 @@
       "path": "docs/ai/tasks/results/TASK-0031.md",
       "size_bytes": 77526,
       "sha256": "fed352207da13a3cc268f78025252a269c89d0577b0adce38532252fecef6227"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-cap30.md",
+      "size_bytes": 10863,
+      "sha256": "bf7dd5a171d92308cc15d27d18070dd3135f89bc43357bcdc57d83c2a6b7f159"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-flat200.md",
+      "size_bytes": 10641,
+      "sha256": "b076dbd4824b129e348bb9bdd1d2ba34a6e75561da0421ceb9d570d6b1929ccb"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03-oos.md",
+      "size_bytes": 19478,
+      "sha256": "3591078b33cbfde2780a725d2d82adf4f5b1ebf08942fd2cb97f724b0a068d7a"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032-d03.md",
+      "size_bytes": 19157,
+      "sha256": "154ef4ea120dee22d04fbd7fb0bc6a29d7579fdf385110be29b07677a4c6523f"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0032.md",
+      "size_bytes": 46001,
+      "sha256": "63470212896338f68ad5e86a60be284b0e406bbe6d5c6c4cb010ce9cf7c7ec99"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",
@@ -2137,8 +2172,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 207592,
-      "sha256": "9a281a6949e72291865a3a7ca2452de0e446b9e9d8990e33d08ffb1906887bbc"
+      "size_bytes": 208445,
+      "sha256": "abde4968cabcbdc7695002fc5fd44892016ad546b8e47f89e7ef1c9467506c95"
     },
     {
       "path": "tests/character_acceptance_cases.json",

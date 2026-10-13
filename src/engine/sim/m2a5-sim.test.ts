@@ -14,7 +14,7 @@ import type { ScenarioConfig } from '../types';
 import { d03Tables, mergeD03, predictJ6, runD03 } from './d03';
 import { policyById } from './policies';
 import { runSuite, serializeSimOutput, simulate } from './sim';
-import { parseVariant, withLateMode } from './variants';
+import { d03PolicyIds, parseVariant, withLateMode } from './variants';
 
 const spec = cases.cases.find((c) => c.id === 'P0-M2A5-17')!;
 const n = spec.expected_numeric as { idle_failure_day: number; zero: number; first_matching_seed: number; search_seeds: number[];
@@ -90,6 +90,50 @@ describe('P0-M2A5-17 비교 실행기', () => {
     expect(f.judgements.map((j) => table.includes(`| ${j} |`))).toEqual(f.judgements.map(() => true));
     expect(() => mergeD03([a, a], 'base')).toThrow('중복 실행 키');
   }, 60_000);
+  it.each([
+    [1059999, '실패', '10,600', '50.0%'],
+    [1060000, '통과', '10,600', '50.0%'],
+    [2077806, '통과', '20,778', '2.0%'],
+    [2120000, '통과', '21,200', '0.0%'],
+    [2141200, '실패', '21,412', '-1.0%'],
+  ] as const)('J4 개연성 점검은 순자산 %i의 판정과 상한 여유를 표시한다', (net, result, dollars, margin) => {
+    const baseline = structuredClone(run(f.policies[2]!, n.first_matching_seed).run);
+    baseline.metrics.currencies.USD!.netAssets = net;
+    baseline.metrics.currencies.KRW!.cash = 0;
+    Object.assign(baseline.metrics.operations!, { maxBatchOffers: 10, forwardingPrepMin: 2, forwardingPrepMax: 12 });
+    const noFx = structuredClone(baseline);
+    noFx.policyId = f.policies[1]!; noFx.metrics.operations!.outcome = 'FAILED';
+    const output = runD03({ seeds: [baseline.seed], policyIds: [] });
+    output.runs = [baseline, noFx]; output.meta.policyIds = [baseline.policyId, noFx.policyId];
+    const table = d03Tables(output);
+    expect(table).toContain('J4는 개연성 점검이다');
+    expect(table.split('\n').find((line) => line.startsWith('| J4 |'))).toEqual(
+      `| J4 | ${result} | 기준 1시드, 최대 묶음 10견적, 준비 2~12pt; NO_FX 실패 1/1; USD 중앙 ${dollars}; 상한 21,200까지 여유 ${margin} |`);
+  });
+  it.each(['cap30', 'flat200'] as const)('감액 변형 %s의 J2는 화살표 수를 보존하고 진단(Q14)으로 표시한다', (mode) => {
+    const template = run(f.policies[2]!, n.first_matching_seed).run;
+    const output = runD03({ seeds: [template.seed], policyIds: [], late: mode });
+    output.meta.seeds = Array.from({ length: 10 }, (_, i) => i + 1);
+    output.meta.policyIds = d03PolicyIds(mode);
+    output.runs = output.meta.policyIds.flatMap((policyId) => output.meta.seeds.map((seed) => {
+      const r = structuredClone(template), hire = parseVariant(policyId)!.hires[0];
+      r.policyId = policyId; r.seed = seed;
+      r.metrics.operations!.unpaidAtEnd = [];
+      r.metrics.operations!.actualHires = hire ? [{ pt: hire.pt, plannedDay: hire.day, actualDay: hire.day }] : [];
+      if (hire) r.metrics.currencies.USD!.netAssets += hire.pt === 2 ? 40000 : -40000;
+      return r;
+    }));
+    const evidence = 'MAX_CONTRIBUTION: 24칸 ↑12 ↓12; LATE_OK: 24칸 ↑12 ↓12';
+    const rows = d03Tables(output).split('\n');
+    expect(rows.find((line) => line.startsWith('| J2 |'))).toEqual(
+      `| J2 | 진단(Q14) | 감액 변형은 비교용 규칙이라 판정하지 않음 — ${evidence} |`);
+    for (const id of ['J2b', 'J3', 'J5']) expect(rows.find((line) => line.startsWith(`| ${id} |`))).toContain('| 해당 없음 |');
+    output.meta.lateMode = 'base';
+    expect(d03Tables(output).split('\n').find((line) => line.startsWith('| J2 |'))).toEqual(`| J2 | 통과 | ${evidence} |`);
+    for (const r of output.runs) if (parseVariant(r.policyId)!.hires.length) r.metrics.currencies.USD!.netAssets = template.metrics.currencies.USD!.netAssets - 40000;
+    expect(d03Tables(output).split('\n').find((line) => line.startsWith('| J2 |'))).toEqual(
+      '| J2 | 실패 | MAX_CONTRIBUTION: 24칸 ↑0 ↓24; LATE_OK: 24칸 ↑0 ↓24 |');
+  });
 });
 
 function dataIds(c: ScenarioConfig): string[] {
