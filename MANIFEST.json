@@ -1541,6 +1541,86 @@
       "sha256": "0d35a11582f3813a569a11d98307d0489317b8ee8909f73815de1c83ce1d3609"
     },
     {
+      "path": "docs/ai/design/task0058-chromium/README.md",
+      "size_bytes": 9078,
+      "sha256": "4c37175dd6a1a1baa6701ea4b2e15442fa5e0bee98bbaea397c64c179fdcc342"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/a11y1-v58.jsonl",
+      "size_bytes": 1198,
+      "sha256": "dffa60d86438087dd233488ffc256c2605e9a745dc4e712cad3b863d04c6e042"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/danger-d59.jsonl",
+      "size_bytes": 3070,
+      "sha256": "94b2018f137a887bb5b38c45f36842852d8b105aa41d7bcb95c412ff16d5c207"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/danger-v58.jsonl",
+      "size_bytes": 3070,
+      "sha256": "94b2018f137a887bb5b38c45f36842852d8b105aa41d7bcb95c412ff16d5c207"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/fxbtn-d59.jsonl",
+      "size_bytes": 3134,
+      "sha256": "79dc4d315904ce5845c3e317392dd93b2fca45a3e95da7d1f92c8cec98e79885"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/fxbtn-v58.jsonl",
+      "size_bytes": 3364,
+      "sha256": "2f9ae2f03f2c15fb15df34a08329885a0e042524ea1cdfeed12a0578e0daeb43"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/fxwarn-d59.jsonl",
+      "size_bytes": 850,
+      "sha256": "9af492a3270f01eeeabb4a037753eb6ab25a19e038ec4ef74078d298df07308a"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/fxwarn-v58.jsonl",
+      "size_bytes": 1486,
+      "sha256": "f46a2bafc406b4511d6f48918636fa021c6eb75d5b8675181f9a44c7600e0fb6"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/harness/m58.js",
+      "size_bytes": 11785,
+      "sha256": "7a6f3f83682d99fcc9ddaa22f6f8ed6923b4980fc768c1683d17cbdbf612031d"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/harness/m58b.js",
+      "size_bytes": 3993,
+      "sha256": "79d0efca2fdf335075e8254875407d9438c733984a003595997d8992ab7864aa"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/harness/m58w.js",
+      "size_bytes": 1976,
+      "sha256": "0f9ee25f1ef04f68ece509e09ce0a05d523bed5f6b204530455e350f89823d5f"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/mkt-v58.jsonl",
+      "size_bytes": 579,
+      "sha256": "73eb3ee29405f86eab72f02482ea45a7a5f9e5f49962d1729369c805b00fa1b7"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/ops-d59.jsonl",
+      "size_bytes": 2630,
+      "sha256": "46d746301d1712cacf358f704aa687cb19d873b3744aae56eda517fe03cfe916"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/ops-v58.jsonl",
+      "size_bytes": 8783,
+      "sha256": "66e03cf07e09da919533091805906db1975ada013561d58b864651c281dc02be"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/probe-v58.jsonl",
+      "size_bytes": 2049,
+      "sha256": "4b6629bd264869b8207a0cec504261d889aa402bd1cf772c833ea9815f086919"
+    },
+    {
+      "path": "docs/ai/design/task0058-chromium/qty-v58.jsonl",
+      "size_bytes": 6280,
+      "sha256": "24ecd59d256c52350237216aa987a694b5d9ee6f901ceebdd661dffd10923a51"
+    },
+    {
       "path": "docs/ai/design/ui-review-0033/README.md",
       "size_bytes": 97447,
       "sha256": "4866f969543b6a6b8bfb0ece4a69e8e9adddab787a2208da5c01cdaaa92e7b6c"
