@@ -73,16 +73,26 @@
 - **GAP-7(막대 범위):** 막대를 단언하는 시험은 페이지 전체가 아니라 `id="status-h"`부터 `</header>`까지 범위에서 찾는다. 급여 가능일이 view 값이고 state 값과 다르다는 것도 같이 단언한다. 환전 칸도 `<section class="exchange"` 범위에서 고정 환율 두 값, 급여 가능일 전 → 후, 방향별 금액을 직접 단언한다.
 - **GAP-8(지급 상태 경계):** `campaignDays = failAtCloseOfDay`인 설정에서 지급 상태 문구가 ‘경고 · 실패까지 n일’ 전체 문자열이다(‘캠페인이 끝날 때까지…’ 없음). 같은 설정으로 엔진을 진행하면 경영 실패이고 마지막 마감일이 그날이다. 남은 날 기대값은 `failureAgeDays − ageDays`로 만든다.
 
+### 9. 운영 지표 높이(세션 B TASK-0034 측정)
+
+- 근거: 세션 B 측정(`docs/ai/design/task0034-chromium/README.md`, PR #25). TASK-0034 뒤 운영 지표(`.report-ops`) 높이가 2.6배로 늘었다(1024px 세 열에서 약 1,011 → 2,672px). 늘어난 몫은 본사·창고 구역이고, 그 가운데 투자 칸이 약 700px이다. 1024px 세 열에서 경영 보고 칸 폭은 297px다.
+- 고침: 투자 칸(`investmentBlock`)을 `<details>`로 접는다.
+  - 기본은 접힘이다. 투자 명령이 대기열에 있거나 이미 맺은 투자가 있으면 펼친다.
+  - 요약 줄에 상태를 쓴다. 예: ‘투자 — 창고 확장·선복 계약(대기 1건)’, ‘투자 — 창고 확장 예정 2일’.
+  - 펼침 상태는 다시 그려도 유지한다(기존 `details` 상태 보존 방식을 따른다. 없으면 UI 상태에 둔다).
+- 본사·창고 표와 병목 표는 접지 않는다. 학생이 매일 읽는 근거이기 때문이다.
+- 세션 B 재측정 항목에 운영 지표 높이(1·8·15·30일, 1024·1366px)를 더한다.
+
 ## 고칠 수 있는 파일
 
-- `src/ui/main.ts`, `src/ui/market.ts`, `src/ui/style.css`(필요할 때만).
+- `src/ui/main.ts`, `src/ui/market.ts`, `src/ui/warehouse.ts`(지시 9만), `src/ui/style.css`(필요할 때만).
 - `src/engine/operations-invariants.ts`(지시 8 GAP-3의 견적 수량 검사만).
 - 시험: `src/ui/m2a5-trade-ui.test.ts`, `src/ui/m2a5-ops-ui.test.ts`, `src/ui/m2a5-money-ui.test.ts`(0057이 만든 것), `src/ui/schedule.test.ts`, `src/ui/layout.test.ts`, `src/engine/m2a5-save-references.test.ts`(GAP-3 반례 추가만), 새 시험 파일(필요하면 `src/ui/m2a5-review-followups.test.ts`).
 - `docs/ai/tasks/results/TASK-0058.md`, `MANIFEST.json`(생성만).
 
 ## 손대지 않을 파일
 
-- 위 목록 밖 `src/engine/**`, `src/content/**`, `data/**`, `schemas/**`, `tools/**`, `src/ui/culture.ts`, `src/ui/session.ts`, `src/ui/recruitment.ts`, `src/ui/warehouse.ts`, `src/ui/reports.ts`.
+- 위 목록 밖 `src/engine/**`, `src/content/**`, `data/**`, `schemas/**`, `tools/**`, `src/ui/culture.ts`, `src/ui/session.ts`, `src/ui/recruitment.ts`, `src/ui/reports.ts`. (`src/ui/warehouse.ts`는 지시 9의 `details`만 허용)
 
 ## 지켜야 할 것
 
@@ -91,7 +101,7 @@
 
 ## 완료 조건
 
-1. 지시 1~8 반영.
+1. 지시 1~9 반영.
 2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
@@ -109,13 +119,15 @@
 | 10 | 일정의 FREIGHT·DUTY 문구를 맞바꿈 | 규칙 1 일정 문구 시험 |
 | 11 | 막대를 다시 `state`로 그림(급여 가능일) | 막대 범위 시험 |
 | 12 | 지급 상태 경계 조건 `>`를 `>=`로 바꿈 | 지급 상태 경계 시험 |
+| 13 | 투자 칸을 대기열이 있어도 접힌 채로 그림 | 투자 칸 펼침 시험 |
 
 4. 결과 보고 `docs/ai/tasks/results/TASK-0058.md`(공통 머리말 형식). 바꾼 파일, 설계 판단, 검증, 변형 표, 크기 증감, 범위 밖 발견, 질문을 적는다.
-   - 세션 B가 Chromium으로 잴 항목: 환전 단추 초점 유지(아래 끝에 붙은 상태), 수량 변경 알림 낭독, 시세표 칸 열 전환 뒤 초점·가로 위치.
+   - 세션 B가 Chromium으로 잴 항목: 환전 단추 초점 유지(아래 끝에 붙은 상태), 수량 변경 알림 낭독, 시세표 칸 열 전환 뒤 초점·가로 위치, 운영 지표 높이(1·8·15·30일, 1024·1366px).
 
 ## 세션 A 확인 기록(쓸 때, 2026-10-13)
 
 - 허브가 2026-10-13 15:23에 번호 0058을 줬다. 범위는 화면 검수 21건 가운데 0034·0057이 다루지 않은 항목이다.
 - GAP-3의 주 수정은 엔진 불변식(0056과 같은 파일·같은 패턴)이다. 화면 쪽 선택지 계산을 바꾸기보다 어긋난 견적을 가져오기에서 막는 쪽이 안전하다고 판단해 이 작업에 넣었다. 엔진 파일은 그 한 곳만 허용한다.
 - A11Y-2는 검수 문서의 두 방식(연결·알림) 가운데 둘 다 쓴다. `aria-disabled`로 바꾸는 방식은 초점 복원과 시험 판정을 함께 바꿔야 해서 이번에 쓰지 않는다.
+- 세션 B의 TASK-0034 측정(2026-10-13 15:33): 결함 없음. 운영 지표 2.6배는 지시 9로 넣었다. 경고 단계 막대 +17px(1001~1024px)은 받아들인다. KRW→USD 환전이 ‘오늘 급여·임차료를 다 낼 수 없다’ 경고를 띄우고도 들어가는 것은 설계 의도다(경고이지 거절이 아니다. 자동 환전 없음, 학생의 선택). 지시 1이 그 경고를 단추에 연결하고 알린다.
 - 0057 실행 결과에 따라 줄 번호와 일부 문장 위치가 바뀐다. 0057 병합 뒤 세션 A가 이 지시서를 다시 확인하고 확정 해시를 보낸다.
