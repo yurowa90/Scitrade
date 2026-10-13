@@ -48,9 +48,9 @@
   - **약속과 예외의 어긋남(세션 C 지적 2026-10-13, 예외 삭제로 해결):** 동의서 문장은 ‘시험 기간과 그 뒤 24시간 동안 이 화면을 열지 않고’라고 예외 없이 약속한다. 해석의 둘째 문장(‘그 사이에 꼭 열어야 하면 날짜·시각·이유를 적고’)은 그 기간에 여는 예외를 둔다. 예외를 쓰면 동의서 약속을 어긴다.
     - **결정된 정리:** 예외를 없애고 약속을 그대로 지킨다. 배포·장애 확인은 Observability가 아니라 배포 화면(Deploys)과 사이트 직접 접속으로만 한다. 동의서 문장은 고치지 않는다.
     - 근거(열람 2026-10-13, [Netlify Deploy overview](https://docs.netlify.com/deploy/deploy-overview/), WebFetch로 원문 인용): 배포 기록은 “details about your site's build image, dependency caching, and Netlify Build process, including all of the standard output which comes from running your build”, 빌드 플러그인 실행, “details about the success, failure, or cancellation of the deploy”를 담는다. 방문자 요청(IP·사용자 에이전트)을 담는다는 문장은 없다.
-    - 한계: ‘문서에 없다’는 ‘화면에 없다’의 증거가 아니다. 남은 사용자 확인: Observability에 요청 목록이 보이는지, Deploys 화면에 방문자 정보가 없는지.
+    - **사용자 확인(2026-10-13): Deploys 화면에 방문자 정보가 없다.** 문서와 화면이 일치한다. 장애 확인을 Deploys로 해도 약속과 충돌하지 않는다.
 - **동의서 마지막 문장(채택한 원칙에 맞춘 판, 넣기로 결정됨 2026-10-13 사용자):** ‘게임을 올린 서버의 관리 화면에서 연구자는 최근 24시간의 접속 기록(IP 주소·브라우저 정보 포함)을 볼 수 있으나, 시험 기간과 그 뒤 24시간 동안 이 화면을 열지 않고, 이 기록을 내려받거나 연구 자료로 쓰지 않습니다.’
-- 요금제가 Legacy라 요청 목록이 보이지 않는다면 마지막 문장을 다시 쓴다(4절 1).
+- **사용자 확인(2026-10-13): Observability에 요청 목록이 보인다.** 그러므로 동의서 마지막 문장(‘최근 24시간의 접속 기록을 볼 수 있으나…’)은 사실과 맞고, 그대로 쓴다(4절 1).
 
 ## 1. 게임 코드가 하는 일 (저장소 확인)
 
@@ -102,7 +102,7 @@ Google Fonts FAQ([fonts.google.com/faq](https://fonts.google.com/faq), 스크립
        - “Netlify Observability shows raw server-side HTTP request data.”
      - 문서 SHA-256(받은 `.md`): Observability `178741384d5621513cad5afc14bc35cadf3cbda283b76ef2512d1d7969bf9767`, Log Drains `5123c54c15d408dc07c205489a95a3a210b09840518c9bc04a2e3dcf07d3e441`.
    - **판단:** 사이트 소유자(연구자)는 관리 화면에서 지난 24시간의 요청을 IP·사용자 에이전트와 함께 볼 수 있다. 별도로 켜는 설정이 있다는 문장은 문서에 없다. 따라서 ‘연구자가 받지 않는다’고 쓸 수 없다.
-   - **남는 불확실성:** 팀이 ‘Credit-based’ Free인지 ‘Legacy’ 요금제인지. Legacy면 문서상 요약 위젯만 보인다. 사용자가 Netlify 관리 화면의 Analytics & metrics > Observability에서 요청 목록이 보이는지 한 번 확인하면 닫힌다.
+   - **닫힘(2026-10-13 사용자 확인):** 관리 화면 Observability에 요청 목록이 보인다. 문서상 Legacy 요금제는 요약 위젯만 보이므로, 이 팀은 Credit-based 요금제로 보인다(요금제 이름 자체는 화면에서 확인하지 않음). 배포 화면(Deploys)에는 방문자 정보가 없다.
    - Netlify 내부의 접속 기록 보관 기간은 여전히 문서로 확인하지 못했다(DPA 미열람). 동의서에는 기간을 적지 않는다.
 2. **실행 중 네트워크 기록 — 확인함(허브 실측, 2026-10-12, Chromium 1366×768, 배포 사이트):**
    - 측정 경로: 첫 화면 → 처음부터 → 하루 진행 2번 → 저장 → 새로 고침.

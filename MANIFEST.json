@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/USABILITY_TEST_M2A.md",
-      "size_bytes": 50858,
-      "sha256": "a40fbe73d84e4b4d66781d2a9bb00387d29d3852fa404a0d48af7c1c68a80dfb"
+      "size_bytes": 51073,
+      "sha256": "6cc78b7e422c4d380220a5e172447c1dfd7583ad261cdd2ec5bbf1542ef63dd2"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -1382,8 +1382,8 @@
     },
     {
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
-      "size_bytes": 16299,
-      "sha256": "42fcf26faf714d0edc5f9ff3b373964de77cf3624f2cb54a11e6ad58df4ee844"
+      "size_bytes": 16448,
+      "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
