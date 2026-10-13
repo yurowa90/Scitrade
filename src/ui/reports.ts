@@ -23,6 +23,7 @@ export const KRW_REPORT_NOTE_KO = '급여는 원화로 매일 지급하며 계�
 export const KRW_REPORT_NOTE_CULTURE_KO = '급여는 원화로 매일 지급하며 계약금·훈련비·현지 활동비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.';
 
 export function krwReportNoteKo(config: ScenarioConfig): string {
+  if (config.operations) return '환전 명령으로 실제 바꾼 금액만 기록합니다. 통화는 합치지 않습니다.';
   if (config.culture) return KRW_REPORT_NOTE_CULTURE_KO;
   return config.recruitment || config.growth ? KRW_REPORT_NOTE_KO
     : '급여는 원화로 매일 지급합니다. USD 거래 장부와 합산하지 않습니다. 가상 환율 1,300원/달러는 보고에 쓰지 않습니다.';
@@ -65,7 +66,9 @@ export function upcomingSummary(rows: UpcomingPayment[], config: ScenarioConfig)
 } {
   const currencies = [...new Set([config.tradeCurrency, config.payrollCurrency, ...rows.map((r) => r.currency).sort()])];
   const labels: [UpcomingPaymentKind, string][] = [
-    ['OVERDUE', '밀린 지급 (현금이 들어오면 먼저 갚음)'], ['WAGE', '급여 (하루 진행 때 자동)'],
+    ['OVERDUE', '밀린 지급 (현금이 들어오면 먼저 갚음)'],
+    ...(config.operations ? [['RENT', '창고 임차료 (기간마다 자동)'], ['SPACE_FEE', '선복 계약 요금 (출항마다 자동)']] as [UpcomingPaymentKind, string][] : []),
+    ['WAGE', '급여 (하루 진행 때 자동)'],
     ['FREIGHT', '운임 (운송편을 예약할 때)'], ['DUTY', '관세 (도착할 때 자동)'],
   ];
   // 기간 표에는 날짜가 정해진 지급만 넣는다.

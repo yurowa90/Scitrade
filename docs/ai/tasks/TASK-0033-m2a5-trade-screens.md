@@ -2,7 +2,7 @@
 
 - codex_model: `gpt-6.1-sol`
 - reasoning_effort: `high`
-- 선행 작업: TASK-0031(+R1)·TASK-0032(+R1)·TASK-0035 병합 뒤 개발 브랜치 `<BASE>`(이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0033-m2a5-trade-screens.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다. 아래 줄 번호는 개발 브랜치 `8fdc7ad` 기준이다. 다르면 코드가 사실이다.
+- 선행 작업: TASK-0031(+R1)·TASK-0032(+R1)·TASK-0035 병합 뒤 개발 브랜치 `8fdc7ad`(이 지시서를 올린 커밋). 치환되지 않았으면 `git log -1 --format=%h -- docs/ai/tasks/TASK-0033-m2a5-trade-screens.md`의 해시를 쓰고 결과 보고 첫 줄에 적는다. 아래 줄 번호는 개발 브랜치 `8fdc7ad` 기준이다. 다르면 코드가 사실이다.
 - 결정 근거: `docs/ai/design/M2A5-SPEC.md` 16절(화면 요구) 1·2·4·5·9·10, 13.1(늦은 인도 감액), 14.2~14.8(읽기 함수). `docs/DECISIONS.md`의 M2a-5 결정(D01 가 환전, D02 ①~⑤, D04 가 실패, Q10 감액, Q12 가 병목 표, Q13·Q13-2·Q14 경제). `docs/UI_SPEC.md` 50행(색만으로 상태를 구분하지 않는다).
 - 화면 2(창고·병목 표·고용 면담·경고·실패·결산)는 TASK-0034다. 두 작업은 `main.ts`를 함께 고치므로 차례로 돈다.
 
@@ -121,10 +121,10 @@
   - 캠페인 뒤 도착 경고는 도착이 캠페인 안이면 없다.
   - ‘새 관측 없음’은 71일에는 없다.
   - RENT·SPACE_FEE 이름표는 규칙 1 지급 표에 없다.
-- **규칙 1 화면 불변:** 시나리오 `<select>` 요소를 뺀 렌더 문자열이 `<BASE>`와 같아야 한다.
+- **규칙 1 화면 불변:** 시나리오 `<select>` 요소를 뺀 렌더 문자열이 `8fdc7ad`와 같아야 한다.
   - 대표 상태 3개: 1일, 첫 계약 수락 뒤, 결산.
   - `main-testkit.startUi`와 `app.innerHTML`을 쓴다. 빌드 표시(`빌드 ${BUILD_ID}`)는 정규화하고, `vi.setSystemTime`으로 시각을 고정한다(대기 명령 ID의 `Date.now()` 때문).
-  - 기대 문자열은 `<BASE>` 사본에서 같은 도우미로 만들고, 결과 보고에 sha256과 함께 적는다.
+  - 기대 문자열은 `8fdc7ad` 사본에서 같은 도우미로 만들고, 결과 보고에 sha256과 함께 적는다.
 - **수량:** 수량을 바꾸면 두 수락 길 모두 명령의 `quantity`가 바뀐다. 보이는 값은 `quotePreview(view, …, quantity)`와 같다. 대기열 문구에도 고른 수량이 보인다.
 - **저장:** 규칙 2 저장 → 불러오기가 된다.
 - **키보드:** 수량 고르기·환전 금액·방향이 Tab 순서 안에 있다(TASK-0024 규칙).
@@ -136,8 +136,8 @@
 2. 검사:
    - `npx vitest run` 실패 0.
    - `npm run typecheck`, `python3 tools/validate_data.py` 통과.
-   - `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 크기 검사는 범위 8의 규칙대로 보고한다.
-3. 기본 비교 실행기 `run` 400회 출력이 `<BASE>`와 바이트로 같다(엔진을 고치지 않았다는 확인).
+   - `bash tools/ai/review_checks.sh --check 8fdc7ad` 실패 0. 크기 검사는 범위 8의 규칙대로 보고한다.
+3. 기본 비교 실행기 `run` 400회 출력이 `8fdc7ad`와 바이트로 같다(엔진을 고치지 않았다는 확인).
 4. 변형 시험(사본·편집기·되돌림·`cmp`, git으로 되돌리지 않음):
 
 | 번호 | 변형 | 실패해야 하는 시험 |

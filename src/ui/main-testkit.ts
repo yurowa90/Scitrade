@@ -81,7 +81,7 @@ export async function startUi(config?: ScenarioConfig) {
     // 고른 표시를 틀 안으로 옮길 때 틀의 위치를 읽는다.
     getBoundingClientRect:()=>({left:0,right:930,top:0,bottom:600,width:930,height:600}) });
   let frame = newFrame();
-  const elements = () => [...html.matchAll(/<(button|article|tr|select)\b([^>]*\bdata-action="[^"]*"[^>]*)>/g)].map((match) => {
+  const elements = () => [...html.matchAll(/<(button|article|tr|select|input)\b([^>]*\bdata-action="[^"]*"[^>]*)>/g)].map((match) => {
     const attrs = Object.fromEntries([...match[2]!.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, unescape(m[2]!)]));
     const dataset = Object.fromEntries(Object.entries(attrs).filter(([key])=>key.startsWith('data-')).map(([key,value])=>[key.slice(5).replace(/-([a-z])/g,(_m,c:string)=>c.toUpperCase()),value]));
     const element = Object.assign(match[1] === 'button' ? new Button() : {}, {

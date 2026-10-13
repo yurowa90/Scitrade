@@ -6,18 +6,21 @@ import { applyPixelScale } from './pixel';
 import { esc } from './html';
 import { CULTURE_KO, cultureAnchorBlocks, culturePanel, cultureResultTasks, cultureTab, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
-import { SCENARIO_IDS, assumptionNotes, loadScenario, type ScenarioId } from '../content/scenario';
-import { cargoSpace, goodOf, offerOf, routeBetween, unitKo } from '../engine/catalog';
+import { ALL_SCENARIO_IDS, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
+import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
 import { cityName, createGame, listSailings, openDay, planCommands, planState } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { campaignSummary, onTimeDeliveryRate, upcomingPayments, companyReport, contractReport, forwardingPreview, tradePairs, tradePreview, type QuotePreview } from '../engine/reports';
 import { cashReservations, fmtKg, fmtM3, fundsPosition, runningTaskOf, sailingLoad } from '../engine/reservations';
 import { serializeSave } from '../engine/save';
 import { contractProgress, portWaitStatus } from '../engine/progress';
-import type { Command, CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
+import type { CommandResult, CommitPlan, Contract, EmployeeDef, GameState, ScenarioConfig } from '../engine/types';
 import { attributeKo, roleKo, taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, crewFacetOptions, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
-import { initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
+import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
+import { offerDef, openTradePairs } from '../engine/market';
+import { quotePreview, type OperationsQuotePreview } from '../engine/readers';
+import { counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, operationsTopbar } from './market';
 import { cancellationPreviewKo } from './trade';
 import { bottlenecks, cargoListKo, heldCargoByGood, obligationLineKo, qtyKo as reportQtyKo, rateKo, settlementRows, upcomingSummary, workloadLinesKo, krwReportRows, krwReportNoteKo, type UndatedPayments } from './reports';
 import { crewNoteKo, crewStatusKo } from './crew-status';
@@ -35,7 +38,7 @@ const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
 const LEGACY_SAVE_KEY = 'scitrade-m1-save';
-const SCENARIO_TITLES = Object.fromEntries(SCENARIO_IDS.map((id) => [id, loadScenario(id).titleKo])) as Record<ScenarioId, string>;
+const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loadScenario(id).titleKo])) as Record<AnyScenarioId, string>;
 
 let config: ScenarioConfig;
 let state: GameState;
@@ -129,7 +132,7 @@ window.addEventListener('beforeunload', (ev) => {
   ev.returnValue = '';
 });
 
-function startScenario(id: ScenarioId) {
+function startScenario(id: AnyScenarioId) {
   config = loadScenario(id);
   state = openDay(createGame(config), config).state;
   resetUi();
@@ -167,7 +170,7 @@ const PARTY_KO: Record<string, string> = {
   SHIPPER_DEMO_FURNITURE: '가구 화주',
   SHIPPER_DEMO_AUTOPARTS: '자동차 부품 화주',
 };
-const partyKo = (id: string | null) => (id ? (PARTY_KO[id] ?? id) : '-');
+const partyKo = (id: string | null) => (id ? (PARTY_KO[id] ?? counterpartyNameKo(config, id)) : '-');
 const qtyKo = (goodId: string, quantity: number) => reportQtyKo(config, goodId, quantity);
 const employeeName = (id: string | null) => config.employees.find((e) => e.id === id)?.nameKo ?? '미배정';
 
@@ -353,7 +356,7 @@ function topbar(): string {
     <div class="brand"><span class="logo">Scitrade</span><span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 ${esc(BUILD_ID)}</span></div>
     <label class="scenario">시나리오
       <select data-action="scenario">
-        ${SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
+        ${ALL_SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
       </select>
     </label>
     <div class="actions">
@@ -369,7 +372,7 @@ function topbar(): string {
     <div class="stat"><span>거래 현금 (USD)</span><b>${usd(r.trade.cash)}</b></div>
     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
-    <div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+    ${config.operations ? operationsTopbar(view, config) : ''}<div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
     ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
   </div>
   </header>`;
@@ -435,8 +438,9 @@ function reporter(role: string): EmployeeDef | undefined {
   return employedDefs(view, config).find((e) => e.role === role) ?? employedDefs(view, config)[0];
 }
 
-function quoteBlock(q: QuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
+function quoteBlock(q: QuotePreview | OperationsQuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
   const check = tryCommand(cmd);
+  if ('allowed' in q && !q.allowed) { check.status = 'REJECTED'; check.reasonKo = q.reasonKo!; }
   const sailing = q.departureDay !== null
     ? `다음 출항 ${q.departureDay}일 → ${q.arrivalDay}일 도착 예정 (납기 ${q.deliveryDeadlineDay}일)${q.lateOnNextSailing ? ' ⚠ 납기 초과 — 감액 반영' : ''}`
     : '남은 출항편 없음';
@@ -509,33 +513,35 @@ const offerCommands: Record<string, Command> = {};
 function offerBoard(): string {
   const isOpen = (id: string) => view.offers.find((o) => o.id === id)?.status === 'OPEN';
   const cards: string[] = [];
-  for (const pair of tradePairs(config)) {
+  for (const pair of (config.operations ? openTradePairs(view, config) : tradePairs(config))) {
     if (!isOpen(pair.buyOfferId) || !isOpen(pair.sellOfferId)) continue;
-    const buy = offerOf(config, pair.buyOfferId)!;
-    const sell = offerOf(config, pair.sellOfferId)!;
-    const q = tradePreview(config, buy.id, sell.id, view.day)!;
+    const buy = offerDef(view, config, pair.buyOfferId)!;
+    const sell = offerDef(view, config, pair.sellOfferId)!;
+    const key = `${buy.id}+${sell.id}`;
+    const quantity = config.operations ? ui.offerQuantities[key] ?? buy.quantity : buy.quantity;
+    const q = config.operations ? quotePreview(view, config, pair, quantity) : tradePreview(config, buy.id, sell.id, view.day)!;
     const by = reporter('sales');
     const g = goodOf(config, buy.goodId);
     const deadline = config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay;
     const due = config.terms.paymentDueDay ?? sell.paymentDueDay;
     const rows = `
-      <tr><th>매입 (${buy.quantity}${esc(unitKo(g))} × ${usd(buy.unitPriceMinor)})</th><td>−${usd(q.purchase)}</td></tr>
+      <tr><th>매입 (${quantity}${esc(unitKo(g))} × ${usd(buy.unitPriceMinor)})</th><td>−${usd(q.purchase)}</td></tr>
       <tr><th>운임 (선지급)</th><td>−${usd(q.freight)}</td></tr>
       <tr><th>관세 (가상 세율 ${config.terms.dutyRateBasisPoints / 100}% · 상품 송장 기준)</th><td>−${usd(q.duty)}</td></tr>
-      <tr><th>판매 (${sell.quantity}${esc(unitKo(g))} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
-    const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id };
+      <tr><th>판매 (${quantity}${esc(unitKo(g))} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
+    const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id, ...(config.operations ? { quantity } : {}) };
     offerCommands[`${buy.id}+${sell.id}`] = cmd;
-    const space = cargoSpace(config, buy.goodId, buy.quantity);
+    const space = cargoSpace(config, buy.goodId, quantity);
     cards.push(`
     <article class="offer">
-      <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, buy.quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
-      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${buy.quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
-      ${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
+      <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
+      <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
+      ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
-  for (const offer of config.offers.filter((o) => o.kind === 'forwarding')) {
+  for (const offer of (config.operations ? view.offers.filter((o) => o.status === 'OPEN').map((o) => offerDef(view, config, o.id)!) : config.offers).filter((o) => o.kind === 'forwarding')) {
     if (!isOpen(offer.id) || !offer.destinationCityId) continue;
-    const q = forwardingPreview(config, offer.id, view.day)!;
+    const q = config.operations ? quotePreview(view, config, { offerId: offer.id }) : forwardingPreview(config, offer.id, view.day)!;
     const by = reporter('operations');
     const space = cargoSpace(config, offer.goodId, offer.quantity);
     const route = routeBetween(config, offer.cityId, offer.destinationCityId);
@@ -547,16 +553,17 @@ function offerBoard(): string {
     offerCommands[offer.id] = cmd;
     cards.push(`
     <article class="offer forwarding">
-      <h3><span class="kind kind-fwd">운송 주선</span> 고객 화물 ${esc(qtyKo(offer.goodId, offer.quantity))} · ${esc(cityName(config, offer.cityId))} → ${esc(cityName(config, offer.destinationCityId))}</h3>
+      <h3><span class="kind kind-fwd">운송 주선</span> ${config.operations && offer.titleKo ? esc(offer.titleKo) + ' · ' : ''}고객 화물 ${esc(qtyKo(offer.goodId, offer.quantity))} · ${esc(cityName(config, offer.cityId))} → ${esc(cityName(config, offer.destinationCityId))}</h3>
       <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(partyKo(offer.counterpartyId))}가 ${esc(qtyKo(offer.goodId, offer.quantity))}을(를) ${esc(cityName(config, offer.destinationCityId))}까지 보내 달라고 합니다. 화물은 고객 것이고, 우리는 운송을 주선해 서비스 대금을 받습니다. 납기 ${offer.deliveryDeadlineDay}일, 계약상 대금일은 ${offer.paymentDueDay}일입니다.”</p>
       ${quoteBlock(q, rows, cmd, [
         `화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}${route ? ` (편당 한도 ${route.capacityKg.toLocaleString('ko-KR')}kg · ${route.capacityM3}m³)` : ''}`,
         offer.declaredCargoValueMinor ? `신고가액 ${usd(offer.declaredCargoValueMinor)}는 고객 자산입니다. 회사 재고·매출에 들어가지 않습니다.` : '',
+        ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : []),
       ].filter(Boolean), offer.validUntilDay, offer.id, offer.cityId)}
     </article>`);
   }
-  if (!cards.length) return '';
-  return `<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
+  if (!cards.length) return config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeUsdMinor) : '';
+  return `${config.operations ? marketBlock(view, config) + exchangeBlock(view, config, ui.exchangeDirection, ui.exchangeUsdMinor) : ''}<div class="offer-board"><h3 class="board-title">견적판 <small>${cards.length}건 · 무엇을 맡을지 고르세요</small></h3>${cards.join('')}</div>`;
 }
 
 function contractPanel(c: Contract): string {
@@ -731,11 +738,11 @@ function resourcePanel(): string {
     <h3>자금 (USD)</h3>
     <table class="money">
       <tr><th>현금 (오늘 할 일 실행 뒤)</th><td>${usd(f.cash)}</td></tr>
-      <tr><th>체결 계약의 남은 지출 예약</th><td>−${usd(f.reserved)}</td></tr>
+      <tr><th>체결 계약의 남은 지출 예약</th><td>−${usd(config.operations ? f.reserved - f.reservedCommitments : f.reserved)}</td></tr>${config.operations ? `<tr><th>선복 계약 요금 예약</th><td>−${usd(f.reservedCommitments)}</td></tr>` : ''}
       ${f.unpaidObligations ? `<tr><th>미지급</th><td>−${usd(f.unpaidObligations)}</td></tr>` : ''}
       <tr class="total"><th>사용 가능 (오늘 할 일 실행 뒤)</th><td class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</td></tr>
     </table>
-    ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${esc(r.contractId)} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : '<p class="muted small">묶인 돈이 없습니다.</p>'}
+    ${reservations.length ? `<ul class="reserve-list">${reservations.map((r) => `<li>${esc(r.contractId)} ${r.kind === 'FREIGHT' ? '운임 (예약 전)' : '관세 (도착 때)'} <b>${usd(r.amountMinor)}</b></li>`).join('')}</ul>` : config.operations && f.reservedCommitments ? '<p class="muted small">선복 계약 요금은 위 표에 별도로 예약했습니다.</p>' : '<p class="muted small">묶인 돈이 없습니다.</p>'}
     <p class="muted small">${committedRule() ? '새 계약·운임은 사용 가능 자금으로만 판단합니다.' : '새 계약은 지금 현금만 확인합니다. 예약은 참고 표시입니다.'}</p>
     <h3>직원 시간</h3>
     <ul class="crew-time">${crew.join('')}</ul>
@@ -776,7 +783,10 @@ function upcomingBlock(): string {
     list.push(`<li><span>${Math.min(...overdue.map((p) => p.day!))}일부터</span>밀린 지급 ${overdue.length}건 (현금이 들어오면 먼저 갚음) <b>${esc(formatMoney(currency, -overdue.reduce((sum, p) => sum + p.amountMinor, 0)))}</b></li>`);
   }
   for (const p of rows) {
-    if (p.kind !== 'FREIGHT' && p.kind !== 'DUTY') continue;
+    if (p.kind !== 'FREIGHT' && p.kind !== 'DUTY') {
+      if (config.operations && (p.kind === 'RENT' || p.kind === 'SPACE_FEE')) list.push(`<li><span>${p.day}일</span>${esc(p.labelKo)} <b>${esc(formatMoney(p.currency, -p.amountMinor))}</b></li>`);
+      continue;
+    }
     const date = p.day === null ? '날짜 미정' : `${p.day}${p.kind === 'FREIGHT' ? '일까지' : '일'}`;
     list.push(`<li><span>${date}</span>${contractLink(p.contractId!)} ${p.kind === 'FREIGHT' ? '운송편 예약 때 운임 선지급' : '도착 때 수입 관세'} <b>${esc(formatMoney(p.currency, -p.amountMinor))}</b></li>`);
   }
@@ -831,8 +841,8 @@ function reportPanel(): string {
   if (committedRule() && f.reserved > 0) why.push(esc(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. 체결한 계약이 낼 운임·관세를 미리 묶어 두었기 때문입니다.`));
   if (t.profit > 0) {
     const runway = state.phase === 'ENDED' ? '' : `(원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(state, config), state.day, config.campaignDays)})`;
-    why.push(esc(`거래 손익 ${usd(t.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${krw(p.cash)}에서만 나갑니다${runway}. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`));
-  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여가 ${krw(p.accountsPayable)} 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. 이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.`));
+    why.push(esc(`거래 손익 ${usd(t.profit)}는 달러 장부의 이익입니다. 급여 같은 원화 비용은 원화 현금 ${krw(p.cash)}에서만 나갑니다${runway}. ${config.operations ? '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.' : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.'}`));
+  } else if (p.accountsPayable > 0) why.push(esc(`원화 미지급 급여가 ${krw(p.accountsPayable)} 있습니다. 달러 현금 ${usd(t.cash)}로는 원화 급여를 낼 수 없습니다. ${config.operations ? '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.' : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.'}`));
   if (!why.length) why.push(esc('지금은 현금과 장부가 같은 이야기를 하고 있습니다. 거래를 진행하며 차이가 생기는 순간을 확인해 보세요.'));
   const neg = (minor: number, fmt: (m: number) => string) => (minor === 0 ? fmt(0) : '−' + fmt(minor));
   const row = (k: string, v: string, cls = '') => `<tr class="${esc(cls)}"><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
@@ -881,7 +891,7 @@ function crewPanel(): string {
       <tbody>${rows}</tbody>
     </table>
     ${inline ? '' : detail}
-    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending, queuedStatus)}
+    ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY'), queuedStatus)}
     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
   </aside>`;
 }
@@ -901,13 +911,15 @@ function commandLabel(c: Command): string {
     case 'START_TRAINING':
       return `${employeeName(c.employeeId)} 일반 훈련`;
     case 'ACCEPT_TRADE': {
-      const buy = offerOf(config, c.buyOfferId);
-      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, buy.quantity) : c.buyOfferId})${planLabel(c.plan)}`;
+      const buy = offerDef(view, config, c.buyOfferId);
+      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, c.quantity ?? buy.quantity) : c.buyOfferId})${planLabel(c.plan)}`;
     }
     case 'ACCEPT_FORWARDING': {
-      const o = offerOf(config, c.offerId);
+      const o = offerDef(view, config, c.offerId);
       return `운송 주선 수락 (${o ? qtyKo(o.goodId, o.quantity) : c.offerId})${planLabel(c.plan)}`;
     }
+    case 'EXCHANGE_CURRENCY':
+      return `환전 ${c.direction === 'USD_TO_KRW' ? 'USD→KRW' : 'KRW→USD'} ${formatMoney('USD', c.usdAmountMinor)}`;
     case 'SCOUT_SITE':
       return `${venueTitle(c.venueId)} 현장 조사 → ${employeeName(c.employeeId)}`;
     case 'START_RECRUIT_QUEST':
@@ -947,7 +959,7 @@ function logPanel(): string {
   <section class="panel log" aria-labelledby="log-h">
     <h2 id="log-h">기록</h2>
     <ul>${items.map((l) => `<li><span>${l.day}일</span>${esc(l.textKo)}</li>`).join('') || '<li class="muted">아직 기록이 없습니다.</li>'}</ul>
-    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${assumptionNotes(config.id as ScenarioId).filter((n) => !/^규칙 [^:]+: /.test(n)).map((n) => `<li>${esc(n)}</li>`).join('')}</ul></details>
+    <details class="muted small"><summary>이 시제품이 가정한 값</summary><ul>${assumptionNotes(config.id as AnyScenarioId).filter((n) => !/^규칙 [^:]+: /.test(n)).map((n) => `<li>${esc(n)}</li>`).join('')}</ul></details>
   </section>`;
 }
 
@@ -1062,6 +1074,10 @@ function tapMap(target: Element, x: number, y: number) {
 function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
+  if (ui.offerQuantitiesDay !== view.day) { ui.offerQuantities = {}; ui.offerQuantitiesDay = view.day; }
+  for (const key of Object.keys(ui.offerQuantities)) {
+    if (key.split('+').some((id) => view.offers.find((o) => o.id === id)?.status !== 'OPEN')) delete ui.offerQuantities[key];
+  }
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
   if (previousMap) mapScrollRatio = readMapScroll(true, previousMap.dataset.measured === 'true', resetMapScroll,
     previousMap.scrollLeft, previousMap.scrollWidth, previousMap.clientWidth, mapScrollRatio);
@@ -1077,7 +1093,7 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     ${topbar()}
     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}">${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}
     <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
-      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
+      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY'), config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
     </main>`;
@@ -1287,7 +1303,9 @@ app.addEventListener('click', (ev) => {
         return;
       }
       case 'accept':
-        return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell! });
+        return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell!, ...(config.operations ? { quantity: ui.offerQuantities[`${d.buy}+${d.sell}`] ?? offerDef(view, config, d.buy!)!.quantity } : {}) });
+      case 'exchange':
+        return queue({ id: newId('FX'), type: 'EXCHANGE_CURRENCY', direction: ui.exchangeDirection, usdAmountMinor: ui.exchangeUsdMinor });
       case 'accept-fwd':
         return queue({ id: newId('FWD'), type: 'ACCEPT_FORWARDING', offerId: d.offer! });
       case 'assign':
@@ -1337,7 +1355,7 @@ app.addEventListener('click', (ev) => {
       }
       case 'restart':
         if (!confirm('처음부터 시작하면 현재 진행과 오늘 할 일이 사라집니다. 다시 시작할까요?')) return;
-        startScenario(config.id as ScenarioId);
+        startScenario(config.id as AnyScenarioId);
         return render();
       case 'save':
         try {
@@ -1390,7 +1408,17 @@ app.addEventListener('change', async (ev) => {
       el.value = config.id;
       return;
     }
-    startScenario(el.value as ScenarioId);
+    startScenario(el.value as AnyScenarioId);
+    render();
+  } else if (el.dataset.action === 'offer-quantity') {
+    const buy = offerDef(view, config, el.dataset.key!.split('+')[0]!);
+    const sell = offerDef(view, config, el.dataset.key!.split('+')[1]!);
+    const quantity = Number(el.value);
+    if (buy && sell && Number.isInteger(quantity) && quantity >= buy.quantity && quantity <= Math.min(buy.maxQuantity, sell.maxQuantity) && quantity % buy.quantityStep === 0) ui.offerQuantities[el.dataset.key!] = quantity;
+    render();
+  } else if (el.dataset.action === 'exchange-direction' || el.dataset.action === 'exchange-amount') {
+    if (el.dataset.action === 'exchange-direction') ui.exchangeDirection = el.value === 'KRW_TO_USD' ? 'KRW_TO_USD' : 'USD_TO_KRW';
+    else ui.exchangeUsdMinor = Number(el.value) * 100;
     render();
   } else if (el.dataset.action === 'map-pick') {
     pickMapMark(el.value || null);

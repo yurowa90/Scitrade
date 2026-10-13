@@ -1621,9 +1621,14 @@
       "sha256": "19bfb68f6160d6fafc0ab2b828b634472d82beb9e7931cd3e88390fdc85deb6d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0033-R1-m2a5-trade-screens-fix.md",
+      "size_bytes": 6755,
+      "sha256": "04e785771ceddeb176aeebfeaa29aa037ade8ccd2c5d00b5fcce59315ea77624"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
-      "size_bytes": 15827,
-      "sha256": "6cb3a629fbd5fc88b36b2b5c0ad7fb663d75b8754032d42dcdbe497cb60550f6"
+      "size_bytes": 15832,
+      "sha256": "456f5c2c0efcdbc54e51f595dbf43591f7f3cd01239a1679d0a065805c01dca6"
     },
     {
       "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
@@ -1884,6 +1889,11 @@
       "path": "docs/ai/tasks/results/TASK-0032.md",
       "size_bytes": 46001,
       "sha256": "63470212896338f68ad5e86a60be284b0e406bbe6d5c6c4cb010ce9cf7c7ec99"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0033.md",
+      "size_bytes": 18724,
+      "sha256": "bdd1ae65b8ccf4fbee45e428b0cbc66331d3aa41c2885e98bb14e97e20929c96"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",
