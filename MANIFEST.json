@@ -1626,9 +1626,19 @@
       "sha256": "19bfb68f6160d6fafc0ab2b828b634472d82beb9e7931cd3e88390fdc85deb6d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0033-R1-m2a5-trade-screens-fix.md",
+      "size_bytes": 6755,
+      "sha256": "04e785771ceddeb176aeebfeaa29aa037ade8ccd2c5d00b5fcce59315ea77624"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0033-R2-m2a5-topbar-layout.md",
+      "size_bytes": 6299,
+      "sha256": "f5118fb61fa33bde77ac95ab6ab91db793bc4fc2eaccf59c97a4fdfce8450013"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0033-m2a5-trade-screens.md",
-      "size_bytes": 8352,
-      "sha256": "380f67de905d6219f502c367ef19bca887a84ec15f26d02dfa9c74e6bc1d9bc5"
+      "size_bytes": 15832,
+      "sha256": "456f5c2c0efcdbc54e51f595dbf43591f7f3cd01239a1679d0a065805c01dca6"
     },
     {
       "path": "docs/ai/tasks/TASK-0034-m2a5-ops-screens.md",
@@ -1659,6 +1669,11 @@
       "path": "docs/ai/tasks/TASK-0055-character-projection.md",
       "size_bytes": 63473,
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0056-m2a5-save-references.md",
+      "size_bytes": 8404,
+      "sha256": "fcd7f904d6c6317b29b8077e8735028c38b0269f203b83a3135f88c2a04509d1"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
@@ -1889,6 +1904,11 @@
       "path": "docs/ai/tasks/results/TASK-0032.md",
       "size_bytes": 46001,
       "sha256": "63470212896338f68ad5e86a60be284b0e406bbe6d5c6c4cb010ce9cf7c7ec99"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0033.md",
+      "size_bytes": 46722,
+      "sha256": "1c35055f2092e655d8581b096cf0e9f12e3f6cbaa1503d5743ad5ab088fc2dae"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0035.md",

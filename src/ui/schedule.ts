@@ -82,7 +82,13 @@ export function scheduleItems(s: GameState, config: ScenarioConfig, throughDay =
       text = before ? `${p.labelKo}로 바뀜` : `${p.labelKo} (매일)`;
     } else {
       key = `PAY:${p.kind}:${p.sourceId}`;
-      text = p.kind === 'FREIGHT' ? '운송편 예약 마감 · 운임 선지급' : '수입 관세';
+      switch (p.kind) {
+        case 'RENT': text = '창고 임차료'; break;
+        case 'SPACE_FEE': text = p.labelKo; break;
+        case 'FREIGHT': text = '운송편 예약 마감 · 운임 선지급'; break;
+        case 'DUTY': text = '수입 관세'; break;
+        default: { const missing: never = p.kind; throw new Error(`알 수 없는 지급 종류: ${missing}`); }
+      }
     }
     add(key, 'PAYMENT', p.day, p.contractId, text, false, { currency: p.currency, amountMinor: -p.amountMinor });
   }
