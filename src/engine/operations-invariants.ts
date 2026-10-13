@@ -24,6 +24,10 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
   const expectedCount = Math.max(0, Math.floor((Math.min(visibleDay, publish.lastDay) - publish.firstDay) / publish.intervalDays) + 1);
   if (o.batches.length !== expectedCount || o.batches.some((b, i) => b.k !== i || b.publishDay !== publish.firstDay + i * publish.intervalDays || b.publishDay > visibleDay)
     || o.offers.some((v) => v.publishDay > visibleDay || !o.batches.some((b) => b.k === v.batchK && b.publishDay === v.publishDay && b.offerIds.includes(v.id)))) problems.push('공개 묶음·견적에 미래 공개 또는 누락이 있습니다');
+  for (const offer of [...config.offers, ...o.offers].filter((v) => v.kind !== 'forwarding')) {
+    if (!(offer.quantityStep > 0 && offer.quantity >= offer.quantityStep && offer.quantity % offer.quantityStep === 0
+      && offer.maxQuantity >= offer.quantity && offer.maxQuantity % offer.quantityStep === 0)) problems.push('견적의 수량·단위·최대 수량이 맞지 않습니다');
+  }
   const allIds = [...config.offers, ...o.offers].map((v) => v.id);
   if (new Set(allIds).size !== allIds.length || new Set(s.offers.map((v) => v.id)).size !== s.offers.length) problems.push('생성 견적 ID는 유일해야 합니다');
   if (s.offers.length !== allIds.length || allIds.some((id) => !s.offers.some((v) => v.id === id))

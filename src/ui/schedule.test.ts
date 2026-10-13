@@ -34,6 +34,16 @@ function lateCommands(cfg: ScenarioConfig): Command[] {
 }
 
 describe('일정 읽기와 엔진 실행 비교', () => {
+  it('규칙 1 첫 수락의 운임·관세 일정 문구와 금액 전체', () => {
+    const pair = tradePairs(config)[0]!;
+    const s = planState(opened(), config, [{ id: 'LEGACY-SCHEDULE', type: 'ACCEPT_TRADE', ...pair }]).state;
+    const rows = scheduleItems(s, config, config.campaignDays).filter((r) => r.key.startsWith('PAY:FREIGHT:') || r.key.startsWith('PAY:DUTY:'));
+    expect(rows.map(({ kind, day, textKo, money }) => ({ kind, day, textKo, money }))).toEqual([
+      { kind: 'PAYMENT', day: 1, textKo: '운송편 예약 마감 · 운임 선지급', money: { currency: 'USD', amountMinor: -20000 } },
+      { kind: 'PAYMENT', day: null, textKo: '수입 관세', money: { currency: 'USD', amountMinor: -5000 } },
+    ]);
+  });
+
   it.each([0, 1])('예정일 = 엔진 실제 값 (통관 %s일)', (customsDays) => {
     const cfg = trainingConfig(); cfg.terms.customsDays = customsDays;
     const start = opened(cfg), commands = acceptAllFeasible(start, cfg);

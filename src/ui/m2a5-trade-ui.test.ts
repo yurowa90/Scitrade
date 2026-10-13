@@ -5,7 +5,7 @@ import { listSailings, routeBetween } from '../engine/catalog';
 import { dailyKrwDue, paymentDefaultStatus } from '../engine/operations';
 import { marketTable, offerDef, openTradePairs } from '../engine/market';
 import { caseOf } from '../engine/m2a5-testkit';
-import { formatMoney } from '../engine/money';
+import { MINOR_PER_MAJOR, formatMoney } from '../engine/money';
 import { payrollRunwayDay } from '../engine/previews';
 import { exchangePreview, quotePreview } from '../engine/readers';
 import { tradePairs, upcomingPayments } from '../engine/reports';
@@ -234,11 +234,12 @@ describe('견적 수량·계획 상태', () => {
     const next = openTradePairs(view, cfg)[0]!, q = quotePreview(view, cfg, next);
     expect(article(ui.app.innerHTML, `${next.buyOfferId}+${next.sellOfferId}`)).toContain(`보관 후 사용량/한도 ${fmtM3(q.storageAfterLiters)} / ${fmtM3(q.storageCapacityLiters)}`);
     expect(ui.app.innerHTML).toContain(exchangeBlock(view, cfg, 'USD_TO_KRW', 5));
-    expect(ui.app.innerHTML).toContain('<span>원화 급여 가능일</span>');
-    expect(ui.app.innerHTML).toContain('<span>지급 상태</span>');
+    expect(ui.app.innerHTML.split('id="status-h"')[1]!.split('</header>')[0]).toContain('<span>원화 급여 가능일</span>');
+    expect(ui.app.innerHTML.split('id="status-h"')[1]!.split('</header>')[0]).toContain('<span>지급 상태</span>');
     expect(ui.app.innerHTML).toContain('다른 금액은 확정 기준');
     expect(ui.app.innerHTML).toContain('급여 가능일은 대기 중인 명령을 반영합니다. 지급 상태는 확정 기준이고, 하루 진행 뒤 예상을 따로 보입니다.');
-    expect(ui.app.innerHTML).toContain(payrollRunwayKo(payrollRunwayDay(view, cfg), view.day, cfg.campaignDays));
+    expect(ui.app.innerHTML.split('id="status-h"')[1]!.split('</header>')[0]).toContain(payrollRunwayKo(payrollRunwayDay(view, cfg), view.day, cfg.campaignDays));
+    expect(payrollRunwayDay(view, cfg)).not.toBe(payrollRunwayDay(state, cfg));
     expect(fundsPosition(view, cfg, 'USD').reserved).toBeGreaterThan(0);
   });
 
@@ -302,6 +303,7 @@ describe('조건 문장과 반례', () => {
     expect(operationsQuoteFacts(q, state, config).find((s) => s.startsWith('납기 '))).toBe(`납기 ${q.arrivalDay! + config.terms.customsDays - q.deliveryDeadlineDay}일 늦으면 하루 ${usd(config.terms.lateDeliveryPriceReductionMinor)}씩 감액됩니다 — 이 계획으로는 ${usd(q.lateDeliveryReductionMinor)}`);
   });
 
+  // 이 도착 당일 경계는 통관 일수 0일 때만 뜻이 있다.
   it('캠페인 뒤 도착 경고는 도착 당일 캠페인 종료에서는 나오지 않는다', async () => {
     const state = dayState(generatedDay), pair = openTradePairs(state, cfg)[0]!, q = quotePreview(state, cfg, pair);
     const short = structuredClone(cfg); short.campaignDays = q.arrivalDay! - 1;
@@ -364,7 +366,7 @@ describe('환전', () => {
     expect(html).not.toContain('<select data-action="exchange-amount"');
     expect(html).not.toContain('<label>금액');
     expect(html.match(/<span class="exchange-amount-value"[^>]*>/)![0]).not.toContain('tabindex');
-    expect(html.match(/<p class="reason">(.*?)<\/p>/)?.[1]).toBe(esc(q.reasonKo!));
+    expect(html.match(/<p class="reason" id="exchange-reason">(.*?)<\/p>/)?.[1]).toBe(esc(q.reasonKo!));
     expect(ui.rendered({ action: 'exchange' }).disabled).toBe(false);
     // R1은 자금이 없어도 최소 1묶음을 선택해 검증하며, 거절된 명령은 대기열·상태에 넣지 않는다.
     const engine = await import('../engine/engine'), planned = vi.spyOn(engine, 'planCommands');
@@ -392,14 +394,14 @@ describe('환전', () => {
     await ui.change({ action: 'exchange-amount' }, '2');
     const q = exchangePreview(state, cfg, direction, amount);
     expect(ui.app.innerHTML).toContain(exchangeBlock(state, cfg, direction, 2));
-    expect(ui.app.innerHTML).toContain(`<dt>${direction === 'USD_TO_KRW' ? '받는' : '내는'} 금액</dt><dd>${krw(q.krwMinor)}</dd>`);
-    expect(ui.app.innerHTML).toContain(`<dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd>`);
-    expect(ui.app.innerHTML).toContain(`${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}`);
+    expect(ui.app.innerHTML.split('<section class="exchange"')[1]!.split('</section>')[0]).toContain(`<dt>${direction === 'USD_TO_KRW' ? '받는' : '내는'} 금액</dt><dd>${krw(q.krwMinor)}</dd>`);
+    expect(ui.app.innerHTML.split('<section class="exchange"')[1]!.split('</section>')[0]).toContain(`<dt>차감</dt><dd>${krw(q.spreadKrwMinor)}</dd>`);
+    expect(ui.app.innerHTML.split('<section class="exchange"')[1]!.split('</section>')[0]).toContain(`${usd(q.usdAvailableBefore)} → ${usd(q.usdAvailableAfter)}`);
     // 읽기 함수가 반환한 값을 바꿔도 그대로 표시해야 한다. 화면의 환율 재계산 변형을 잡는다.
     const readers = await import('../engine/readers');
     vi.spyOn(readers, 'exchangePreview').mockReturnValue({ ...q, krwMinor: q.krwMinor + 7 });
     await ui.change({ action: 'exchange-amount' }, '2');
-    expect(ui.app.innerHTML).toContain(`<dt>${direction === 'USD_TO_KRW' ? '받는' : '내는'} 금액</dt><dd>${krw(q.krwMinor + 7)}</dd>`);
+    expect(ui.app.innerHTML.split('<section class="exchange"')[1]!.split('</section>')[0]).toContain(`<dt>${direction === 'USD_TO_KRW' ? '받는' : '내는'} 금액</dt><dd>${krw(q.krwMinor + 7)}</dd>`);
   });
 
   it('환전 명령을 대기열에 넣고 거절 문장을 그대로 알린다', async () => {
@@ -425,7 +427,7 @@ describe('환전', () => {
     const state = dayState(1, config), q = exchangePreview(state, config, 'KRW_TO_USD', 2 * lot);
     expect(q.allowed).toBe(true); expect(q.warningKo).not.toBeNull();
     const html = exchangeBlock(state, config, 'KRW_TO_USD', 2);
-    expect(html.match(/<p class="reason">(.*?)<\/p>/)![1]).toBe(esc(q.warningKo!));
+    expect(html.match(/<p class="reason" id="exchange-warning">(.*?)<\/p>/)![1]).toBe(esc(q.warningKo!));
     expect(exchangeBlock(state, config, 'KRW_TO_USD', 1)).not.toContain('으로는 오늘 급여·임차료');
     expect(exchangeBlock(state, config, 'USD_TO_KRW', 1)).not.toContain('으로는 오늘 급여·임차료');
   });
@@ -559,10 +561,10 @@ describe('지급·보고·저장', () => {
   it('규칙 2 보고에 환전 설명을 표시하고 규칙 1에는 기존 문장을 보존한다', async () => {
     const state = unpaidState(), ui = await loadedUi(state);
     expect(krwReportNoteKo(cfg)).toBe('환전 명령으로 실제 바꾼 금액만 기록합니다. 통화는 합치지 않습니다.');
-    expect(ui.app.innerHTML).toContain('환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.');
+    expect(ui.app.innerHTML).toContain(`환전 칸에서 ${cfg.operations!.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.`);
     expect(ui.app.innerHTML).not.toContain('이번 판에는 달러를 원화로 바꾸는 기능이 없습니다');
     expect(krwReportNoteKo(legacy)).not.toContain('환전 명령으로 실제 바꾼 금액');
-    const old = await startUi(); expect(old.app.innerHTML).not.toContain('환전 칸에서 100 USD 단위로');
+    const old = await startUi(); expect(old.app.innerHTML).not.toContain(`환전 칸에서 ${cfg.operations!.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위로`);
   });
 
   it('규칙 2 브라우저 저장과 파일 가져오기 뒤 엔진 상태가 같다', async () => {

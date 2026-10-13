@@ -19,8 +19,8 @@ import { attributeKo, roleKo, taskName } from './card';
 import { batchUnlocked, crewEntryCard, crewRow, crewEntries, crewFacetOptions, recruitmentPanel, taskSchedule, venueTitle } from './recruitment';
 import { type UiCommand as Command, initialUiState, loadSaveText, advanceDay, hasUnsavedWork, nextAnnouncement, liveRegionText } from './session';
 import { offerDef, openTradePairs } from '../engine/market';
-import { quotePreview, type OperationsQuotePreview } from '../engine/readers';
-import { counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
+import { exchangePreview, quotePreview, type OperationsQuotePreview } from '../engine/readers';
+import { fxLotKo, counterpartyNameKo, marketBlock, quantityControl, operationsQuoteFacts, exchangeBlock, exchangeSelection, operationsTopbar } from './market';
 import { paymentDefaultStatus } from '../engine/operations';
 import { paymentAlert, failureBlock, operationsSettlement } from './money-alerts';
 import { warehouseBlock, routeLabel } from './warehouse';
@@ -52,6 +52,8 @@ let lastTabAt = -Infinity, tabX = 0, tabY = 0;
 /** 대기 명령을 반영한 ‘오늘 실행 예정’ 사본. 거래·예약 화면 표시에만 쓰고 보고·현금은 확정 상태(state)를 쓴다. */
 let view: GameState;
 let ui = initialUiState();
+let investmentOpen: boolean | undefined;
+let investmentSignature = '';
 let selectedExchange: ReturnType<typeof exchangeSelection> | undefined;
 let mapMode: MapMode = 'route';
 const mapMeasurements = new MapMeasurementMemory();
@@ -145,6 +147,8 @@ function startScenario(id: AnyScenarioId) {
 }
 
 function resetUi() {
+  investmentOpen = undefined;
+  investmentSignature = '';
   previousPaymentLevel = 'NONE';
   ui = initialUiState();
   resetMapScroll = true;
@@ -185,6 +189,14 @@ function tryCommand(cmd: Command): CommandResult {
   return planCommands(state, config, [...ui.pending, cmd]).at(-1)!;
 }
 
+/** 보정은 알림을 결정하기 전에 계산한다. 다시 그리기는 알림을 바꾸지 않는다. */
+function exchangeAdjustment(planned: GameState, before: number): string {
+  const next = exchangeSelection(planned, config, ui.exchangeDirection, before);
+  if (next.lots >= before) return '';
+  return `남은 ${ui.exchangeDirection === 'USD_TO_KRW' ? 'USD' : '원화'}에 맞춰 다음 환전 금액을 ${formatMoney('USD', next.usdMinor)}(${next.lots}묶음)으로 줄였습니다.`;
+}
+type QueueAnchor = { top: number; slot?: string; button?: boolean };
+
 function queue(cmd: Command) {
   const previousContracts = new Set(view.contracts.map((c) => c.id));
   for (const slot of app.querySelectorAll<HTMLElement>('[data-action-slot]')) {
@@ -192,8 +204,9 @@ function queue(cmd: Command) {
     actionSizes.set(slot.dataset.actionSlot!, { height: rect.height, width: rect.width });
   }
   const slotEl = activation?.element.closest<HTMLElement>('[data-action-slot]');
-  const anchor = slotEl ? { slot: slotEl.dataset.actionSlot!, top: slotEl.getBoundingClientRect().top } : null;
-  if (anchor && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
+  const anchor: QueueAnchor | null = slotEl ? { slot: slotEl.dataset.actionSlot!, top: slotEl.getBoundingClientRect().top }
+    : activation?.element.getBoundingClientRect ? { button: true, top: activation.element.getBoundingClientRect().top } : null;
+  if (anchor?.slot && activation) actionOffsets.set(anchor.slot, Math.max(0, activation.element.getBoundingClientRect().top - anchor.top));
   // 끝난 캠페인에는 하루 진행이 없어 넣은 명령이 실행되지 않는다. 엔진 검증 전에 거절한다.
   const result: CommandResult = state.phase === 'ENDED'
     ? { commandId: cmd.id, status: 'REJECTED', reasonKo: `${config.operations && state.operations?.outcome === 'FAILED' ? '경영 실패로 캠페인이 끝나 새 명령' : `${config.campaignDays}일 캠페인이 끝나 새 명령`}을 넣을 수 없습니다. 결산은 경영 보고에 있습니다.` }
@@ -201,8 +214,12 @@ function queue(cmd: Command) {
   if (result.status !== 'APPLIED') {
     ui.flash = { kind: 'warn', text: result.reasonKo };
   } else {
+    const warning = cmd.type === 'EXCHANGE_CURRENCY' ? exchangePreview(view, config, cmd.direction, cmd.usdAmountMinor).warningKo : null;
     ui.pending.push(cmd);
-    ui.flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
+    const adjustment = config.operations ? exchangeAdjustment(planState(state, config, ui.pending).state, ui.exchangeLots) : '';
+    const exchangeText = cmd.type === 'EXCHANGE_CURRENCY' ? [warning, `환전 ${cmd.direction === 'USD_TO_KRW' ? 'USD→KRW' : 'KRW→USD'} ${formatMoney('USD', cmd.usdAmountMinor)}를 오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.`,
+      adjustment].filter(Boolean).join(' ') : null;
+    ui.flash = exchangeText ? { kind: warning ? 'warn' : 'info', text: exchangeText } : { kind: 'info', text: ['오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.', adjustment].filter(Boolean).join(' ') };
   }
   const accepted = result.status === 'APPLIED' && (cmd.type === 'ACCEPT_TRADE' || cmd.type === 'ACCEPT_FORWARDING');
   render(accepted, accepted ? null : anchor);
@@ -446,9 +463,15 @@ function reporter(role: string): EmployeeDef | undefined {
   return employedDefs(view, config).find((e) => e.role === role) ?? employedDefs(view, config)[0];
 }
 
-function quoteBlock(q: QuotePreview | OperationsQuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
+function quoteCheck(q: QuotePreview | OperationsQuotePreview, cmd: Command) {
   const check = tryCommand(cmd);
   if ('allowed' in q && !q.allowed) { check.status = 'REJECTED'; check.reasonKo = q.reasonKo!; }
+  return check;
+}
+
+function quoteBlock(q: QuotePreview | OperationsQuotePreview, rows: string, cmd: Command, extra: string[], validUntil: number, key: string, originCityId: string): string {
+  const check = quoteCheck(q, cmd);
+  const reasonId = config.operations && check.status !== 'APPLIED' ? `quote-reason-${key}` : null;
   const sailing = q.departureDay !== null
     ? `다음 출항 ${q.departureDay}일 → ${q.arrivalDay}일 도착 예정 (납기 ${q.deliveryDeadlineDay}일)${q.lateOnNextSailing ? ' ⚠ 납기 초과 — 감액 반영' : ''}`
     : '남은 출항편 없음';
@@ -471,7 +494,7 @@ function quoteBlock(q: QuotePreview | OperationsQuotePreview, rows: string, cmd:
     </details>
     <p class="muted small">견적 유효: ${validUntil}일까지 · 모든 수치는 가상값</p>
     <div class="accept-row">
-      <button ${actionAttr} ${check.status !== 'APPLIED' ? 'disabled' : ''}>견적만 수락</button>${check.status !== 'APPLIED' ? `<p class="reason">${esc(check.reasonKo)}</p>` : ''}
+      <button ${actionAttr}${reasonId ? ` aria-describedby="${esc(reasonId)}"` : ''} ${check.status !== 'APPLIED' ? 'disabled' : ''}>견적만 수락</button>${check.status !== 'APPLIED' ? `<p class="reason"${reasonId ? ` id="${esc(reasonId)}"` : ''}>${esc(check.reasonKo)}</p>` : ''}
     </div>
     ${check.status === 'APPLIED' ? planner(cmd, q, key, originCityId) : ''}`;
 }
@@ -552,7 +575,7 @@ function offerBoard(): string {
     <article class="offer">
       <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
       <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
-      ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
+      ${config.operations ? quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity, quoteCheck(q, cmd).status !== 'APPLIED' ? `quote-reason-${key}` : undefined) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
   for (const offer of visibleForwardingOffers(view, config)) {
@@ -825,7 +848,7 @@ function operationsBlock(): string {
   const groups = bottlenecks(state, config);
   const other = groups.filter((g) => g.kind !== '사람').reduce((sum, g) => sum + g.items.length, 0);
   // 끝난 화면의 정시 인도율은 결산 안에 한 번만 둔다.
-  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${warehouseBlock(state, view, config, ui.pending)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
+  return `<div class="report-ops"><h3>운영 지표</h3>${state.phase === 'ENDED' ? '' : deliveryRateBlock()}${upcomingBlock()}${state.phase === 'ENDED' ? '' : `${warehouseBlock(state, view, config, ui.pending, investmentOpen)}<h4>업무 부하</h4><ul class="workload">${workloadLinesKo(workloadSummary(state, config), config).map((line) => `<li>${esc(line)}</li>`).join('')}</ul><p class="muted small">한 사람은 한 번에 업무 하나만 맡아 실제로는 더 걸릴 수 있습니다. 처리량은 고정값이며 레벨·능력은 쓰지 않습니다.</p><h4>막힌 곳</h4><ul class="bottleneck">${groups.map((g) => `<li><b>${g.kind}</b> ${g.items.length ? `${g.items.length}건<ul>${g.items.map((i) => `<li>${i.contractId ? contractLink(i.contractId) + ' ' : ''}${esc(i.textKo)}</li>`).join('')}</ul>` : '없음'}</li>`).join('')}</ul>${other ? `<p class="muted small">사람을 더 뽑아도 돈·시간·선복${config.operations ? '·창고' : ''} 쪽 막힘 ${other}건은 풀리지 않습니다.</p>` : ''}`}</div>`;
 }
 
 function settlementBlock(): string {
@@ -859,11 +882,16 @@ function reportPanel(): string {
   if (t.prepaidFreight > 0) why.push(esc(`선급운임 ${usd(t.prepaidFreight)}는 출항하면 상품 원가(직접 무역) 또는 주선 진행원가(운송 주선)가 됩니다.`));
   if (t.forwardingWip > 0) why.push(esc(`주선 진행원가 ${usd(t.forwardingWip)}는 고객 화물을 실은 운임입니다. 인도해 서비스 매출을 올리는 날 비용이 됩니다.`));
   if (r.customerCargoUnits > 0) why.push(esc(`맡은 고객 화물 ${customer}는 고객 자산이라 위 표 어디에도 없습니다. 우리 몫은 서비스 대금뿐입니다.`));
-  if (committedRule() && f.reserved > 0) why.push(esc(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. 체결한 계약이 낼 운임·관세를 미리 묶어 두었기 때문입니다.`));
+  if (config.operations && f.reserved + f.unpaidObligations > 0) {
+    const parts = [f.reserved - f.reservedCommitments > 0 ? `체결한 계약이 낼 운임·관세 ${usd(f.reserved - f.reservedCommitments)}` : '',
+      f.reservedCommitments > 0 ? `선복 장기 계약의 다가오는 출항 요금 ${usd(f.reservedCommitments)}` : '',
+      f.unpaidObligations > 0 ? `미지급 ${usd(f.unpaidObligations)}` : ''].filter(Boolean);
+    why.push(esc(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. ${parts.join(', ')} 때문입니다.`));
+  } else if (committedRule() && f.reserved > 0) why.push(esc(`사용 가능 자금(${usd(f.available)})은 현금보다 ${usd(f.reserved + f.unpaidObligations)} 적습니다. 체결한 계약이 낼 운임·관세를 미리 묶어 두었기 때문입니다.`));
   const endedWithUnpaid = config.operations && state.phase === 'ENDED' && state.obligations.some((o) => o.paidDay === null);
   const exchangeAdvice = config.operations
     ? state.phase === 'ENDED' ? (endedWithUnpaid ? '캠페인이 끝나 더 갚을 수 없습니다. 남은 미지급은 결산에 있습니다.' : '')
-      : '환전 칸에서 100 USD 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.'
+      : `환전 칸에서 ${fxLotKo(config)} 단위로 원화로 바꿀 수 있습니다. 자동 환전은 없습니다.`
     : '이번 판에는 달러를 원화로 바꾸는 기능이 없습니다.';
   if (t.profit > 0) {
     const runway = state.phase === 'ENDED' ? '' : `(원화 급여 지급 가능일: ${payrollRunwayKo(payrollRunwayDay(state, config), state.day, config.campaignDays)})`;
@@ -1102,7 +1130,7 @@ function tapMap(target: Element, x: number, y: number) {
   }
 }
 
-function render(skipFocus = false, anchor: { slot: string; top: number } | null = null) {
+function render(skipFocus = false, anchor: QueueAnchor | null = null) {
   document.title = `Scitrade — ${config.titleKo}`;
   view = planState(state, config, ui.pending).state;
   selectedExchange = config.operations ? exchangeSelection(view, config, ui.exchangeDirection, ui.exchangeLots) : undefined;
@@ -1111,6 +1139,12 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
   for (const key of Object.keys(ui.offerQuantities)) {
     if (key.split('+').some((id) => view.offers.find((o) => o.id === id)?.status !== 'OPEN')) delete ui.offerQuantities[key];
   }
+  const previousMarket = document.getElementById('market-scroll');
+  const marketScrollLeft = previousMarket?.scrollLeft;
+  const previousInvestment = document.getElementById('investment-details') as HTMLDetailsElement | null;
+  const signature = JSON.stringify([ui.pending.filter((c) => c.type === 'EXPAND_WAREHOUSE' || c.type === 'SIGN_SPACE_CONTRACT').map((c) => c.id), view.operations?.expansions, view.operations?.spaceContracts]);
+  investmentOpen = signature === investmentSignature ? previousInvestment?.open ?? investmentOpen : undefined;
+  investmentSignature = signature;
   const previousMap = app.querySelector<HTMLElement>('.map-frame.is-world');
   if (previousMap) mapScrollRatio = readMapScroll(true, previousMap.dataset.measured === 'true', resetMapScroll,
     previousMap.scrollLeft, previousMap.scrollWidth, previousMap.clientWidth, mapScrollRatio);
@@ -1130,10 +1164,12 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
     </main>`;
+  const marketScroll = document.getElementById('market-scroll');
+  if (marketScroll && marketScrollLeft !== undefined) marketScroll.scrollLeft = marketScrollLeft;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
   document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
   measureStatusbar();
-  if (anchor) {
+  if (anchor?.slot) {
     const now = document.getElementById(`status-${anchor.slot}`)?.parentElement ?? app.querySelector<HTMLElement>(`[data-action-slot="${anchor.slot}"]`);
     const dy = now ? now.getBoundingClientRect().top - anchor.top : 0;
     if (dy >= 1) window.scrollBy(0, dy);
@@ -1184,7 +1220,12 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null 
     const ids = [slot ? `status-${slot}` : undefined, ...focusFallbackIds(focusData, blockHeading)];
     const fallback = ids.filter((id): id is string => Boolean(id) && !(activation?.pointer && id === 'queue-h'))
       .map((id) => document.getElementById(id)).find(Boolean);
-    focusWithoutScroll(target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback);
+    if (target && anchor?.button) {
+      const bottom = Math.min(window.innerHeight - 72, toastEl?.getBoundingClientRect().top ?? Infinity) - 8;
+      const dy = target.getBoundingClientRect().bottom - bottom;
+      if (dy >= 1) window.scrollBy(0, dy);
+      target.focus({ preventScroll: true });
+    } else focusWithoutScroll(target && !(target instanceof HTMLButtonElement && target.disabled) ? target : fallback);
   }
 }
 
@@ -1459,13 +1500,22 @@ app.addEventListener('change', async (ev) => {
   } else if (el.dataset.action === 'offer-quantity') {
     const buy = offerDef(view, config, el.dataset.key!.split('+')[0]!);
     const sell = offerDef(view, config, el.dataset.key!.split('+')[1]!);
+    const key = el.dataset.key!;
+    const before = buy && sell ? quoteCheck(quotePreview(view, config, { buyOfferId: buy.id, sellOfferId: sell.id }, ui.offerQuantities[key] ?? buy.quantity), offerCommands[key]!).status === 'APPLIED' : false;
     const quantity = Number(el.value);
     if (buy && sell && Number.isInteger(quantity) && quantity >= buy.quantity && quantity <= Math.min(buy.maxQuantity, sell.maxQuantity) && (quantity - buy.quantity) % buy.quantityStep === 0) ui.offerQuantities[el.dataset.key!] = quantity;
     render();
+    if (buy && sell) {
+      const check = quoteCheck(quotePreview(view, config, { buyOfferId: buy.id, sellOfferId: sell.id }, ui.offerQuantities[key] ?? buy.quantity), offerCommands[key]!);
+      if (before !== (check.status === 'APPLIED')) liveStatus.textContent = liveRegionText(liveStatus.textContent ?? '',
+        `수량 ${qtyKo(buy.goodId, ui.offerQuantities[key] ?? buy.quantity)}: ${check.status === 'APPLIED' ? '수락할 수 있습니다' : `수락할 수 없습니다 — ${check.reasonKo}`}`);
+    }
   } else if (el.dataset.action === 'exchange-direction' || el.dataset.action === 'exchange-amount') {
     if (el.dataset.action === 'exchange-direction') ui.exchangeDirection = el.value === 'KRW_TO_USD' ? 'KRW_TO_USD' : 'USD_TO_KRW';
     else if (/^[0-9]+$/.test(el.value) && Number.isSafeInteger(Number(el.value))) ui.exchangeLots = Number(el.value);
+    const adjustment = exchangeAdjustment(view, ui.exchangeLots);
     render();
+    if (adjustment) liveStatus.textContent = liveRegionText(liveStatus.textContent ?? '', adjustment);
   } else if (el.dataset.action === 'map-pick') {
     pickMapMark(el.value || null);
   } else if (el.dataset.action === 'crew-role' || el.dataset.action === 'crew-attr') {
