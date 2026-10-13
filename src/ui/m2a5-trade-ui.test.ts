@@ -82,7 +82,7 @@ describe('시나리오·생성 견적·시세표', () => {
     const stats = [...bar.matchAll(/<div class="stat"([^>]*)><span>(.*?)<\/span><b>.*?<\/b><small id="([^"]+)" class="visually-hidden">(.*?)<\/small><\/div>/g)];
     expect(stats[0]?.[2]).toBe('원화 급여 가능일');
     expect(stats[1]?.[2]).toBe('지급 상태');
-    for (const [i, description] of ['임차료 포함 · 대기 중인 명령 반영', '대기 중인 명령 반영'].entries()) {
+    for (const [i, description] of ['임차료 포함 · 대기 중인 명령 반영', '확정 기준'].entries()) {
       const stat = stats[i]!;
       expect(stat[1]!.match(/title="([^"]+)"/)![1]).toBe(description);
       expect(stat[1]!.match(/aria-describedby="([^"]+)"/)![1]).toBe(stat[3]);
@@ -237,7 +237,7 @@ describe('견적 수량·계획 상태', () => {
     expect(ui.app.innerHTML).toContain('<span>원화 급여 가능일</span>');
     expect(ui.app.innerHTML).toContain('<span>지급 상태</span>');
     expect(ui.app.innerHTML).toContain('다른 금액은 확정 기준');
-    expect(ui.app.innerHTML).toContain('위쪽 막대의 급여 가능일·지급 상태는 대기 중인 명령을 반영합니다. 다른 금액은 확정 기준입니다.');
+    expect(ui.app.innerHTML).toContain('급여 가능일은 대기 중인 명령을 반영합니다. 지급 상태는 확정 기준이고, 하루 진행 뒤 예상을 따로 보입니다.');
     expect(ui.app.innerHTML).toContain(payrollRunwayKo(payrollRunwayDay(view, cfg), view.day, cfg.campaignDays));
     expect(fundsPosition(view, cfg, 'USD').reserved).toBeGreaterThan(0);
   });

@@ -50,8 +50,8 @@
 - 줄:
   - ‘이 직원 하루 일급 {wageKrwPerDay} — 일주일이면 USD 약 {wageUsdLotsPerWeek × lotUsdMinor} 환전’.
   - ‘최근 4묶음 작업 견적 {recentHandlingOfferedPt}pt / 받은 {recentHandlingAcceptedPt}pt’.
-  - ‘작업 포함 주선 1건 기여이익 {contributionPerJobMinor}’.
-  - ‘다음 주 받을 수 있는 작업 포함 주선: 지금 {usableBefore}건 → 고용 뒤 {usableAfter}건(가장 좁은 곳: {binding.after 이름})’. 이름은 0034 병목 표의 행 이름과 같은 말을 쓴다(공통 함수로 둔다).
+  - ‘작업 포함 주선 1건 기여이익 {contributionPerJobMinor}’. 일급은 KRW, 기여이익과 환전액은 USD다. 금액마다 통화를 붙인다(`formatMoney`).
+  - ‘다음 주 받을 수 있는 작업 포함 주선: 지금 {usableBefore}건 → 고용 뒤 {usableAfter}건(가장 좁은 곳: {binding.after 이름})’. 이름은 0034 병목 표의 행 이름과 같은 말을 쓴다(공통 함수로 둔다). `binding.after`는 배열이다(예: 1일에는 직원·선복 둘). 여럿이면 ‘·’로 잇는다.
 - `extraJobsPerWeek === 0`이면 한 줄을 더 쓴다: ‘이 직원을 뽑아도 {binding.after 이름}에 막혀 더 받을 수 없습니다’.
 - 명세 16-8의 ‘직원 부족으로 못 받은 {pt}’는 쓰지 않는다(TASK-0028 지시 5).
 
@@ -67,12 +67,21 @@
   - USD 미지급이 가장 오래됐을 때(값이 null): 다음 수금 ‘{nextReceipt.day}일 {금액}’ 또는 ‘없음’, 원화로 USD를 사려면 ‘{krwToUsdRequiredMinor}’.
   - 보류할 지출: `heldSpendingKo`(있을 때).
 - 현실 문구 ‘실제로는 임금을 정한 날 지급해야 하며 하루 늦어도 체불입니다’를 넣는다. 조문 번호는 넣지 않는다.
-- ‘환전 칸으로’ 단추를 둔다. 기존 `skip-to` 동작(`main.ts:1231`)으로 환전 칸 제목에 초점을 옮긴다.
-- 화면 낭독기 알림은 기존 `liveRegionText`(`src/ui/session.ts:73`) 흐름을 쓴다. 단계가 바뀐 날에만 한 번 알린다(같은 단계를 매일 되풀이하지 않는다).
+- ‘환전 칸으로’ 단추를 둔다. 기존 `skip-to` 동작(`main.ts:1231`)을 쓴다.
+  - `skip-to`는 지금 `trade-h`·`queue-h`·`settlement-h`만 받는다(`main.ts:1232`). 허용 목록에 `exchange-h`를 더한다.
+  - 환전 칸 제목 `exchange-h`(`src/ui/market.ts:85` 근처)에는 `tabindex`가 없어 `focus()`가 듣지 않는다. `tabindex="-1"`을 더한다. 환전 칸은 규칙 2에만 있으므로 규칙 1 화면은 바뀌지 않는다.
+- 화면 낭독기 알림은 단계가 바뀐 날에만 한 번 한다(같은 단계를 매일 되풀이하지 않는다).
+  - 알림 결정 함수 `nextAnnouncement`는 `session.ts`에 있고 이 작업에서는 고치지 않는다. 낭독 칸(`liveStatus`)에 따로 쓰면 하루 진행 알림을 덮어쓴다(쓰는 곳 `main.ts:1053`·`1116`).
+  - 그래서 `main.ts`에 직전 단계를 담는 모듈 변수를 두고, `render`의 1114-1116행에서 만든 `announcement` 뒤에 ‘지급 {경고/위험} 단계가 되었습니다’를 이어 붙인다. 다시 시작·불러오기·시나리오 바꿈 때 이 변수를 초기화한다.
 
 ### 3. 경영 실패 화면(명세 16-7, D04 가)
 
-- `state.operations.outcome === 'FAILED'`일 때만 보인다. 경영 보고에서 결산 위에 둔다. 제목은 ‘{failure.day}일 경영 실패’, `tabindex="-1"`이다. 실패한 날 하루 진행 뒤 초점은 이 제목으로 간다.
+- `state.operations.outcome === 'FAILED'`일 때만 보인다. 경영 보고에서 결산 위에 둔다. 제목은 ‘{failure.day}일 경영 실패’, `id="failure-h"`, `tabindex="-1"`이다.
+- **끝 화면 흐름:** 캠페인이 끝나면 지금은 `endDay`(`main.ts:274-283`)가 ‘{campaignDays}일 캠페인이 끝났습니다 … {campaignDays}일 결산’ 알림을 띄우고 `settlement-h`로 초점을 옮긴다. 결산 제목도 ‘{campaignDays}일 결산’이다(`main.ts:825`). 71일에 실패해도 ‘90일 캠페인이 끝났습니다’가 되므로 규칙 2 실패에서는 바꾼다.
+  - 알림: ‘{failure.day}일 경영 실패로 캠페인이 끝났습니다. 경영 보고에서 원인과 결산을 확인하세요.’
+  - 초점: `failure-h`.
+  - 결산 제목: ‘{failure.day}일 마감 결산’.
+  - 규칙 1과 규칙 2 완료는 지금 문장 그대로다.
 - 원인 문장: ‘{incurredDay}일 {reasonKo} {amountMinor}를 {failureAgeDays}일 동안 갚지 못했습니다’. 값은 `failure`와 설정에서 읽는다.
 - 통화별 미지급(`unpaidByCurrency`: 금액·건수)과 현금(`cashByCurrency`)을 통화마다 따로 쓴다. 합계는 쓰지 않는다.
 - 경고·위험 당시: 사건마다 ‘{day}일 {경고/위험}: 밀린 원화를 모두 갚는 데 USD {lotsToClearAll × lot} 필요, 그때 쓸 수 있던 USD {usdAvailableMinor}’. 사건이 null이면 그 줄을 쓰지 않는다. 값이 null이면 ‘USD 미지급’으로 쓴다.
@@ -85,21 +94,28 @@
 ### 4. 결산(명세 16-10, `settlementBlock`)
 
 - 규칙 2에서 더할 것:
-  - 결과 한 줄: ‘완료’ / ‘경영 실패({failure.day}일)’ / ‘진행 중’.
-  - 통화별 고정비 표(`fixedCostsByCurrency`): 임차료·확장 설치비·선복 요금·환전 차감. 0인 행은 쓰지 않는다. 통화 합계는 없다.
+  - 결과 한 줄: ‘완료’ / ‘경영 실패({failure.day}일)’. 결산은 끝난 화면에만 있으므로(`engine.ts:869`) 진행 중은 없다.
+  - 통화별 고정비 표(`fixedCostsByCurrency`): 임차료·확장 설치비·선복 요금·환전 차감. 0인 행은 쓰지 않는다. 모든 행이 0인 통화는 표 대신 ‘{통화} 고정비 없음’ 한 줄로 쓴다. 통화 합계는 없다.
   - 결산 표(`settlementRows`)에 ‘통화 간 이체(환전)’ 행(`currencyTransferNet`): **규칙 2이고 값이 0이 아닐 때만**. 그래야 규칙 1 결산이 바이트로 같다.
   - 환전 기록(`exchanges`): 일·방향·USD·KRW·차감. 많으면 `details`로 접는다.
 - 끝 미지급은 기존 줄을 그대로 쓴다.
 
 ### 5. 원화 보고 표(`krwReportRows`, `src/ui/reports.ts:11`)
 
-- 규칙 2일 때 행을 더한다: ‘창고 임차료’(`rentExpense`), ‘창고 확장 설치비’(`facilitySetupExpense`), ‘환전 차감’(`fxSpreadExpense`), ‘통화 간 이체(환전)’(`currencyTransferNet`). 0인 행은 쓰지 않는다.
+- 규칙 2일 때 행을 더한다: ‘창고 임차료’(`rentExpense`), ‘창고 확장 설치비’(`facilitySetupExpense`), ‘환전 차감’(`fxSpreadExpense`), ‘통화 간 이체(환전)’(`currencyTransferNet`). 0인 행은 쓰지 않는다. 자리는 ‘운영 손익’ 바로 앞이다.
+- 규칙 2에서는 ‘미지급 급여’(`reports.ts:17`) 행 이름을 ‘미지급(급여·임차료)’으로 바꾼다. 밀린 임차료도 미지급금에 들어가기 때문이다(`engine.ts:1175` `payOrAccrue`, 실측: 미지급 2,770,000원 가운데 임차료 450,000원). 규칙 1 이름은 그대로다.
+- 규칙 2에는 영입·성장·현지 활동 설정이 모두 있어 계약금·훈련비·활동비 행이 이미 나온다.
 - 규칙 1의 행 목록과 순서는 바이트로 같다.
-- 이 표만 보고도 ‘시작 운영 자금 − 비용 + 이체 = 현금 + … ’이 맞는지 확인하는 시험을 둔다. 엔진의 항등식(`operations-invariants.ts`의 통화별 순자산 항등식)과 같은 값이어야 한다.
+- 표의 값만으로 항등식 ‘시작 운영 자금 − (급여 + 계약금 + 훈련비 + 활동비 + 임차료 + 설치비 + 환전 차감) + 통화 간 이체 = 현금 − 미지급’이 맞는지 확인하는 시험을 둔다(적대 검토가 환전 없는 실패 상태에서 실측으로 맞음을 확인했다).
+
+### 6. 본사·창고 표의 선복 줄 문구(TASK-0034 검수에서 넘어옴)
+
+- `src/ui/warehouse.ts`의 선복 줄은 출항편 ID(`노선-D일` 꼴)를 그대로 보인다. 학생용 문구로 ‘{노선 이름} {출항일}일 편’으로 바꾼다.
+- 노선 이름은 `routeLabel`(같은 파일), 출항일은 `findSailing` 등 기존 공개 함수로 읽는다. 사용량/한도 값과 순서는 그대로다.
 
 ## 고칠 수 있는 파일
 
-- `src/ui/main.ts`, `src/ui/recruitment.ts`, `src/ui/reports.ts`, 새 `src/ui/money-alerts.ts`(쓸 때), `src/ui/warehouse.ts`(지시 1의 제약 이름 공통 함수만), `src/ui/style.css`.
+- `src/ui/main.ts`, `src/ui/recruitment.ts`, `src/ui/reports.ts`, 새 `src/ui/money-alerts.ts`(쓸 때), `src/ui/warehouse.ts`(지시 1의 제약 이름 공통 함수와 지시 6만), `src/ui/market.ts`(`exchange-h`의 `tabindex`만), `src/ui/style.css`.
 - 새 시험 `src/ui/m2a5-money-ui.test.ts`. 기존 UI 시험은 규칙 2 기대 문자열 줄만 고친다.
 - `docs/ai/tasks/results/TASK-0057.md`, `MANIFEST.json`(생성만).
 
@@ -116,35 +132,43 @@
 
 상태는 실제 실행으로 만든다. 상태 사본의 칸을 고치지 않는다.
 
-- **미지급·실패 상태 만드는 법:** 규칙 2 시나리오를 환전 없이 진행한다(명령 없이 `runDays`). 원화가 모자라 급여가 밀리고, 경고 → 위험 → 실패로 간다(적대 검토 확인: 57일 첫 미지급 → 71일 실패). 날짜는 고정하지 말고 `paymentDefaultStatus`·`failure`에서 읽는다. 방법을 주석으로 적는다.
+- **면담 칸을 여는 법:** 시작 때 후보는 모두 발견 전(UNDISCOVERED)이다. `SCOUT_SITE`(`config.recruitment.scoutSites[i].venueId`) 뒤 `START_RECRUIT_QUEST`로 면담 가능(INTERVIEW_READY)까지 진행한다. 기존 시험이 이 단계를 만드는 방법을 찾아 같은 방식으로 쓴다.
+- **완료 상태(결산·원화 보고):** 인수 사례 `P0-M2A5-14`의 대본(`src/engine/m2a5-money.test.ts:28`의 `scriptOf(caseOf(...))`)에는 환전이 있고 확장·선복 계약은 없다. 1일 명령에 `EXPAND_WAREHOUSE`와 선복 계약을 더해 완료까지 진행한다. 완료되지 않거나 실패하면 그 사실과 대신 쓴 상태를 결과 보고에 적는다.
+- **미지급·실패 상태 만드는 법:** 규칙 2 시나리오를 환전 없이 진행한다(명령 없이 `runDays`). 원화가 모자라 급여가 밀리고, 경고 → 위험 → 실패로 간다(적대 검토 실측: 57일 첫 미지급, 64일 위험, 71일 실패, 실패 뒤 `state.day` 72. 71일 마감 전 상태에서는 `lotsToSurvive`가 1이다). 날짜는 고정하지 말고 `paymentDefaultStatus`·`failure`에서 읽는다. 방법을 주석으로 적는다.
 
 | 시험 | 나와야 함 | 반례 |
 |---|---|---|
 | 면담 줄 | 규칙 2 후보의 네 줄이 `hiringOutlook(state)` 값과 같음 | 규칙 1 면담 칸 바이트 같음 |
 | 대기 중 고용 | — | 고용을 대기열에 넣은 화면에는 네 줄 없음(0 값이 나오지 않음) |
-| ‘더 받을 수 없음’ | `extraJobsPerWeek === 0`인 상태 | 0보다 큰 상태(투자 뒤 등)에는 없음 |
-| 경고 알림 | 첫 미지급 날 `WARNING` 알림, 원인·마감 문장 | 미지급 없는 날 알림 없음 |
+| `state`로 읽음 | 선복 계약 두 노선을 대기열에 넣은 화면의 네 줄이 `hiringOutlook(state)`와 같고, `hiringOutlook(view)`와는 다름 | — |
+| ‘더 받을 수 없음’ | 투자 없는 상태(`extraJobsPerWeek === 0`, 선복이 막음) | 1일에 선복 계약 두 노선을 맺은 뒤 상태(0보다 큼)에는 없음 |
+| 경고 알림 | 첫 미지급이 생긴 날 마감 뒤 화면(`state.day = incurredDay + 1`)의 `WARNING` 알림, 원인·마감 문장 | 그 전날 화면에는 알림 없음 |
 | 회복 행동 | `lotsToSurvive === 0`이면 ‘오늘 마감에는 실패하지 않습니다’, `lotsToClearAll` 금액 = 값 × `lotUsdMinor` | 실패 당일 마감 전 상태에서는 최소 금액 문장 |
 | 위험 알림 | `DANGER` 단계 이름 | — |
 | 실패 화면 | 실제 실패 상태: 제목의 날 = `failure.day`, 원인 문장, 통화별 줄(합계 없음), 두 목록 | 완료·진행 중·`DANGER` 상태에는 없음 |
-| 결산 고정비·이체 | 규칙 2 끝 상태의 행 목록 전체 비교 | 0인 행 없음, 규칙 1 결산 바이트 같음 |
-| 원화 보고 | 규칙 2 행 목록 전체 비교, 항등식 | 규칙 1 행 목록 바이트 같음 |
+| 결산 고정비·이체 | 환전·확장·선복 계약이 든 규칙 2 완료 상태의 행 목록 전체 비교 | 0인 행 없음, 모든 행이 0인 통화는 ‘고정비 없음’, 규칙 1 결산 바이트 같음 |
+| 원화 보고 | 같은 완료 상태의 행 목록 전체 비교와 항등식, 행 이름 ‘미지급(급여·임차료)’ | 규칙 1 행 목록 바이트 같음 |
+| 실패 끝 흐름 | 실패한 날 하루 진행 뒤 알림 문장의 날 = `failure.day`, 초점이 `failure-h`, 결산 제목 ‘{failure.day}일 마감 결산’ | 규칙 2 완료 끝 화면은 지금 문장 그대로 |
+| 환전 칸으로 | 단추를 누르면 초점이 `exchange-h` | — |
 
 ## 완료 조건
 
-1. 지시 1~5 반영.
+1. 지시 1~6 반영.
 2. `npx vitest run` 실패 0, `npm run typecheck`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 실패 0. 기본 `run` 400회 바이트 같음. 첫 화면 크기 보고.
 3. 변형 시험(사본·편집기·되돌림·`cmp`):
 
 | 번호 | 변형 | 실패해야 하는 시험 |
 |---|---|---|
 | 1 | 면담 줄을 규칙 1에서도 그림 | 규칙 1 면담 칸 시험 |
-| 2 | 면담 줄을 `view`로 읽음 | 대기 중 고용 반례 |
+| 2 | 면담 줄을 `view`로 읽음 | `state`로 읽음 시험(선복 계약 대기) |
 | 3 | `lotsToSurvive === 0`일 때도 ‘최소 USD 0’ 문장을 씀 | 회복 행동 시험 |
 | 4 | 실패 화면 제목을 `state.day`로 씀 | 실패 화면 시험 |
 | 5 | 실패 화면을 `level === 'DANGER'`에서도 그림 | 실패 화면 반례 |
 | 6 | 결산 고정비에 USD+KRW 합계 행을 넣음 | 결산 행 목록 전체 비교 |
-| 7 | `currencyTransferNet` 행을 규칙 1에서도 넣음 | 규칙 1 결산 바이트 시험 |
+| 7 | 결산·원화 보고에서 0인 행도 넣음(값≠0 조건 제거) | 규칙 1 결산·원화 보고 바이트 시험 |
+| 8 | 실패 끝 알림을 `campaignDays`로 씀 | 실패 끝 흐름 시험 |
+
+- ‘규칙 2일 때만’ 조건은 방어용이다. 규칙 1에는 환전·임차료·설치비가 없어 값이 늘 0이므로, 시험으로는 ‘값≠0’ 조건과 가를 수 없다.
 
 4. 결과 보고 `docs/ai/tasks/results/TASK-0057.md`(공통 머리말 형식). 바꾼 파일, 설계 판단, 검증, 변형 표, 크기 증감, 범위 밖 발견, 질문을 적는다.
    - 세션 B가 Chromium으로 잴 항목: 실패 화면 초점 이동과 낭독, 경고 알림이 경영 보고 첫 화면 높이에 주는 영향(1024·1366px), 면담 칸 높이.
@@ -154,4 +178,5 @@
 - 허브가 2026-10-13 10:17에 번호 0057을 줬다. 범위는 TASK-0034 적대 검토에서 나눈 후반부다.
 - 엔진 값의 성질(`lotsToSurvive`가 대체로 0, `reasonKo`는 이유일 뿐, 실패 뒤 날이 하루 넘어감, 면담의 `view` 문제)은 0034 적대 검토 지적 4·6·7·9이며 코드로 확인했다.
 - 원화 보고의 비용 행은 TASK-0033 검수(‘원화 장부 행이 임차료·환전을 표현하지 않음’)에서 넘어왔다.
+- 적대 검토(에이전트 1개, 2026-10-13)의 지적 9건을 코드로 확인하고 모두 반영했다: 변형 7·2가 잡히지 않음, `skip-to` 허용 목록과 `exchange-h` 초점, 실패 끝 흐름의 ‘90일’ 문장, 미지급 행 이름과 항등식, 시험 상태(환전·투자가 든 완료 상태), 낭독 알림 장치, 면담 상태 만드는 법·배열·통화, 경고 화면의 날.
 - 허브의 화면 적대 검수 결과(진행 중) 가운데 이 범위 항목은 받는 대로 더한다.
