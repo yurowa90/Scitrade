@@ -1666,6 +1666,11 @@
       "sha256": "00f9dcd2dffe746bfd4e6303489e84565afca66b17cb95efea7822adf86ec798"
     },
     {
+      "path": "docs/ai/tasks/TASK-0056-m2a5-save-references.md",
+      "size_bytes": 8150,
+      "sha256": "d71bc5c106fc483bdefcfa8e39ce87ad3005bc59bcfded4dfd33390411708575"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
