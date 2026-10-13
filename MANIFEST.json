@@ -1392,8 +1392,8 @@
     },
     {
       "path": "docs/ai/design/task0033-chromium/README.md",
-      "size_bytes": 10058,
-      "sha256": "d38eae214789b55f08f98f9d58d48e169a47c9c34cd159d71560bb3bca8810dc"
+      "size_bytes": 10783,
+      "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
     },
     {
       "path": "docs/ai/design/task0033-chromium/bar-4359759.jsonl",
@@ -1429,6 +1429,11 @@
       "path": "docs/ai/design/task0033-chromium/harness/r2kb.js",
       "size_bytes": 5467,
       "sha256": "20d87964b2860dcf0e9be336d62f5a0c60ff69d076d3d01ec86add4059bc8334"
+    },
+    {
+      "path": "docs/ai/design/task0033-chromium/harness/r2w.js",
+      "size_bytes": 2079,
+      "sha256": "85c150906329fb7bb2e22b96be2b4066ef09477d3e7c4fb2255e0051001d438b"
     },
     {
       "path": "docs/ai/design/task0033-chromium/kb-4359759.jsonl",
