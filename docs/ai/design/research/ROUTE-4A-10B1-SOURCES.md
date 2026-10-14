@@ -213,3 +213,102 @@
   - 같은 이름이 두 번 나온다. Sorong(4·39), Nakhodka(26·27, 좌표도 같음), Bangkok(28·127), Guangzhou(32·129), Surabaya(102·123). Natural Earth에서 한 도시에 항구가 둘 있는 경우일 수 있다. 지도에 이름이 겹쳐 보이면 하나를 빼거나 ‘○○ 신항’처럼 구별해야 한다.
   - Hankow(75)는 옛 로마자 표기이고, 지금 병음은 Hankou(한커우)다. Chang Sha(76)는 Changsha다.
   - Kitakyushu(124)와 Kokura(13)는 좌표가 약 2km 떨어진 거의 같은 곳이다(고쿠라는 기타큐슈시 안의 지역). 둘 다 보이면 겹친다.
+
+## 8. 허브 채택안(2026-10-14): 2.3절 4지표 값 표 — 자료 커밋에 그대로 쓸 형식
+
+- 허브가 2.3절의 4지표(무역/GDP·상품 수출·1인당 GDP·물류성과지수)를 채택했다. 6절의 4지표(수출/GDP·TEU·물가)는 대안으로 남긴다.
+- 값은 World Bank WDI API 원값 그대로다(반올림 안 함). `source_updated`는 API의 lastupdated, `retrieved_on`은 열람일이다. 물류성과지수만 연도가 2022다.
+- 출처 표기(credit_ko) 제안: “World Bank 세계개발지표(CC BY 4.0). 상품 수출액 원자료 WTO, 물류성과지수는 World Bank 물류성과지수 조사.”
+
+```json
+[
+ {
+  "code": "NE.TRD.GNFS.ZS",
+  "name_ko": "무역(GDP 대비 %)",
+  "unit": "%",
+  "source_updated": "2026-10-08",
+  "retrieved_on": "2026-10-14",
+  "license": "CC BY 4.0",
+  "values": {
+   "CHN": {
+    "value": 37.9563878652312,
+    "year": 2025
+   },
+   "KOR": {
+    "value": 86.3616006442431,
+    "year": 2025
+   },
+   "VNM": {
+    "value": 190.336808817292,
+    "year": 2025
+   }
+  }
+ },
+ {
+  "code": "TX.VAL.MRCH.CD.WT",
+  "name_ko": "상품 수출액(현재 US$)",
+  "unit": "US$",
+  "source_updated": "2026-10-08",
+  "retrieved_on": "2026-10-14",
+  "license": "CC BY 4.0",
+  "values": {
+   "CHN": {
+    "value": 3771842000000,
+    "year": 2025
+   },
+   "KOR": {
+    "value": 709330000000,
+    "year": 2025
+   },
+   "VNM": {
+    "value": 472929000000,
+    "year": 2025
+   }
+  }
+ },
+ {
+  "code": "NY.GDP.PCAP.CD",
+  "name_ko": "1인당 GDP(현재 US$)",
+  "unit": "US$",
+  "source_updated": "2026-10-08",
+  "retrieved_on": "2026-10-14",
+  "license": "CC BY 4.0",
+  "values": {
+   "CHN": {
+    "value": 13861.970224368,
+    "year": 2025
+   },
+   "KOR": {
+    "value": 36226.9663637512,
+    "year": 2025
+   },
+   "VNM": {
+    "value": 5065.99091899299,
+    "year": 2025
+   }
+  }
+ },
+ {
+  "code": "LP.LPI.OVRL.XQ",
+  "name_ko": "물류성과지수 종합(1~5)",
+  "unit": "점",
+  "source_updated": "2026-10-08",
+  "retrieved_on": "2026-10-14",
+  "license": "CC BY 4.0",
+  "values": {
+   "CHN": {
+    "value": 3.7,
+    "year": 2022
+   },
+   "KOR": {
+    "value": 3.8,
+    "year": 2022
+   },
+   "VNM": {
+    "value": 3.3,
+    "year": 2022
+   }
+  }
+ }
+]
+```
