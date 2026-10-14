@@ -2696,6 +2696,11 @@
       "sha256": "02371f13c2dc1a519d99dfb24d15025852ff8e788b43c807ded7dc62cbea490b"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0060.md",
+      "size_bytes": 8781,
+      "sha256": "1ace595122a388346db55a2abf75fae0f4b0a2b8d7836988a5c59d742998b7b5"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12517,
       "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
@@ -2882,8 +2887,8 @@
     },
     {
       "path": "schemas/goods.schema.json",
-      "size_bytes": 2187,
-      "sha256": "b159bd0a7cc607998d8a6374112267fa5003a2b56a96e26984b0d60a74fe0bea"
+      "size_bytes": 2237,
+      "sha256": "3aaf2369b22b102df0a48d6792d120a4c4b7f233991cb1eb389e79104496b2d1"
     },
     {
       "path": "schemas/job_templates.schema.json",
@@ -3142,13 +3147,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 62088,
-      "sha256": "bf2f58d784c6ccbb87159f978a5c3fb332bdc56aba101bf8a2e0321cd8fc0398"
+      "size_bytes": 71333,
+      "sha256": "3c951fb652a9d11805c5e2ea9c203a7739edf8d1f253ed7a4d02de0c36114968"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 73103,
-      "sha256": "0bd1b976c9e0d01620b94f0a5b5c7477af061105248e5e2f7967d16f53672416"
+      "size_bytes": 76464,
+      "sha256": "6ab9fda6cc272a6da58a182e797354943d94c4423c771695ec4dfff35b47a066"
     }
   ]
 }

@@ -997,6 +997,113 @@ class MainWiringTest(unittest.TestCase):
                 self.assertEqual(ids(call.args[1]['items']), character)
 
 
+class DataDrivenMainTest(unittest.TestCase):
+    """디스크 자료 대신 메모리 사본을 읽어 main의 연결까지 검사한다."""
+    def setUp(self):
+        self.documents = data_documents()
+
+    def run_main(self):
+        original_read = Path.read_text
+
+        def read_copy(path, *args, **kwargs):
+            if path.parent == validator.ROOT / 'data' and path.stem in self.documents:
+                return json.dumps(self.documents[path.stem], ensure_ascii=False)
+            return original_read(path, *args, **kwargs)
+
+        validator.ERRORS.clear()
+        with mock.patch.object(Path, 'read_text', read_copy), contextlib.redirect_stdout(io.StringIO()):
+            result = validator.main()
+        return result, list(validator.ERRORS)
+
+    def verified_good(self):
+        good = self.documents['goods']['items'][0]
+        good.update(hs_mapping_status='VERIFIED', hs_code='3304.99', hs_edition='HS2022')
+        return good
+
+    def test_verified_hs(self):
+        self.verified_good()
+        self.assertEqual(self.run_main(), (0, []))
+
+    def test_invalid_hs(self):
+        for field, value, message in (
+                ('hs_code', None, '확인한 HS 코드 형식 오류'),
+                ('hs_code', '330499', '확인한 HS 코드 형식 오류'),
+                ('hs_edition', None, '확인한 HS 판본 형식 오류'),
+                ('hs_edition', 'HS1996', '확인한 HS 판본 형식 오류'),
+                ('hs_mapping_status', 'NOT_VERIFIED', '미확인 HS 코드와 판본은 null이어야 함'),
+                ('hs_mapping_status', 'MAYBE', 'HS 확인 상태 오류'),
+                ('source_refs', ['UNKNOWN'], '확인한 HS 출처가 없거나 잘못됨'),
+                ('source_refs', [], '확인한 HS 출처가 없거나 잘못됨')):
+            with self.subTest(field=field, value=value):
+                self.documents = data_documents()
+                good = self.verified_good()
+                good[field] = value
+                result, errors = self.run_main()
+                self.assertNotEqual(result, 0)
+                self.assertIn(f"{good['id']}: {message}", errors)
+
+    def test_unverified_edition(self):
+        good = self.documents['goods']['items'][0]
+        good['hs_edition'] = 'HS2022'
+        self.assertIn(f"{good['id']}: 미확인 HS 코드와 판본은 null이어야 함", self.run_main()[1])
+
+    def vocational(self):
+        doc = self.documents['curriculum_links']
+        link = copy.deepcopy(doc['links'][0])
+        link.update(id='VOC01', group='vocational', selection='major_general')
+        link['achievement_standards'] = [dict(link['achievement_standards'][0], code='[무일 02-03-02]')]
+        doc['links'].append(link)
+        doc['counts']['total'] += 1
+        doc['counts']['by_group']['vocational'] = 1
+        doc['counts']['by_selection']['major_general'] = 1
+        return link
+
+    def test_vocational(self):
+        link = self.vocational()
+        self.assertEqual(self.run_main(), (0, []))
+        link['selection'] = 'major_practice'
+        counts = self.documents['curriculum_links']['counts']['by_selection']
+        del counts['major_general']
+        counts['major_practice'] = 1
+        self.assertEqual(self.run_main(), (0, []))
+
+    def test_group_code_format(self):
+        for group, code in (('social', '[무일 02-03-02]'), ('vocational', '[12경제04-03]')):
+            with self.subTest(group=group):
+                self.documents = data_documents()
+                link = self.vocational() if group == 'vocational' else self.documents['curriculum_links']['links'][0]
+                link['achievement_standards'][0]['code'] = code
+                self.assertIn(f"{link['id']}: 성취기준 코드 형식 오류 {code}", self.run_main()[1])
+
+    def test_vocational_counts(self):
+        self.vocational()
+        self.documents['curriculum_links']['counts']['by_group']['vocational'] = 2
+        self.assertIn('curriculum: counts.by_group.vocational 불일치', self.run_main()[1])
+
+    def test_vocational_prefix(self):
+        link = self.vocational()
+        link['id'] = 'BAD01'
+        self.assertIn('BAD01: 연결 ID 머리와 group 불일치', self.run_main()[1])
+
+    def test_vocational_selection(self):
+        link = self.vocational()
+        link['selection'] = 'career'
+        self.assertIn('VOC01: selection과 group 불일치', self.run_main()[1])
+
+    def test_general_selection(self):
+        link = self.documents['curriculum_links']['links'][0]
+        link['selection'] = 'major_general'
+        self.assertIn(f"{link['id']}: selection과 group 불일치", self.run_main()[1])
+
+    def test_vocational_stage(self):
+        link = self.vocational()
+        link['priority'] = ['P1']
+        file, obj = next((f, o) for f, d in self.documents.items() if f != 'curriculum_links'
+                         for o in validator.walk(d) if o.get('stage') == 'P0' and o.get('curriculum_refs'))
+        obj['curriculum_refs'].append(link['id'])
+        self.assertIn(f"{file}/{obj['id']}: P0 항목이 P0 표지 없는 교과 연결을 가리킴 VOC01", self.run_main()[1])
+
+
 class MarketRulesTest(unittest.TestCase):
     def fixtures(self):
         documents = {p.stem: json.loads(p.read_text()) for p in (validator.ROOT / 'data').glob('*.json')}
@@ -1011,15 +1118,87 @@ class MarketRulesTest(unittest.TestCase):
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])
 
+    def test_goods_counts(self):
+        for count in (1, 3):
+            with self.subTest(count=count):
+                d, t = self.fixtures()
+                rule = d['market_rules']['rule_sets'][0]
+                goods = rule['trade']['goods']
+                if count == 1:
+                    removed = goods.pop()['good_id']
+                    rule['rows'] = [r for r in rule['rows'] if r['good_id'] != removed]
+                else:
+                    good = copy.deepcopy(goods[0])
+                    good['good_id'] = next(g for g in t['goods'] if g not in {x['good_id'] for x in goods})
+                    good['id_tag'] = 'THIRD'
+                    goods.append(good)
+                    for row in list(rule['rows']):
+                        if row['good_id'] == goods[0]['good_id']:
+                            rule['rows'].append(dict(copy.deepcopy(row), good_id=good['good_id']))
+                rule['index']['goods'] = [g['good_id'] for g in goods]
+                self.assertEqual(len(rule['rows']), count * 3)
+                self.assertEqual(self.errors(d, t), [])
+
     def test_rows(self):
-        for duplicate in (False, True):
-            d, t = self.fixtures()
-            rows = d['market_rules']['rule_sets'][0]['rows']
-            if duplicate:
-                rows[-1] = copy.deepcopy(rows[0])
-            else:
-                rows.pop()
-            self.assertIn('market_rules: 시세표는 6행이어야 함', self.errors(d, t))
+        for change in ('missing', 'duplicate', 'outside'):
+            with self.subTest(change=change):
+                d, t = self.fixtures()
+                rule = d['market_rules']['rule_sets'][0]
+                rows = rule['rows']
+                row = next(r for r in rows if r['side'] == 'SELL')
+                if change == 'missing':
+                    rows.remove(row)
+                elif change == 'duplicate':
+                    rows.append(copy.deepcopy(row))
+                else:
+                    row['city_id'] = rule['trade']['buy_city_id']
+                message = '시세표 행이 중복됨' if change == 'duplicate' else '시세표 행 집합이 거래 품목·도시와 다름'
+                self.assertIn(f"market_rules: {rule['id']}: {message}", self.errors(d, t))
+
+    def test_trade_coverage(self):
+        for field in ('index', 'parties', 'payment'):
+            for change in ('missing', 'duplicate', 'outside'):
+                with self.subTest(field=field, change=change):
+                    d, t = self.fixtures()
+                    rule = d['market_rules']['rule_sets'][0]
+                    good = rule['trade']['goods'][0]
+                    values, message = {
+                        'index': (rule['index']['goods'], '지수 품목이 거래 품목과 다르거나 중복됨'),
+                        'parties': (good['sell_counterparties'], f"품목 {good['good_id']}의 판매 거래처는 판매지마다 정확히 하나여야 함"),
+                        'payment': (rule['trade']['payment_offset_days'], '결제일은 판매지마다 정확히 하나여야 함'),
+                    }[field]
+                    if change == 'missing':
+                        values.pop()
+                    elif change == 'duplicate':
+                        values.append(copy.deepcopy(values[0]))
+                    elif field == 'index':
+                        values[0] = 'UNKNOWN'
+                    else:
+                        values[0]['city_id'] = rule['trade']['buy_city_id']
+                    self.assertIn(f"market_rules: {rule['id']}: {message}", self.errors(d, t))
+
+    def test_trade_prerequisites(self):
+        for change in ('unknown_good', 'duplicate_good', 'duplicate_tag', 'empty_cities', 'duplicate_city', 'unknown_city', 'buy_city', 'lots'):
+            with self.subTest(change=change):
+                d, t = self.fixtures()
+                trade = d['market_rules']['rule_sets'][0]['trade']
+                if change == 'unknown_good':
+                    trade['goods'][0]['good_id'] = 'UNKNOWN'
+                elif change == 'duplicate_good':
+                    trade['goods'].append(copy.deepcopy(trade['goods'][0]))
+                elif change == 'duplicate_tag':
+                    trade['goods'][1]['id_tag'] = trade['goods'][0]['id_tag']
+                elif change == 'empty_cities':
+                    trade['sell_city_ids'] = []
+                elif change == 'duplicate_city':
+                    trade['sell_city_ids'].append(trade['sell_city_ids'][0])
+                elif change == 'unknown_city':
+                    trade['sell_city_ids'][0] = 'UNKNOWN'
+                elif change == 'buy_city':
+                    trade['buy_city_id'] = 'UNKNOWN'
+                else:
+                    trade['max_lots_choices'] = []
+                self.assertTrue(self.errors(d, t))
 
     def test_deadline(self):
         d, t = self.fixtures()

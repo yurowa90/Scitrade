@@ -527,6 +527,7 @@ GENERALIZATION_PROPER_NOUNS = ('부산시민공원', '한국소비자원', '국�
 # 3쌍은 extension_curriculum_refs로 옮기고 4쌍은 뺐다. 새 쌍은 Claude가 원문을 대조한 뒤에만 더한다.
 PENDING_P0_CURRICULUM_LINKS = frozenset()
 ACHIEVEMENT_CODE = re.compile(r'^\[(10|12)[가-힣]+(?:[12]-[0-9]{2}|[0-9]{2})-[0-9]{2}\]$')
+VOCATIONAL_ACHIEVEMENT_CODE = re.compile(r'^\[[가-힣]{2} [0-9]{2}-[0-9]{2}-[0-9]{2}\]$')
 ACHIEVEMENT_BASIS = ('직접', '해설', '영역')
 
 
@@ -772,12 +773,13 @@ def check_achievement_standards(curriculum_doc, curriculum, source_ids):
             continue
         check(link.get('achievement_standards_source_id') in source_ids, f'{cid}: 성취기준 출처 없음')
         grade = '10' if link.get('selection') == 'common' else '12'
+        pattern = VOCATIONAL_ACHIEVEMENT_CODE if link.get('group') == 'vocational' else ACHIEVEMENT_CODE
         codes = []
         for item in standards:
             code = item.get('code') if isinstance(item, dict) else None
             item = item if isinstance(item, dict) else {}
-            check(isinstance(code, str) and ACHIEVEMENT_CODE.match(code) is not None, f'{cid}: 성취기준 코드 형식 오류 {code}')
-            if isinstance(code, str) and ACHIEVEMENT_CODE.match(code):
+            check(isinstance(code, str) and pattern.fullmatch(code) is not None, f'{cid}: 성취기준 코드 형식 오류 {code}')
+            if link.get('group') != 'vocational' and isinstance(code, str) and pattern.fullmatch(code):
                 check(code[1:3] == grade, f'{cid}: 성취기준 학년 머리와 selection 불일치 {code}')
             check(item.get('basis') in ACHIEVEMENT_BASIS, f'{cid}: 성취기준 근거 종류 오류 {code}')
             for field in ('sentence_ko', 'keyword_ko'):
@@ -800,8 +802,10 @@ def check_curriculum_counts(curriculum_doc, curriculum):
         expected = counts.get('by_' + field, {})
         for value in sorted(set(actual) | set(expected)):
             check(expected.get(value) == actual.get(value, 0), f'curriculum: counts.by_{field}.{value} 불일치')
-    prefixes = {'social': 'SOC', 'ethics': 'ETH', 'science': 'SCI'}
+    prefixes = {'social': 'SOC', 'ethics': 'ETH', 'science': 'SCI', 'vocational': 'VOC'}
     for cid, item in curriculum.items():
+        selections = ('major_general', 'major_practice') if item.get('group') == 'vocational' else ('common', 'general', 'career')
+        check(item.get('selection') in selections, f'{cid}: selection과 group 불일치')
         prefix = prefixes.get(item.get('group'))
         check(prefix is not None and cid.startswith(prefix), f'{cid}: 연결 ID 머리와 group 불일치')
 
@@ -851,8 +855,34 @@ def check_market_rules(documents, tables):
         check(count == 1, f'market_rules: 거래처 ID 중복 {pid}')
     for rule in market['rule_sets']:
         rows = rule['rows']
-        check(len(rows) == 6 and len({(r['city_id'], r['good_id'], r['side']) for r in rows}) == 6,
-              'market_rules: 시세표는 6행이어야 함')
+        rid = rule['id']
+        trade = rule['trade']
+        goods = [g['good_id'] for g in trade['goods']]
+        cities = trade['sell_city_ids']
+        check(bool(cities) and len(cities) == len(set(cities)) and all(c in tables['world'] for c in cities),
+              f'market_rules: {rid}: 판매지는 비어 있지 않은 고유 도시 목록이어야 함')
+        check(trade['buy_city_id'] in tables['world'], f'market_rules: {rid}: 매입 도시가 없음')
+        check(bool(trade['max_lots_choices']), f'market_rules: {rid}: 물량 선택지가 비어 있음')
+        for gid in goods:
+            check(gid in tables['goods'] and goods.count(gid) == 1,
+                  f'market_rules: {rid}: 품목 {gid}가 없거나 중복됨')
+        tags = [g['id_tag'] for g in trade['goods']]
+        check(len(tags) == len(set(tags)), f'market_rules: {rid}: 품목 견적 태그가 중복됨')
+        expected_rows = {(trade['buy_city_id'], gid, 'BUY') for gid in goods}
+        expected_rows.update((city, gid, 'SELL') for gid in goods for city in cities)
+        actual_rows = [(r['city_id'], r['good_id'], r['side']) for r in rows]
+        check(set(actual_rows) == expected_rows, f'market_rules: {rid}: 시세표 행 집합이 거래 품목·도시와 다름')
+        check(len(actual_rows) == len(set(actual_rows)), f'market_rules: {rid}: 시세표 행이 중복됨')
+        index_goods = rule['index']['goods']
+        check(set(index_goods) == set(goods) and len(index_goods) == len(set(index_goods)),
+              f'market_rules: {rid}: 지수 품목이 거래 품목과 다르거나 중복됨')
+        for good in trade['goods']:
+            party_cities = [p['city_id'] for p in good['sell_counterparties']]
+            check(set(party_cities) == set(cities) and len(party_cities) == len(set(party_cities)),
+                  f"market_rules: {rid}: 품목 {good['good_id']}의 판매 거래처는 판매지마다 정확히 하나여야 함")
+        payment_cities = [p['city_id'] for p in trade['payment_offset_days']]
+        check(set(payment_cities) == set(cities) and len(payment_cities) == len(set(payment_cities)),
+              f'market_rules: {rid}: 결제일은 판매지마다 정확히 하나여야 함')
         templates = rule['forwarding']['templates']
         for t in templates:
             tid = t['id']
@@ -917,10 +947,10 @@ def main():
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
     for name, count in expected_counts.items():
         check(len(tables[name]) == count, f'{name}: expected {count}')
-    check(len(curriculum) == 47, 'curriculum: expected 47')
-    for group, prefix, count in [('social','SOC',18), ('ethics','ETH',6), ('science','SCI',23)]:
-        check(sum(key.startswith(prefix) for key in curriculum) == count,
-              f'curriculum {group}: count')
+    check(documents['curriculum_links']['counts']['total'] > 0, 'curriculum: counts.total은 양수여야 함')
+    for group in ('social', 'ethics', 'science'):
+        check(any(item['group'] == group for item in curriculum.values()),
+              f'curriculum {group}: 연결이 하나 이상 필요')
     check_curriculum_counts(documents['curriculum_links'], curriculum)
     pending_found = check_curriculum_stages(documents, curriculum)
     check_extension_curriculum_refs(documents, curriculum)
@@ -969,8 +999,18 @@ def main():
     for good in tables['goods'].values():
         check(good['mass_kg_per_unit'] > 0 and good['volume_m3_per_unit'] > 0,
               good['id'] + ': physical fixture dimensions')
-        check(good['hs_code'] is None and good['hs_mapping_status'] == 'NOT_VERIFIED',
-              good['id'] + ': unresolved HS must remain explicit')
+        status = good['hs_mapping_status']
+        check(status in ('NOT_VERIFIED', 'VERIFIED'), good['id'] + ': HS 확인 상태 오류')
+        if status == 'NOT_VERIFIED':
+            check(good['hs_code'] is None and good['hs_edition'] is None,
+                  good['id'] + ': 미확인 HS 코드와 판본은 null이어야 함')
+        elif status == 'VERIFIED':
+            check(isinstance(good['hs_code'], str) and re.fullmatch(r'[0-9]{4}\.[0-9]{2}', good['hs_code']) is not None,
+                  good['id'] + ': 확인한 HS 코드 형식 오류')
+            check(isinstance(good['hs_edition'], str) and re.fullmatch(r'HS20[0-9]{2}', good['hs_edition']) is not None,
+                  good['id'] + ': 확인한 HS 판본 형식 오류')
+            check(bool(good['source_refs']) and all(ref in source_ids for ref in good['source_refs']),
+                  good['id'] + ': 확인한 HS 출처가 없거나 잘못됨')
     for route in tables['routes'].values():
         check(route['transit_days'] > 0 and route['departure_interval_days'] > 0,
               route['id'] + ': time')
