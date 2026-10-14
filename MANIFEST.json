@@ -1737,8 +1737,8 @@
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
-      "size_bytes": 18199,
-      "sha256": "470edf4f4c0202cc139674e5be0de2cb176e5ddb1b0212f4e8e8baac7a6d7000"
+      "size_bytes": 22171,
+      "sha256": "5b32a2e2249e0fe887cf8e66011fa9ded037007aed39f17c33a057c280a731af"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1899,6 +1899,11 @@
       "path": "docs/ai/design/research/reference-2026-10-13/user_directives.md",
       "size_bytes": 3288,
       "sha256": "ff332ba17bc6a2f8c198f3d7af33e425953f79c2310cbd50d9aafb00ceabf948"
+    },
+    {
+      "path": "docs/ai/design/research/situation-map-ports-ko.json",
+      "size_bytes": 11230,
+      "sha256": "0f30a107523d1795042e6add8b241b9fd3754bad9a3b0baeae51b33c98e940de"
     },
     {
       "path": "docs/ai/design/situation-map-10b1/README.md",
