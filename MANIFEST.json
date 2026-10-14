@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 214183,
-      "sha256": "3e76bb28a737dcc2ecebc0e5a422c22e4046eefd41f98234d9057c93d397d6ba"
+      "size_bytes": 214835,
+      "sha256": "d056de932032c7bfe08f7e165db424227f06e1cef979c8c0f6fd2284e30c5246"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -2147,8 +2147,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 20848,
-      "sha256": "87a40a35d36a9394ed0239f6a2c6af2c008397a67c38d7076181b658475e5c65"
+      "size_bytes": 21336,
+      "sha256": "67740a1c0f237dae50477e700660ca5ba54379d1fb0db0cb48946fecb4114009"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2464,6 +2464,11 @@
       "path": "docs/ai/tasks/TASK-0060-validator-data-driven.md",
       "size_bytes": 11776,
       "sha256": "928ad2ab2f7ffa4e380d97d6d8908bd465203c7a70ea726aa6a6d9667e3daeb8"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
+      "size_bytes": 16721,
+      "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
