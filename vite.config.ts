@@ -76,7 +76,8 @@ export default defineConfig(async () => ({
         // 두 청크 모두 첫 화면에서 받는다(코드는 script, data는 modulepreload). 첫 화면에 받는 양은 나누기 전과 거의 같다.
         // 코드만 바꿔도 import 순서가 바뀌어 자료 모듈의 순서가 달라지면 data 청크 이름이 바뀐다. 캐시 이득은 약속하지 않는다.
         // PACKAGE_STATUS.json·src/assets/manifest.json은 data 폴더 밖이라 코드 청크에 남는다.
-        codeSplitting: { groups: [{ name: 'data', test: /[\\/]data[\\/][^\\/]+\.json$/ }] },
+        // 상황실 스냅숏은 진입할 때 지연 청크와 함께 받으며 첫 화면 자료 묶음에서 뺀다.
+        codeSplitting: { groups: [{ name: 'data', test: /[\\/]data[\\/](?!situation_map\.json$)[^\\/]+\.json$/ }] },
       },
     },
   },

@@ -45,6 +45,8 @@ const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loa
 let opsScreens: typeof import('./ops-screens') | null = null;
 let culturePanel: typeof import('./culture-panel') | null = null;
 const opsScreen = lazyScreen(() => import('./ops-screens'));
+const situationScreen = lazyScreen(() => import('./situation'));
+let situationOpen = false;
 /** 시험 준비도 실제 진입과 같은 약속을 공유한다. */
 export async function ensureOpsScreens(): Promise<void> {
   await opsScreen.ensure();
@@ -470,6 +472,7 @@ function worldMap(): string {
   <section class="panel world" aria-labelledby="world-h">
     <div class="world-head">
       <h2 id="world-h">세계지도 <small>${status}</small></h2>
+      <button data-action="situation">상황실</button>
       <div class="seg" role="group" aria-label="지도 범위">
         <button data-action="map-mode" data-mode="route" aria-pressed="${mapMode === 'route'}">이번 항로</button>
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>
@@ -1102,6 +1105,7 @@ function revealOpener(el: HTMLElement | null) {
 }
 /** D13: Esc로 맨 위 칸을 닫고 연 단추로 초점을 돌려준다. */
 function closeTopLayer(ev: KeyboardEvent) {
+  if (situationOpen) return;
   const layers = openLayers();
   if (!layers.length) return;
   const top = layers.reduce((a, b) => (layerTouched[b.key] > layerTouched[a.key] ? b : a));
@@ -1328,11 +1332,18 @@ function showCulturePreview(employeeId: string) {
 app.addEventListener('click', (ev) => {
   const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
   if (!el && (ev.target as HTMLElement).closest('[data-map-frame]') && Date.now() >= ignoreClicksUntil) return tapMap(ev.target as Element, ev.clientX, ev.clientY);
-  if (!el || enteringScenario || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
+  if (!el || enteringScenario || situationOpen || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
   activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
   try {
     switch (d.action) {
+      case 'situation':
+        enteringScenario = true;
+        return situationScreen.ensure().then(() => {
+          situationOpen = true;
+          situationScreen.get()!.openSituation(state, config, el, () => { situationOpen = false; }, paymentDefaultStatus(state, config));
+        }).catch((error: unknown) => { situationOpen = false; screenLoadWarning(error); })
+          .finally(() => { enteringScenario = false; });
       case 'reload':
         if (hasUnsavedWork(ui.pending, state, savedState) && !confirm('새로 고침하면 저장하지 않은 진행과 오늘 할 일이 사라집니다. 새로 고칠까요?')) return;
         skipNextBeforeUnload = true;

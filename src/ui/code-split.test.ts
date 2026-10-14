@@ -142,8 +142,11 @@ function deferred() {
   return { promise, resolve };
 }
 const gates: Partial<Record<Kind, ReturnType<typeof deferred>>> = {};
+let situationCalls = 0;
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
-const hash = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(/빌드 [^<]+/, '빌드 dev'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
+// 새 진입 단추 조각만 정확히 빼고 기존 전체 HTML 보호값을 대조한다.
+const SITUATION_BUTTON = '\n      <button data-action="situation">상황실</button>';
+const hash = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
 const opsId = 'SCENARIO_M2_OPERATIONS';
 const legacyId = 'SCENARIO_M2_MULTI_TRADE';
 const warning = '화면 일부를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.';
@@ -151,6 +154,7 @@ const reloadWarning = '화면 일부를 불러오지 못했습니다. 연결을 
 const loadReloadWarning = '화면 일부를 불러오지 못했습니다. 새로 고침한 뒤 ‘불러오기’를 다시 눌러 주세요. 저장된 상태는 그대로 있습니다.';
 
 beforeEach(() => {
+  situationCalls = 0;
   calls.ops = calls.culture = failures.ops = failures.culture = 0;
   moduleMapMemory.ops = moduleMapMemory.culture = rememberedFailure.ops = rememberedFailure.culture = false;
   delete gates.ops; delete gates.culture;
@@ -158,6 +162,7 @@ beforeEach(() => {
     const original = await importOriginal<typeof import('./lazy')>();
     return { ...original, lazyScreen<T>(loader: () => Promise<T>) {
       return original.lazyScreen(async () => {
+        if (loader.toString().includes('situation')) { situationCalls++; return loader(); }
         const kind: Kind = loader.toString().includes('ops-screens') ? 'ops' : 'culture';
         calls[kind]++;
         if (rememberedFailure[kind]) throw new Error('시험용 모듈 맵에 남은 실패');
@@ -191,6 +196,11 @@ function readState(ui: Awaited<ReturnType<typeof startUi>>, items: Map<string, s
 }
 
 describe('TASK-0059 지연 화면 진입', () => {
+  it('TASK-0061 첫 렌더는 상황실 모듈을 불러오지 않는다', async () => {
+    const ui = await freshUi();
+    expect(ui.app.innerHTML).toContain(SITUATION_BUTTON);
+    expect(situationCalls).toBe(0);
+  });
   it('첫 렌더·첫 수락 뒤·결산은 screensReady 없이 TASK-0033 sha256 세 개와 같다', async () => {
     gates.ops = deferred(); gates.culture = deferred();
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-13T00:00:00Z'));
@@ -199,7 +209,7 @@ describe('TASK-0059 지연 화면 진입', () => {
     const state = openDay(createGame(config), config).state;
     expect(culture.culturePanel(state, state, [], config, initialUiState())).toBe('');
     // hash는 빌드 표시를 dev로 맞추므로 TASK-0033 문자열의 BASE 표시는 별도로 보존한다.
-    const digest = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(/<select data-action="scenario">[\s\S]*?<\/select>/, '').replace(/빌드 [^<]+/, '빌드 BASE'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
+    const digest = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(SITUATION_BUTTON, '').replace(/<select data-action="scenario">[\s\S]*?<\/select>/, '').replace(/빌드 [^<]+/, '빌드 BASE'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
     expect(await digest(ui.app.innerHTML)).toBe('7241637157034d2eb5e9e253e7595505503299b47516a2c675daa17f874e3f9d');
     expect(await hash(ui.app.innerHTML)).toBe(BASE_HTML.first);
     const pair = tradePairs(config)[0]!;

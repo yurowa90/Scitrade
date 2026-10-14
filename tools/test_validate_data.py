@@ -1290,5 +1290,92 @@ class MarketRulesTest(unittest.TestCase):
         self.assertIn(f"{s['id']}: 지연 감액 상한 칸 오류", self.errors(d, t))
 
 
+class SituationMapTest(unittest.TestCase):
+    def setUp(self):
+        self.document = validator.read('data/situation_map.json')
+        self.bounds = next(a['bounds'] for a in validator.read('src/assets/manifest.json')['assets']
+                           if a['id'] == 'MAP_EAST_ASIA')
+        validator.ERRORS.clear()
+
+    def errors(self):
+        validator.ERRORS.clear()
+        validator.shape(self.document, validator.read('schemas/situation_map.schema.json'), 'situation_map')
+        validator.validate_situation_map(self.document, self.bounds)
+        return list(validator.ERRORS)
+
+    def test_layers_pass_and_duplicates_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['layers'][1]['id'] = 'cargo'
+        self.assertTrue(self.errors())
+
+    def test_layer_count_pass_and_missing_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['layers'].pop()
+        self.assertTrue(self.errors())
+
+    def test_license_pass_and_unknown_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['layers'][0]['license_tier'] = 'unknown'
+        self.assertTrue(self.errors())
+
+    def test_status_pass_and_unknown_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['layers'][0]['verification_status'] = 'unknown'
+        self.assertTrue(self.errors())
+
+    def test_allowed_pass_and_banned_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['layers'][0]['license_tier'] = 'banned'
+        self.assertTrue(self.errors())
+
+    def test_verified_date_pass_and_invalid_fail(self):
+        self.assertEqual(self.errors(), [])
+        for date in (None, '2026-02-30', '20261014'):
+            with self.subTest(date=date):
+                self.document['layers'][0]['retrieved_on'] = date
+                self.assertTrue(self.errors())
+
+    def test_port_bounds_pass_and_outside_fail(self):
+        for key, bound in [('lon', 'lon_min'), ('lat', 'lat_min')]:
+            saved = self.document['ports'][0][key]
+            self.document['ports'][0][key] = self.bounds[bound]
+            self.assertEqual(self.errors(), [])
+            self.document['ports'][0][key] -= .001
+            self.assertTrue(self.errors())
+            self.document['ports'][0][key] = saved
+
+    def test_unique_ports_pass_and_duplicate_fail(self):
+        self.assertEqual(self.errors(), [])
+        self.document['ports'][1]['id'] = self.document['ports'][0]['id']
+        self.assertTrue(self.errors())
+
+    def test_value_needs_verified_layer(self):
+        indicator = self.document['countries'][0]['indicators'][0]
+        indicator.update(value=1, year=2025)
+        self.document['layers'][4].update(verification_status='verified', retrieved_on='2026-10-14')
+        self.assertEqual(self.errors(), [])
+        self.document['layers'][4]['verification_status'] = 'pending'
+        self.assertTrue(self.errors())
+
+    def test_value_needs_integer_year(self):
+        indicator = self.document['countries'][0]['indicators'][0]
+        indicator.update(value=1, year=2025)
+        self.document['layers'][4].update(verification_status='verified', retrieved_on='2026-10-14')
+        self.assertEqual(self.errors(), [])
+        for year in (None, 2025.5, True):
+            indicator['year'] = year
+            self.assertTrue(self.errors())
+
+    def test_null_values_pass_without_year_and_verification(self):
+        self.assertEqual(self.errors(), [])
+        self.document['countries'][0]['indicators'][0]['value'] = 0
+        self.assertTrue(self.errors())
+
+    def test_required_field_pass_and_missing_fail(self):
+        self.assertEqual(self.errors(), [])
+        del self.document['layers'][0]['credit_ko']
+        self.assertTrue(self.errors())
+
+
 if __name__ == '__main__':
     unittest.main()
