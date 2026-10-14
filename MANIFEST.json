@@ -1671,6 +1671,11 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
+      "size_bytes": 15214,
+      "sha256": "16acc43571e1f08f436d2408eca4ed1033997ba0c3fdcee5f6c7745f7b6cc5c4"
+    },
+    {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
       "size_bytes": 34566,
       "sha256": "b55698e6d9674f6a60df451530c2115d1a11b6d30c4c22ac1da36db8c499041b"
