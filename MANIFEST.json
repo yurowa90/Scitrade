@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 214183,
-      "sha256": "3e76bb28a737dcc2ecebc0e5a422c22e4046eefd41f98234d9057c93d397d6ba"
+      "size_bytes": 214835,
+      "sha256": "d056de932032c7bfe08f7e165db424227f06e1cef979c8c0f6fd2284e30c5246"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 92113,
-      "sha256": "c5319e7e41ac948217c9bd9a656aca270ddae6eb075569c4232ebba64b419475"
+      "size_bytes": 93828,
+      "sha256": "65d969e8de1b1a62c082dd88df5c14c0fe613c78fdcf0beb2fac7aeac4687f12"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 10055,
-      "sha256": "212a3aeaecd4e90d2eeb59defc68b0039f4ff67809b5541d1b30c164cf04f621"
+      "size_bytes": 10143,
+      "sha256": "6bc279095e5d2f351bb2ea7871a55ae0e45dca62697b086908d466612a7d1dc3"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1901,6 +1901,66 @@
       "sha256": "ff332ba17bc6a2f8c198f3d7af33e425953f79c2310cbd50d9aafb00ceabf948"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/README.md",
+      "size_bytes": 9355,
+      "sha256": "685da37a7e3880912dddb18b8c6b6de4e8c207a27d871e8f60a036a0357268a3"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/chromebook-all.png",
+      "size_bytes": 152476,
+      "sha256": "a65d219174aaf91a4e72899527b10a4b011952a1c2e18d9a18754f8f3d7f6327"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/chromebook-briefing.png",
+      "size_bytes": 143551,
+      "sha256": "33617f020df70b0c0fc16a123c74a3ffbabd96144b10c70285a361b744657819"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/data/nightlights-ea.png",
+      "size_bytes": 17166,
+      "sha256": "68f4f60437a12dc363e12ce671408ec339a2bb03adcc0a80f80395c6712a8482"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/data/ports-ea.json",
+      "size_bytes": 3925,
+      "sha256": "b7b91de9f3dc7442dd3ea685e32e62143602488052b1d935ab3544c249084e25"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/nightlights.py",
+      "size_bytes": 788,
+      "sha256": "35adf9a1b775496de10d37842b928f283e6a0ce5aa91711eff4a366c6e6dc1b9"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/ports.py",
+      "size_bytes": 1147,
+      "sha256": "da3c5eb7a31221c2ada94f9ae52b65b2edccb2ca65cff3880491770634b85fe9"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/smshot.js",
+      "size_bytes": 3123,
+      "sha256": "7a6775090144ce48545863c965c6af76cd24e53daaeec1752ad841092c63e9a8"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/ipad-all.png",
+      "size_bytes": 224853,
+      "sha256": "5827b905c05068dbc474be7eae3e7455e2120d9fc0853215887ef994642a04dd"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/ipad-briefing.png",
+      "size_bytes": 191098,
+      "sha256": "fb38e878b304d90d77a725f5bc45ad4245f42f0a0fbfa02e337e92f9234b8e30"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/mock/mock.js",
+      "size_bytes": 8920,
+      "sha256": "140588fb6d4b393b1f9619e7fdb7b25a521b8359ad05ad035f785574271dffd6"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/mock/situation.css",
+      "size_bytes": 443,
+      "sha256": "f03e9cdce5272918e5233c1f9d1a729732deb575b36ec4882926fad5b040e06a"
+    },
+    {
       "path": "docs/ai/design/task0033-chromium/README.md",
       "size_bytes": 10783,
       "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
@@ -2092,8 +2152,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 20197,
-      "sha256": "d4bc1fce4225d5a30deb5933b8cb87cda4bac1fe5bc8ba34ab9ebb96370c66aa"
+      "size_bytes": 21336,
+      "sha256": "67740a1c0f237dae50477e700660ca5ba54379d1fb0db0cb48946fecb4114009"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2406,6 +2466,16 @@
       "sha256": "09c6f2fc26f49b2db50dd0201a772b83593864757762a024a160942ce0c5b137"
     },
     {
+      "path": "docs/ai/tasks/TASK-0060-validator-data-driven.md",
+      "size_bytes": 11776,
+      "sha256": "928ad2ab2f7ffa4e380d97d6d8908bd465203c7a70ea726aa6a6d9667e3daeb8"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
+      "size_bytes": 16721,
+      "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -2696,6 +2766,11 @@
       "sha256": "02371f13c2dc1a519d99dfb24d15025852ff8e788b43c807ded7dc62cbea490b"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0060.md",
+      "size_bytes": 8781,
+      "sha256": "1ace595122a388346db55a2abf75fae0f4b0a2b8d7836988a5c59d742998b7b5"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12517,
       "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
@@ -2882,8 +2957,8 @@
     },
     {
       "path": "schemas/goods.schema.json",
-      "size_bytes": 2187,
-      "sha256": "b159bd0a7cc607998d8a6374112267fa5003a2b56a96e26984b0d60a74fe0bea"
+      "size_bytes": 2237,
+      "sha256": "3aaf2369b22b102df0a48d6792d120a4c4b7f233991cb1eb389e79104496b2d1"
     },
     {
       "path": "schemas/job_templates.schema.json",
@@ -3142,13 +3217,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 62088,
-      "sha256": "bf2f58d784c6ccbb87159f978a5c3fb332bdc56aba101bf8a2e0321cd8fc0398"
+      "size_bytes": 71333,
+      "sha256": "3c951fb652a9d11805c5e2ea9c203a7739edf8d1f253ed7a4d02de0c36114968"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 73103,
-      "sha256": "0bd1b976c9e0d01620b94f0a5b5c7477af061105248e5e2f7967d16f53672416"
+      "size_bytes": 76464,
+      "sha256": "6ab9fda6cc272a6da58a182e797354943d94c4423c771695ec4dfff35b47a066"
     }
   ]
 }
