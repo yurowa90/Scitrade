@@ -2087,8 +2087,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 20197,
-      "sha256": "d4bc1fce4225d5a30deb5933b8cb87cda4bac1fe5bc8ba34ab9ebb96370c66aa"
+      "size_bytes": 20648,
+      "sha256": "c61a42ebfbd2305280079fde8a19a29a906ff6d78b7741a5740b97de9f7c3da7"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2399,6 +2399,11 @@
       "path": "docs/ai/tasks/TASK-0059-code-split.md",
       "size_bytes": 15887,
       "sha256": "09c6f2fc26f49b2db50dd0201a772b83593864757762a024a160942ce0c5b137"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0060-validator-data-driven.md",
+      "size_bytes": 11776,
+      "sha256": "928ad2ab2f7ffa4e380d97d6d8908bd465203c7a70ea726aa6a6d9667e3daeb8"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
