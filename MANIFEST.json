@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 208865,
-      "sha256": "9558ab0a78ff3214c40b8000ae5bfe30e2ba2843ab4315802b2a18b94db787d7"
+      "size_bytes": 214183,
+      "sha256": "3e76bb28a737dcc2ecebc0e5a422c22e4046eefd41f98234d9057c93d397d6ba"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -187,8 +187,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 20101,
-      "sha256": "f5cf863a8fd497323dc0f8dbf21127a13bb823cfe708deed99929b8941a2bc89"
+      "size_bytes": 20410,
+      "sha256": "daa8a1351984a92b35d7aee4fcd27ca961eb57e81f41f570b0c677769e602390"
     },
     {
       "path": "docs/RESEARCH_APPLICATION.md",
@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 90245,
-      "sha256": "0c683fbf0f3a2efb3a757940b4f73c1182943124dce1a9341f5f635693b5b2cb"
+      "size_bytes": 92113,
+      "sha256": "c5319e7e41ac948217c9bd9a656aca270ddae6eb075569c4232ebba64b419475"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 9932,
-      "sha256": "6c98250306fca72893c03ebcfcebe277239f52735531ca58e6a7628a1b2b49ab"
+      "size_bytes": 10055,
+      "sha256": "212a3aeaecd4e90d2eeb59defc68b0039f4ff67809b5541d1b30c164cf04f621"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 5745,
-      "sha256": "0c6b7bcec1a16ddf3ff792cd20d09968f646cb7a3389d1a8307c82757ebed860"
+      "size_bytes": 6192,
+      "sha256": "ef39776f8646645c95369c18ac7b8aea690f9c0a9c9ce0f0b0c0aeca8c7dca68"
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
@@ -1671,6 +1671,11 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
+      "size_bytes": 34566,
+      "sha256": "b55698e6d9674f6a60df451530c2115d1a11b6d30c4c22ac1da36db8c499041b"
+    },
+    {
       "path": "docs/ai/design/pyeongtaek-device-check/README.md",
       "size_bytes": 9541,
       "sha256": "6b085539894e9a627135d6fd5291f2eea355c45a30b23080dbd8ddc9bdc60716"
@@ -2082,8 +2087,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 20035,
-      "sha256": "3958c27151972892a4c0daab07708428ef1b5e3734867a36bd21b62cd6b960a1"
+      "size_bytes": 20197,
+      "sha256": "d4bc1fce4225d5a30deb5933b8cb87cda4bac1fe5bc8ba34ab9ebb96370c66aa"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
