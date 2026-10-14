@@ -191,6 +191,11 @@
       "sha256": "daa8a1351984a92b35d7aee4fcd27ca961eb57e81f41f570b0c677769e602390"
     },
     {
+      "path": "docs/QUALITY_GATE_ALPHA.md",
+      "size_bytes": 247523,
+      "sha256": "8eb55bd5938e30ee90e6fe66060ea742c5c462f2ffd11f05bfc5bdc26a9ab04c"
+    },
+    {
       "path": "docs/RESEARCH_APPLICATION.md",
       "size_bytes": 25092,
       "sha256": "f6debc653d549425647205a7fe97286a728742ae039a3488ba1171807d097d14"
@@ -222,8 +227,8 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 6192,
-      "sha256": "ef39776f8646645c95369c18ac7b8aea690f9c0a9c9ce0f0b0c0aeca8c7dca68"
+      "size_bytes": 6514,
+      "sha256": "3f159474bd3a83e387f310ad660cbfda50fe331ba42f1fd5017940c0e3f067ee"
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
