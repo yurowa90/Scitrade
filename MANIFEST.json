@@ -197,8 +197,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 92113,
-      "sha256": "c5319e7e41ac948217c9bd9a656aca270ddae6eb075569c4232ebba64b419475"
+      "size_bytes": 93828,
+      "sha256": "65d969e8de1b1a62c082dd88df5c14c0fe613c78fdcf0beb2fac7aeac4687f12"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -212,8 +212,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 10055,
-      "sha256": "212a3aeaecd4e90d2eeb59defc68b0039f4ff67809b5541d1b30c164cf04f621"
+      "size_bytes": 10143,
+      "sha256": "6bc279095e5d2f351bb2ea7871a55ae0e45dca62697b086908d466612a7d1dc3"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1677,8 +1677,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
-      "size_bytes": 18444,
-      "sha256": "681311858e2f59c90d1c099032d0a092b1c9bb3a45ed784f44d046f6d4515de8"
+      "size_bytes": 19361,
+      "sha256": "3089c77a5bceb500e42b549abd729ea5f0c98be4513deca4c95acebf9de6dd79"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2097,8 +2097,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 20197,
-      "sha256": "d4bc1fce4225d5a30deb5933b8cb87cda4bac1fe5bc8ba34ab9ebb96370c66aa"
+      "size_bytes": 20848,
+      "sha256": "87a40a35d36a9394ed0239f6a2c6af2c008397a67c38d7076181b658475e5c65"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2411,6 +2411,11 @@
       "sha256": "09c6f2fc26f49b2db50dd0201a772b83593864757762a024a160942ce0c5b137"
     },
     {
+      "path": "docs/ai/tasks/TASK-0060-validator-data-driven.md",
+      "size_bytes": 11776,
+      "sha256": "928ad2ab2f7ffa4e380d97d6d8908bd465203c7a70ea726aa6a6d9667e3daeb8"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
       "size_bytes": 12973,
       "sha256": "56fa609f7874ea51ef55562181d9c24e44715168faca6fb66dc627e842ffc2cd"
@@ -2716,6 +2721,11 @@
       "sha256": "02371f13c2dc1a519d99dfb24d15025852ff8e788b43c807ded7dc62cbea490b"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0060.md",
+      "size_bytes": 8781,
+      "sha256": "1ace595122a388346db55a2abf75fae0f4b0a2b8d7836988a5c59d742998b7b5"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12517,
       "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
@@ -2902,8 +2912,8 @@
     },
     {
       "path": "schemas/goods.schema.json",
-      "size_bytes": 2187,
-      "sha256": "b159bd0a7cc607998d8a6374112267fa5003a2b56a96e26984b0d60a74fe0bea"
+      "size_bytes": 2237,
+      "sha256": "3aaf2369b22b102df0a48d6792d120a4c4b7f233991cb1eb389e79104496b2d1"
     },
     {
       "path": "schemas/job_templates.schema.json",
@@ -3162,13 +3172,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 62088,
-      "sha256": "bf2f58d784c6ccbb87159f978a5c3fb332bdc56aba101bf8a2e0321cd8fc0398"
+      "size_bytes": 71333,
+      "sha256": "3c951fb652a9d11805c5e2ea9c203a7739edf8d1f253ed7a4d02de0c36114968"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 73103,
-      "sha256": "0bd1b976c9e0d01620b94f0a5b5c7477af061105248e5e2f7967d16f53672416"
+      "size_bytes": 76464,
+      "sha256": "6ab9fda6cc272a6da58a182e797354943d94c4423c771695ec4dfff35b47a066"
     }
   ]
 }
