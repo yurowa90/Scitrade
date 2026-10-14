@@ -1736,6 +1736,11 @@
       "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
     },
     {
+      "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
+      "size_bytes": 18199,
+      "sha256": "470edf4f4c0202cc139674e5be0de2cb176e5ddb1b0212f4e8e8baac7a6d7000"
+    },
+    {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
       "size_bytes": 11543,
       "sha256": "f8d509195da6794f7eaf58944f694e4dd54d9d7f85646de698ce67c27a9f6cdd"
