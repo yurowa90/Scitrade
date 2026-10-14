@@ -1936,6 +1936,96 @@
       "sha256": "7a6775090144ce48545863c965c6af76cd24e53daaeec1752ad841092c63e9a8"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/README.md",
+      "size_bytes": 11046,
+      "sha256": "72640b08f4f5bf3d721684b8f4922f4614605be9acb4324235e2eede132e4032"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/chromebook-all.png",
+      "size_bytes": 134615,
+      "sha256": "a2ce04d6f18c8319a19f1e204923de60fd148713250f3dab283a7bfe71da018b"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/chromebook-briefing.png",
+      "size_bytes": 126486,
+      "sha256": "ebbdfc4e0b95efce235908a6293deb343bd08caf1e0e946f2095456c78f8cd26"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/harness/m61.js",
+      "size_bytes": 14748,
+      "sha256": "8f15c5547d6d72191aea48fb45c5f0065d8e5b509eb2b97d870cd3cf30a19fd3"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/harness/m61e.js",
+      "size_bytes": 1738,
+      "sha256": "ba9257b5f00c3c0ef628287186d3e638bd9b5e1bd7c3f754682b92efa1349c59"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/harness/m61f.js",
+      "size_bytes": 2175,
+      "sha256": "482e3ab3a81fdf276ca8cca38681aab7dce2daafb65baee9048945f9f9f2db1a"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/harness/m61z.js",
+      "size_bytes": 2113,
+      "sha256": "d931f9044c0115c992ff040df61f3ee1f212e52e03acd45ba72e924ed9965bf7"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/ipad-all.png",
+      "size_bytes": 183022,
+      "sha256": "cec3ef21b50199871231b1bbe60b903f427d48eb609a8b9392817f1a00e4a6f9"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/ipad-briefing.png",
+      "size_bytes": 188916,
+      "sha256": "b717ad5e30c15b3b9343fe0daa0e15af3bc315611d7a6749858690845b2a0e45"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/a11y.jsonl",
+      "size_bytes": 1081,
+      "sha256": "c31965e3e93c46c519bde3c8595639699c23e50449e50d9f00a9fab77a2b5f8d"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/cb.jsonl",
+      "size_bytes": 4254,
+      "sha256": "8df2bde0e88955ba89690a0799bcf53cf1f2331b0260ab8027c660c7cf4ff5ef"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/escape.jsonl",
+      "size_bytes": 377,
+      "sha256": "8d50df66866ee991ee4bd4feae381f84cafee83b3c447c95388129a8f12159a8"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/ipad.jsonl",
+      "size_bytes": 4224,
+      "sha256": "f4ef9fd7f1bbcbf5af3adc33c5e069fd6f32ac2e6d6c016d309610d893b24e8c"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/motion.jsonl",
+      "size_bytes": 612,
+      "sha256": "afbd30f42cf0e6ba756c9f9ee82b135d784988890726a19e46042cb4cb201353"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/scale.jsonl",
+      "size_bytes": 882,
+      "sha256": "e76cdfa5a3b999e7a16aba3d2d69ff9bec8d1835676ef7826d27d4fc3a76faaa"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/raw/zoom.jsonl",
+      "size_bytes": 934,
+      "sha256": "2684f22b103be82b0eb7ae1675e916334940318e7853bd09b8e559c616c94b30"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/zoom-256.png",
+      "size_bytes": 4319,
+      "sha256": "9abd84540d29424e4caa54c9d4fdd8c862642d305852e670ea92f5597f97e3d6"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/zoom-342.png",
+      "size_bytes": 9388,
+      "sha256": "0093eb6e6a68070c6b27ef3b7f299cd9a14d1d02e9fec1d457707653edac02f4"
+    },
+    {
       "path": "docs/ai/design/situation-map-10b1/ipad-all.png",
       "size_bytes": 224853,
       "sha256": "5827b905c05068dbc474be7eae3e7455e2120d9fc0853215887ef994642a04dd"
