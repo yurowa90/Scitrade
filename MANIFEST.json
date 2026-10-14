@@ -1896,6 +1896,66 @@
       "sha256": "ff332ba17bc6a2f8c198f3d7af33e425953f79c2310cbd50d9aafb00ceabf948"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/README.md",
+      "size_bytes": 9355,
+      "sha256": "685da37a7e3880912dddb18b8c6b6de4e8c207a27d871e8f60a036a0357268a3"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/chromebook-all.png",
+      "size_bytes": 152476,
+      "sha256": "a65d219174aaf91a4e72899527b10a4b011952a1c2e18d9a18754f8f3d7f6327"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/chromebook-briefing.png",
+      "size_bytes": 143551,
+      "sha256": "33617f020df70b0c0fc16a123c74a3ffbabd96144b10c70285a361b744657819"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/data/nightlights-ea.png",
+      "size_bytes": 17166,
+      "sha256": "68f4f60437a12dc363e12ce671408ec339a2bb03adcc0a80f80395c6712a8482"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/data/ports-ea.json",
+      "size_bytes": 3925,
+      "sha256": "b7b91de9f3dc7442dd3ea685e32e62143602488052b1d935ab3544c249084e25"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/nightlights.py",
+      "size_bytes": 788,
+      "sha256": "35adf9a1b775496de10d37842b928f283e6a0ce5aa91711eff4a366c6e6dc1b9"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/ports.py",
+      "size_bytes": 1147,
+      "sha256": "da3c5eb7a31221c2ada94f9ae52b65b2edccb2ca65cff3880491770634b85fe9"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/harness/smshot.js",
+      "size_bytes": 3123,
+      "sha256": "7a6775090144ce48545863c965c6af76cd24e53daaeec1752ad841092c63e9a8"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/ipad-all.png",
+      "size_bytes": 224853,
+      "sha256": "5827b905c05068dbc474be7eae3e7455e2120d9fc0853215887ef994642a04dd"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/ipad-briefing.png",
+      "size_bytes": 191098,
+      "sha256": "fb38e878b304d90d77a725f5bc45ad4245f42f0a0fbfa02e337e92f9234b8e30"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/mock/mock.js",
+      "size_bytes": 8920,
+      "sha256": "140588fb6d4b393b1f9619e7fdb7b25a521b8359ad05ad035f785574271dffd6"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/mock/situation.css",
+      "size_bytes": 443,
+      "sha256": "f03e9cdce5272918e5233c1f9d1a729732deb575b36ec4882926fad5b040e06a"
+    },
+    {
       "path": "docs/ai/design/task0033-chromium/README.md",
       "size_bytes": 10783,
       "sha256": "b776c4c23616147440dc0bb85900c1e06289649da019bea7f128954587add2e1"
