@@ -2,6 +2,8 @@
 import { vi } from 'vitest';
 import type { ScenarioConfig } from '../engine/types';
 
+export const SITUATION_BUTTON = '\n      <button data-action="situation" aria-haspopup="dialog">상황실</button>';
+
 const unescape = (text: string) => text.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
 export async function startUi(config?: ScenarioConfig) {

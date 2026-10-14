@@ -472,7 +472,7 @@ function worldMap(): string {
   <section class="panel world" aria-labelledby="world-h">
     <div class="world-head">
       <h2 id="world-h">세계지도 <small>${status}</small></h2>
-      <button data-action="situation">상황실</button>
+      <button data-action="situation" aria-haspopup="dialog">상황실</button>
       <div class="seg" role="group" aria-label="지도 범위">
         <button data-action="map-mode" data-mode="route" aria-pressed="${mapMode === 'route'}">이번 항로</button>
         <button data-action="map-mode" data-mode="world" aria-pressed="${mapMode === 'world'}">전 세계</button>

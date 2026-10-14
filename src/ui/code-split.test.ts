@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startUi } from './main-testkit';
+import { SITUATION_BUTTON, startUi } from './main-testkit';
 import { loadScenario } from '../content/scenario';
 import { commitDay, createGame, openDay } from '../engine/engine';
 import { serializeSave } from '../engine/save';
@@ -145,7 +145,6 @@ const gates: Partial<Record<Kind, ReturnType<typeof deferred>>> = {};
 let situationCalls = 0;
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 // 새 진입 단추 조각만 정확히 빼고 기존 전체 HTML 보호값을 대조한다.
-const SITUATION_BUTTON = '\n      <button data-action="situation">상황실</button>';
 const hash = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
 const opsId = 'SCENARIO_M2_OPERATIONS';
 const legacyId = 'SCENARIO_M2_MULTI_TRADE';

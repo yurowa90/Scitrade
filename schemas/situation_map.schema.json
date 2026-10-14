@@ -180,6 +180,9 @@
                   "enum": [
                     "countries"
                   ]
+                },
+                "source_updated": {
+                  "type": "string"
                 }
               }
             }

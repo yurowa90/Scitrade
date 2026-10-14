@@ -96,8 +96,18 @@ export function initialSituationView(reducedMotion = false): SituationView {
 }
 const allowedLayer = (id: string) => snapshot.layers.find((l) => l.id === id)?.license_tier !== 'banned';
 export function layerAnnouncement(id: LayerId, enabled: boolean): string { return `${snapshot.layers.find((l) => l.id === id)!.title_ko} ${enabled ? '켬' : '끔'}`; }
+function indicatorValue(indicator: typeof snapshot.countries[number]['indicators'][number]): string {
+  if (indicator.value === null) return '—';
+  const value = indicator.value;
+  if (indicator.id === 'TX.VAL.MRCH.CD.WT') return `${Math.round(value / 100_000_000).toLocaleString('ko-KR')}억 달러`;
+  if (indicator.id === 'NY.GDP.PCAP.CD') return `${Math.round(value).toLocaleString('ko-KR')} 달러`;
+  if (indicator.id === 'NE.TRD.GNFS.ZS') return `${Math.round(value)}%`;
+  if (indicator.id === 'LP.LPI.OVRL.XQ') return `${value.toFixed(1)}점`;
+  return `${value} ${esc(indicator.unit_ko)}`;
+}
+const indicatorYear = (year: number | null) => year === null ? '—' : `${year}년`;
 function sourceRegister(): string {
-  return `<h3>출처 등록부</h3><table><thead><tr><th>자료</th><th>제공·라이선스</th><th>기준일</th><th>등급</th></tr></thead><tbody>${snapshot.layers.map((l) => `<tr><th>${esc(l.title_ko)}</th><td>${esc(l.provider)} · ${esc(l.license)}<br>${esc(l.license_tier)}</td><td>${l.retrieved_on ?? '—'}</td><td>${l.verification_status === 'verified' ? '확인' : '확인 전'}</td></tr>`).join('')}</tbody></table><p>실시간 외부 호출 없음. 모든 층은 저장소 안 스냅숏</p>`;
+  return `<h3>출처 등록부</h3><table><thead><tr><th>자료</th><th>제공·라이선스</th><th>기준일</th><th>등급</th></tr></thead><tbody>${snapshot.layers.map((l) => `<tr><th>${esc(l.title_ko)}</th><td>${esc(l.provider)} · ${esc(l.license)}<br>${esc(l.license_tier)}<br>${esc(l.credit_ko)}</td><td>${l.retrieved_on ?? '—'}</td><td>${l.verification_status === 'verified' ? '확인' : '확인 전'}</td></tr>`).join('')}</tbody></table><p>실시간 외부 호출 없음. 모든 층은 저장소 안 스냅숏</p>`;
 }
 export function situationTables(state: GameState, config: ScenarioConfig): string {
   const moving = state.shipments.filter((s) => s.arrivalDay === null);
@@ -107,7 +117,7 @@ export function situationTables(state: GameState, config: ScenarioConfig): strin
       return `<tr><th>${esc(s.contractId)}</th><td>${booking ? esc(routeLabel(config, booking.routeId)) : '—'}</td><td>${s.departureDay}일</td><td>${shipmentArrival(state, config, s)}일</td><td>${shipmentArrival(state, config, s) > s.scheduledArrivalDay ? '항만 하역 중단 · 공개 공지·관측 대기 기준' : '—'}</td></tr>`;
     }).join('')}</tbody></table>
     <table data-table="ports"><caption>항만</caption><thead><tr><th>이름</th><th>나라</th><th>게임 거점 여부</th><th>표시</th></tr></thead><tbody>${ports.map((p) => `<tr><th>${esc(portName(p))}</th><td>${esc(p.country)}</td><td>${p.hub ? esc(p.hub) : '아니오'}</td><td>${p.prominent ? '또렷' : '옅게'}</td></tr>`).join('')}</tbody></table>
-    <table data-table="countries"><caption>국가 지표</caption><thead><tr><th>국가·지표</th><th>값</th><th>기준일</th><th>출처</th></tr></thead><tbody>${snapshot.countries.flatMap((c) => c.indicators.map((i) => `<tr><th>${esc(c.name_ko)} · ${esc(i.label_ko)}</th><td>${i.value === null ? '—' : `${i.value} ${esc(i.unit_ko)}`}</td><td>${i.year ?? '—'}</td><td>World Bank WDI · ${i.value === null ? '값·기준일 확인 전' : '확인'}</td></tr>`)).join('')}</tbody></table>
+    <table data-table="countries"><caption>국가 지표</caption><thead><tr><th>국가·지표</th><th>값</th><th>기준일</th><th>출처</th></tr></thead><tbody>${snapshot.countries.flatMap((c) => c.indicators.map((i) => `<tr><th>${esc(c.name_ko)} · ${esc(i.label_ko)}</th><td>${indicatorValue(i)}</td><td>${indicatorYear(i.year)}</td><td>World Bank WDI · ${i.value === null ? '값·기준일 확인 전' : '확인'}</td></tr>`)).join('')}</tbody></table>
     <p>야간 불빛은 경제활동이 많은 곳을 밝게 보이는 그림입니다. 밝기는 경제 규모의 직접 측정값이 아닙니다. ${esc(snapshot.layers.find((l) => l.id === 'nightlights')!.credit_ko)}</p></section>`;
 }
 export function situationHtml(state: GameState, config: ScenarioConfig, view: SituationView, warning?: PaymentWarning): string {
@@ -134,7 +144,7 @@ export function situationHtml(state: GameState, config: ScenarioConfig, view: Si
     <div class="situation-body"><div class="situation-left">${view.table ? situationTables(state, config) : `<div class="situation-stage${view.visual ? ' situation-visual' : ''}${view.reducedMotion ? ' situation-reduced' : ''}${layers.nightlights ? ' situation-lights' : ''}">${svg}</div>${layers.nightlights ? `<div class="situation-night-legend"><p>야간 불빛 · 4단계 <span>어두움</span><span>약함</span><span>밝음</span><span>매우 밝음</span></p><p>${esc(snapshot.layers.find((l) => l.id === 'nightlights')!.credit_ko)}</p></div>` : ''}<p class="situation-selection" role="status">${selected ? `${esc(portName(selected))} · 나라 ${esc(selected.country)} · ${selected.hub ? `게임 거점 ${esc(selected.hub)}` : '게임 거점 아님'} · ${selected.prominent ? '또렷' : '옅게'}` : mark ? esc(`${mark.nameKo} · ${mark.lines.join(' ')}`) : '항만 점·게임 거점·선박을 누르면 이름과 내용을 볼 수 있습니다.'}</p>`}</div>
     <aside><div class="situation-controls">${view.briefing ? `<article class="situation-brief" role="status"><h3 id="situation-brief-h" tabindex="-1">${event ? `사건 ${view.eventIndex + 1}/${events.length} · ${esc(event.title)}` : '오늘 확인할 사건이 없습니다'}</h3>${event ? `<p>${esc(event.text)}</p><div><button data-situation="prev" ${view.eventIndex === 0 ? 'disabled' : ''}>이전</button><button data-situation="next" ${view.eventIndex === events.length - 1 ? 'disabled' : ''}>다음 사건</button><button data-situation="free">브리핑 끝내기</button></div>` : ''}</article>` : ''}
     <fieldset><legend>레이어</legend>${snapshot.layers.filter((l) => allowedLayer(l.id)).map((l) => `<label class="situation-toggle" for="situation-${l.id}"><input id="situation-${l.id}" type="checkbox" data-layer="${l.id}" ${layers[l.id as LayerId] ? 'checked' : ''}>${esc(l.title_ko)}<small>${counts[l.id as LayerId]}</small></label>`).join('')}</fieldset></div>
-    <div class="situation-reference">${layers.countries ? snapshot.countries.map((c) => `<article class="situation-country-card"><h3>${esc(c.name_ko)}</h3><dl>${c.indicators.map((i) => `<dt>${esc(i.label_ko)}</dt><dd>${i.value === null ? '—' : `${i.value} ${esc(i.unit_ko)}`}</dd>`).join('')}</dl>${c.indicators.some((i) => i.value === null) ? '<p>값·기준일 확인 전</p>' : ''}</article>`).join('') : ''}${sourceRegister()}</div></aside></div><div class="visually-hidden" id="situation-live" aria-live="polite" aria-atomic="true"></div>`;
+    <div class="situation-reference">${layers.countries ? snapshot.countries.map((c) => `<article class="situation-country-card"><h3>${esc(c.name_ko)}</h3><dl>${c.indicators.map((i) => `<dt>${esc(i.label_ko)}</dt><dd>${indicatorValue(i)} · ${indicatorYear(i.year)}</dd>`).join('')}</dl>${c.indicators.some((i) => i.value === null) ? '<p>값·기준일 확인 전</p>' : ''}</article>`).join('') : ''}${sourceRegister()}</div></aside></div><div class="visually-hidden" id="situation-live" aria-live="polite" aria-atomic="true"></div>`;
 }
 
 /** 전체 화면을 붙이고 배경은 inert로 막는다. 종료 때 원래 진행 단추·초점을 복구한다. */

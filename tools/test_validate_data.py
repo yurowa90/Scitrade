@@ -1367,9 +1367,25 @@ class SituationMapTest(unittest.TestCase):
             self.assertTrue(self.errors())
 
     def test_null_values_pass_without_year_and_verification(self):
+        self.document['layers'][4].update(verification_status='pending', retrieved_on=None)
+        for country in self.document['countries']:
+            for indicator in country['indicators']:
+                indicator.update(value=None, year=None)
         self.assertEqual(self.errors(), [])
         self.document['countries'][0]['indicators'][0]['value'] = 0
         self.assertTrue(self.errors())
+
+    def test_verified_country_values_pass(self):
+        self.document['layers'][4].update(verification_status='verified', retrieved_on='2026-10-14')
+        for country in self.document['countries']:
+            for indicator in country['indicators']:
+                indicator.update(value=1, year=2025)
+        self.assertEqual(self.errors(), [])
+
+    def test_verified_country_null_value_fails(self):
+        self.document['layers'][4].update(verification_status='verified', retrieved_on='2026-10-14')
+        self.document['countries'][0]['indicators'][0]['value'] = None
+        self.assertIn('situation_map: 확인된 국가 지표는 값 필요', self.errors())
 
     def test_required_field_pass_and_missing_fail(self):
         self.assertEqual(self.errors(), [])

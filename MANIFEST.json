@@ -132,8 +132,8 @@
     },
     {
       "path": "data/situation_map.json",
-      "size_bytes": 25886,
-      "sha256": "35e2192110a72332bc40412d58a3435be29501eeff4e80355fefa064f20ae6a4"
+      "size_bytes": 27194,
+      "sha256": "b49c27458f965f0d09714fedf700285ac82ab7333a4ab6e5344d2d22d9b66264"
     },
     {
       "path": "data/sources.json",
@@ -2777,8 +2777,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0061.md",
-      "size_bytes": 14046,
-      "sha256": "51dcf18bc04c96ab33dc1740812d80d3d71d68edbb2b3930105bc90fd8d3dac9"
+      "size_bytes": 31938,
+      "sha256": "f1dd6484e5d5c59cacc3ac05715dca675cd6df1b6ac635b0a5294d3b8d5c40a3"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -3017,8 +3017,8 @@
     },
     {
       "path": "schemas/situation_map.schema.json",
-      "size_bytes": 4107,
-      "sha256": "42e1ea8f874999b9370553993a57bd505ed613b1764b080df03dd0ba2e13c4a6"
+      "size_bytes": 4197,
+      "sha256": "1d4916ed5aed79ca5798f1f39967bfebded0e0093089f1002c0aedc7f5b3b241"
     },
     {
       "path": "schemas/sources.schema.json",
@@ -3232,13 +3232,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 75094,
-      "sha256": "050e44b5d11048d964b9b3be69748f45ca85cb5ecfa96c97a643741cc551b45f"
+      "size_bytes": 76016,
+      "sha256": "e0b45141c30308080bdc915e13ec666651f34a40851c5a1bf28de60c16aac284"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 78922,
-      "sha256": "4108c732d5b9da8fa95df1bd35d0822cf650941e51de92f71cf18d99446a7c6f"
+      "size_bytes": 79100,
+      "sha256": "9942180e601e4d669b1af197183b349113ff1ce5a55f20fe3d99101aa658b33f"
     }
   ]
 }

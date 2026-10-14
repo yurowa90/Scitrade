@@ -75,10 +75,16 @@ describe('TASK-0061 상황실 지도', () => {
     dom.toggle('nightlights', false);
     expect(dom.root.innerHTML).not.toContain('data-situation-layer="nightlights"');
   });
-  it('항만 135곳의 원본 순서·좌표·등급을 그대로 보존한다', () => {
-    expect(situationData.ports.map((p) => [p.name_en, p.lon, p.lat, p.scalerank])).toEqual(referencePorts);
-    expect(situationData.ports).toHaveLength(135);
-    expect(situationData.ports.filter((p) => p.name_ko).every((p) => loadMapCities().some((c) => referenceDistance(p, c) <= 25 && c.nameKo === p.name_ko))).toBe(true);
+  it('항만 정리 두 곳 외에는 원본 순서·좌표·등급·ID를 보존한다', () => {
+    const kept = referencePorts.filter((_, i) => i !== 13 && i !== 27);
+    expect(situationData.ports.map((p) => [p.name_en, p.lon, p.lat, p.scalerank])).toEqual(kept);
+    expect(situationData.ports).toHaveLength(133);
+    expect(situationData.ports.map((p) => p.id)).toEqual(referencePorts.flatMap((_, i) => i === 13 || i === 27 ? [] : [`NE-PORT-${String(i + 1).padStart(3, '0')}`]));
+    for (const name of ['Sorong', 'Bangkok', 'Guangzhou', 'Surabaya']) expect(situationData.ports.filter((p) => p.name_en === name)).toHaveLength(2);
+    for (const [english, korean] of [['Hai Phong', '하이퐁'], ['Shanghai', '상하이'], ['Hong Kong', '홍콩'], ['Singapore', '싱가포르'], ['Yokohama', '요코하마'], ['Hankow', '한커우']]) {
+      expect(situationData.ports.find((p) => p.name_en === english)?.name_ko).toBe(korean);
+    }
+    expect(situationData.ports.find((p) => p.name_en === 'Ho Chi Minh City')?.name_ko).toBeNull();
   });
   it('항만 두 단계는 모든 거점·항로 50 km 집합과 같고 경계 안팎을 나눈다', () => {
     const cities = loadMapCities(), lines = routes.items.map((r) => loadRouteWaypoints(r.id));
@@ -127,7 +133,27 @@ describe('TASK-0061 상황실 지도', () => {
     expect(count('cargo')).toBe(state.shipments.filter((s) => s.arrivalDay === null).length);
     expect(count('ports')).toBe(situationData.ports.length);
     expect(count('countries')).toBe(situationData.countries.reduce((n, c) => n + c.indicators.length, 0));
-    expect(tables).toContain('(영문 표기)'); expect(tables).toContain('값·기준일 확인 전');
+    expect(tables).toContain('(영문 표기)'); expect(tables).not.toContain('값·기준일 확인 전');
+  });
+  it('국가 카드와 표는 원값을 보존하고 표시 단위와 지표별 연도를 보인다', () => {
+    const expected = [
+      ['86%', '7,093억 달러', '36,227 달러', '3.8점'],
+      ['38%', '37,718억 달러', '13,862 달러', '3.7점'],
+      ['190%', '4,729억 달러', '5,066 달러', '3.3점'],
+    ];
+    const cards = [...html().matchAll(/class="situation-country-card"[\s\S]*?<\/article>/g)].map((m) => m[0]);
+    const tables = situationTables(empty(), config);
+    expected.forEach((values, i) => {
+      values.forEach((value, j) => {
+        expect(cards[i]).toContain(`${value} · ${j === 3 ? 2022 : 2025}년`);
+        expect(tables).toContain(`<td>${value}</td><td>${j === 3 ? 2022 : 2025}년</td>`);
+      });
+    });
+    expect(situationData.countries[0]!.indicators[0]!.value).toBe(86.3616006442431);
+    expect(situationData.countries[0]!.indicators[2]!.value).toBe(36226.9663637512);
+    expect(html()).toContain('표시 단위로 반올림함.');
+    expect(html()).toContain('최대 약 30 km 오차');
+    expect(situationData.layers.find((l) => l.id === 'nightlights')!.verification_status).toBe('pending');
   });
   it('reduced-motion은 이동 클래스 없이 비네트만 남기는 모드를 쓴다', async () => {
     expect(html(initialSituationView(), delayed())).toContain('situation-moving');

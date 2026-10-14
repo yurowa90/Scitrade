@@ -962,6 +962,8 @@ def validate_situation_map(document, bounds):
               'situation_map: 국가 지표 네 개')
         for indicator in indicators:
             layer = by_id.get(indicator.get('source_layer'), {})
+            check(layer.get('verification_status') != 'verified' or indicator.get('value') is not None,
+                  'situation_map: 확인된 국가 지표는 값 필요')
             check(indicator.get('value') is None or
                   (type(indicator.get('year')) is int and layer.get('verification_status') == 'verified'),
                   'situation_map: 값은 정수 기준 연도와 확인된 층 필요')
