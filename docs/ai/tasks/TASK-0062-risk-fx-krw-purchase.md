@@ -40,16 +40,17 @@
 - `acceptTrade`(`engine.ts:308`): rules-3이면 매입·판매 통화가 달라도 받는다. 계약 `currency`는 판매 통화다. 매입 통화는 견적에서 읽는다. 계약·화물·청구서에 칸을 더하지 않는다.
 - 자금 검사: 매입은 KRW 가용 자금, 운임·관세 예상은 USD 가용 자금으로 따로 본다. 부족한 통화마다 거절 문장을 따로 낸다.
 - 운임·관세: 혼합 통화 계약이면 화물 장부가에 더하지 않고, 같은 계약 ID의 USD 재고 분개로만 쌓는다.
+- 관세의 과세가격(설계 3.3): rules-3에서는 원화 매입액 ÷ 참고 환율(도착일, 미리보기는 오늘)로 USD 과세가격을 낸다. 관세를 계산하는 다섯 곳(`catalog.ts:75`, `engine.ts:319·1019`, `reports.ts:99`, `reservations.ts:33`, `operations.ts:273`)이 한 함수 `dutyFor`를 부르게 한다. rules-2 값은 그대로다.
 - 인도 때 매출원가: 혼합 통화 계약이면 `COGS-{계약}-KRW`와 `COGS-{계약}-USD` 두 분개를 낸다. rules-2 분개 ID·금액은 그대로다.
 - 출항 전 취소·편 놓침: 지금 규칙의 금액을 통화별로 나눠 적용한다(매입 원화는 돌려받지 못함, 운임 환급·취소비는 USD).
-- 계약 보고서·결산 읽기 함수(`reports.ts`)가 통화를 섞어 더하는 곳이 있으면 혼합 통화 계약에서 통화별로 나눠 낸다. 두 통화를 더한 값을 만들지 않는다(SPEC 10.4).
+- 계약 보고서(`contractReport`, `reports.ts:21-33`)와 결산 읽기 함수가 계약 통화 하나만 세는 곳은 혼합 통화 계약에서 통화별로 나눠 낸다(원화 매출원가가 빠져 기여이익이 부풀지 않게). 두 통화를 더한 값을 만들지 않는다(SPEC 10.4). 실행기 지표(`src/engine/sim/**`)는 이번에 고치지 않는다.
 
 ### 4. 견적 미리보기와 계약 손익 읽기 함수
 
-- `preview`(`reports.ts:85`)와 `quotePreview`(`readers.ts:31`): rules-3이면 `krw` 묶음 `{ rateKrwPerUsd, purchaseKrw, usdLinesKrw, contributionKrw }`를 더한다. 오늘 참고 환율로 바꾼다. 기존 칸은 rules-2에서 바이트로 같다.
-- 새 읽기 함수 `contractRiskReport(state, config, contractId)`(설계 3.4). 이번에는 `components.fx`만 채우고 `tariff`·`surcharge`·`claim`·`collection`은 0이다.
-  - 항등식: 끝난 계약에서 `realized − expected = fx + tariff + surcharge + claim + collection`. 원 단위 정수.
-  - 달러 줄의 환산일은 그 분개의 날이다. 반올림은 한 함수에서만 한다.
+- `preview`(`reports.ts:85`)와 `quotePreview`(`readers.ts:31`): rules-3이면 `krw` 묶음 `{ rateKrwPerUsd, purchaseKrw, usdLinesKrw, contributionKrw }`를 더한다. 오늘 참고 환율로 바꾼다. 기존 칸 `purchase`·`contributionBeforePayroll`·`cashNeed`는 rules-3에서 오늘 참고 환율로 바꾼 USD 환산값이다(원과 센트를 섞지 않는다). 기존 칸은 rules-2에서 바이트로 같다.
+- 새 읽기 함수 `contractRiskReport(state, config, contractId)`. **정의는 설계 3.4 그대로다**: `expected`는 수락일 미리보기를 다시 계산한 값, `realized`는 현금 기준(현금이 오간 날의 참고 환율), `components`는 고정 순서의 순차 대체다.
+  - 이번에 채우는 칸: `schedule`, `fx`, `late`, `cancel`, `residual`. `tariff`·`surcharge`·`claim`·`collection`은 0이다.
+  - 항등식: `realized − expected = 모든 칸의 합`이고 `residual`은 늘 0이다. 원 단위 정수. 환산 반올림은 한 함수에서만 한다.
 - 실행기 정책은 이번에 고치지 않는다(경로 5 변형 지시서).
 
 ### 5. 측정용 설정 변환
@@ -61,23 +62,30 @@
 
 - 저장 형식은 6 그대로다. `save-shape.ts`는 열거 값 추가만 한다(필요할 때).
 - `operations-invariants.ts`: 혼합 통화 계약은 매입 견적 KRW·판매 견적 USD·계약 통화 USD여야 한다. 다른 짝이면 불러오기를 거부한다(기존 `SaveError` 경로).
+- `invariants.ts`: 통화별 재고 장부 = 화물 장부가 합(`:62-67`)을 혼합 통화 계약의 USD 재고 분개까지 더해 맞춘다. rules-2 상태에서는 지금과 같은 식이어야 한다.
+- `withRiskLevel`로 만든 상태의 저장은 시나리오 ID로 다시 열면 rules-2 설정으로 읽힌다(설계 8절 한계). 저장 왕복 시험은 설정을 직접 넘긴다. 이 한계를 고치려고 저장 형식이나 meta 칸을 바꾸지 않는다.
 
 ## 시험(새 파일 `src/engine/m2a5-risk-fx.test.ts`)
 
 - 시험은 옛 운영 시나리오에 `withRiskLevel(…, 'R1', 자료의 첫 프로필)`을 걸어 만든다. **시험에 자료 ID·조정 상수를 쓰지 않는다**(TASK-0027 R1). 값이 필요하면 프로필에서 읽는다.
+- 특정 사건(환율이 바뀐 날, 늦은 편 계약 등)이 필요하면 시드를 찾는다. 탐색은 시드 200개 안으로 제한하고, **찾았는지를 먼저 단언**한다.
+- 직접 무역을 받으려면 원화가 있어야 한다. 시험 구동기가 명령(환전 → 수락)을 직접 넣는다. 실행기 정책은 쓰지 않는다.
+- ‘`<BASE>`와 같다’는 시험 안에서 확인할 수 없다. 옛 값 불변은 기존 골든값 시험과 `review_checks`의 400회 `cmp`가 맡는다.
 
 | 시험 | 확인할 것 |
 |---|---|
-| 옛 값 불변 | rules-2 운영 시나리오에서 첫 묶음 견적·미리보기·한 계약의 원장이 `<BASE>`와 같다. 시드 하나로 90일을 돌린 `state.rng.cursors` 키 목록이 `<BASE>`와 같다(새 흐름을 뽑지 않음) |
+| 옛 값 불변 | rules-2 운영 시나리오를 시드 하나로 90일 돌린 `state.rng.cursors`에 새 흐름 이름이 없다. 기존 골든값 시험이 그대로 통과한다 |
+| 흐름 유일성 | 위험 순수 함수가 쓰는 (흐름 이름, 번호) 쌍이 서로 겹치지 않는다 |
 | 환율 순수성 | 같은 (seed, day)는 같은 값. 공개일 사이 같은 값. 값이 늘 [min, max] 안. 이웃 주의 변화율이 `step_bp` 안. 시드 두 개가 어느 주에서 다르다(찾아서 확인) |
 | 환율 상태 무관 | `referenceRate`를 여러 번 불러도 `state`가 같다. 저장·불러오기 뒤 같은 날 값이 같다 |
 | 환전 | rules-3 환전의 원화 금액 = USD × (그날 참고 환율 ∓ 차감). 환율이 바뀐 날을 찾아 두 날의 금액이 다른 것을 본다 |
 | 원화 매입 계약 | R1에서 직접 무역을 받으면 매입 분개는 KRW, 운임 분개는 USD, 인도 때 COGS가 통화별 두 분개. 통화별 원장 합이 0(항등식) |
 | 자금 검사 | KRW가 모자라면 KRW 문장으로, USD가 모자라면 USD 문장으로 거절 |
 | 취소 | 혼합 통화 계약 출항 전 취소의 통화별 금액 |
-| 손익 읽기 | 끝난 계약에서 분해 항등식. 환율이 수락일과 수금일 사이에 바뀐 계약을 찾아 `components.fx ≠ 0`이고 부호가 환율 방향과 맞다(원화 강세면 음수) |
+| 손익 읽기 | 끝난 계약마다 `residual = 0`. 환율이 수락일과 수금일 사이에 바뀐 계약을 찾아 `components.fx ≠ 0`이고 부호가 환율 방향과 맞다(원화 강세면 음수). 늦은 편 계약을 찾아 `late`·`schedule` 칸이 채워진다. 출항 전 취소 계약의 `cancel` 칸 |
+| 관세 과세가격 | R1 계약의 관세 = 원화 매입액 ÷ 도착일 참고 환율 × 세율(센트). 다섯 호출처가 같은 값 |
 | 결정성 | 같은 시드·같은 명령 두 번이면 같은 상태 JSON |
-| 저장 | R1 진행 상태 저장·불러오기 왕복이 같다. 옛 저장 시험은 그대로 통과 |
+| 저장 | R1 진행 상태 저장·불러오기 왕복이 같다(설정을 직접 넘김). 옛 저장 시험은 그대로 통과 |
 | 불변식 | 혼합 통화 짝을 바꾼 저장 사본을 거부 |
 
 ## 변형 시험
@@ -95,7 +103,7 @@
 
 ## 고칠 수 있는 파일
 
-- `src/engine/engine.ts`, `market.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `catalog.ts`, `types.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만), 새 `src/engine/risk.ts`
+- `src/engine/engine.ts`, `market.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `catalog.ts`, `reservations.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만), 새 `src/engine/risk.ts`
 - `src/content/scenario.ts`
 - `data/market_rules.json`(`risk_profiles` 추가만), 해당 스키마, `tools/validate_data.py`(위험 프로필 검사만)와 그 시험
 - 새 `src/engine/m2a5-risk-fx.test.ts`
@@ -123,6 +131,6 @@
 
 - 바꾼 곳(파일·함수)과 이유, rules-2와 rules-3 분기 목록
 - 상태 칸을 더하지 않았다는 확인(또는 멈춘 이유)
-- R1로 시드 하나를 90일 돌린 요약: 직접 무역 계약 수, `contractRiskReport`의 기대·실현·fx 분포(최소·중앙·최대), 원화 기준 손실 계약 수. **값을 고치지 않고 적기만 한다**
+- 시험 구동기로 만든 R1 계약 몇 건(정시·늦은 편·취소 각 1건 이상)의 `contractRiskReport` 표(기대·실현·칸별 값). **값을 고치지 않고 적기만 한다.** 90일 정책 실행은 경로 5 실행기 지시서에서 한다(지금 기준 정책은 원화 매입용 환전을 하지 않는다, `operations-policy.ts:74`)
 - 첫 화면 gzip 전후, 시험 수, 400회 `cmp` 결과, 변형 표
 - 범위 밖 발견과 질문

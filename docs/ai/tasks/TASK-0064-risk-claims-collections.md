@@ -11,7 +11,7 @@
 
 ### 1. 화물 손상 클레임
 
-- rules-3이고 `layers`에 `CLAIM`이 있으면, 직접 무역 화물이 인도될 때(`processDeliveries`) 계약 번호마다 순수 함수 `claimFor(config, seed, contractId)`(흐름 `CLAIM`)로 손상 여부와 손상률을 정한다.
+- rules-3이고 `layers`에 `CLAIM`이 있으면, 직접 무역 화물이 인도될 때(`processDeliveries`) 계약마다 순수 함수 `claimFor(config, seed, contractId)`로 손상 여부와 손상률을 정한다. 흐름 이름은 `CLAIM:{계약}:hit`, `…:rate`. 손상 확률은 **판매 도시마다** 프로필의 `claims.by_city`에서 읽는다(설계 5.1).
 - 손상이면: 늦은 인도 감액 뒤 판매액 × 손상률(USD 센트 단위, half-up)을 매출 에누리로 낸다.
   - 새 계정 `SALES_ALLOWANCE`. 분개 `CLAIM-{계약}`: 매출 에누리 / 매출채권. 청구 금액이 그만큼 준다.
   - `priceReductionMinor`(늦은 감액)에는 더하지 않는다.
@@ -20,10 +20,10 @@
 
 ### 2. 지연·부분 수금
 
-- rules-3이고 `layers`에 `COLLECTION`이 있으면, 청구서를 낼 때 순수 함수 `collectionPlan(config, seed, invoiceId)`(흐름 `COLLECT`)로 방식을 정한다: 정시·지연·부분(설계 5.2).
+- rules-3이고 `layers`에 `COLLECTION`이 있으면, 청구서를 낼 때 순수 함수 `collectionPlan(config, seed, invoiceId)`로 방식을 정한다: 정시·지연·부분(설계 5.2). 흐름 이름은 `COLLECT:{청구서}:mode`, `…:days`. 확률은 판매 도시마다 `collections.by_city`에서 읽는다.
 - 청구서의 `dueDay`는 계약상 결제일 그대로 둔다. 실제 수금은 `processCollections`가 계획을 읽어 처리한다.
-  - 지연: 계획일에 전액(`RECEIPT-{청구서}`).
-  - 부분: 결제일에 `partial_bp` 몫(`RECEIPT-{청구서}-1`), 계획일에 나머지(`RECEIPT-{청구서}-2`). 둘 다 `receiptIds`에 넣는다. `status`는 다 받은 날 `PAID`.
+  - 지연: 계획일에 전액. 수금 ID·분개 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `engine.ts:1117`) 그대로다.
+  - 부분: 결제일에 `partial_bp` 몫(수금 ID `RCPT-{청구서}-1`), 계획일에 나머지(`RCPT-{청구서}-2`). 둘 다 `receiptIds`에 넣는다. `status`는 다 받은 날 `PAID`, 그 전 결제일이 지나면 기존 `OVERDUE`.
   - 계획일이 캠페인 끝을 넘으면 받지 못한 채 채권으로 남는다.
 - **청구서에 새 칸을 두지 않는다.** 받은 금액은 원장에서 읽는다. rules-2의 `applyReceipt`는 그대로다(부분 수금은 새 함수).
 - 읽기 함수: 다가오는 수금 표(`upcomingPayments` 등 수금 예정을 보이는 곳)가 계약상 결제일만이 아니라 **‘약속일’과 ‘아직 안 들어온 금액’**을 구분해 낸다. 계획(미래 지연 여부)은 결제일이 지나기 전에 드러내지 않는다(미래 누설 금지). 결제일이 지나도 안 들어오면 ‘연체 n일’로 낸다.
@@ -31,10 +31,11 @@
 ### 3. 불변식
 
 - `operations-invariants.ts`: 부분 수금 합 ≤ 청구액, `PAID`이면 합 = 청구액, 클레임 ≤ 늦은 감액 뒤 판매액, `CLAIM-` 분개는 직접 무역 계약에만.
+- `invariants.ts`: 매출채권 = 미수 청구서 합(`:84-87`)을 ‘청구액 − 원장의 받은 금액’의 합으로 맞춘다. rules-2 상태에서는 지금과 같은 값이어야 한다.
 
 ### 4. 손익 읽기
 
-- `components.claim`(클레임 원화 환산)과 `components.collection`(지연된 달러를 실제 수금일 환율로 바꾼 값 − 계약상 결제일 환율로 바꾼 값)을 채운다. TASK-0062의 `fx`는 계약상 결제일까지의 차이만 맡도록 경계를 다시 나눈다. 항등식은 그대로다.
+- `components`의 `claim`(6번)과 `collection`(8번)을 설계 3.4의 순차 대체 순서대로 채운다. `fx`(2번)는 이미 계약상 결제일 환율까지만 맡으므로 경계를 바꾸지 않는다. `residual`은 늘 0이다.
 
 ### 5. 측정용 변환
 
@@ -51,7 +52,8 @@
 | 미래 누설 없음 | 결제일 전 다가오는 수금 표는 정시·지연·부분 청구서가 모두 같은 꼴 |
 | 캠페인 끝 | 계획일이 끝을 넘는 청구서는 채권으로 남고 분석값 계산에 채권으로 들어감 |
 | 불변식 | 부분 수금 합을 늘린 저장 사본, `PAID`인데 합이 모자란 사본, 주선 계약에 `CLAIM-`이 있는 사본을 거부 |
-| 항등식 | 끝난 계약마다 실현 − 기대 = 분해 합(fx·tariff·surcharge·claim·collection) |
+| 항등식 | 끝난 계약과 끝나지 않은 계약 모두 `residual = 0` |
+| 도시별 확률 | 프로필의 도시별 확률을 서로 다르게 바꾼 설정에서, 시드 200개의 클레임·지연 빈도 순서가 확률 순서와 같다 |
 | 결정성·저장 | 같은 입력 같은 결과, 부분 수금 중간 상태 저장 왕복 같음 |
 
 - 시험에 자료 ID·조정 상수를 쓰지 않는다.
@@ -68,7 +70,7 @@
 
 ## 고칠 수 있는 파일
 
-- `src/engine/engine.ts`, `ledger.ts`(계정 추가), `readers.ts`, `reports.ts`, `risk.ts`, `types.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만)
+- `src/engine/engine.ts`, `ledger.ts`(계정 추가), `readers.ts`, `reports.ts`, `risk.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만)
 - `data/market_rules.json`(프로필의 `claims`·`collections` 꼴 맞춤만), 스키마, `tools/validate_data.py`
 - 새 `src/engine/m2a5-risk-credit.test.ts`
 - `docs/ai/tasks/results/TASK-0064.md`, `MANIFEST.json`
@@ -79,5 +81,5 @@
 
 ## 결과 보고에 넣을 것
 
-- R3로 시드 하나를 90일 돌린 요약: 클레임 수·금액, 수금 방식별 청구서 수, 끝에 남은 채권, 원화 기준 손실 계약 수, 지급 경고·실패 여부(값을 고치지 않고 적기만).
+- 시드 몇 개의 클레임·수금 계획 표(순수 함수 출력), 시험 구동기로 만든 계약의 `components` 표(값을 고치지 않고 적기만). 미수의 비용이 환율과 원화 압박뿐이고 이자가 없다는 한계를 적는다. 90일 정책 실행은 경로 5에서 한다.
 - 첫 화면 gzip 전후, 시험 수, `cmp`, 변형 표, 범위 밖 발견, 질문.

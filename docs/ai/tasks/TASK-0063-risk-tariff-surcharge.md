@@ -12,7 +12,7 @@
 ### 1. 관세 표와 변경 일정
 
 - rules-3이고 `layers`에 `TARIFF`가 있으면 `dutyEstimate`(`catalog.ts:75`)가 프로필의 `tariff.base`(도착국·품목별 기준 세율)를 읽는다. 없으면 지금 시나리오 고정 세율 그대로다. rules-2는 바뀌지 않는다.
-- 변경 일정은 순수 함수 `tariffEvents(config, seed)`다(흐름 `TARIFF`, 번호 = 도착국 순번 × 10 + 회차). 사건마다 공지일·시행일(공지 + `notice_days`)·새 세율. 횟수는 0~`max_changes`, 걸음은 `step_bp` 범위, 결과는 `[min_bp, max_bp]` 안. 공지일은 캠페인 안에서 고르게 뽑되 시행일이 캠페인 끝을 넘지 않게 한다.
+- 변경 일정은 순수 함수 `tariffEvents(config, seed)`다. 값마다 흐름 이름을 나눈다(예: `TARIFF:{국가}:count`, `TARIFF:{국가}:{회차}:notice`, `…:step`). 사건마다 공지일·시행일(공지 + `notice_days`)·새 세율. 횟수는 0~`max_changes`, 걸음은 `step_bp` 범위, 결과는 `[min_bp, max_bp]` 안. 공지일은 캠페인 안에서 고르게 뽑되 시행일이 캠페인 끝을 넘지 않게 한다.
 - 관세를 매기는 곳(`engine.ts:1019` 근처, 도착 처리)은 **도착일의 세율**을 쓴다.
 - 미리보기 관세 예상은 **오늘까지 공지된** 변경만 반영한다(도착 예정일 기준 세율). 공지 전 변경은 반영하지 않는다.
 - 공지일 아침 처리에서 로그 한 줄(‘{도착국} {품목} 관세 {옛 세율}% → {새 세율}%, {시행일}일부터’). 국가 이름은 시나리오 도시 자료에서 읽는다.
@@ -20,15 +20,16 @@
 
 ### 2. 출항 부대비
 
-- rules-3이고 `layers`에 `SURCHARGE`가 있으면, 예약의 **출항일**에 `예약 운임 × surchargeBp(노선, 출항 주) / 10000`을 USD로 낸다(`payOrAccrue`, 미지급 규칙 그대로). 0이면 분개를 내지 않는다.
-  - `surchargeBp`는 순수 함수(흐름 `SURCHARGE`, 번호 = 노선 순번 × 100 + 주차). 확률 `p_zero_bp`로 0, 아니면 `[min_bp, max_bp]` 정수 균등.
-  - 직접 무역은 계약 ID의 USD 재고로 쌓는다(TASK-0062 규칙). 주선은 주선 진행원가로 쌓는다.
+- rules-3이고 `layers`에 `SURCHARGE`가 있으면, **직접 무역** 예약의 **출항일**에 `예약 운임 × surchargeBp(노선, 출항 주) / 10000`을 USD로 낸다(`payOrAccrue`, 미지급 규칙 그대로). 0이면 분개를 내지 않는다.
+  - `surchargeBp`는 순수 함수. 흐름 이름은 `SURCHARGE:{노선}:{주차}:zero`, `…:value`처럼 값마다 나눈다. 확률 `p_zero_bp`로 0, 아니면 `[min_bp, max_bp]` 정수 균등.
+  - 계약 ID의 USD 재고로 쌓는다(TASK-0062 규칙).
+  - **주선 화물에는 붙이지 않는다**(설계 4.2: 실무처럼 화주에게 넘긴다. 회사 장부에 생기지 않는다).
   - 분개 ID `SURCHARGE-{예약}`. 로그 한 줄.
 - 미리보기: `surchargeMaxBp`(프로필의 최대)만 읽을 수 있게 한다. 기대 마진 계산에는 넣지 않는다(학생이 모르는 값).
 
 ### 3. 손익 읽기
 
-- `contractRiskReport.components`에 `tariff`(실제 관세 − 수락일 예상 관세, 원화 환산)와 `surcharge`(부대비, 원화 환산)를 채운다. 항등식은 그대로 성립해야 한다.
+- `contractRiskReport.components`의 `tariff`(3번)와 `surcharge`(4번)를 설계 3.4의 순차 대체 순서대로 채운다. `residual`은 늘 0이다.
 
 ### 4. 측정용 변환
 
@@ -43,11 +44,12 @@
 | 도착일 세율 | 수락 뒤 공지된 변경이 도착 전에 시행되는 계약을 찾아, 관세가 새 세율이고 `components.tariff`가 예상과의 차이와 같다 |
 | 공지 반영 | 공지 뒤 받은 견적의 미리보기 관세가 새 세율(도착 예정일이 시행일 뒤일 때) |
 | 비공지 미반영 | 공지 전 미리보기는 옛 세율 |
-| 부대비 | 출항일에만 분개. 0인 주는 분개 없음. 주선에도 붙음. `components.surcharge` 일치 |
-| 항등식 | 끝난 계약마다 실현 − 기대 = 분해 합 |
+| 부대비 | 직접 무역 출항일에만 분개. 0인 주는 분개 없음. 주선 화물엔 없음. `components.surcharge` 일치 |
+| 항등식 | 끝난 계약마다 `residual = 0` |
+| 흐름 유일성 | 새 흐름까지 (흐름, 번호) 쌍이 겹치지 않는다 |
 | 결정성·저장 | 같은 입력 같은 결과, 저장 왕복 같음, `state.rng.cursors`에 새 흐름 키 없음 |
 
-- 시험에 자료 ID·조정 상수를 쓰지 않는다. 필요한 사건은 시드를 찾아서 만든다.
+- 시험에 자료 ID·조정 상수를 쓰지 않는다. 필요한 사건은 시드를 찾아서 만든다(시드 200개 안, 찾았는지 먼저 단언).
 
 ## 변형 시험
 
@@ -56,12 +58,12 @@
 | 1 | 관세를 수락일 세율로 매김 | 도착일 세율 |
 | 2 | 미리보기가 공지 전 변경까지 반영(미래 누설) | 비공지 미반영 |
 | 3 | 부대비를 예약일에 냄 | 부대비 |
-| 4 | 부대비를 주선에서 뺌 | 부대비 |
+| 4 | 부대비를 주선 화물에도 붙임 | 부대비 |
 | 5 | `components.tariff`를 0으로 둠 | 도착일 세율 또는 항등식 |
 
 ## 고칠 수 있는 파일
 
-- `src/engine/engine.ts`, `catalog.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `risk.ts`, `types.ts`, `operations-invariants.ts`
+- `src/engine/engine.ts`, `catalog.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `reservations.ts`, `risk.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`
 - `data/market_rules.json`(프로필의 `tariff`·`surcharge` 값 꼴 맞춤만), 스키마, `tools/validate_data.py`(관세 표의 도착국·품목 검사만)
 - 새 `src/engine/m2a5-risk-cost.test.ts`
 - `docs/ai/tasks/results/TASK-0063.md`, `MANIFEST.json`
@@ -76,5 +78,5 @@ TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자�
 
 ## 결과 보고에 넣을 것
 
-- R2로 시드 하나를 90일 돌린 요약: 관세 변경 사건 목록, 부대비가 붙은 출항 수, `components`의 tariff·surcharge 분포, 원화 기준 손실 계약 수(값을 고치지 않고 적기만).
+- 시드 몇 개의 관세 변경 일정과 부대비 표(순수 함수 출력), 시험 구동기로 만든 계약의 `components` 표(값을 고치지 않고 적기만). 90일 정책 실행은 경로 5에서 한다.
 - 첫 화면 gzip 전후, 시험 수, `cmp`, 변형 표, 범위 밖 발견, 질문.
