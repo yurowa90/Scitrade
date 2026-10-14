@@ -1,22 +1,16 @@
 // 본사 운영 값은 엔진 읽기 함수와 실제 명령 계획에서 읽는다.
-import { cityName, routeOf, findSailing } from '../engine/catalog';
+import { findSailing } from '../engine/catalog';
 import { planState } from '../engine/engine';
 import { formatMoney } from '../engine/money';
 import { handlingCapacityPt, storageCapacityLiters } from '../engine/operations';
-import { warehouseSummary, weeklyBottleneck, type BottleneckConstraint } from '../engine/readers';
+import { warehouseSummary, weeklyBottleneck } from '../engine/readers';
 import type { GameState, ScenarioConfig } from '../engine/types';
 import { esc } from './html';
 import type { UiCommand } from './session';
 
 const m3 = (liters: number) => `${liters / 1000} m³`;
-const labels: Record<BottleneckConstraint, string> = {
-  DEMAND: '수요', STAFF: '직원', WAREHOUSE_HANDLING: '창고 처리', STORAGE: '보관', SAILING: '선복',
-};
-export const constraintLabel = (constraint: BottleneckConstraint) => labels[constraint];
-export function routeLabel(config: ScenarioConfig, routeId: string): string {
-  const route = routeOf(config, routeId);
-  return `${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}`;
-}
+import { constraintLabel, routeLabel } from './ops-labels';
+export { constraintLabel, routeLabel } from './ops-labels';
 function pendingExpansion(state: GameState, view: GameState) {
   return !state.operations?.expansions.length ? view.operations?.expansions[0] : undefined;
 }

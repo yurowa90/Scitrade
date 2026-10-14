@@ -24,7 +24,7 @@ const cfg = loadScenario(OPERATIONS_SCENARIO_IDS[0]), legacy = SCENARIO_IDS.map(
 const fresh = (config = cfg) => openDay(createGame(config), config).state;
 const next = (s: GameState, commands: EngineCommand[] = [], config = cfg) => openDay(commitDay(s, config, commands).state, config).state;
 const loadedUi = async (s: GameState, config = cfg) => {
-  const ui = await startUi(config); await ui.change({ action: 'scenario' }, config.id);
+  const ui = await startUi(config); await (await import('./main-testkit')).screensReady(); await ui.change({ action: 'scenario' }, config.id);
   await ui.importText(serializeSave(s)); return ui;
 };
 const sha256 = async (value: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map((n) => n.toString(16).padStart(2, '0')).join('');
@@ -199,7 +199,7 @@ describe('경영 실패 기록과 끝 흐름', () => {
     ui.click({ action: 'skip-to', target: 'settlement-h' }); expect(ui.focusIds.at(-1)).toBe('settlement-h');
     vi.mocked(confirm).mockReturnValueOnce(false); ui.click({ action: 'restart' }); expect(ui.app.innerHTML).toContain('id="failure-h"');
     ui.click({ action: 'restart' }); expect(ui.app.innerHTML).not.toContain('id="failure-h"');
-    const initial = await startUi(cfg); await initial.change({ action: 'scenario' }, cfg.id);
+    const initial = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await initial.change({ action: 'scenario' }, cfg.id);
     expect(ui.app.innerHTML).toBe(initial.app.innerHTML);
   });
   it('다른 시드 저장에서 실패해도 같은 시드로 다시 시작한다', async () => {
@@ -207,7 +207,7 @@ describe('경영 실패 기록과 끝 흐름', () => {
     const failed = idleStates(otherConfig).failed;
     const ui = await loadedUi(failed); ui.click({ action: 'restart' });
     const restarted = ui.app.innerHTML;
-    const other = await startUi(otherConfig); await other.change({ action: 'scenario' }, cfg.id);
+    const other = await startUi(otherConfig); await (await import('./main-testkit')).screensReady(); await other.change({ action: 'scenario' }, cfg.id);
     expect(restarted).toBe(other.app.innerHTML);
   });
   it('규칙 2 완료 끝 화면의 알림·초점·결산 제목은 기존 문장 그대로다', async () => {

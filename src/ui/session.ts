@@ -13,7 +13,7 @@ export function initialUiState() {
     exchangeDirection: 'USD_TO_KRW' as import('../engine/types').ExchangeDirection, exchangeLots: 1,
     scheduleOpen: false, schedulePrev: null as Record<string, number | null> | null,
     crewRole: null as string | null, crewAttribute: null as string | null,
-    pending: [] as UiCommand[], flash: null as { kind: 'info' | 'warn'; text: string; action?: 'culture-result' } | null,
+    pending: [] as UiCommand[], flash: null as { kind: 'info' | 'warn'; text: string; action?: 'culture-result' | 'reload' } | null,
     selectedCard: null as string | null, crewFilter: 'all' as CrewFilter,
     interviewId: null as string | null, recruitSelections: {} as Record<string, string>,
     plans: {} as Record<string, CommitPlan>, touchedPlans: new Set<string>(),

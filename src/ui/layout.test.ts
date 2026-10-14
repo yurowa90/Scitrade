@@ -25,7 +25,7 @@ const interviewSave = () => {
 
 describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
   it('카드로 고르면 상세가 그 카드 바로 뒤에, 운영표 줄·이름 단추로 고르면 운영표 뒤에 있다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const underCard = () => {
       const html = ui.app.innerHTML, card = html.search(new RegExp(`<article class="card [^"]*is-selected" data-action="select-card" data-emp="${first}"`));
       const detail = html.indexOf('<div class="card-detail">');
@@ -45,7 +45,7 @@ describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
     ui.keydown(ui.rendered({ action: 'select-card', emp: first }), 'Enter'); expect(underCard()).toBe(true);
   });
   it('고른 카드가 필터로 숨으면 상세는 운영표 뒤에 있고 필터를 풀면 카드 아래로 돌아온다', async () => {
-    const ui = await startUi(); ui.click({ action: 'select-card', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'select-card', emp: first });
     ui.click({ action: 'crew-filter', filter: 'busy' });
     const html = ui.app.innerHTML;
     expect(html).not.toContain('<div class="card-detail">');
@@ -53,7 +53,7 @@ describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
     ui.click({ action: 'crew-filter', filter: 'all' }); expect(ui.app.innerHTML).toContain('<div class="card-detail">');
   });
   it('펼친 상세는 훈련 단추 아래 끝 + 8px이 알림 자리 72px 위에 오게 한 번 굴리고 제목은 막대 아래 8px에 남긴다', async () => {
-    const ui = await startUi(); ui.click({ action: 'select-card', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'select-card', emp: first });
     ui.bounds[`train:${first}`] = { top: 760, bottom: 797, height: 37 };
     ui.bounds[`training-h-${first}`] = { top: 400, bottom: 420, height: 20 };
     ui.scrollBy.mockClear(); ui.click({ action: 'detail', emp: first });
@@ -65,14 +65,14 @@ describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
     ui.scrollBy.mockClear(); ui.click({ action: 'detail', emp: first }); expect(ui.scrollBy).not.toHaveBeenCalled();
   });
   it('알림이 있으면 펼친 상세의 띠 아래 끝은 알림 위 끝이다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.setToastTop(600);
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.setToastTop(600);
     ui.click({ action: 'select-card', emp: first });
     ui.bounds[`train:${first}`] = { top: 603, bottom: 640, height: 37 }; ui.bounds[`training-h-${first}`] = { top: 400, bottom: 420, height: 20 };
     ui.scrollBy.mockClear(); ui.click({ action: 'detail', emp: first });
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0, 640 + 8 - 600);
   });
   it('펼친 면담은 고용 단추를 같은 규칙으로 띠 안에 두고 접을 때는 굴리지 않는다', async () => {
-    const ui = await startUi(); await ui.importText(interviewSave());
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(interviewSave());
     const candidate = ui.rendered({ action: 'interview' }).dataset.candidate!;
     ui.setToastTop(790); // 불러오기 알림이 떠 있다. 알림 위 끝(790)보다 72px 예약(728)이 더 위다.
     ui.bounds[`hire:${candidate}`] = { top: 700, bottom: 744, height: 44 }; ui.bounds[`interview-h-${candidate}`] = { top: 300, bottom: 330, height: 30 };
@@ -81,14 +81,14 @@ describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
     ui.scrollBy.mockClear(); ui.click({ action: 'interview', candidate }); expect(ui.scrollBy).not.toHaveBeenCalled();
   });
   it('훈련을 넣고 위 내용이 늘면 예정 표시를 누른 높이에 둔다', async () => {
-    const ui = await startUi(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
     ui.scrollBy.mockClear(); ui.afterRender(() => { ui.slotTops[`train-${first}`] = 230; });
     ui.click({ action: 'train', emp: first });
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0, 50);
     expect(ui.app.innerHTML).toContain(`<div data-action-slot="train-${first}"><span class="pill" id="status-train-${first}" tabindex="-1">일반 훈련 예정</span></div>`);
   });
   it('M1 화면에는 카드 아래 상세·오늘 할 일 단추·훈련 칸이 없다', async () => {
-    const ui = await startUi(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
     ui.click({ action: 'select-card' }); ui.click({ action: 'accept' });
     for (const part of ['class="card-detail"', 'queue-chip', 'data-action-slot="train-']) expect(ui.app.innerHTML).not.toContain(part);
   });
@@ -96,7 +96,7 @@ describe('배치 공통: 카드 아래 상세·펼침 띠·훈련 칸', () => {
 
 describe('배치안 A: 오늘 할 일 단추', () => {
   it('M2 막대의 단추는 하루 진행 바로 앞이고 건수는 오늘 할 일 목록의 줄 수다', async () => {
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const rows = () => (ui.app.innerHTML.match(/<ol class="pending">([\s\S]*?)<\/ol>/)?.[1]?.match(/<li\b/g) ?? []).length;
     expect(header(ui.app.innerHTML)).toContain(chip(0));
     ui.click({ action: 'accept' }); expect(header(ui.app.innerHTML)).toContain(chip(1)); expect(rows()).toBe(1);
@@ -106,7 +106,7 @@ describe('배치안 A: 오늘 할 일 단추', () => {
     expect(ui.app.innerHTML).toContain('<li class="bad">'); expect(rows()).toBe(1); expect(header(ui.app.innerHTML)).toContain(chip(1));
   });
   it('단추를 누르면 오늘 할 일 제목으로 굴리고 초점을 두며 500ms 동안 다른 누름을 막고 알림은 그대로다', async () => {
-    const ui = await startUi(); const before = ui.announcements.length;
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); const before = ui.announcements.length;
     ui.scrollIds.length = 0; ui.focusIds.length = 0; ui.focus.mockClear();
     ui.click({ action: 'queue-jump' });
     expect(ui.scrollIds).toEqual(['queue-h']); expect(ui.focusIds).toEqual(['queue-h']);
@@ -116,7 +116,7 @@ describe('배치안 A: 오늘 할 일 단추', () => {
     expect(ui.announcements).toHaveLength(before + 1);
   });
   it('키보드 순서(Tab → focusin → Enter → click)에서 단추는 고정 막대 안이라 Shift+Tab 위치 복원을 받고 같은 곳으로 간다', async () => {
-    const ui = await startUi(); ui.win.scrollY = 1200;
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.win.scrollY = 1200;
     ui.fireDoc('keydown', { key: 'Tab', shiftKey: true }); ui.win.scrollY = 800;
     ui.fireDoc('focusin', { target: ui.rendered({ action: 'queue-jump' }) });
     expect(ui.win.scrollTo).toHaveBeenCalledExactlyOnceWith(0, 1200);
@@ -152,7 +152,7 @@ describe('배치안 A: 하루 진행 뒤 마지막 조작 열', () => {
     expect(await endDayScroll((ui) => { ui.setOneColumn(true); side(ui); })).toEqual([[0, -50]]);
   });
   it('M1이면 오른쪽을 눌렀어도 계약 제목 규칙이다', async () => {
-    const ui = await startUi(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.change({ action: 'scenario' }, 'SCENARIO_M1_ONE_TRADE');
     ui.click({ action: 'accept' }); ui.click({ action: 'assign' }); ui.click({ action: 'book' });
     const contract = ui.rendered({ action: 'cancel' }).dataset.contract!;
     ui.fireApp('pointerdown', { target: ui.rendered({ action: 'unqueue' }) });
@@ -165,7 +165,7 @@ describe('배치안 A: 하루 진행 뒤 마지막 조작 열', () => {
     const save = serializeSave(openDay(createGame(config), config).state);
     vi.stubGlobal('localStorage', { getItem: () => save, setItem: () => undefined });
     expect(await endDayScroll(() => undefined, async () => {
-      const ui = await startUi(); side(ui);
+      const ui = await startUi(); await (await import('./main-testkit')).screensReady(); side(ui);
       if (how === 'load') ui.click({ action: 'load' });
       if (how === 'import') await ui.importText(save);
       if (how === 'restart') ui.click({ action: 'restart' });
@@ -177,7 +177,7 @@ describe('배치안 A: 하루 진행 뒤 마지막 조작 열', () => {
 
 describe('Esc로 맨 위 칸 닫기', () => {
   it('열린 상세를 닫고 상세 단추로 초점을 돌려주며 띠 안으로 최소 거리만 옮기고 500ms 동안 누름을 막는다', async () => {
-    const ui = await startUi(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
     ui.bounds[`detail:${first}`] = { top: 50, bottom: 94, height: 44 };
     ui.scrollBy.mockClear(); ui.focus.mockClear(); vi.advanceTimersByTime(501);
     const ev = pressEsc(ui);
@@ -194,12 +194,12 @@ describe('Esc로 맨 위 칸 닫기', () => {
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0, 814 - (800 - 8)); expect(ui.doc.activeElement.dataset).toEqual({ action: 'detail', emp: first });
   });
   it('단추가 띠 안이면 굴리지 않고 초점만 돌려준다', async () => {
-    const ui = await startUi(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
     ui.scrollBy.mockClear(); vi.advanceTimersByTime(501); pressEsc(ui);
     expect(ui.scrollBy).not.toHaveBeenCalled(); expect(ui.doc.activeElement.dataset.action).toBe('detail');
   });
   it('면담을 닫고 면담 단추로 초점을 돌려준다', async () => {
-    const ui = await startUi(); await ui.importText(interviewSave());
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); await ui.importText(interviewSave());
     const candidate = ui.rendered({ action: 'interview' }).dataset.candidate!;
     // 상세를 먼저 열었어도 나중에 연 면담이 맨 위다.
     ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
@@ -209,7 +209,7 @@ describe('Esc로 맨 위 칸 닫기', () => {
     expect(ui.doc.activeElement.dataset).toEqual({ action: 'interview', candidate });
   });
   it('기록장을 먼저 닫고 다음 Esc로 현지 패널을 닫아 열기 전 탭 위치로 되돌리고 현지 탭에 초점을 둔다', async () => {
-    const ui = await startUi(); ui.bounds['local-tab'] = { top: 240, bottom: 284, height: 44 };
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.bounds['local-tab'] = { top: 240, bottom: 284, height: 44 };
     ui.click({ action: 'culture-tab' }); ui.click({ action: 'culture-book' });
     vi.advanceTimersByTime(501); pressEsc(ui);
     expect(ui.app.innerHTML).toContain('id="local"'); expect(ui.app.innerHTML).toContain('data-action="culture-book" aria-expanded="false"');
@@ -220,7 +220,7 @@ describe('Esc로 맨 위 칸 닫기', () => {
     expect(ui.scrollBy).toHaveBeenCalledExactlyOnceWith(0, 70);
   });
   it('맨 위 칸은 가장 최근에 열거나 그 안을 누르거나 초점을 둔 칸이다', async () => {
-    const ui = await startUi(); ui.click({ action: 'culture-tab' }); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'culture-tab' }); ui.click({ action: 'select-card', emp: first }); ui.click({ action: 'detail', emp: first });
     vi.advanceTimersByTime(501); pressEsc(ui);
     expect(ui.app.innerHTML).toContain('id="local"'); expect(button(ui.app.innerHTML, 'detail', 'emp', first)).toContain('aria-expanded="false"');
     ui.click({ action: 'detail', emp: first }); ui.click({ action: 'culture-tab' }); ui.click({ action: 'culture-tab' });
@@ -237,13 +237,13 @@ describe('Esc로 맨 위 칸 닫기', () => {
     expect(ui.app.innerHTML).not.toContain('id="local"'); expect(button(ui.app.innerHTML, 'detail', 'emp', first)).toContain('aria-expanded="true"');
   });
   it.each([['열린 칸 없음', {}], ['반복', { repeat: true }], ['Ctrl', { ctrlKey: true }], ['Alt', { altKey: true }], ['Meta', { metaKey: true }], ['Shift', { shiftKey: true }], ['입력 조합 중', { isComposing: true }]])('%s이면 Esc가 아무것도 하지 않는다', async (_name, extra) => {
-    const ui = await startUi(); if (Object.keys(extra).length) ui.click({ action: 'culture-tab' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); if (Object.keys(extra).length) ui.click({ action: 'culture-tab' });
     const before = ui.app.innerHTML; vi.advanceTimersByTime(501);
     const ev = pressEsc(ui, extra);
     expect(ev.preventDefault).not.toHaveBeenCalled(); expect(ui.app.innerHTML).toBe(before);
   });
   it('Esc는 위쪽 막대와 알림 영역을 바꾸지 않고 Tab 기록을 지운다', async () => {
-    const ui = await startUi(); ui.click({ action: 'culture-tab' }); ui.click({ action: 'culture-book' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'culture-tab' }); ui.click({ action: 'culture-book' });
     const bar = header(ui.app.innerHTML), count = ui.announcements.length;
     vi.advanceTimersByTime(501); pressEsc(ui); vi.advanceTimersByTime(501); pressEsc(ui);
     expect(header(ui.app.innerHTML)).toBe(bar); expect(ui.announcements).toHaveLength(count);
@@ -262,7 +262,7 @@ describe('한 열 화면 코드 순서', () => {
     const css = await readCss();
     const three = areaOrder(css.match(/\.layout \{[^}]*grid-template-areas:([^;]+);/)![1]!);
     const one = areaOrder(css.match(/@media \(max-width: 1000px\) \{[^}]*\}[^}]*grid-template-areas:([^;]+);/)![1]!);
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     expect(domOrder(ui.app.innerHTML)).toEqual(three);
     ui.setOneColumn(true); expect(domOrder(ui.app.innerHTML)).toEqual(one);
     ui.click({ action: 'accept' }); expect(domOrder(ui.app.innerHTML)).toEqual(one);
@@ -273,13 +273,13 @@ describe('한 열 화면 코드 순서', () => {
     expect(ui.mediaQueries).toEqual([css.match(/@media (\([^)]*\)) \{\n {2}\.layout, \.layout\.map-wide \{ grid-template-rows: none; \}/)![1]]);
   });
   it('패널 사이 글자는 기존 화면 코드와 같은 줄바꿈과 들여쓰기다', async () => {
-    const ui = await startUi(); const gap = '\n      \n  ';
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); const gap = '\n      \n  ';
     const pairs = (html: string, order: string[]) => order.slice(1).every((key, i) => html.includes(`${i === 0 ? '</div>' : order[i] === 'crew' ? '</aside>' : '</section>'}${gap}${PANEL[key]}`));
     expect(pairs(ui.app.innerHTML, ['trade', 'crew', 'resources', 'queue', 'world', 'report', 'log'])).toBe(true);
     ui.setOneColumn(true); expect(pairs(ui.app.innerHTML, ['trade', 'queue', 'crew', 'resources', 'report', 'world', 'log'])).toBe(true);
   });
   it('폭이 바뀌어 다시 그려도 초점은 같은 조작에 남고 굴리지 않는다', async () => {
-    const ui = await startUi(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady(); ui.click({ action: 'accept' }); ui.click({ action: 'end-day' });
     ui.doc.activeElement = ui.rendered({ action: 'schedule-toggle' }); ui.focusIds.length = 0; ui.focus.mockClear();
     ui.bounds['schedule-toggle'] = { top: 2000, bottom: 2044, height: 44 };
     ui.setOneColumn(true);
@@ -294,7 +294,7 @@ describe('한 열 화면 코드 순서', () => {
 describe('머리 줄', () => {
   it('빌드 표시 문구 폭을 9.5rem으로 묶어 빌드 표시를 둘째 줄에 두고 문구는 그대로다', async () => {
     expect(await readCss()).toMatch(/\.brand \.sub \{ max-width: 9\.5rem; \}/);
-    const ui = await startUi();
+    const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     // 빌드 표시는 git 작업 트리에서 해시(+수정), 밖에서 dev다(main.test.ts ‘빌드 표시는 머리 문구에 있고…’와 같은 식).
     expect(ui.app.innerHTML).toMatch(/<div class="brand"><span class="logo">Scitrade<\/span><span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 (dev|[0-9a-f]{7}(\+수정)?)<\/span><\/div>/);
   });

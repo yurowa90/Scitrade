@@ -11,6 +11,8 @@ import { cultureAnchorBlocks, culturePanel, cultureResults, cultureNotebook, cul
 import { esc } from './html';
 import { initialUiState } from './session';
 
+await (await import('./main-testkit')).screensReady();
+
 const config = loadScenario('SCENARIO_M2_MULTI_TRADE');
 const start = (activityId='CA01', employeeId='EMP01', id=`${activityId}-${employeeId}`): Command =>
   ({ id, type:'START_CULTURE_ACTIVITY', activityId, employeeId });
