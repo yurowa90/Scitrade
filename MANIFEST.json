@@ -2471,6 +2471,11 @@
       "sha256": "928ad2ab2f7ffa4e380d97d6d8908bd465203c7a70ea726aa6a6d9667e3daeb8"
     },
     {
+      "path": "docs/ai/tasks/TASK-0061-R1-situation-map-fixes.md",
+      "size_bytes": 7233,
+      "sha256": "29b41b56f036b5b032e137babc73d52e054c69e91f0618abe9fbc4f25d44dcd5"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
       "size_bytes": 16721,
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
