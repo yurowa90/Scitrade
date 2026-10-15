@@ -2,12 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createGame, openDay } from '../engine/engine';
 import { loadScenario } from '../content/scenario';
 import { loadMapCities, loadRouteWaypoints, type GeoPoint } from '../content/map';
+import { chooseMap } from './map';
+import { project } from './projection';
 import routes from '../../data/routes.json';
 import referencePorts from '../../docs/ai/design/situation-map-10b1/data/ports-ea.json';
 import { runDays, standardDayOneCommands } from '../engine/testkit';
 import { paymentDefaultStatus } from '../engine/operations';
 import { startUi } from './main-testkit';
-import { briefingBox, briefingEvents, defaultLayers, initialSituationView, layerAnnouncement, openSituation, prominentPort, segmentDistanceKm, shipmentArrival, situationData, situationHtml, situationTables } from './situation';
+import { briefingBox, briefingEvents, defaultLayers, explorationBox, initialSituationView, layerAnnouncement, openSituation, prominentPort, segmentDistanceKm, shipmentArrival, situationData, situationHtml, situationTables } from './situation';
 
 const config = loadScenario('SCENARIO_M1_DELAY_ACCEPTED');
 const empty = () => openDay(createGame(config), config).state;
@@ -15,23 +17,59 @@ const delayed = () => openDay(runDays(createGame(config), config, 7, { 1: standa
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.doUnmock('./lazy'); });
 const html = (view = initialSituationView(), state = empty()) => situationHtml(state, config, view);
 
-/** 최소 DOM은 실제 modal의 수신기·초점·그림 요소 생성 시점을 읽는다. */
+/** 재그리면 자식 노드와 초점을 잃는 DOM 수명·화면 좌표를 흉내 낸다. */
 function modalDom(reduced = false) {
   const listeners: Record<string, (event: any) => void> = {};
-  const focused: string[] = [];
-  const live = { textContent: '' };
-  const root = { innerHTML: '', className: '', setAttribute: vi.fn(), remove: vi.fn(),
-    addEventListener: (type: string, fn: (event: any) => void) => { listeners[type] = fn; },
-    querySelector: (selector: string) => selector === '#situation-live' ? live : { focus: () => focused.push(selector) },
-    querySelectorAll: () => [] };
+  const focused: string[] = [], announcements: string[] = [];
+  let content: any, live: any;
+  const body = {};
+  const doc = { activeElement: body as any, createElement: () => makeNode(), querySelector: () => background, body: { appendChild: vi.fn() } };
+  const makeNode = (attrs = '', tag = ''): any => {
+    const attributes = Object.fromEntries([...attrs.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+    let markup = '', nodes: any[] = [], text = '';
+    const node: any = { tag, id: attributes.id, dataset: Object.fromEntries(Object.entries(attributes).filter(([k]) => k.startsWith('data-')).map(([k, v]) => [k.slice(5), v])),
+      disabled: /\sdisabled(?:\s|$)/.test(attrs), children: [] as any[],
+      setAttribute: vi.fn(), remove: vi.fn(),
+      isSameNode: (other: any) => node === other,
+      contains: (other: any): boolean => node === other || nodes.includes(other) || node.children.some((child: any) => child.contains(other)),
+      focus: () => { doc.activeElement = node; focused.push(node.id ? `#${node.id}` : `[data-situation="${node.dataset.situation}"]`); },
+      closest: (selector: string) => selector.includes('[data-situation]') && node.dataset.situation ? node : null,
+      hasAttribute: (name: string) => name === 'disabled' ? node.disabled : name in attributes,
+      appendChild: (child: any) => { node.children.push(child); if (!content) content = child; else live = child; },
+      addEventListener: (type: string, fn: (event: any) => void) => { listeners[type] = fn; },
+      get innerHTML() { return markup + node.children.map((c: any) => c.innerHTML).join(''); },
+      set innerHTML(value: string) {
+        if (node.contains(doc.activeElement)) doc.activeElement = body;
+        markup = value; node.children = []; nodes = [...value.matchAll(/<(h[23]|input|button|summary|div)\b([^>]*)>/g)].map((m) => makeNode(m[2], m[1]));
+      },
+      get textContent() { return text; },
+      set textContent(value: string) { text = value; if (node === live) announcements.push(value); },
+      querySelector: (selector: string): any => node.querySelectorAll(selector)[0] ?? null,
+      querySelectorAll: (selector: string): any[] => {
+        const own = nodes.filter((n) => selector.startsWith('#') ? n.id === selector.slice(1) : selector.startsWith('[data-situation="') ? n.dataset.situation === selector.match(/"([^"]+)"/)?.[1] : selector.includes('button') ? n.dataset.situation && !n.disabled || n.dataset.layer || /summary/.test(n.tag) : selector.includes('[data-situation]') ? n.dataset.situation : false);
+        return [...own, ...node.children.flatMap((c: any) => c.id && selector === `#${c.id}` ? [c] : c.querySelectorAll(selector))];
+      },
+    };
+    return node;
+  };
+  const root = makeNode();
+  let created = false;
+  doc.createElement = () => { if (!created) { created = true; return root; } return makeNode(); };
   const progress = { disabled: false }, background = { inert: false, querySelector: () => progress };
-  const opener = { focus: vi.fn() };
-  vi.stubGlobal('window', { matchMedia: () => ({ matches: reduced }) });
-  vi.stubGlobal('document', { activeElement: null, createElement: () => root, querySelector: () => background, body: { appendChild: vi.fn() } });
-  const click = (action: string) => listeners.click!({ target: { closest: (selector: string) => selector === '[data-situation]' ? { dataset: { situation: action } } : null } });
-  const toggle = (id: string, checked: boolean) => listeners.change!({ target: { dataset: { layer: id }, checked } });
-  const key = (key: string) => listeners.keydown!({ key, preventDefault: vi.fn(), stopPropagation: vi.fn() });
-  return { root, opener, progress, background, click, toggle, key, live, focused };
+  const opener = { focus: vi.fn(() => { doc.activeElement = opener; }) };
+  vi.stubGlobal('window', { matchMedia: () => ({ matches: reduced }) }); vi.stubGlobal('document', doc);
+  const click = (action: string, id?: string) => {
+    const button = content.querySelectorAll('[data-situation]').find((b: any) => b.dataset.situation === action && (!id || b.dataset.id === id));
+    button?.focus();
+    listeners.click!({ target: { closest: (selector: string) => selector === '[data-situation]' ? button : null } });
+  };
+  const mapClick = (offset: number, marks = [{ key: 'NE-PORT-001', x: 100, y: 100 }]) => {
+    const stage = { querySelectorAll: () => marks.map((m) => ({ dataset: { port: m.key }, closest: () => null, getBoundingClientRect: () => ({ left: m.x - 2.4, top: m.y - 2.4, width: 4.8, height: 4.8 }) })) };
+    listeners.click!({ clientX: 100 + offset, clientY: 100, target: { closest: (selector: string) => selector === '.situation-stage' ? stage : null } });
+  };
+  const toggle = (id: string, checked: boolean) => { content.querySelector(`#situation-${id}`).focus(); listeners.change!({ target: { dataset: { layer: id }, checked } }); };
+  const key = (key: string, shiftKey = false) => listeners.keydown!({ key, shiftKey, preventDefault: vi.fn(), stopPropagation: vi.fn() });
+  return { root, opener, progress, background, click, mapClick, toggle, key, get live() { return root.querySelector('#situation-live'); }, focused, announcements, doc };
 }
 
 // 독립적인 수치 최소화로 대원 선분 거리를 확인한다(화면의 횡거리 공식을 쓰지 않는다).
@@ -74,6 +112,67 @@ describe('TASK-0061 상황실 지도', () => {
     expect(dom.root.innerHTML).toContain('4단계');
     dom.toggle('nightlights', false);
     expect(dom.root.innerHTML).not.toContain('data-situation-layer="nightlights"');
+  });
+  it('자유 탐색 항만 선택 뒤 초점을 정보 제목에 두고 Escape로 열기 단추에 돌아온다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.click('free'); dom.mapClick(0);
+    expect(dom.root.contains(document.activeElement)).toBe(true);
+    expect((document.activeElement as HTMLElement).id).toBe('situation-selection-h');
+    dom.key('Tab', true); expect(dom.root.contains(document.activeElement)).toBe(true);
+    dom.key('Escape'); expect(dom.root.remove).toHaveBeenCalledOnce(); expect(dom.opener.focus).toHaveBeenCalledOnce();
+  });
+  it('버튼은 같은 action·id로 초점을 복구하고 사라지면 제목에 둔다', () => {
+    const dom = modalDom(); openSituation(delayed(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.click('next'); expect(dom.focused.at(-1)).toBe('#situation-h'); // 마지막 사건에서는 다음 단추가 비활성이다.
+    dom.click('visual'); expect((document.activeElement as HTMLElement).dataset.situation).toBe('visual');
+    dom.click('free'); dom.mapClick(0, [{ key: 'NE-PORT-001', x: 100, y: 100 }, { key: 'NE-PORT-002', x: 105, y: 100 }]);
+    expect(dom.root.innerHTML).toContain('이 근처에 여러 곳이 있습니다');
+    dom.click('pick', 'NE-PORT-002'); expect((document.activeElement as HTMLElement).id).toBe('situation-selection-h');
+  });
+  it('레이어를 두 번 바꿔도 고정 살아 있는 영역은 같은 노드이고 문장만 바뀐다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    const node = dom.live;
+    dom.toggle('ports', false); expect(node.isSameNode(dom.live)).toBe(true); expect(node.textContent).toBe('항만 끔');
+    dom.toggle('ports', true); expect(node.isSameNode(dom.live)).toBe(true); expect(node.textContent).toBe('항만 켬');
+    dom.toggle('ports', true); expect(node.textContent).toBe('항만 켬\u00a0');
+    expect(dom.root.children).toContain(node);
+  });
+  it('브리핑 status를 빼고 고정 영역으로 사건 문장을 한 번씩 알린다', () => {
+    const state = delayed(), events = briefingEvents(state, config), dom = modalDom();
+    openSituation(state, config, dom.opener as unknown as HTMLElement, vi.fn());
+    expect(dom.root.innerHTML).not.toContain('role="status"');
+    expect(dom.announcements).toEqual([`${events[0]!.title} · ${events[0]!.text}`]);
+    dom.click('visual'); expect(dom.announcements).toHaveLength(1);
+    dom.click('next'); expect(dom.announcements).toHaveLength(2);
+    expect(dom.announcements[1]).toBe(`${events[1]!.title} · ${events[1]!.text}`);
+  });
+  it('항만 누르기는 화면 기준 20px를 고르고 23px는 고르지 않는다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn()); dom.click('free');
+    const before = dom.root.innerHTML; dom.mapClick(23); expect(dom.root.innerHTML).toBe(before);
+    dom.mapClick(20); expect(dom.root.innerHTML).toContain(`<h3 id="situation-selection-h" tabindex="-1">${situationData.ports[0]!.name_ko}</h3>`);
+  });
+  it('자유 탐색 시작은 모든 시나리오 항로를 담고 전체 보기에서 동아시아로 돌아간다', () => {
+    const state = delayed(), map = chooseMap(config, 'route')!, box = explorationBox(state, config);
+    expect(box.w * box.h).toBeLessThan(map.width * map.height);
+    for (const point of config.routes.flatMap((r) => loadRouteWaypoints(r.id))) {
+      const p = project(point, map.bounds, map.width, map.height);
+      expect(p.x).toBeGreaterThanOrEqual(box.x); expect(p.x).toBeLessThanOrEqual(box.x + box.w);
+      expect(p.y).toBeGreaterThanOrEqual(box.y); expect(p.y).toBeLessThanOrEqual(box.y + box.h);
+    }
+    const dom = modalDom(); openSituation(state, config, dom.opener as unknown as HTMLElement, vi.fn()); dom.click('free');
+    expect(dom.root.innerHTML).toContain(`viewBox="${box.x} ${box.y} ${box.w} ${box.h}"`);
+    dom.click('all'); expect(dom.root.innerHTML).toContain(`viewBox="0 0 ${map.width} ${map.height}"`);
+  });
+  it('긴 브리핑은 기본 두 문장과 자세히에 전문을 보존하며 높이로 자르지 않는다', async () => {
+    const state = delayed(); state.notices[0]!.bodyKo = '첫 문장입니다. 둘째 문장입니다. ' + '긴 설명 '.repeat(100) + '1.5% 끝 문장입니다.';
+    const markup = html(initialSituationView(), state);
+    expect(markup).toContain('<p>첫 문장입니다. 둘째 문장입니다. </p><details><summary>자세히</summary>');
+    expect(markup).toContain('긴 설명 '.repeat(100) + '1.5% 끝 문장입니다.');
+    const fs = await import('node:fs' as string) as { readFileSync(path: string, encoding: string): string };
+    const css = fs.readFileSync('src/ui/situation.css', 'utf8');
+    for (const rule of css.matchAll(/[^{}]*situation-brief[^{}]*\{([^}]*)}/g)) {
+      expect(rule[1]).not.toMatch(/(?:^|;)(?:max-)?height:\s*\d|overflow:\s*(?:hidden|auto)|line-clamp/);
+    }
   });
   it('항만 정리 두 곳 외에는 원본 순서·좌표·등급·ID를 보존한다', () => {
     const kept = referencePorts.filter((_, i) => i !== 13 && i !== 27);
@@ -175,7 +274,7 @@ describe('TASK-0061 상황실 지도', () => {
     const dom = modalDom();
     // main 시험용 DOM 위에 실제 상황실 root만 붙인다.
     vi.stubGlobal('window', ui.win); vi.stubGlobal('document', ui.doc);
-    ui.doc.createElement.mockImplementation(() => dom.root as any);
+    ui.doc.createElement.mockImplementation(() => dom.doc.createElement());
     (ui.doc.body as any).appendChild = vi.fn();
     const before = ui.app.innerHTML;
     await ui.click({ action: 'situation' });
