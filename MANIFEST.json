@@ -2686,6 +2686,11 @@
       "sha256": "ab7cea39ddd0664898f8000507829c1502cfd753ec5fe1943fa07bf35633f7a4"
     },
     {
+      "path": "docs/ai/tasks/TASK-0061-R3-situation-focus-fixes.md",
+      "size_bytes": 4185,
+      "sha256": "9fe0ab534227c39f5bfd7e23663312bb241f841256354c617540f9750a70d1ce"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
       "size_bytes": 16721,
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
