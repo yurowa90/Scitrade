@@ -1951,6 +1951,106 @@
       "sha256": "7a6775090144ce48545863c965c6af76cd24e53daaeec1752ad841092c63e9a8"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/README.md",
+      "size_bytes": 5929,
+      "sha256": "331f739cb82ecbb8200098103624e5ba338e9343567eea36dc55a56e62bb04a4"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/chromebook-all.png",
+      "size_bytes": 149951,
+      "sha256": "544a17df382b53d9f6f0b79d1674d18043f586e32ff201278e10b0aeb8238675"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/chromebook-briefing.png",
+      "size_bytes": 118388,
+      "sha256": "c7834c94685055972fc3a7d29b7c5e0498421cf301424492f9eb9fdf3c31c568"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/harness/m61dbg.js",
+      "size_bytes": 1611,
+      "sha256": "96ba1d0f4c66417b0c1414dee17bda7fb841bee29ec2772e87f1ab1677154704"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/harness/m61r2x.js",
+      "size_bytes": 6623,
+      "sha256": "70bf48bb940cae99f2a5313bfd76659fb664fbdf755e30267f21fe91845c7d74"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/harness/m61sea.js",
+      "size_bytes": 1737,
+      "sha256": "9e60c46c4a0f2dee9c6fab0c072185dc4332ed591bd846d49ea2c79bbc573e7c"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/ipad-all.png",
+      "size_bytes": 207710,
+      "sha256": "901d8d47c433fae2c5e0e805deb0af4002bb1e34d31ad684f3fe2e2a6c089e33"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/ipad-briefing.png",
+      "size_bytes": 181377,
+      "sha256": "c41834f35da2b607dc7eae42ad707c6c1df9c65a9779bae95da8b6d4bfea7883"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61_js_a11y_s61r2.jsonl",
+      "size_bytes": 1033,
+      "sha256": "d549eebd577efccfc2154bffd4c2eea168ab87e6b6242802477b87c89e5c95ed"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61_js_cb_s61r2.jsonl",
+      "size_bytes": 4351,
+      "sha256": "9512bf2f3214e3277407994ce12b87bd795654944fcfc3e13b282c0d913492fd"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61_js_ipad_s61r2.jsonl",
+      "size_bytes": 4333,
+      "sha256": "f2ee96709f1d39da7c4d723ade4b30abfb47c08f6ec6affce51b4a60425d2c58"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61_js_motion_s61r2.jsonl",
+      "size_bytes": 612,
+      "sha256": "afbd30f42cf0e6ba756c9f9ee82b135d784988890726a19e46042cb4cb201353"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61er2_js.jsonl",
+      "size_bytes": 412,
+      "sha256": "5f3878c0027275279bfe185069c193051e09d308504bde821ea344f7c5cae286"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61fr2_js.jsonl",
+      "size_bytes": 877,
+      "sha256": "9a737f1177b6df0fcc348a0044962d676521a6293d7eec0d6efffa206197e396"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61r2x_js.jsonl",
+      "size_bytes": 1136,
+      "sha256": "4a510837b47db9db943f507905711f3d8fa6d43856a08b0f72e8b5cd0dc40e97"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/m61zr2_js.jsonl",
+      "size_bytes": 937,
+      "sha256": "14b290c8df5f8ff7e8440b878f52584e5fe244862d86e11812a0845bf98bccef"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/retap.jsonl",
+      "size_bytes": 395,
+      "sha256": "20f596308d928c2a6e44a1e1a49e2de5c6aead7fd6bf1d941ff645fcbc256c48"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/raw/sea-tap.jsonl",
+      "size_bytes": 242,
+      "sha256": "7c61810e120fd5e5f380c9d2b9abe12c50028e95a47f85b1f15211ff4eb2908e"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/zoom-256.png",
+      "size_bytes": 3455,
+      "sha256": "f41a3a85d1d3425c86ac75992f4c3a6d00c54a98986958ef40ad6a336a223423"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-23d76d2/zoom-342.png",
+      "size_bytes": 3567,
+      "sha256": "4e4d619e7ad1bb8ee03d8d146d4fb1e732ff16e477da886d6b45ea7698eb8d7a"
+    },
+    {
       "path": "docs/ai/design/situation-map-10b1/impl-7ee5dde/README.md",
       "size_bytes": 11046,
       "sha256": "72640b08f4f5bf3d721684b8f4922f4614605be9acb4324235e2eede132e4032"
