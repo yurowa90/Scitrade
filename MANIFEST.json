@@ -191,6 +191,11 @@
       "sha256": "daa8a1351984a92b35d7aee4fcd27ca961eb57e81f41f570b0c677769e602390"
     },
     {
+      "path": "docs/QUALITY_GATE_ALPHA.md",
+      "size_bytes": 247523,
+      "sha256": "8eb55bd5938e30ee90e6fe66060ea742c5c462f2ffd11f05bfc5bdc26a9ab04c"
+    },
+    {
       "path": "docs/RESEARCH_APPLICATION.md",
       "size_bytes": 25092,
       "sha256": "f6debc653d549425647205a7fe97286a728742ae039a3488ba1171807d097d14"
@@ -222,8 +227,8 @@
     },
     {
       "path": "docs/ai/CONTEXT_MAP.md",
-      "size_bytes": 6192,
-      "sha256": "ef39776f8646645c95369c18ac7b8aea690f9c0a9c9ce0f0b0c0aeca8c7dca68"
+      "size_bytes": 6514,
+      "sha256": "3f159474bd3a83e387f310ad660cbfda50fe331ba42f1fd5017940c0e3f067ee"
     },
     {
       "path": "docs/ai/SESSION_TREE.md",
@@ -1672,8 +1677,8 @@
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
-      "size_bytes": 34566,
-      "sha256": "b55698e6d9674f6a60df451530c2115d1a11b6d30c4c22ac1da36db8c499041b"
+      "size_bytes": 34714,
+      "sha256": "ed18dc99ad3266e3ac13fd70753cc55efaffa25db0f65068a263c7ff8ce3d0a9"
     },
     {
       "path": "docs/ai/design/pyeongtaek-device-check/README.md",
@@ -1734,6 +1739,11 @@
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
       "size_bytes": 16448,
       "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
+    },
+    {
+      "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
+      "size_bytes": 24379,
+      "sha256": "32c1fa6183ae357b69726fe8d2a3e21fc1ce31dd49713de8134a7633e1a76bfd"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1894,6 +1904,11 @@
       "path": "docs/ai/design/research/reference-2026-10-13/user_directives.md",
       "size_bytes": 3288,
       "sha256": "ff332ba17bc6a2f8c198f3d7af33e425953f79c2310cbd50d9aafb00ceabf948"
+    },
+    {
+      "path": "docs/ai/design/research/situation-map-ports-ko.json",
+      "size_bytes": 11230,
+      "sha256": "0f30a107523d1795042e6add8b241b9fd3754bad9a3b0baeae51b33c98e940de"
     },
     {
       "path": "docs/ai/design/situation-map-10b1/README.md",
