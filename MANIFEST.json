@@ -2817,13 +2817,18 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
-      "size_bytes": 50741,
-      "sha256": "29334b56e449da09abc846a0a359df676b5dc1f1ebc78a0983ad36c73787f87a"
+      "size_bytes": 51034,
+      "sha256": "df99816854a11711aab4363de21eaa9791360a14511a7269d6f49a4f0812377a"
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 52739,
-      "sha256": "7a2d67d239bd6aab19ce0fbd8b84365d01ebbacddd883ab771b8f2b297d6ec38"
+      "size_bytes": 53032,
+      "sha256": "a2bc9da90fad8727ff2a65302d5ded77a31411ff0e2274baa4f37c17fa956916"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
+      "size_bytes": 15277,
+      "sha256": "8c69c957a1e59320a976f5b1df198e1409e97058faceeb909c7e1ccd1f6f2739"
     },
     {
       "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
