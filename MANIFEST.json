@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 218777,
-      "sha256": "3ecf0da73f4db6e9af919d102c072b5ca28bcf4d23aa807c97a9c6f65ff8c050"
+      "size_bytes": 220812,
+      "sha256": "f9b92e0bb80d0f87da30cbdc4067ef53db4f4d63ae8c06b063159ec78a7393ae"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1687,13 +1687,18 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 21549,
-      "sha256": "befb7aedf951217b28ae001a05f041a4d1420255455bb4e2ea2ce980dab33e3e"
+      "size_bytes": 35702,
+      "sha256": "447fe98a46d5dd3cbd866488a7563989a4e8e76cf9e3634d762cb95b82a83b74"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
       "size_bytes": 226720,
       "sha256": "320f7dd73fc1ce0c11099d055571e84b2d28f5c04de43d1605389f2ea4d75675"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW2-HUB-2026-10-16.md",
+      "size_bytes": 145148,
+      "sha256": "4f144efc56bc6b47f073877af99cbc14103f68cc7e2aecf91501e21b6504beca"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-HUB-2026-10-16.md",
@@ -1772,8 +1777,8 @@
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
-      "size_bytes": 24379,
-      "sha256": "32c1fa6183ae357b69726fe8d2a3e21fc1ce31dd49713de8134a7633e1a76bfd"
+      "size_bytes": 25161,
+      "sha256": "1085d2a9d3ced77b6c129b9709ccdc7a6a7f2d3a1be97485c9d661d52dbb84b8"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
