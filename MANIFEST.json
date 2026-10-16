@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 221637,
-      "sha256": "cfaf57b1909dd91f93b38bc16eddf2d9c7682011db28485b28888ca5d0147d34"
+      "size_bytes": 222967,
+      "sha256": "b2d60a526b641bc720ec588e48d996041cdfa5be9fbbd169356f49f1eedbdac6"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -257,8 +257,8 @@
     },
     {
       "path": "docs/ai/design/M2A5-SPEC.md",
-      "size_bytes": 107603,
-      "sha256": "297e8530d03f8213351bb635f332e4007615a67ee8727611e2718537778a3891"
+      "size_bytes": 108421,
+      "sha256": "c721a03648f0a44256649705bc0958ac816cc7e00d1a1b2be7d2d3c0ddd981e4"
     },
     {
       "path": "docs/ai/design/M2A5-market-warehouse-draft.md",
@@ -1712,8 +1712,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
-      "size_bytes": 79821,
-      "sha256": "a2f2480b49596460df4268b4a8baf385b63e0a7bbc0a72d1c15e19d698dee344"
+      "size_bytes": 80119,
+      "sha256": "1a4200377fdadc8ed81f39d926fcc6878049c45eb75ef2bdf35f431e26986283"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",

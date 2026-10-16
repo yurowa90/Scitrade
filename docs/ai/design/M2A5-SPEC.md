@@ -392,6 +392,12 @@
 - 저장·보고·결산·실패 기록 어디에도 USD와 KRW를 더한 값이 없다. 1,300원 참고 환산도 없다(PACKET D01 덧붙임).
 - 급여 가능일은 원화만으로 센다. ‘환전하면’ 미리 보기는 원화 유입을 더한 원화 계산이다.
 - 개발 도구(비교 실행기)도 통화를 합치지 않는다. 개정 1의 분석값(USD + KRW ÷ 1,313)은 지웠다(CRITIC1 B7). 모형에서 분석값 비교와 USD 순자산 비교의 판정이 같았다(17.2).
+- **예외(규칙 판본 rules-3만, 2026-10-16 허브 결정 H0·H6·H8·H14-2).** 두 통화를 더한 값은 여전히 저장하지 않는다. 학생 화면에는 늘 ‘추정’ 표지를 붙인다. 참고 환율로 환산하는 자리는 다음 네 곳뿐이다.
+  - 미리보기의 `referenceEstimate`
+  - rules-3 비교 실행기의 분석값
+  - `contractRiskReport`(평가일 규칙, 미래 누설 없음)
+  - 실행기가 견적을 고를 때 쓰는 결정 기여 환산
+  - 환산은 `krwToUsdMinor`·`usdToKrwMinor` 두 함수로만 한다. rules-1·rules-2는 위 규칙 그대로다.
 
 ## 11. 지급 불이행 단계·경영 실패(D04)
 
@@ -420,7 +426,7 @@
 - `FailureRecord` = `{ day; obligationId; currency; amountMinor; reasonKo; incurredDay; unpaidByCurrency: { currency; amountMinor; count }[]; cashByCurrency: { currency; amountMinor }[]; warningEvent: DefaultEvent | null; dangerEvent: DefaultEvent | null; optionalKrwSpendBeforeFirstUnpaid: { entryId; day; amountMinor; reasonKo }[]; usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id; day; amountMinor }[] }`.
   - `usdCommitmentsSinceIncurred`(세션 A 검토 REVIEW3 a3): 원인 의무 발생일부터 실패일까지 새로 묶은 USD 약정. 미지급이 있는 동안 원화 선택 지출은 이미 막히므로, 이 기간에 ‘보류할 수 있었던 지출’은 USD를 묶어 환전할 몫을 줄인 수락·선복 서명뿐이다. 계약 금액은 수락 때 자금 검사의 필요 금액, 선복은 적용 편 수 × 요금. D04 실패 화면의 ‘지출 보류’ 회복 행동 근거다.
   - `warningEvent`·`dangerEvent`: 원인 의무가 경고·위험에 들어간 날의 `defaultEvents` 기록(11.3).
-  - `optionalKrwSpendBeforeFirstUnpaid`: 원인 의무 발생일 전 14일(발생일 −14 ~ −1) 동안 원화 선택 지출 분개. ID 접두어 `SIGNING-`·`TRAINING-FEE-`·`CULTURE-FEE-`·`FACILITY-SETUP-`. 없으면 빈 배열(CRITIC1 C2).
+  - `optionalKrwSpendBeforeFirstUnpaid`: 원인 의무 발생일 전 14일(발생일 −14 ~ −1) 동안 원화 선택 지출 분개. ID 접두어 `SIGNING-`·`TRAINING-FEE-`·`CULTURE-FEE-`·`FACILITY-SETUP-`. 없으면 빈 배열(CRITIC1 C2). rules-3에서는 원화 매입 분개 `PURCHASE-`도 넣는다. 이 접두어만 창을 실패일까지 넓힌다(발생일 −14 ~ 실패일, 허브 결정 H13). 칸 이름은 저장 형식 때문에 그대로 둔다.
 - 실패 뒤 `commitDay`는 지금처럼 오류다(`engine.ts:805-807`). 규칙 2의 `applyCommand`는 `phase === 'ENDED'`면 모든 명령을 ‘캠페인이 끝났습니다(경영 실패).’로 거절한다. 정상 종료면 ‘캠페인이 끝났습니다.’다(반례: 정상 종료에 ‘경영 실패’를 쓰지 않는다).
 - **90일 마감:** 실패 검사를 먼저 한다. 실패가 아니면 `outcome = 'COMPLETED'`. 나이 14 미만 미지급이 남아도 완료다. 결산은 `arrearsAtEnd`(통화별 금액·건수)를 보이고, 비교 실행기는 `unpaidAtEnd`를 센다(CRITIC1 B6, 이름은 Q11).
 
