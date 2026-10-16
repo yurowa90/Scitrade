@@ -172,8 +172,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 214835,
-      "sha256": "d056de932032c7bfe08f7e165db424227f06e1cef979c8c0f6fd2284e30c5246"
+      "size_bytes": 216305,
+      "sha256": "1c06ef7883c101c380db4122c7569f788070be72f8bc95a12ed5dcb2612ec449"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1674,6 +1674,16 @@
       "path": "docs/ai/design/map-detail-d14/proto-a21011c.patch",
       "size_bytes": 56586,
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
+      "size_bytes": 7674,
+      "sha256": "aede428fb5fb4b7f0c7ded9a90b77b61cf3666af98ea7d989feb91f5a85fbcf1"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-HUB-2026-10-16.md",
+      "size_bytes": 230499,
+      "sha256": "1e42a80cc4dfdfe1f83f21481fa6832cfccbfb6864cd57af88439450f5e2a468"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
