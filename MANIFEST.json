@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 235368,
-      "sha256": "9f20f87f756191089e6a47fba7d044af4a75d2e28ce8b072097e0a49a22277d9"
+      "size_bytes": 237225,
+      "sha256": "465f32deab0e256ff03279c05b806c2133bbe773d5850bced9f695a31692ea14"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 22071,
-      "sha256": "28fc53d46bb5501fda15d082d48202bdc30de10f3b99019cf199815e0fafa963"
+      "size_bytes": 22355,
+      "sha256": "a59be862d4ecd684d14fce3aba7e3d7294616f21fda97e28a3292462dd760d1c"
     },
     {
       "path": "docs/QUALITY_GATE_ALPHA.md",
@@ -1692,13 +1692,13 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 107692,
-      "sha256": "5d3eaaee9ea1d09d08f4f94b787cc3ff2b33ab878ba169a132c31e98578b049d"
+      "size_bytes": 113546,
+      "sha256": "3233cce51a7242aa784b577b69d5442cd3032087abaeaa7d46638a39716b0561"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 51400,
-      "sha256": "135899a86c5512795c155e1e4da7bd699d37e8363ddc9d43bd0724380db70a42"
+      "size_bytes": 60279,
+      "sha256": "98d8fa0c58e16ff9a594fc6736dbf59d11fdd1bb5b032506c044637f40b6b842"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
@@ -2492,8 +2492,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 24580,
-      "sha256": "bd748890b899cd7a3cfe57ad5c7357959dd0114fe4918b107f31f2cbf8ac6c21"
+      "size_bytes": 24593,
+      "sha256": "ae2e9ba81284f03a00fe6707253fe128bbbe64fbc61979e58f9a8c13e29f0e2c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2862,8 +2862,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 52739,
-      "sha256": "7a2d67d239bd6aab19ce0fbd8b84365d01ebbacddd883ab771b8f2b297d6ec38"
+      "size_bytes": 180726,
+      "sha256": "033fa80af07fffdaebd873cfdcb30755d8ac06ab9f502b068b8529280b42c01f"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",

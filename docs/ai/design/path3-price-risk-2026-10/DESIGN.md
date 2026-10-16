@@ -1,6 +1,6 @@
-# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (승인, 개정 3i)
+# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (승인, 개정 3j)
 
-- 지위: **승인(허브, 2026-10-16).** 6절은 판정표와 함께 동결이다(H14-8, 승인 `9ce98fe`). 개정 3d·3e는 허브 사전 확인과 그 재검토로, 개정 3f는 TASK-0062 Codex 결과 검수로, 개정 3g는 TASK-0063 사전 확인으로 동결 밖(머리, 2절 2, 3.2, 3.3, 3.4, 9절)만 고쳤다. 개정 3h는 TASK-0063 2차 사전 확인과 허브 결정 H16으로 동결 밖(머리, 3.3, 4.1, 4.2)만 고쳤다. 개정 3i는 TASK-0063 Codex 결과 검수(R1)로 동결 밖(머리, 3.3 표, 3.4 표, 4.1, 9절)만 고쳤다. 세션 A, 2026-10-14 작성, 2026-10-16 개정 1. 지시서 초안은 `docs/ai/tasks/TASK-0062`~`0064`, 판정 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`다.
+- 지위: **승인(허브, 2026-10-16).** 6절은 판정표와 함께 동결이다(H14-8, 승인 `9ce98fe`). 개정 3d·3e는 허브 사전 확인과 그 재검토로, 개정 3f는 TASK-0062 Codex 결과 검수로, 개정 3g는 TASK-0063 사전 확인으로 동결 밖(머리, 2절 2, 3.2, 3.3, 3.4, 9절)만 고쳤다. 개정 3h는 TASK-0063 2차 사전 확인과 허브 결정 H16으로 동결 밖(머리, 3.3, 4.1, 4.2)만 고쳤다. 개정 3i는 TASK-0063 Codex 결과 검수(R1)로 동결 밖(머리, 3.3 표, 3.4 표, 4.1, 9절)만 고쳤다. 개정 3j는 TASK-0064 허브 사전 확인과 허브 결정 H17로 동결 밖(머리, 3.4 환산 꼴 예, 5.1, 5.2)만 고쳤다(처리표는 TASK-0064 지시서 끝 ‘허브 사전 확인 처리표(개정 3d)’, 결정은 `HUB-DECISIONS-2026-10-16.md` H17). 세션 A, 2026-10-14 작성, 2026-10-16 개정 1. 지시서 초안은 `docs/ai/tasks/TASK-0062`~`0064`, 판정 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`다.
 - 개정 1: 허브 검토 `REVIEW-HUB-2026-10-16.md`(46건)와 허브 결정 `HUB-DECISIONS-2026-10-16.md`(H0~H5)를 반영했다. 처리표는 끝(13절)에 있다.
 - 개정 2(2026-10-16): 허브 재검토 `REREVIEW-HUB-2026-10-16.md`(R1~R31, m1~m33)와 허브 결정 H6~H13을 반영했다. 처리표는 13절 끝(‘허브 재검토 64건 처리표’)에 있다.
 - 개정 3(2026-10-16): 허브 2차 재검토 `REREVIEW2-HUB-2026-10-16.md`(S1~S19, n1~n47)와 허브 결정 H14를 반영했다. 처리표는 13절 맨 끝(‘허브 2차 재검토 66건 처리표’)에 있다. **6절(시작 프로필)은 판정표와 함께 동결 범위다(H14-8).**
@@ -200,7 +200,7 @@
 - **평가일까지 일어난 사건만(H14-5, 검토 S1).** 3·4·6·8단계에는 발생일 ≤ 평가일인 사건만 넣는다. `contractRiskReport`는 `tariffEvents`(공지 전 사건), `surchargeBp`, `claimFor`, `collectionPlan`의 미래 값을 쓰지 않는다. 특히 `collectionPlan`은 부르지 않는다.
 - 채울 칸: TASK-0062는 0·1·2·5·7·9(0)·10, 0063은 3·4, 0064는 6·8.
 - 모든 금액은 원 단위 정수다. 환산은 `usdToKrwMinor` 하나로 한다(3.3).
-- **환산 꼴(H15 O3).** 각 단계의 합계는 줄마다 `usdToKrwMinor`로 바꿔 더한다. 다만 같은 평가 환율을 쓰는 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번만 바꾼다. 그래야 0단계가 `referenceEstimate.pnlKrw`(`usdToKrwMinor(freight + duty, rate)`)와 정확히 같다. 시험 식도 같은 꼴로 쓴다. 예: 연체 미수의 `collection = usdToKrwMinor(남은 금액, 평가일 환율) − usdToKrwMinor(남은 금액, 청구 결제일 환율)`.
+- **환산 꼴(H15 O3).** 각 단계의 합계는 줄마다 `usdToKrwMinor`로 바꿔 더한다. 다만 같은 평가 환율을 쓰는 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번만 바꾼다. 그래야 0단계가 `referenceEstimate.pnlKrw`(`usdToKrwMinor(freight + duty, rate)`)와 정확히 같다. 시험 식도 같은 꼴로 쓴다. 예: 받은 금액이 0인 지연 청구서의 `collection = usdToKrwMinor(남은 금액, 평가일 환율) − usdToKrwMinor(남은 금액, 청구 결제일 환율)`(부분 청구서는 받은 수금 줄을 줄마다 그 분개 날 환율로 바꾸므로 ‘남은 금액만 옮긴 식’과 1원 다를 수 있다. 시험 ‘연체 미수 평가’는 받은 금액이 0인 지연 청구서로만 하고, 부분 청구서는 줄 꼴로 따로 단언한다, H17-6).
 - 실행기 판정(L0~L3, J7 새 정의)과 경로 11 화면이 이 함수 하나를 쓴다. 화면에서 다시 계산하지 않는다. 화면은 rules-3 상태에서만 부른다(H6-4. R0은 `--risk R0` 실행기 출력에서만). 경로 11 화면은 통화별 현금 줄과 `components`를 ‘추정, 환율이 바뀌면 달라짐’ 표지(H6-3)와 함께 보이고 원화 틀을 기본으로 한다. 문구는 경로 11 지시서에서 정한다(검토 n6).
 
 ### 3.5 학생이 할 수 있는 판단
@@ -259,6 +259,8 @@
   - 손상률 하한(1%)은 `MARGIN_BUFFER` 문턱(10%)보다 확실히 낮다. 그래서 작은 클레임은 마진 여유로 흡수되고, 큰 클레임만 손실이 된다.
 - **추첨 키(검토 43번).** 계약 순번(`CT{n}`)이 아니라 **판매 견적 ID**(`contract.sellOfferId`)다. 흐름 `CLAIM:{판매 견적}:hit`, `…:tier`, `…:rate`. 같은 견적은 정책이 달라도 같은 추첨을 받는다(공통 난수). 주선을 하나 더 받아 순번을 밀어 손상을 피하는 공략도 막는다.
 - **함수의 자리와 서명(H15 O4·O13).** `claimFor(config, seed, sellOfferId, goodId)`와 `collectionPlan(config, seed, sellOfferId, counterpartyId)`는 `risk.ts`에 둔다. 추첨 키는 `sellOfferId` 그대로다. 프로필 누락 예외는 직접 무역의 품목·판매 거래처로 한정한다. `contractRiskReport`·`receivableSchedule`은 두 함수를 부르지 않는다(시험이 `vi.mock('./risk')` 감시로 호출 0회를 단언).
+- **추첨 식과 `claimFor`의 꼴(H17-1·2, 개정 3j).** `u(흐름) = drawAt(seed, 흐름, 0)`(흐름마다 한 번, 커서 0), `U[a, b] = a + ⌊u × (b − a + 1)⌋`. H16-1과 같다. 엔진은 `seed = s.rng.seed`로 부르고 `s.rng.cursors`는 읽거나 바꾸지 않는다. 흐름은 다섯 개뿐이다(`CLAIM:{o}:hit`·`…:tier`·`…:rate`, `COLLECT:{o}:mode`·`…:days`, {o} = `contract.sellOfferId`). `claimFor` → `null | { tier: 'MINOR' | 'MAJOR', rateBp }`. `CLAIM` 층이 없으면 `null`(표를 읽지 않는다). 층이 있으면 `claims.byGood`에서 `goodId` 행을 먼저 찾고, 없으면 추첨 전에 예외. 손상 = `U[0, 9999] < p_claim_bp`(`…:hit`). 손상이 아니면 `null`이고 `…:tier`·`…:rate`는 뽑지 않는다. 층 = `U[0, 9999] < minor.weight_bp`이면 `MINOR`, 아니면 `MAJOR`(`…:tier`). `rateBp = U[층.min_bp, 층.max_bp]`(`…:rate`). 클레임 금액 = `applyBasisPoints(늦은 감액 뒤 판매액, rateBp)`(half-up). 0이면 분개·로그를 내지 않는다.
+- **부르는 자리(H17-4).** `claimFor`는 `engine.ts` `processDeliveries` 안, 직접 무역(`kind === 'DIRECT_TRADE'`) 가드 뒤에서만 부른다. 순서: `SALE-` 분개(늦은 감액 뒤 `netSale`) → `CLAIM-{계약}` 분개(`contractId` 붙임) → 청구서 생성. 청구서 `amountMinor = netSale − 클레임`(손상률 상한이 3000bp라 `netSale > 0`이면 청구액 > 0). 로그는 ‘{계약} 화물 일부 손상: 고객이 대금 {금액} 감액 청구’다.
 - **분개.** 새 계정 `SALES_ALLOWANCE`(매출 에누리), 분개 `CLAIM-{계약}`(매출 에누리 / 매출채권). 늦은 인도 감액(`priceReductionMinor`)과 따로 둔다. `ACCOUNT_KIND`는 `income`(매출 차감 계정, 차변 잔액)이고, rules-3 `contractReport`의 순매출(`netRevenue`)에 더해 클레임만큼 순매출이 준다(H14-10, 검토 n26). `ledger.ts` `summarize`의 profit 식에 `SALES_ALLOWANCE` 잔액(음수)을 더한다. `BookSummary`에 새 필수 칸은 두지 않는다(H15 O2. 빠뜨리면 마감의 순자산 항등식이 깨진다). rules-2에는 이 분개가 없어 바이트가 같다. 둘 다 있으면 늦은 감액 뒤 남은 판매액에 손상률을 곱한다(USD 센트, half-up).
 - 보험은 없다(경로 7·9). 주선 화물은 제외한다(운송인 책임 한도 문제라 경로 7).
 
@@ -270,18 +272,22 @@
   - 등급은 가상값이다. 실재 기업 신용평가를 흉내 내지 않는다. 교사용 자료에 성격을 밝힌다.
 - **추첨 키.** 판매 견적 ID. 흐름 `COLLECT:{판매 견적}:mode`, `…:days`. 주선 청구서는 제외한다(지금처럼 정시 전액).
 - **방식.** 정시(지금과 같음), 지연(청구 결제일 + `[late_min, late_max]`일에 전액), 부분(청구 결제일에 `partial_bp` 몫, 나머지는 + `[late_min, late_max]`일).
+- **`collectionPlan`의 꼴(H17-3, 개정 3j).** `collectionPlan(config, seed, sellOfferId, counterpartyId)` → `{ mode: 'ON_TIME' | 'LATE' | 'PARTIAL', days }`. `counterpartyId`는 `contract.customerId`다. `COLLECTION` 층이 없으면 `{ mode: 'ON_TIME', days: 0 }`(표를 읽지 않는다). 층이 있으면 `collections.byCounterparty`에서 거래처 행을 찾고(없으면 예외) 그 등급의 `grades` 행을 쓴다. `v = U[0, 9999]`(`…:mode`). 구간 순서는 **정시 → 지연 → 부분**이다: `v < p_on_time_bp`이면 `ON_TIME`, `v < p_on_time_bp + p_late_bp`이면 `LATE`, 그 밖은 `PARTIAL`(검사기가 세 확률의 합 = 10000을 본다). `days = U[late_min_days, late_max_days]`(`…:days`). `ON_TIME`이면 `days = 0`이고 `…:days`는 뽑지 않는다. 지연과 부분의 나머지가 같은 `days`를 쓴다. 부분의 첫 수금 = `applyBasisPoints(청구액, partial_bp)`, 나머지 = 청구액 − 첫 수금(뺄셈이라 합이 늘 청구액이다. 비율은 추첨하지 않는다).
+- **부르는 자리(H17-4).** `collectionPlan`은 `engine.ts` `processCollections(s, config)` 안에서만 부른다. `COLLECTION` 층이 있을 때 `PAID`가 아니고 `dueDay ≤ s.day`인 직접 무역 청구서마다 그날 다시 부른다(계획은 저장하지 않는다). `processDeliveries`·읽기 함수·미리보기에서는 부르지 않는다. rules-2 경로(층 없음)와 주선 청구서는 지금의 `applyReceipt` 그대로다. 종류 가드는 두 호출 모두 부르기 전에 둔다(주선의 품목·화주는 프로필에 없을 수 있다).
 - **상태 표현.** 청구서의 `dueDay`(청구 결제일)는 그대로 둔다. 실제 수금은 `processCollections`가 순수 함수 `collectionPlan`을 읽어 처리한다.
-  - 부분 수금은 `receiptIds`에 두 번째 수금 ID를 더한다. 수금 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `engine.ts:1117`)에 `-1`, `-2`를 붙인다. 금액은 원장에서 읽는다. **청구서에 새 칸을 두지 않는다.**
+  - 부분 수금은 `receiptIds`에 두 번째 수금 ID를 더한다. 수금 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `applyReceipt`)에 `-1`, `-2`를 붙인다. 금액은 원장에서 읽는다. **청구서에 새 칸을 두지 않는다.**
+  - 수금 처리·종결(H17-5): 지연은 청구 결제일 + `days`에 전액(`RCPT-{청구서}`, `applyReceipt`의 문장 그대로). 부분은 결제일에 첫 수금(`RCPT-{청구서}-1`), 결제일 + `days`에 나머지(`-2`). 둘 다 `receiptIds`에 넣고 `contractId`를 단다. 계약은 **마지막 수금에서만** `COMPLETED`, 청구서는 다 받았을 때만 `PAID`. 계획일이 캠페인 끝을 넘으면 받지 못한 채 채권으로 남는다.
+  - 로그 문장(H17-5, 고정. 새 문장은 이 셋뿐이고 날짜·방식·계획을 담지 않는다): 결제일에 받은 것이 없음 ‘{계약} 결제일에 대금이 들어오지 않음(남은 {금액})’, 부분 첫 수금 ‘{계약} 대금 일부 {금액} 수금(남은 {금액})’, 나머지 수금 ‘{계약} 대금 나머지 {금액} 수금. 계약 종결’. 인도 로그(‘현금은 {청구 결제일}일 수금 예정’)는 지금 문장 그대로다. 날 K의 마감 뒤에 보이는 모든 것(로그·`notices`·상태 칸·읽기 함수)은 K까지 일어난 수금만 반영한다.
   - 상태 전이(H14-10, 검토 n29·n37): 날 d의 마감에서 **수금 처리 뒤에**, d ≥ `dueDay`이고 남은 금액 > 0이면 `OVERDUE`, 다 받으면 `PAID`. 그래서 결제일 D 다음 상태(`s.day` = D+1)에서는 `OVERDUE`와 `overdueDays = 1`이 함께 보인다. 지금 엔진은 `OVERDUE`로 바꾼 적이 없다. rules-2에서는 이 상태에 들어가지 않는다.
 - **읽기 함수(검토 42·44·45번).**
-  - 새 함수 `receivableSchedule(s, config)`(`reports.ts`): 미수 청구서마다 `{ invoiceId, contractId, currency, dueDay, outstandingMinor, overdueDays }`. `outstandingMinor` = 청구액 − 원장의 받은 금액, `overdueDays` = max(0, s.day − dueDay). 정렬은 `dueDay`, 그다음 `invoiceId`. `collectionPlan`을 부르지 않는다(미래 누설 금지).
+  - 새 함수 `receivableSchedule(s, config)`(`reports.ts`): 미수 청구서마다 `{ invoiceId, contractId, currency, dueDay, outstandingMinor, overdueDays }`. `outstandingMinor` = 청구액 − 원장의 받은 금액, `overdueDays` = max(0, s.day − dueDay). 정렬은 `dueDay`, 그다음 `invoiceId`. `collectionPlan`을 부르지 않는다(미래 누설 금지). 결제일 전 행도 계획과 무관하게 `dueDay` = 청구 결제일, `outstandingMinor` = 청구액 − 받은 금액이다(H17-7).
   - `upcomingPayments`·`UpcomingPaymentKind`는 손대지 않는다(지급 일정이다. 수금 종류를 더하면 `src/ui/schedule.ts:94`의 never 분기가 깨진다).
   - `campaignSummary.openInvoices.amountMinor`는 남은 금액으로 낸다. rules-2에서는 지금 값과 같다.
   - `paymentDefaultStatus.recovery.nextReceipt`(`operations.ts:241·252`)는 **지금 규칙을 유지한다**(허브 결정 H13, 검토 R25 b). 연체 청구서의 연체 여부와 남은 금액은 `receivableSchedule`이 보인다. 연체(지연·부분) 청구서가 있으면 `nextReceipt`는 지난 결제일을 내고, 부분 수금 뒤에는 금액도 청구 전액이다(`operations.ts:241`은 `dueDay`로 거르지 않는다). 이 한계와 화면 문구(`money-alerts.ts:19`)를 결과 보고 ‘범위 밖 발견’에 적는다(검토 n30).
   - `progress.ts`의 `contractProgress`, `src/ui/schedule.ts:73-74`, `main.ts:400`은 고칠 수 없는 파일이다. rules-3이 화면에 없으므로 결과 보고의 ‘범위 밖 발견’에 적는다.
 - **비용의 한계.** 캠페인 끝에 남은 채권은 채권으로 남는다(분석값 반영은 경로 5 실행기 지시서에서 확인한다). 대손은 이번에 없다. 미수의 비용은 ① 환율 노출이 길어지는 것과 ② 원화 급여 압박(환전 시점)뿐이다. **이자 비용이 없다는 한계**를 교사용 자료와 결과 보고에 적는다.
 - 지급 불이행 규칙은 회사의 지급 의무만 본다. 고객 미수가 회사 미지급으로 이어지면 기존 규칙대로 경고·실패가 된다. J1이 지켜볼 곳이다.
-- `components`의 `claim`, `collection`을 채운다.
+- `components`의 `claim`, `collection`을 채운다(H17-6). 항등식은 TASK-0062 4절 그대로다(`residual`은 남은 차이로 계산해 그대로 낸다). 6단계 `claim`: 5단계 줄을 복사해 판매 줄(색인 3)의 금액만 ‘늦은 감액 뒤 판매액 − `CLAIM-` 분개 금액’으로 바꾼다(날짜는 2단계 그대로. 평가일까지 `CLAIM-`이 없거나 취소 계약이면 바꾸지 않는다). 7단계 `cancel`은 6단계 줄에서 만든다. 8단계 `collection`(취소되지 않았고 청구서가 있는 계약만): 7단계 줄에서 판매 줄을 빼고 그 계약의 `RECEIPT-` 분개 `CASH` 줄을 줄마다 그 분개 날로 넣는다. 평가일까지 받지 못한 몫(청구액 − 원장 받은 금액)은 평가일 환율의 한 줄이다. 9단계 `open_valuation`은 구성상 0(H14-5). 취소 계약은 6·8단계가 0이고 인도 전 계약의 `claim`은 0이다. 수금은 원장 `RECEIPT-` 분개로만 읽고 `collectionPlan`·`claimFor`를 부르지 않는다.
 
 ## 6. 자료 형태
 
