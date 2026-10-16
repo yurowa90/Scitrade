@@ -1682,8 +1682,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 43625,
-      "sha256": "c61def4aa7f4e1f9790650a350a26fe1f89fe3eb79c7573d45c1bc30ff378e3b"
+      "size_bytes": 64902,
+      "sha256": "bc4aba9450854afc8c0b8d3a3498b5954375826ed50becd204e6d130944a4957"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
@@ -1702,8 +1702,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
-      "size_bytes": 34470,
-      "sha256": "8aee5b98e0801797c6bcfb54d426ece000463591a95a72b25e83963f6a0852da"
+      "size_bytes": 53442,
+      "sha256": "620cff51749561b7caab4ec53b6c82988a6c842424355edf691a18b28e858a3c"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2797,18 +2797,18 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
-      "size_bytes": 27494,
-      "sha256": "f0bad0400e080716e8804d82c9660aff3e80cec45e859465bd119e69855fbcc1"
+      "size_bytes": 40145,
+      "sha256": "94778bb3885bea787fb4340137cd03fc131f211682fd51075b1c1d8e85655d8c"
     },
     {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
-      "size_bytes": 15665,
-      "sha256": "91ec78a93db7f47e11bc2b4105d697a8989336c6bdc7333a8aa2f55cbd01f495"
+      "size_bytes": 26665,
+      "sha256": "905c9659ff9d20708d544459747558c222ab78bd51bcb804ff8dc3d4c977f51d"
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 18808,
-      "sha256": "a10907449a15d72e2e45ffedf60ba57150377426a6f7749189aebd114c450614"
+      "size_bytes": 28576,
+      "sha256": "6f21f32ba08e0dfb4606f06275b0e8ba5d86dc1e80c7abe5489c658aec9e2543"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
