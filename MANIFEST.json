@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 231543,
-      "sha256": "38d37128aa129b9748f9e993dc0b2991a9f58824e9c5182e7fb66f615a8ad533"
+      "size_bytes": 232439,
+      "sha256": "1dc6c26681c35e24c34818f7ab64c9d695078cd3d5470ce1b218665789198678"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -2472,8 +2472,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 23754,
-      "sha256": "46d09c53f4c627eb2b4c16f71f499a96ca693ab077d56da8446fb9a52eb588b0"
+      "size_bytes": 23743,
+      "sha256": "97835d34c631b14fb219eb6f129b984f2d5f9ff845a276b236734acd344ece0d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2827,8 +2827,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
-      "size_bytes": 105368,
-      "sha256": "34704a90a790fc18527c4fddc3f365a9c50bb3b97824890adb5c39326ea808d6"
+      "size_bytes": 107784,
+      "sha256": "508e46c8439f8501c01d67aac263509fa47fe92add244ab335b90a62252cfb5e"
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
