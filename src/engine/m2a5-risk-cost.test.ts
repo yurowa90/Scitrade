@@ -188,7 +188,7 @@ function independent(s: GameState, cfg: ScenarioConfig, c: Contract) {
     const sale = c.saleAmountMinor - (c.deliveredDay !== null ? c.priceReductionMinor : reduction(Math.max(day, sh?.releaseDay ?? arrival + cfg.terms.customsDays)));
     add(invoice ? invoice.amountMinor - receipts : c.status === 'COMPLETED' ? 0 : sale, c.currency, day, false);
     if (!sh && !book) add(-route.bookingFeeMinor, c.currency, day);
-    if (c.kind === 'DIRECT_TRADE' && !entries.some((e) => e.id.startsWith('DUTY-'))) add(-oracleDuty(cfg, s.rng.seed, c.goodId, c.destinationCityId, arrival, day, c.purchaseAmountMinor, buyCurrency, c.acceptedDay), c.currency, day);
+    if (c.kind === 'DIRECT_TRADE' && (!sh || sh.dutyMinor === null)) add(-oracleDuty(cfg, s.rng.seed, c.goodId, c.destinationCityId, arrival, day, c.purchaseAmountMinor, buyCurrency, c.acceptedDay), c.currency, day);
   }
   for (const o of s.obligations) if (ids.has(o.id) && o.paidDay === null) add(-o.amountMinor, o.currency, day);
   for (const [r, amount] of costs) total += toKrw(amount, r);
@@ -271,18 +271,54 @@ describe('TASK-0063 순수 일정과 공지', () => {
     expect(rows.length).toBeGreaterThanOrEqual(2);
     rows[0]!.rateBp = p.tariff.minBp + Math.floor((p.tariff.maxBp - p.tariff.minBp) / 2);
     rows[1]!.rateBp = p.tariff.maxBp - 1;
-    const cfg = cfgFor(1, p); let clipped = false, unclipped = false;
-    for (let seed = 1; seed <= 200 && !(clipped && unclipped); seed++) for (const e of tariffEvents(cfg, seed).filter((e) => e.countryCode === cc)) {
-      const a = rows.map((r) => oracleRate(cfg, oracleEvents(cfg, seed).filter((v) => !(v.countryCode === e.countryCode && v.round === e.round)), cc, r.goodId, e.noticeDay, e.effectiveDay));
-      const b = a.map((r) => Math.min(p.tariff.maxBp, Math.max(p.tariff.minBp, r + e.stepBp)));
-      clipped ||= a.some((r, i) => r + e.stepBp !== b[i]);
-      if (a.every((r, i) => r + e.stepBp === b[i])) { unclipped = true; expect(b[1]! - b[0]!).toBe(a[1]! - a[0]!); }
-      expect(b[0]).toBeLessThanOrEqual(b[1]!);
-      const state = advance(fresh({ ...cfg, seed }), { ...cfg, seed }, e.noticeDay);
-      if (state.day === e.noticeDay) expect(tariffSchedule(state, cfg).find((v) => v.countryCode === cc && v.round === e.round)!.rates).toEqual(oracleRates(cfg, seed, e, e.noticeDay));
-      if (clipped && unclipped) break;
+    const cfg = cfgFor(1, p); let clipped = false, unclipped = false, clippedComparisons = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const events = oracleEvents(cfg, seed);
+      expect(tariffEvents(cfg, seed)).toEqual(events);
+      const city = cfg.cities.find((c) => c.countryCode === cc)!;
+      const days = [...new Set([1, cfg.campaignDays, ...events.flatMap((e) => [e.noticeDay - 1, e.noticeDay, e.effectiveDay])])];
+      for (const row of rows) for (const k of days) for (const t of days) {
+        expect(dutyFor(cfg, seed, row.goodId, city.id, t, k, 1000000, 'USD', 1))
+          .toBe(bpAmount(1000000, oracleRate(cfg, events, cc, row.goodId, k, t)));
+      }
+      if (clipped && unclipped) continue;
+      for (const e of events.filter((e) => e.countryCode === cc)) {
+        const state = advance(fresh({ ...cfg, seed }), { ...cfg, seed }, e.noticeDay);
+        expect(state.day).toBe(e.noticeDay);
+        const rates = tariffSchedule(state, cfg).find((v) => v.countryCode === cc && v.round === e.round)!.rates;
+        expect(rates).toEqual(oracleRates(cfg, seed, e, e.noticeDay));
+        const a = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.fromBp);
+        const b = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.toBp);
+        if (a.some((r, i) => r + e.stepBp !== b[i])) { clipped = true; clippedComparisons++; }
+        if (a.every((r, i) => r + e.stepBp === b[i])) { unclipped = true; expect(b[1]! - b[0]!).toBe(a[1]! - a[0]!); }
+        expect(a[0]).toBeLessThanOrEqual(a[1]!); expect(b[0]).toBeLessThanOrEqual(b[1]!);
+        if (clipped && unclipped) break;
+      }
+      vi.mocked(drawUniform).mockClear(); vi.mocked(dutyFor).mockClear();
     }
-    expect(clipped).toBe(true); expect(unclipped).toBe(true);
+    expect(clipped).toBe(true); expect(unclipped).toBe(true); expect(clippedComparisons).toBeGreaterThan(0);
+  });
+  it('공지 순서: 같은 날 두 나라와 과거 사건을 오라클 정렬·로그에 대조', () => {
+    const p = structuredClone(profile); p.tariff.maxChanges = 6;
+    let found: { cfg: ScenarioConfig; day: number } | undefined;
+    for (let seed = 1; seed <= 200 && !found; seed++) {
+      const cfg = cfgFor(seed, p), events = oracleEvents(cfg, seed);
+      for (const e of events) {
+        if (!events.some((v) => v.noticeDay === e.noticeDay && v.countryCode !== e.countryCode)
+          || !events.some((v) => v.noticeDay < e.noticeDay)) continue;
+        const state = advance(fresh(cfg), cfg, e.noticeDay);
+        if (state.day === e.noticeDay && state.phase !== 'ENDED') { found = { cfg, day: e.noticeDay }; break; }
+      }
+    }
+    expect(found).toBeDefined(); const { cfg, day } = found!, state = advance(fresh(cfg), cfg, day);
+    const countries = [...new Set(p.tariff.base.map((r) => r.countryCode))];
+    const ordered = oracleEvents(cfg, cfg.seed).filter((e) => e.noticeDay <= day)
+      .sort((a, b) => a.noticeDay - b.noticeDay || countries.indexOf(a.countryCode) - countries.indexOf(b.countryCode) || a.round - b.round);
+    expect(new Set(ordered.filter((e) => e.noticeDay === day).map((e) => e.countryCode)).size).toBeGreaterThan(1);
+    expect(ordered.some((e) => e.noticeDay < day)).toBe(true);
+    expect(tariffSchedule(state, cfg).map((e) => [e.countryCode, e.round])).toEqual(ordered.map((e) => [e.countryCode, e.round]));
+    expect(state.log.filter((l) => l.day === day && l.textKo.includes('관세 일괄 변경')).map((l) => l.textKo))
+      .toEqual(ordered.filter((e) => e.noticeDay === day).map((e) => oracleLabel(cfg, e, oracleRates(cfg, cfg.seed, e, day))));
   });
   it('무의미 사건 없음: 흐름은 뽑되 로그에서 생략, 음수 걸음 대조', () => {
     const p = structuredClone(profile), cc = p.tariff.base[0]!.countryCode;
@@ -384,6 +420,8 @@ describe('TASK-0063 공지 기준과 누설 차단', () => {
     expect(atPreview(cfg, ctx, d, 'KRW').duty).toBe(oracleDuty(cfg, cfg.seed, ctx.good, ctx.city, a, d, ctx.amount, 'KRW', d));
     const announcedArrival = listSailings(cfg, ctx.route.id, e.noticeDay + 1)[0]!.scheduledArrivalDay;
     expect(announcedArrival).toBeGreaterThanOrEqual(e.effectiveDay);
+    expect(oracleDuty(cfg, cfg.seed, ctx.good, ctx.city, announcedArrival, e.noticeDay, ctx.amount, 'KRW', e.noticeDay))
+      .not.toBe(oracleDuty(cfg, cfg.seed, ctx.good, ctx.city, announcedArrival, e.noticeDay - 1, ctx.amount, 'KRW', e.noticeDay));
     expect(atPreview(cfg, ctx, e.noticeDay, 'KRW').duty).toBe(oracleDuty(cfg, cfg.seed, ctx.good, ctx.city, announcedArrival, e.noticeDay, ctx.amount, 'KRW', e.noticeDay));
   });
   it('goodId 누락·관세 표 누락 예외·USD 매입도 달라진 표 세율', () => {
@@ -456,11 +494,70 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
     expect(s.contracts.find((x) => x.id === c.id)!.priceReductionMinor).toBe(0);
     console.log('정시 사례', JSON.stringify({ seed: cfg.seed, notice: e.noticeDay, arrival: sh.arrivalDay, components: report.components }));
   });
+  it('관세 0 도착: 뒤 인상에도 완료·남은 관세 없음, 미리보기와 도착 전 대조', () => {
+    const copy = structuredClone(profile), cc = copy.tariff.base[0]!.countryCode;
+    for (const row of copy.tariff.base.filter((r) => r.countryCode === cc)) row.rateBp = 100;
+    const v = findEventCase(({ cfg, c, e, sailing }) => {
+      const events = oracleEvents(cfg, cfg.seed), n = sailing.scheduledArrivalDay;
+      return e.countryCode === cc && e.stepBp < 0 && e.effectiveDay <= n
+        && oracleRate(cfg, events, cc, c.goodId, n, n) === 0
+        && events.some((later) => later.countryCode === cc && later.stepBp > 0 && later.noticeDay > n
+          && oracleRate(cfg, events, cc, c.goodId, later.effectiveDay, later.effectiveDay) > 0);
+    }, copy);
+    const { cfg, c, sailing } = v, events = oracleEvents(cfg, cfg.seed), n = sailing.scheduledArrivalDay;
+    const positive = events.find((e) => e.countryCode === cc && e.stepBp > 0 && e.noticeDay > n
+      && oracleRate(cfg, events, cc, c.goodId, e.effectiveDay, e.effectiveDay) > 0)!;
+    expect(positive).toBeDefined(); expect(oracleRate(cfg, events, cc, c.goodId, n, n)).toBe(0);
+    const before = advance(v.s, cfg, n);
+    expect(before.shipments.find((sh) => sh.contractId === c.id)!.dutyMinor).toBeNull();
+    vi.mocked(dutyFor).mockClear(); contractRiskReport(before, cfg, c.id);
+    expect(vi.mocked(dutyFor)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(dutyFor).mock.calls.filter((args) => args[5] !== c.acceptedDay)).toHaveLength(1);
+    const arrived = advance(before, cfg, n + 1), sh = arrived.shipments.find((sh) => sh.contractId === c.id)!;
+    expect(sh.arrivalDay).toBe(n); expect(sh.dutyMinor).toBe(0); expect(sh.dutyPaid).toBe(true);
+    expect(entryAmount(arrived, 'DUTY-', c)).toBeUndefined();
+    const s = advance(finish(arrived, cfg, c.id), cfg, positive.effectiveDay);
+    expect(s.phase).not.toBe('ENDED'); expect(s.contracts.find((v) => v.id === c.id)!.status).toBe('COMPLETED');
+    expect(s.day).toBeGreaterThanOrEqual(positive.effectiveDay);
+    expect(oracleRate(cfg, events, cc, c.goodId, s.day, s.day)).toBeGreaterThan(0);
+    vi.mocked(dutyFor).mockClear(); const report = contractRiskReport(s, cfg, c.id);
+    // 0062 계약대로 0단계 미리보기 호출은 남는다. 남은 관세를 구하는 호출만 0회다.
+    expect(vi.mocked(dutyFor)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(dutyFor).mock.calls.every((args) => args[5] === c.acceptedDay)).toBe(true);
+    expect(vi.mocked(dutyFor).mock.calls.filter((args) => args[5] !== c.acceptedDay)).toHaveLength(0);
+    expect(report.open).toBe(false);
+    expect(report.realized).toBe(independent(s, cfg, c).realized);
+    const first = listSailings(cfg, sailing.routeId, c.acceptedDay + 1)[0]!;
+    const old = oracleDuty(cfg, cfg.seed, c.goodId, c.destinationCityId, first.scheduledArrivalDay, c.acceptedDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay);
+    const r = rateAt(cfg, cfg.seed, s.day), freight = entryAmount(s, 'FREIGHT-PREPAY-', c)!;
+    const fr = rateAt(cfg, cfg.seed, freight.day) === r ? freight.lines.find((l) => l.account === 'PREPAID_FREIGHT')!.amount : 0;
+    expect(old).toBeGreaterThan(0);
+    expect(report.components.tariff).toBe(toKrw(-fr, r) - toKrw(-(fr + old), r));
+    expect(report.components.residual).toBe(0); identity(s, cfg, c.id);
+    // 같은 설정에서 공지된 0 세율을 실제 다음 편 미리보기에 적용한다.
+    const zeroDay = Array.from({ length: n }, (_, i) => i + 1).find((day) => {
+      const a = listSailings(cfg, sailing.routeId, day + 1)[0]?.scheduledArrivalDay;
+      return a !== undefined && oracleRate(cfg, events, cc, c.goodId, day, a) === 0;
+    });
+    expect(zeroDay).toBeDefined();
+    const p = preview(cfg, 'DIRECT_TRADE', c.originCityId, c.destinationCityId, zeroDay!,
+      { purchase: c.purchaseAmountMinor, sale: c.saleAmountMinor }, c.deliveryDeadlineDay, c.paymentDueDay,
+      { goodId: c.goodId, purchaseCurrency: 'KRW' })!;
+    expect(p.duty).toBe(0);
+    expect(p.schedule.find((line) => line.day === p.arrivalDay && line.labelKo.startsWith('도착')))
+      .toMatchObject({ labelKo: '도착·관세 지급', amount: 0 });
+    console.log('관세 0 도착 사례', JSON.stringify({ seed: cfg.seed, country: cc, baseBp: 100, stepBp: copy.tariff.stepBp,
+      accepted: c.acceptedDay, arrival: n, evaluation: s.day, positive, old, r, fr, components: report.components }));
+  }, 30000);
   it('도착 공지 기준일: 도착일 아침 공지·동일 일 시행', () => {
     const p = structuredClone(profile); p.tariff.lagDays = [0, 0];
     const v = findEventCase(({ cfg, c, e, sailing, p }) => sailing.scheduledArrivalDay === e.noticeDay
+      && oracleDuty(cfg, cfg.seed, c.goodId, c.destinationCityId, e.noticeDay, e.noticeDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay)
+        !== oracleDuty(cfg, cfg.seed, c.goodId, c.destinationCityId, e.noticeDay, e.noticeDay - 1, c.purchaseAmountMinor, 'KRW', c.acceptedDay)
       && c.acceptedDay < sailing.departureDay && oracleDuty(cfg, cfg.seed, c.goodId, c.destinationCityId, e.noticeDay, e.noticeDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay) !== p.duty, p);
     expect(v.sailing.scheduledArrivalDay).toBe(v.e.noticeDay); expect(v.e.effectiveDay).toBe(v.e.noticeDay);
+    expect(oracleDuty(v.cfg, v.cfg.seed, v.c.goodId, v.c.destinationCityId, v.e.noticeDay, v.e.noticeDay, v.c.purchaseAmountMinor, 'KRW', v.c.acceptedDay))
+      .not.toBe(oracleDuty(v.cfg, v.cfg.seed, v.c.goodId, v.c.destinationCityId, v.e.noticeDay, v.e.noticeDay - 1, v.c.purchaseAmountMinor, 'KRW', v.c.acceptedDay));
     const s = advance(v.s, v.cfg, v.e.noticeDay + 1), sh = s.shipments[0]!;
     expect(sh.arrivalDay).toBe(v.e.noticeDay);
     expect(sh.dutyMinor).toBe(oracleDuty(v.cfg, v.cfg.seed, v.c.goodId, v.c.destinationCityId, v.e.noticeDay, v.e.noticeDay, v.c.purchaseAmountMinor, 'KRW', v.c.acceptedDay));
@@ -474,6 +571,8 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
     const before = advance(v.s, cfg, e.noticeDay - 1), after = advance(before, cfg, e.noticeDay);
     expect(country(cfg, c.destinationCityId)).toBe(e.countryCode);
     expect(e.effectiveDay).toBeGreaterThan(before.day); expect(sailing.scheduledArrivalDay).toBeGreaterThanOrEqual(e.effectiveDay);
+    expect(dutyFor(cfg, cfg.seed, c.goodId, c.destinationCityId, sailing.scheduledArrivalDay, before.day, c.purchaseAmountMinor, 'KRW', c.acceptedDay))
+      .not.toBe(dutyFor(cfg, cfg.seed, c.goodId, c.destinationCityId, sailing.scheduledArrivalDay, sailing.scheduledArrivalDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay));
     const reports = [];
     for (const s of [before, after]) {
       expect(s.shipments[0]!.arrivalDay).toBeNull(); expect(s.shipments[0]!.departureDay).toBeLessThan(s.day);
@@ -481,8 +580,6 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
       expect(cashReservations(s, cfg).find((r) => r.contractId === c.id && r.kind === 'DUTY')!.amountMinor).toBe(amount);
       const report = identity(s, cfg, c.id); expect(report.components.tariff).toBe(stageTariff(s, cfg, c, amount)); reports.push(report);
     }
-    expect(dutyFor(cfg, cfg.seed, c.goodId, c.destinationCityId, sailing.scheduledArrivalDay, before.day, c.purchaseAmountMinor, 'KRW', c.acceptedDay))
-      .not.toBe(dutyFor(cfg, cfg.seed, c.goodId, c.destinationCityId, sailing.scheduledArrivalDay, sailing.scheduledArrivalDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay));
     expect(reports[0]!.components.tariff).not.toBe(reports[1]!.components.tariff);
   });
   it('수락 자금 검사 관세: 늦은 plan 편보다 다음 첫 편이 먼저 시행 전 도착', () => {
@@ -566,6 +663,25 @@ describe('TASK-0063 출항 부대비와 항등식', () => {
       }
     }
   });
+  it('편 놓침: 준비 미배정으로 해제된 예약에 부대비 없음', () => {
+    let found: { cfg: ScenarioConfig; s: GameState; sailing: Sailing } | undefined;
+    for (let seed = 1; seed <= 200 && !found; seed++) {
+      const cfg = cfgFor(seed); let s = fresh(cfg);
+      const pair = openTradePairs(s, cfg)[0]!, buy = offerDef(s, cfg, pair.buyOfferId)!, sell = offerDef(s, cfg, pair.sellOfferId)!;
+      const route = routeBetween(cfg, buy.cityId, sell.cityId)!, sailing = listSailings(cfg, route.id, s.day + 1)[0]!;
+      if (oracleSurcharge(cfg, seed, route.id, week(cfg, sailing.departureDay)) <= 0) continue;
+      s = fund(s, cfg, buy.unitPriceMinor * buy.quantity);
+      const trial = planState(s, cfg, [{ id: '준비 미배정', type: 'ACCEPT_TRADE', ...pair, plan: { sailingId: sailing.id } }]);
+      if (trial.results[0]!.status === 'APPLIED') found = { cfg, s: trial.state, sailing };
+    }
+    expect(found).toBeDefined(); const { cfg, sailing } = found!, b = found!.s.bookings[0]!;
+    expect(oracleSurcharge(cfg, cfg.seed, b.routeId, week(cfg, sailing.departureDay))).toBeGreaterThan(0);
+    const s = advance(found!.s, cfg, sailing.departureDay + 1);
+    expect(s.bookings.find((v) => v.id === b.id)!.status).toBe('CANCELLED');
+    expect(s.ledger.entries.some((e) => e.id === `SURCHARGE-${b.id}`)).toBe(false);
+    expect(s.obligations.some((o) => o.id === `SURCHARGE-${b.id}`)).toBe(false);
+    expect(identity(s, cfg, b.contractId).components.surcharge).toBe(0);
+  });
   it('부대비 ④: 둘째 편, 다른 환율, 원장 현금과 4단계 환산', () => {
     const cfg = cfgFor(costSeeds().positive), x = setup(cfg, 1), s = finish(x.s, cfg, x.c.id), c = s.contracts[0]!;
     const cost = entryAmount(s, 'SURCHARGE-', c)!, duty = entryAmount(s, 'DUTY-', c)!, freight = entryAmount(s, 'FREIGHT-PREPAY-', c)!;
@@ -610,12 +726,56 @@ describe('TASK-0063 출항 부대비와 항등식', () => {
     const first = setup(cfg), preArrival = advance(first.s, cfg, first.sailing.scheduledArrivalDay - 1);
     inject(preArrival, balance(preArrival.ledger, 'USD', 'CASH') + preArrival.invoices.filter((i) => i.dueDay === preArrival.day).reduce((n, i) => n + i.amountMinor, 0), '관세 전 현금 정산');
     const unpaidDuty = advance(preArrival, cfg, first.sailing.scheduledArrivalDay + 1);
-    expect(unpaidDuty.shipments[0]!.dutyPaid).toBe(false); expect(identity(unpaidDuty, cfg, first.c.id).open).toBe(true);
+    expect(unpaidDuty.shipments[0]!.dutyPaid).toBe(false);
+    expect(unpaidDuty.obligations.some((o) => o.id.startsWith('DUTY-') && o.paidDay === null)).toBe(true);
+    expect(rateAt(cfg, cfg.seed, unpaidDuty.day)).not.toBe(rateAt(cfg, cfg.seed, first.c.acceptedDay));
+    expect(rateAt(cfg, cfg.seed, unpaidDuty.day)).not.toBe(cfg.operations!.fx.baseKrwPerUsd);
+    expect(identity(unpaidDuty, cfg, first.c.id).open).toBe(true);
     const preDeparture = advance(x.s, cfg, x.sailing.departureDay - 1);
     inject(preDeparture, balance(preDeparture.ledger, 'USD', 'CASH') + preDeparture.invoices.filter((i) => i.dueDay === preDeparture.day).reduce((n, i) => n + i.amountMinor, 0), '부대비 전 현금 정산');
-    const unpaidSurcharge = advance(preDeparture, cfg, x.sailing.departureDay + 1);
+    let unpaidSurcharge = advance(preDeparture, cfg, x.sailing.departureDay + 1);
     expect(unpaidSurcharge.obligations.some((o) => o.id.startsWith('SURCHARGE-') && o.paidDay === null)).toBe(true);
     expect(identity(unpaidSurcharge, cfg, x.c.id).components.surcharge).not.toBe(0);
+    const surchargeId = `SURCHARGE-${x.s.bookings[0]!.id}`, departureRate = rateAt(cfg, cfg.seed, x.sailing.departureDay);
+    while (unpaidSurcharge.phase !== 'ENDED'
+      && unpaidSurcharge.obligations.some((o) => o.id === surchargeId && o.paidDay === null)
+      && rateAt(cfg, cfg.seed, unpaidSurcharge.day) === departureRate) {
+      unpaidSurcharge = advance(unpaidSurcharge, cfg, unpaidSurcharge.day + 1);
+    }
+    const obligation = unpaidSurcharge.obligations.find((o) => o.id === surchargeId)!;
+    expect(obligation.paidDay).toBeNull(); expect(unpaidSurcharge.phase).not.toBe('ENDED');
+    const evaluationRate = rateAt(cfg, cfg.seed, unpaidSurcharge.day);
+    expect(evaluationRate).not.toBe(departureRate);
+    // 3단계 USD 비용 중 해당 환율인 운임·관세만 합한다. 제품 단계 값은 읽지 않는다.
+    const surchargeExpected = (s: GameState, r: number) => {
+      const sh = s.shipments.find((v) => v.contractId === x.c.id)!;
+      const duty = entryAmount(s, 'DUTY-', x.c), freight = entryAmount(s, 'FREIGHT-PREPAY-', x.c)!;
+      const dutyObligation = s.obligations.find((o) => o.id === duty?.id);
+      const dutyDay = dutyObligation ? dutyObligation.paidDay ?? s.day : duty?.day ?? s.day;
+      const dutyAmount = duty ? duty.lines.find((l) => l.account === 'INVENTORY')!.amount
+        : sh.dutyMinor !== null ? 0 : oracleDuty(cfg, cfg.seed, x.c.goodId, x.c.destinationCityId,
+          Math.max(sh.scheduledArrivalDay, s.day), s.day, x.c.purchaseAmountMinor, 'KRW', x.c.acceptedDay);
+      const cr = (rateAt(cfg, cfg.seed, Math.min(dutyDay, s.day)) === r ? dutyAmount : 0)
+        + (rateAt(cfg, cfg.seed, freight.day) === r ? freight.lines.find((l) => l.account === 'PREPAID_FREIGHT')!.amount : 0);
+      return toKrw(-(cr + obligation.amountMinor), r) - toKrw(-cr, r);
+    };
+    const unpaidReport = identity(unpaidSurcharge, cfg, x.c.id);
+    expect(unpaidReport.components.surcharge).toBe(surchargeExpected(unpaidSurcharge, evaluationRate));
+    // 미지급 의무는 그대로 두고 상환 자금만 넣는다. 다음 마감의 공개 엔진이 갚는다.
+    const paidDay = unpaidSurcharge.day, funded = structuredClone(unpaidSurcharge);
+    post(funded.ledger, { id: '부대비 상환 자금', day: paidDay, currency: 'USD', reason: '시험 상환 자금', lines: [
+      { account: 'CASH', amount: obligation.amountMinor }, { account: 'OPENING_EQUITY', amount: -obligation.amountMinor },
+    ] });
+    let paid = advance(funded, cfg, paidDay + 1);
+    expect(paid.obligations.find((o) => o.id === surchargeId)!.paidDay).toBe(paidDay);
+    expect(rateAt(cfg, cfg.seed, paidDay)).not.toBe(departureRate);
+    while (paid.phase !== 'ENDED' && rateAt(cfg, cfg.seed, paid.day) === evaluationRate) paid = advance(paid, cfg, paid.day + 1);
+    expect(paid.phase).not.toBe('ENDED'); expect(rateAt(cfg, cfg.seed, paid.day)).not.toBe(evaluationRate);
+    const paidReport = identity(paid, cfg, x.c.id);
+    expect(paidReport.components.surcharge).toBe(surchargeExpected(paid, rateAt(cfg, cfg.seed, paidDay)));
+    console.log('미지급·상환 환율 사례', JSON.stringify({ seed: cfg.seed, departure: x.sailing.departureDay, departureRate,
+      unpaidDay: unpaidSurcharge.day, evaluationRate, paidDay, laterDay: paid.day, laterRate: rateAt(cfg, cfg.seed, paid.day),
+      surcharge: obligation.amountMinor, unpaidComponents: unpaidReport.components, paidComponents: paidReport.components }));
   });
   it('항등식: 관세 차이가 생긴 출항 전 취소의 3·4단계는 0', () => {
     const v = findEventCase(({ cfg, c, e, p }) => {
@@ -676,6 +836,7 @@ describe('TASK-0063 호환성과 진단', () => {
       const cfg = cfgFor(1, profile, level), v = setup(cfg, 0, forwarding);
       expect(contractPreview(v.s, cfg, v.c)).not.toHaveProperty('surchargeMaxBp');
       if (!forwarding) expect(quotePreview(v.s, cfg, v.pair)).not.toHaveProperty('surchargeMaxBp');
+      else expect(quotePreview(v.s, cfg, { offerId: v.c.serviceOfferId! })).not.toHaveProperty('surchargeMaxBp');
     }
   });
   it('결정성·저장·커서 불변과 끝난 상태의 공지 평가일', () => {
@@ -691,6 +852,35 @@ describe('TASK-0063 호환성과 진단', () => {
     console.log('순수 함수 표', JSON.stringify([1, 2, costSeeds().positive].map((seed) => ({ seed, events: tariffEvents(cfg, seed),
       surcharge: cfg.routes.map((r) => ({ route: r.id, weeks: [1, 2, 3].map((w) => surchargeBp(cfg, seed, r.id, w)) })) }))));
   });
+  it('실패 종료의 공지 평가일: 실패 다음 날·그 뒤 사건과 세율 제외', () => {
+    let found: { cfg: ScenarioConfig; s: GameState } | undefined;
+    for (let seed = 1; seed <= 200 && !found; seed++) {
+      const cfg = cfgFor(seed), opened = fresh(cfg), pair = openTradePairs(opened, cfg)[0]!;
+      const buy = offerDef(opened, cfg, pair.buyOfferId)!, sell = offerDef(opened, cfg, pair.sellOfferId)!;
+      for (let quantity = buy.quantityStep; quantity <= Math.min(buy.maxQuantity, sell.maxQuantity); quantity += buy.quantityStep) {
+        const trial = planState(opened, cfg, [{ id: '실패 종료 매입', type: 'ACCEPT_TRADE', ...pair, quantity }]);
+        if (trial.results[0]!.status !== 'APPLIED') continue;
+        const s = advance(trial.state, cfg, cfg.campaignDays + 1, false), f = s.operations?.failure;
+        if (!f) continue;
+        const events = oracleEvents(cfg, seed);
+        if (events.some((e) => e.noticeDay === f.day + 1) && events.some((e) => e.noticeDay > f.day + 1)) { found = { cfg, s }; break; }
+      }
+    }
+    expect(found).toBeDefined(); const { cfg, s } = found!;
+    expect(s.phase).toBe('ENDED'); expect(s.operations!.failure).not.toBeNull();
+    const f = s.operations!.failure!.day, events = oracleEvents(cfg, cfg.seed);
+    expect(tariffEvents(cfg, cfg.seed).some((e) => e.noticeDay === f + 1)).toBe(true);
+    expect(events.some((e) => e.noticeDay > f + 1)).toBe(true); expect(s.day).toBe(f + 1);
+    const countries = [...new Set(cfg.operations!.risk!.profile.tariff.base.map((r) => r.countryCode))];
+    const expected = events.filter((e) => e.noticeDay <= f)
+      .sort((a, b) => a.noticeDay - b.noticeDay || countries.indexOf(a.countryCode) - countries.indexOf(b.countryCode) || a.round - b.round);
+    const schedule = tariffSchedule(s, cfg);
+    expect(schedule.some((e) => e.noticeDay === f + 1)).toBe(false);
+    expect(schedule.some((e) => e.noticeDay > f + 1)).toBe(false);
+    expect(schedule.map((e) => [e.countryCode, e.round])).toEqual(expected.map((e) => [e.countryCode, e.round]));
+    for (const e of schedule) expect(e.rates).toEqual(oracleRates(cfg, cfg.seed, events.find((v) => v.countryCode === e.countryCode && v.round === e.round)!, f));
+    console.log('실패 종료 공지 사례', JSON.stringify({ seed: cfg.seed, failureDay: f, day: s.day, events, visible: schedule }));
+  }, 60000);
   it('원천 검사: 부대비는 출항 분기·주차 함수 인수, 관세 일정은 위험 모듈·아침 공지만', () => {
     const sources = import.meta.glob<string>(['./*.ts', '!./*.test.ts'], { query: '?raw', import: 'default', eager: true });
     for (const [path, raw] of Object.entries(sources)) {
@@ -750,6 +940,7 @@ describe('TASK-0063 호환성과 진단', () => {
   }, 60000);
   it('정시 노출: 공개 함수 명령 구동기, 시드 1부터 첫 적중까지', () => {
     let result: { seed: number; changed: number; total: number } | undefined;
+    const cumulative: { seed: number; changed: number; total: number }[] = [];
     for (let seed = 1; seed <= 200 && !result; seed++) {
       const cfg = cfgFor(seed); let s = fresh(cfg);
       const accepted = new Set<string>();
@@ -779,9 +970,10 @@ describe('TASK-0063 호환성과 진단', () => {
         expect(report.components.tariff !== 0).toBe(different);
         return different;
       }).length;
+      cumulative.push({ seed, changed, total: onTime.length });
       if (changed) result = { seed, changed, total: onTime.length };
     }
     expect(result).toBeDefined(); expect(result!.changed).toBeGreaterThan(0);
-    console.log('정시 노출 비율', JSON.stringify({ ...result, ratio: result!.changed / result!.total }));
+    console.log('정시 노출 비율', JSON.stringify({ ...result, ratio: result!.changed / result!.total, cumulative }));
   }, 60000);
 });

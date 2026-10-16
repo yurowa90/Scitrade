@@ -119,9 +119,9 @@ export function preview(
   if (money.purchase) schedule.push({ day: bookingDay, labelKo: '매입 대금 지급', amount: -money.purchase });
   schedule.push({ day: bookingDay, labelKo: '운임 선지급', amount: -freight });
   if (arrival !== null) {
-    schedule.push(duty
-      ? { day: arrival, labelKo: '도착·관세 지급', amount: -duty }
-      : { day: arrival, labelKo: '도착 (고객 화물: 관세는 수입자 부담)', amount: 0 });
+    schedule.push(kind === 'FORWARDING'
+      ? { day: arrival, labelKo: '도착 (고객 화물: 관세는 수입자 부담)', amount: 0 }
+      : { day: arrival, labelKo: '도착·관세 지급', amount: duty === 0 ? 0 : -duty });
   }
   if (release !== null) schedule.push({ day: release, labelKo: kind === 'FORWARDING' ? '인도: 주선 매출·채권 인식 (현금 변화 없음)' : '인도: 매출·채권 인식 (현금 변화 없음)', amount: 0 });
   schedule.push({ day: due, labelKo: '외상대금 수금', amount: sale });
@@ -449,6 +449,7 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
     : booking ? booking.departureDay + route.transitDays
       : listSailings(config, route.id, evaluationDay + 1)[0]?.scheduledArrivalDay ?? evaluationDay;
   const dutyEntry = entries.find((e) => e.id.startsWith('DUTY-'));
+  const arrived = !!shipment && shipment.dutyMinor !== null;
   const cancelled = c.status === 'CANCELLED';
   const invoice = s.invoices.find((i) => i.contractId === c.id);
   const deliveryDay = c.deliveredDay ?? Math.max(evaluationDay, shipment?.releaseDay ?? tariffDay + config.terms.customsDays);
@@ -456,7 +457,7 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
     : lateDeliveryReduction(config, c.saleAmountMinor, deliveryDay - c.deliveryDeadlineDay));
   const receipts = entries.filter((e) => e.id.startsWith('RECEIPT-')).flatMap((e) => e.lines.filter((l) => l.account === 'CASH'))
     .reduce((n, l) => n + l.amount, 0);
-  const pendingDuty = !cancelled && c.kind === 'DIRECT_TRADE' && !dutyEntry
+  const pendingDuty = !cancelled && c.kind === 'DIRECT_TRADE' && !arrived
     ? dutyFor(config, s.rng.seed, c.goodId, c.destinationCityId, tariffDay, evaluationDay,
       c.purchaseAmountMinor, buyCurrency, c.acceptedDay) : null;
   const remaining: RiskFlow[] = [];
@@ -484,7 +485,7 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
   const afterFx = value(fxFlows);
   const tariffFlows = fxFlows.map((f) => ({ ...f }));
   if (!cancelled && c.kind === 'DIRECT_TRADE') tariffFlows[2]!.amount =
-    -(dutyEntry?.lines.find((l) => l.account === 'INVENTORY')?.amount ?? pendingDuty ?? 0);
+    -(dutyEntry?.lines.find((l) => l.account === 'INVENTORY')?.amount ?? (arrived ? 0 : (pendingDuty ?? 0)));
   const afterTariff = value(tariffFlows);
   const surchargeFlows = [...tariffFlows];
   if (!cancelled && c.kind === 'DIRECT_TRADE') for (const e of entries.filter((e) => e.id.startsWith('SURCHARGE-'))) {
