@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 232439,
-      "sha256": "1dc6c26681c35e24c34818f7ab64c9d695078cd3d5470ce1b218665789198678"
+      "size_bytes": 233611,
+      "sha256": "eb76ad912e294f21816f25c38903e0f4c16e8a8955c10f2412dedd4f201aa343"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
