@@ -32,9 +32,10 @@
 
 1. **새 규칙 판본으로만 켠다.** `rules_version: "M2a-rules-3"`. rules-1·rules-2 경로의 동작·출력·저장은 바이트로 같다. 위험 층은 설정의 `risk` 묶음이 켠다.
 2. **옛 값 불변(허브 결정 H4·H9).**
-   - rules-2: **TASK-0062a의 rules-2 골든**이 지키는 것은 ‘골든 묶음(정책·시드 목록)의 실행 결과와 마지막 상태가 같다’이다. 골든 묶음은 4정책 × 20시드와 대표 변형 5개(react, 투자+고용 둘, 두 번 고용, 조사 선행) × 5시드다. 해시는 실행마다 `run`과 마지막 상태(`meta` 뺀 나머지, 로그 포함)다. 기존 P0-M2A5 골든값 시험이 함께 지킨다.
+   - rules-2: **TASK-0062a의 골든**(개발 브랜치 `7cf3e5e` 확정본)이 지킨다. rules-2 묶음은 4정책 × 20시드와 대표 변형 5개(react, 투자+고용 둘, 두 번 고용, 조사 선행) × 5시드, 105회다. 골든은 두 묶음이다. rules-2 105회는 실행마다 `runHash`·`stateHash`(마지막 상태, `meta` 뺀 나머지, 로그 포함)·`probeHash`를 지킨다. `probeHash`는 7일마다 취소 `planState`, 원화→달러 `planState`, 읽기 함수(`paymentDefaultStatus`, `fundsPosition`, `cashReservations`, `upcomingPayments`, `campaignSummary`, `marketTable`, `contractReport`, `exchangePreview`)의 값을 해시한다. 규칙 1 400회는 `runHash`·`stateHash`를 지킨다(`tests/golden/rules1-run.tsv`). 두 묶음 모두 저장 왕복(serialize → deserialize → serialize가 바이트로 같음)을 검사한다. 기존 P0-M2A5 골든값 시험이 함께 지킨다.
+   - **선택 인수 원칙이 시험으로 지켜진다.** ‘새 인수는 모두 선택 인수, 없으면 rules-2 동작 그대로’(H13)를 어기면, 미리보기·자금 예약 등 읽기 함수의 rules-2 값이 바뀌어 `probeHash`가 잡는다.
    - TASK-0062~0064는 골든 파일과 검사기를 고치지 않고 `--write`를 쓰지 않는다.
-   - **어떤 d03 정책도 지나가지 않는 경로**는 단위 시험이 지킨다. 아래 표는 세션 A가 시험 파일을 읽고 고친 잠정본이다(개정 3, 검토 S9·n12·n35). **TASK-0062a 병합 뒤 세션 A가 그 범위 표와 대조해 고친다(H14-10). 이 표는 동결 밖이다.** 대조를 마치기 전에는 TASK-0062를 시작하지 않는다.
+   - **어떤 d03 정책도 지나가지 않는 경로**는 단위 시험이 지킨다. 아래 표는 세션 A가 시험 파일을 읽고 고친 잠정본이다(개정 3, 검토 S9·n12·n35). **TASK-0062a 병합 뒤 세션 A가 그 범위 표와 대조해 고친다(H14-10). 이 표는 동결 밖이다.** 확정된 0062a에서는 취소를 탐침(취소 `planState`)이, 원화→달러를 탐침(원화→달러 `planState`)과 아래 시험이 함께 지킨다. 대조를 마치기 전에는 TASK-0062를 시작하지 않는다.
 
      | 경로 | 지키는 시험(잠정) |
      |---|---|
@@ -45,7 +46,7 @@
 
      - 0062a 범위 보고(명령 종류별 APPLIED 합계)로는 위 셋째·넷째 줄과 편 놓침이 보이지 않는다. 허브에 0062a 범위 보고에 세 가지를 더하자고 제안한다(검토 n13): 마지막 상태 `operations.exchanges`의 방향별 횟수, USD 미지급이 생긴 실행 수, `FREIGHT-RELEASE-*` 분개가 있는 실행 수.
 
-   - rules-1: 400회 `run` 바이트 비교. 이 실행은 규칙 1 시나리오만 돌린다.
+   - rules-1: TASK-0062a 골든의 규칙 1 묶음(400회, `tests/golden/rules1-run.tsv`). 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
 3. **위험 값은 순수 함수로 만든다.** 환율 경로·관세 일정·부대비·클레임·수금 계획은 모두 `(seed, 흐름 이름, 번호)`만으로 정해진다.
    - `rng.ts`의 `drawUniform`은 상태를 바꾸지 않는다. 그래서 `{ seed, cursors: { [흐름]: 번호 } }`를 만들어 부르면 된다(`risk.ts`의 `drawAt` 도우미).
    - 한 사건에서 여러 값을 뽑을 때는 값마다 흐름 이름을 나눈다(예: `TARIFF:CN:2:notice`, `…:lag`, `…:step`).
@@ -375,8 +376,9 @@
 ## 9. 크기·결정성·옛 값
 
 - 엔진 코드는 첫 화면 묶음에 들어간다. 지시서마다 첫 화면 gzip 전후를 적고, **지시서당 +2,500 B**를 넘으면 멈추고 보고한다(지금 여유 약 15.2 KB, 경보선 5 KB).
-- 옛 값: 2절 2항의 장치. 지시서마다 작업 뒤 TASK-0062a 골든 검사기의 종료 코드 0과 400회 `run` `cmp` 0을 확인한다.
-  - **골든이 깨졌을 때의 진단 절차(H14-10, 검토 n14·n16·n31·n36).** ① 작업 전 `<BASE>` 작업 트리에서 `node tools/check_rules2_golden.mjs`의 종료 코드가 0인지 확인한다. 0이 아니면 고치지 말고 멈춰 보고한다. ② `node tools/check_rules2_golden.mjs --dump <저장소 밖>/before`로 골든 묶음 105회의 run·마지막 상태 JSON을 남긴다. ③ 작업 뒤 골든이 깨지면 `--dump <저장소 밖>/after`를 만들어 diff하고 결과 보고에 적는다. `--dump`는 허브가 TASK-0062a에 넣는다. stateHash만 다른 경우(실패 기록 등)도 이 diff로 보인다.
+- 옛 값: 2절 2항의 장치. 지시서마다 작업 뒤 TASK-0062a 골든 검사기의 종료 코드 0을 확인한다(규칙 1 400회 포함).
+  - **골든이 깨졌을 때의 진단 절차(H14-10, 허브 통일 문장).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. stateHash·probeHash만 다른 경우(실패 기록 등)도 이 diff로 보인다.
+  - 손대지 않을 골든 파일: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
 - 새 규칙의 결정성: 같은 시드·같은 명령이면 같은 결과(시험). (흐름, 번호) 쌍 유일성 시험.
 
 ## 10. 지시서 나누기
@@ -633,3 +635,4 @@
 - 기각은 없다. 허브 몫으로 둔 것: n5(SPEC 10.4), n28의 SPEC 423 창 정의, n13의 0062a 범위 보고 세 항목, S10의 `docs/DECISIONS.md:1632` 문구, 그리고 설계 2절 2 표와 TASK-0062a 범위 표의 대조(0062a 병합 뒤 세션 A, H14-10).
 - 원자료의 고칠 방향을 따르지 않은 것: S13의 진단 G(검증 메모가 선택 사항으로 봄, H14에 없음), n1의 `closedDays.at(-1)` 식(H14-5의 `operations.failure.day` 문장을 따름).
 - **허브 결정을 넘어 고른 것(허브 확인 바람).** ① 편이 없을 때 `tariffDay = knownThroughDay`를 자금 예약 밖(미리보기·수락 자금 검사·실패 기록)에도 씀(S15 검증 메모 권고). ② 1단계 `schedule`은 날짜만 옮기고 세율 차이는 모두 3단계가 맡음(S2·n22의 ‘그때’를 닫는 가장 단순한 규칙). ③ 관세 표 누락도 예외(H14-10의 ‘프로필에 없는 품목’을 관세에도 적용, n24·n41). ④ 의류 `p_claim_bp` 400 → 500(n17 고칠 방향, 동결 범위인 설계 6절의 값). ⑤ `referenceEstimate`의 USD 매입 방어 분기. ⑥ 새 거래처 ID 네 개의 이름. ⑦ 0062 시험 ‘취소(rules-2)’(n12의 선택안). ⑧ `goodId` 예외를 0062에서 구현하고 0062 ‘미리보기 기본값’ 시험을 `{ goodId }`만 넘기게 바꿈(H14-6을 0062의 `dutyFor` 서명과 함께 둠).
+- **개정 3 보충(허브 알림, TASK-0062a 확정본 `7cf3e5e`).** 골든 범위가 H9보다 넓어졌다(rules-2 탐침 해시, 규칙 1 400회, 두 묶음의 저장 왕복). 판정표 0절 5와 설계 2절 2·9절에 범위를 적고, ‘선택 인수 원칙이 탐침으로 시험된다’를 설계 2절 2에 더했다. 0062~0064의 손대지 않을 파일에 골든 파일 일곱(`tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`)을 넣고, 완료 조건의 `git diff --stat` 경로도 맞췄다. 진단 절차는 허브의 통일 문장으로 바꿨다. 400회 `run`의 수작업 `cmp`는 0062~0064에서 지웠다(검사기가 규칙 1 상태까지 지키고, 허브가 검수 때 따로 돌림). 0062에서도 지운 것은 허브 알림(0063·0064)을 같은 이유로 넓힌 것이다.

@@ -94,21 +94,20 @@
 
 ## 손대지 않을 파일
 
-TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자료 등).
+TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자료 등). 골든 파일·검사기: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
 
 ## 지켜야 할 것
 
-- **작업 전 골든 확인(H14-10).** 아무것도 고치기 전에 `<BASE>` 작업 트리에서 `node tools/check_rules2_golden.mjs`의 종료 코드가 0인지 확인한다. **0이 아니면 고치지 말고 멈춰 보고한다.** 0이면 `node tools/check_rules2_golden.mjs --dump <저장소 밖>/before`를 만든다. 작업 뒤 골든이 깨지면 `--dump <저장소 밖>/after`를 만들어 diff하고 결과 보고에 적는다.
-- **옛 값 불변 절차(검토 40번).** 작업을 시작하기 전, 손대지 않은 작업 트리(`<BASE>`)에서 다음을 **저장소 밖** 고정 경로에 저장한다. 작업 뒤 같은 명령으로 다시 만들어 `cmp` 0을 확인하고, 결과 보고에 sha256을 적는다.
-  - `node src/engine/sim/run.mjs run --out <밖>/run-before.json`(rules-1, 400회)
+- **골든 진단 절차(허브 통일 문장, TASK-0062a).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. 이 검사기는 rules-2 105회(실행·상태·탐침 해시)와 규칙 1 400회(실행·상태 해시), 두 묶음의 저장 왕복을 지킨다. 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
+- **R1 분개 덤프(검토 40번).** 작업을 시작하기 전, 손대지 않은 작업 트리(`<BASE>`)에서 다음을 **저장소 밖** 고정 경로에 저장한다. 작업 뒤 같은 명령으로 다시 만들어 `cmp` 0을 확인하고, 결과 보고에 sha256을 적는다.
   - 저장소 밖의 일회용 스크립트로 R1 설정을 시드 3개·고정 명령열로 돌린 관세·운임 분개 JSON(`<밖>/r1-cost-before.json`)
-- **TASK-0062a 골든 검사기 종료 코드 0**(따로 확인할 항목). 골든 파일·검사기·`review_checks.sh`(TASK-0062의 ‘손대지 않을 파일’ 경로 목록)는 손대지 않고 `--write`를 쓰지 않는다. 완료 때 `git diff --stat <BASE> -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/ai/review_checks.sh`가 빈 값이다.
+- **TASK-0062a 골든 검사기 종료 코드 0**(따로 확인할 항목). 골든 파일·검사기·`review_checks.sh`(위 ‘손대지 않을 파일’ 목록)는 손대지 않고 `--write`를 쓰지 않는다. 완료 때 `git diff --stat <BASE> -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`가 빈 값이다.
 - P0-M2A5 골든값 불변, 옛 저장, 첫 화면 gzip +2,500 B 상한, `review_checks` 통과, 변형 11개.
 
 ## 결과 보고에 넣을 것
 
 - 시드 몇 개의 관세 변경 일정과 부대비 표(순수 함수 출력), 시험 구동기로 만든 계약의 `components` 표(값을 고치지 않고 적기만). 정시 노출 시험에서 센 ‘세율이 바뀐 정시 계약’ 비율(진단 T의 미리보기). 90일 정책 실행은 경로 5에서 한다.
-- 첫 화면 gzip 전후, 시험 수, 두 덤프의 `cmp`(400회 `run`, R1 분개 JSON)와 골든 `--dump` diff(깨졌을 때), 변형 표, 범위 밖 발견, 질문.
+- 첫 화면 gzip 전후, 시험 수, R1 분개 덤프의 `cmp`와 골든 `--dump` 파일별 diff(깨졌을 때), 변형 표, 범위 밖 발견, 질문.
 
 ## 허브 검토 46건 처리표
 
@@ -316,3 +315,4 @@ TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자�
 - 기각은 없다. 허브 몫으로 둔 것: n5(SPEC 10.4), n28의 SPEC 423 창 정의, n13의 0062a 범위 보고 세 항목, S10의 `docs/DECISIONS.md:1632` 문구, 그리고 설계 2절 2 표와 TASK-0062a 범위 표의 대조(0062a 병합 뒤 세션 A, H14-10).
 - 원자료의 고칠 방향을 따르지 않은 것: S13의 진단 G(검증 메모가 선택 사항으로 봄, H14에 없음), n1의 `closedDays.at(-1)` 식(H14-5의 `operations.failure.day` 문장을 따름).
 - **허브 결정을 넘어 고른 것(허브 확인 바람).** ① 편이 없을 때 `tariffDay = knownThroughDay`를 자금 예약 밖(미리보기·수락 자금 검사·실패 기록)에도 씀(S15 검증 메모 권고). ② 1단계 `schedule`은 날짜만 옮기고 세율 차이는 모두 3단계가 맡음(S2·n22의 ‘그때’를 닫는 가장 단순한 규칙). ③ 관세 표 누락도 예외(H14-10의 ‘프로필에 없는 품목’을 관세에도 적용, n24·n41). ④ 의류 `p_claim_bp` 400 → 500(n17 고칠 방향, 동결 범위인 설계 6절의 값). ⑤ `referenceEstimate`의 USD 매입 방어 분기. ⑥ 새 거래처 ID 네 개의 이름. ⑦ 0062 시험 ‘취소(rules-2)’(n12의 선택안). ⑧ `goodId` 예외를 0062에서 구현하고 0062 ‘미리보기 기본값’ 시험을 `{ goodId }`만 넘기게 바꿈(H14-6을 0062의 `dutyFor` 서명과 함께 둠).
+- **개정 3 보충(허브 알림, TASK-0062a 확정본 `7cf3e5e`).** 골든 범위가 H9보다 넓어졌다(rules-2 탐침 해시, 규칙 1 400회, 두 묶음의 저장 왕복). 판정표 0절 5와 설계 2절 2·9절에 범위를 적고, ‘선택 인수 원칙이 탐침으로 시험된다’를 설계 2절 2에 더했다. 0062~0064의 손대지 않을 파일에 골든 파일 일곱(`tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`)을 넣고, 완료 조건의 `git diff --stat` 경로도 맞췄다. 진단 절차는 허브의 통일 문장으로 바꿨다. 400회 `run`의 수작업 `cmp`는 0062~0064에서 지웠다(검사기가 규칙 1 상태까지 지키고, 허브가 검수 때 따로 돌림). 0062에서도 지운 것은 허브 알림(0063·0064)을 같은 이유로 넓힌 것이다.
