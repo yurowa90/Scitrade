@@ -2831,6 +2831,11 @@
       "sha256": "29a887ac57200a924405008de4059c7026e5f7ebc44c0d744d56685381a25c08"
     },
     {
+      "path": "docs/ai/tasks/TASK-0063-R2-risk-cost-review-fixes-2.md",
+      "size_bytes": 5270,
+      "sha256": "49aeec4e3c08b3b8fd0fbc7186f3e880ceffce0d32c7ac0ed3c8d0fba9386c41"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
       "size_bytes": 107784,
       "sha256": "508e46c8439f8501c01d67aac263509fa47fe92add244ab335b90a62252cfb5e"
