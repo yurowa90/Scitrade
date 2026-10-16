@@ -2826,6 +2826,11 @@
       "sha256": "7a2d67d239bd6aab19ce0fbd8b84365d01ebbacddd883ab771b8f2b297d6ec38"
     },
     {
+      "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
+      "size_bytes": 18900,
+      "sha256": "ef4863933859eccbd9b64528b5c3dfa8916cbdeca0a0d22955f045b3100cc68f"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
