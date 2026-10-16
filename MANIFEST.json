@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 237225,
-      "sha256": "465f32deab0e256ff03279c05b806c2133bbe773d5850bced9f695a31692ea14"
+      "size_bytes": 238615,
+      "sha256": "4da3ef26a51a7d04979999d6e02fdf111441ce51943f8c7f53ec1b5037fd7f12"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 107731,
-      "sha256": "e1fd8cbc01745fd5b5ef0a71f6bb01f606840cfe70c90dc0ead6b2bea08a7b18"
+      "size_bytes": 108025,
+      "sha256": "85f84dd6358168f2b7837aa6af223be815dc754a10362363c1cb10dfeb535315"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -2492,8 +2492,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 24593,
-      "sha256": "ae2e9ba81284f03a00fe6707253fe128bbbe64fbc61979e58f9a8c13e29f0e2c"
+      "size_bytes": 24588,
+      "sha256": "d58b59318122586f4f9f0a0e4ecc7fa6092fdf2369eeb3bf84445153d636b407"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2862,8 +2862,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 180726,
-      "sha256": "033fa80af07fffdaebd873cfdcb30755d8ac06ab9f502b068b8529280b42c01f"
+      "size_bytes": 198128,
+      "sha256": "03c2cc9b6e17d4bd069f84acd9ef719054aa929f71cd7f42376fe9a4019d9e71"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
