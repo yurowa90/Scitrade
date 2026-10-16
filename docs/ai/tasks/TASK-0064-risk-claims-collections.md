@@ -1,4 +1,4 @@
-# TASK-0064 직접 무역 위험 ③: 화물 손상 클레임과 지연·부분 수금 (초안, 개정 3)
+# TASK-0064 직접 무역 위험 ③: 화물 손상 클레임과 지연·부분 수금 (초안, 개정 3c)
 
 - **지위: 초안(세션 A, 2026-10-14, 개정 1·2·3 2026-10-16). 허브 승인과 `<BASE>` 치환 전에는 실행하지 않는다.**
 - codex_model: `gpt-6-astra`
@@ -12,21 +12,22 @@
 
 ### 1. 화물 손상 클레임
 
-- 위험 설정에 `CLAIM` 층이 있으면, 직접 무역 화물이 인도될 때(`processDeliveries`) 순수 함수 `claimFor(config, seed, sellOfferId)`로 손상 여부·층·손상률을 정한다.
+- 위험 설정에 `CLAIM` 층이 있으면, 직접 무역 화물이 인도될 때(`processDeliveries`) 순수 함수 `claimFor(config, seed, sellOfferId, goodId)`(`risk.ts`에 둔다, H15 O4·O13)로 손상 여부·층·손상률을 정한다. 추첨 키는 `sellOfferId` 그대로다.
   - **추첨 키는 계약 순번이 아니라 판매 견적 ID(`contract.sellOfferId`)다**(검토 43번). 흐름 `CLAIM:{판매 견적}:hit`, `…:tier`, `…:rate`.
   - 손상 확률은 품목의 파손 위험 등급에 따라 프로필 `claims.by_good`에서 읽는다. **프로필에 없는 품목이 나오면 예외**를 낸다(허브 결정 H14-10).
   - 층: 작은 손상(`minor.weight_bp`, `[minor.min_bp, minor.max_bp]`) 또는 큰 손상(`major.weight_bp`, `[major.min_bp, major.max_bp]`). 손상률은 그 층 범위의 정수 균등.
 - 손상이면: 늦은 인도 감액 뒤 판매액 × 손상률(USD 센트, half-up)을 매출 에누리로 낸다.
   - 새 계정 `SALES_ALLOWANCE`. `ACCOUNT_KIND`는 `income`(매출 차감 계정, 차변 잔액)이다. 분개 `CLAIM-{계약}`: 매출 에누리 / 매출채권. 청구 금액이 그만큼 준다.
   - **`contractReport`의 순매출(`netRevenue`)에 `SALES_ALLOWANCE`를 더한다**(H14-10, 검토 n26). 그래서 rules-3의 계약 기여에서 클레임이 빠지지 않는다. rules-2에는 이 분개가 없어 바이트가 같다.
+  - **`ledger.ts` `summarize`의 profit 식에 `SALES_ALLOWANCE` 잔액(음수)을 더한다.** `BookSummary`에 새 필수 칸은 두지 않는다. rules-2에는 분개가 없으므로 값이 같다(H15 O2. 빠뜨리면 마감의 순자산 항등식이 깨진다).
   - `priceReductionMinor`(늦은 감액)에는 더하지 않는다.
   - 로그 한 줄(‘{계약} 화물 일부 손상: 고객이 대금 {금액} 감액 청구’).
 - 주선 화물은 제외한다.
-- **공개 위험 등급 읽기 함수.** 견적 미리보기(`quotePreview`)에 rules-3에서만 `riskGrades: { damage: 품목 파손 등급, credit: 판매 거래처 신용등급 }`을 더한다. 확률 숫자가 아니라 등급만 낸다. 화면은 경로 11이다.
+- **공개 위험 등급 읽기 함수.** 견적 미리보기(`quotePreview`)에 rules-3에서만 `riskGrades: { damage: 품목 파손 등급, credit: 판매 거래처 신용등급 }`을 더한다. **직접 무역 견적에만** 내고 주선 견적은 `null`이다. 프로필 누락 예외도 직접 무역의 품목·판매 거래처로 한정한다(H15 O13). 확률 숫자가 아니라 등급만 낸다. 화면은 경로 11이다.
 
 ### 2. 지연·부분 수금
 
-- 위험 설정에 `COLLECTION` 층이 있으면, 직접 무역 청구서를 낼 때 순수 함수 `collectionPlan(config, seed, sellOfferId)`로 방식을 정한다. 흐름 `COLLECT:{판매 견적}:mode`, `…:days`. 확률은 판매 거래처의 신용등급(`collections.by_counterparty` → `grades`)에서 읽는다. **프로필에 없는 거래처가 나오면 예외**를 낸다(H14-10). **주선 청구서는 제외**한다(지금처럼 정시 전액).
+- 위험 설정에 `COLLECTION` 층이 있으면, 직접 무역 청구서를 낼 때 순수 함수 `collectionPlan(config, seed, sellOfferId, counterpartyId)`(`risk.ts`에 둔다, H15 O4·O13)로 방식을 정한다. 추첨 키는 `sellOfferId` 그대로다. 흐름 `COLLECT:{판매 견적}:mode`, `…:days`. 확률은 판매 거래처의 신용등급(`collections.by_counterparty` → `grades`)에서 읽는다. **프로필에 없는 거래처가 나오면 예외**를 낸다(H14-10). **주선 청구서는 제외**한다(지금처럼 정시 전액).
 - 용어: ‘약정 결제일’ = `contract.paymentDueDay`, ‘청구 결제일’ = `invoice.dueDay`.
 - 청구서의 `dueDay`는 그대로 둔다. 실제 수금은 `processCollections`가 계획을 읽어 처리한다.
   - 지연: 청구 결제일 + 지연일에 전액. 수금 ID·분개 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `engine.ts:1117`) 그대로다.
@@ -69,14 +70,15 @@
 | 시험 | 확인할 것 |
 |---|---|
 | 새 층이 꺼진 R2 | R2 설정에서 `CLAIM-` 분개가 없고 모든 직접 무역 청구서가 청구 결제일에 전액 수금된다 |
-| 클레임 | 손상 계약을 찾아: 분개 금액, 청구 금액 감소, 늦은 감액과 따로 기록, 주선 화물엔 없음. 작은 층과 큰 층이 각각 나오는 시드를 찾아 손상률이 층 범위 안 |
+| 클레임 | 손상 계약을 찾아: 분개 금액, 청구 금액 감소, 늦은 감액과 따로 기록, 주선 화물엔 없음, **클레임이 난 날 마감의 순자산 항등식 통과**(H15 O2). 작은 층과 큰 층이 각각 나오는 시드를 찾아 손상률이 층 범위 안 |
 | 공통 난수 | 같은 시드에서 주선을 하나 먼저 더 받아 계약 번호를 민 실행과 밀지 않은 실행을 견준다. 같은 판매 견적의 클레임 여부·층·손상률·수금 방식·지연일이 같다 |
 | 공개 등급 | rules-3 미리보기에 품목 파손 등급과 거래처 신용등급이 있고, 프로필의 배정과 같다. 확률 숫자는 내지 않는다 |
 | 지연 | 지연 청구서를 찾아: 청구 결제일엔 수금 없음, **D+1 상태에서 `status = OVERDUE`이고 `overdueDays = 1`**, 그 사이 `receivableSchedule`의 `overdueDays = s.day − dueDay`와 `outstandingMinor` = 청구액, 계획일에 전액과 `PAID` |
 | 부분 | 부분 청구서를 찾아: 두 수금 ID, 합 = 청구액, 첫 수금 비율 = `partial_bp`, D+1 상태에서 `OVERDUE`(아직 `PAID` 아님)와 `overdueDays = 1`, `outstandingMinor` = 청구액 − 첫 수금 |
 | 미래 누설 없음 | 결제일 전에는 정시·지연·부분 청구서의 `receivableSchedule` 행이 `invoiceId`·`contractId`를 빼면 같은 꼴. 결제일 전 상태에서는 지연 계획 계약과 정시 계약 모두 `contractRiskReport`의 `collection = 0`이고 받을 채권이 같은 규칙(평가일 환율)으로 평가된다 |
 | 미래 누설 없음(클레임) | 세 단계로 한다(H14-5, 검토 S1). ① 전제: `claimFor`가 손상인 판매 견적의 계약을 찾았음을 단언. ② 인도 전 상태의 `claim = 0`. ③ 양성 대조: 인도 뒤 상태에서는 `claim ≠ 0` |
-| 연체 미수 평가 | 평가일에 연체된 미수 청구서(청구 결제일 ≤ 평가일, 미수)를 찾아 `collection = 금액 × (평가일 환율 − 청구 결제일 환율)`(원 단위, `usdToKrwMinor`로 시험 안에서 계산), `open_valuation = 0`(H14-5, 검토 S4) |
+| 연체 미수 평가 | 평가일에 연체된 미수 청구서(청구 결제일 ≤ 평가일, 미수)를 찾는다. **전제를 먼저 단언한다**: 평가일 환율 ≠ 청구 결제일 환율(H15 O5). `collection = usdToKrwMinor(outstandingMinor, 평가일 환율) − usdToKrwMinor(outstandingMinor, 청구 결제일 환율)`(설계 3.4 환산 꼴), `open_valuation = 0`(H14-5, 검토 S4) |
+| 미래 누설 없음(호출 없음) | `vi.mock('./risk')`로 `claimFor`·`collectionPlan`을 감시한다. 결제일 전·연체 중·캠페인 끝 상태에서 `contractRiskReport`·`receivableSchedule`이 두 함수를 **0회** 부른다(H15 O4) |
 | 클레임 계약 보고서 | 클레임 계약의 `contractReport(s, c).contribution` = 판매 − 클레임 − 원가(USD 몫). rules-2 상태에서는 지금 값과 같다(검토 n26) |
 | 프로필 누락 | 품목이나 거래처를 뺀 프로필 사본으로 `claimFor`·`collectionPlan`을 부르면 예외(H14-10) |
 | 캠페인 끝 | 계획일이 캠페인 끝을 넘는 청구서(지연, 부분의 나머지)는 `PAID`가 아니다. 남은 금액은 끝 상태의 `campaignSummary.openInvoices`에 남고, 같은 통화 매출채권 잔액에 들어가며, 이 잔액은 미수 청구서 남은 금액의 합과 같다. 그 계약의 `contractRiskReport`가 `open: true`다 |
@@ -99,13 +101,14 @@
 | 6 | 추첨 키를 계약 ID로 되돌림 | 공통 난수 |
 | 7 | 손상률을 한 층 균등으로 뽑음 | 클레임(층 범위) |
 | 8 | `contractRiskReport`가 인도 전 계약에 `claimFor` 결과를 넣음 | 미래 누설 없음(클레임) |
-| 9 | `contractRiskReport`가 `collectionPlan`을 불러 수금일을 정함 | 미래 누설 없음(결제일 전 꼴 같음) |
+| 9 | `contractRiskReport`가 `collectionPlan`을 불러 수금일을 정함 | 미래 누설 없음(호출 없음)(H15 O4) |
 | 10 | 평가일까지 들어오지 않은 수금 줄을 9단계에 넣음(8단계는 청구 결제일 환율 그대로) | 연체 미수 평가 |
 | 11 | `contractReport`가 `SALES_ALLOWANCE`를 빠뜨림 | 클레임 계약 보고서 |
+| 12 | `summarize`의 profit에서 `SALES_ALLOWANCE`를 빠뜨림 | 클레임(마감 순자산 항등식), 불변식(H15 O2) |
 
 ## 고칠 수 있는 파일
 
-- `src/engine/engine.ts`, `ledger.ts`(계정 추가), `readers.ts`, `reports.ts`, `risk.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만)
+- `src/engine/engine.ts`, `ledger.ts`(계정 추가와 `summarize`의 profit 항), `readers.ts`, `reports.ts`, `risk.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만)
 - `data/market_rules.json`(프로필의 `claims`·`collections` 꼴 맞춤만), 스키마, `tools/validate_data.py`, `tools/test_validate_data.py`(새 반례 시험 추가만, 검토 n40)
 - 새 `src/engine/m2a5-risk-credit.test.ts`
 - `docs/ai/tasks/results/TASK-0064.md`, `MANIFEST.json`
@@ -120,7 +123,7 @@
 - **골든 진단 절차(허브 통일 문장, TASK-0062a).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. 이 검사기는 rules-2 105회(실행·상태·탐침 해시)와 규칙 1 400회(실행·상태 해시), 두 묶음의 저장 왕복을 지킨다. 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
 - 분개 덤프 절차는 TASK-0063과 같다(저장소 밖 덤프, 작업 뒤 `cmp` 0). 덤프는 R2 설정을 시드 3개·고정 명령열로 돌린 수금·인도 분개 JSON이다.
 - **TASK-0062a 골든 검사기 종료 코드 0**을 따로 확인한다. 골든 파일·검사기·`review_checks.sh`는 손대지 않고 `--write`를 쓰지 않는다. 완료 때 `git diff --stat <BASE> -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`가 빈 값이다.
-- P0-M2A5 골든값 불변, 옛 저장, 첫 화면 gzip +2,500 B 상한, `review_checks` 통과, 변형 11개.
+- P0-M2A5 골든값 불변, 옛 저장, 첫 화면 gzip +2,500 B 상한, `review_checks` 통과, 변형 12개.
 - H6 닫힌 목록 밖에서는 두 통화를 더하지 않는다(이 지시서가 채우는 `contractRiskReport`의 원화 칸은 목록 ③이다, 검토 n6). 분석값에 채권이 들어가는지는 경로 5 실행기 지시서의 시험이다.
 
 ## 결과 보고에 넣을 것
@@ -152,7 +155,7 @@
 | 16 | 반영(H0) | `cashNeed`는 USD 부분(number 유지), `cashNeedByCurrency`, `schedule` 통화 칸, 환산은 새 칸만. DESIGN 3.4 |
 | 17 | 반영 | 단계별 평가일 표, 약정·청구 결제일 용어, `open_valuation` 단계, 미지급은 갚은 날 환율로 `fx` 단계. DESIGN 3.4 |
 | 18 | 반영(=3) | 판정표 2절 대상 계약 집합 |
-| 19 | 반영 | 분석값 식(센트 = USD + halfUp(KRW ÷ 13)), `cell()`을 쓰는 판정 목록, J3 후보에서 `MARGIN_BUFFER`·`FOCUS`·`EXPAND` 제외. 판정표 2절·3.2 |
+| 19 | 반영(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | 분석값 식(센트 = USD + halfUp(KRW ÷ 13)), `cell()`을 쓰는 판정 목록, J3 후보에서 `MARGIN_BUFFER`·`FOCUS`·`EXPAND` 제외. 판정표 2절·3.2 |
 | 20 | 반영 | (가)·R0을 새 실행기로 재실행해 표 ①·⑤ 대조, 전체 묶음 정의, 6조건, 비용 재추정. 판정표 1.3 |
 | 21 | 반영 | 공유 프로필 하나, 조정 때 (가)·R1~R3도 재실행, `tariff.base`는 모든 품목, 검사기는 품목 자료 기준. 판정표 5.1, DESIGN 6절 |
 | 22 | 반영 | L3에 시드 짝 부호 검정(문턱표 미리 계산), L2에 시드 짝 조건, `MARGIN_BUFFER`는 직접 무역만. 0.75배는 ‘설계 판단’으로 근거 문장 고침. 판정표 3.2·6.2 |
@@ -190,10 +193,10 @@
 
 | # | 처리 | 반영한 곳과 이유 |
 |---|---|---|
-| R1 | 반영(H8) | rules-3 결정 기여 식(판매 − 운임 − 관세 − halfUp(매입원 × 100 ÷ 그날 참고 환율))을 정렬·양수 거름·늦은 편 검사에 씀. 판정표 6.1, 0절 2 비교 대상 |
+| R1 | 반영(H8)(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | rules-3 결정 기여 식(판매 − 운임 − 관세 − halfUp(매입원 × 100 ÷ 그날 참고 환율))을 정렬·양수 거름·늦은 편 검사에 씀. 판정표 6.1, 0절 2 비교 대상 |
 | R2 | 반영(H8) | 추가 환전은 ‘매입 통화 KRW ≠ 판매 통화’인 직접 무역 후보에만, 건너뜀 검사는 :129 뒤. 판정표 6.1 |
 | R3 | 반영(H7) | H5-2 괄호는 H7로 정정됨을 판정표 2절과 46건 표 3·26번에 적음. 허브가 이미 결정해 Q-C는 따로 두지 않음 |
-| R4 | 반영(H6-4) | `contractRiskReport`는 rules-2 상태도 받고 1,300 고정·`fx` = 0. R0 시험(realized = USD 기여 × 1,300). DESIGN 3.4, 0062 4절·시험 |
+| R4 | 반영(H6-4)(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | `contractRiskReport`는 rules-2 상태도 받고 1,300 고정·`fx` = 0. R0 시험(realized = USD 기여 × 1,300). DESIGN 3.4, 0062 4절·시험 |
 | R5 | 반영(H10-4, a안) | D 손잡이 삭제. D 실패는 손잡이 없이 보고. 판정표 5.1·5.3 |
 | R6 | 반영(H10-5) | 판매 마진 손잡이의 자료 경로·식·범위(k ∈ −2~+3)·두 rule_set 같은 k·시작값(TASK-0065 병합값, 고정 기록 줄). 판정표 5.2 |
 | R7 | 반영(H10-3) | 어긋남 우선순위, 회마다 전체 재측정, 변형 사이 방향 충돌은 실패. 판정표 5.1 |
@@ -260,7 +263,7 @@
 
 ### 허브 2차 재검토 66건 처리표(개정 3)
 
-번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW2-HUB-2026-10-16.md`의 번호다(S1~S19, n1~n47). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H14다. 다섯 문서(판정표·설계·TASK-0062~0064)에 같은 표를 붙였다. 46건 표의 6·7·12·36·42·45번도 함께 정정했다(n32·n33).
+번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW2-HUB-2026-10-16.md`의 번호다(S1~S19, n1~n47). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H14다. 다섯 문서(판정표·설계·TASK-0062~0064)에 같은 표를 붙였다. 46건 표의 6·7·12·36·42·45번도 함께 정정했다(n32·n33). 개정 3c에서 46건 표 19번과 64건 표 R1·R4도 정정했다(H15 F9).
 
 | # | 처리 | 반영한 곳과 이유 |
 |---|---|---|
@@ -335,3 +338,44 @@
 - 원자료의 고칠 방향을 따르지 않은 것: S13의 진단 G(검증 메모가 선택 사항으로 봄, H14에 없음), n1의 `closedDays.at(-1)` 식(H14-5의 `operations.failure.day` 문장을 따름).
 - **허브 결정을 넘어 고른 것(허브 확인 바람).** ① 편이 없을 때 `tariffDay = knownThroughDay`를 자금 예약 밖(미리보기·수락 자금 검사·실패 기록)에도 씀(S15 검증 메모 권고). ② 1단계 `schedule`은 날짜만 옮기고 세율 차이는 모두 3단계가 맡음(S2·n22의 ‘그때’를 닫는 가장 단순한 규칙). ③ 관세 표 누락도 예외(H14-10의 ‘프로필에 없는 품목’을 관세에도 적용, n24·n41). ④ 의류 `p_claim_bp` 400 → 500(n17 고칠 방향, 동결 범위인 설계 6절의 값). ⑤ `referenceEstimate`의 USD 매입 방어 분기. ⑥ 새 거래처 ID 네 개의 이름. ⑦ 0062 시험 ‘취소(rules-2)’(n12의 선택안). ⑧ `goodId` 예외를 0062에서 구현하고 0062 ‘미리보기 기본값’ 시험을 `{ goodId }`만 넘기게 바꿈(H14-6을 0062의 `dutyFor` 서명과 함께 둠).
 - **개정 3 보충(허브 알림, TASK-0062a 확정본 `7cf3e5e`).** 골든 범위가 H9보다 넓어졌다(rules-2 탐침 해시, 규칙 1 400회, 두 묶음의 저장 왕복). 판정표 0절 5와 설계 2절 2·9절에 범위를 적고, ‘선택 인수 원칙이 탐침으로 시험된다’를 설계 2절 2에 더했다. 0062~0064의 손대지 않을 파일에 골든 파일 일곱(`tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`)을 넣고, 완료 조건의 `git diff --stat` 경로도 맞췄다. 진단 절차는 허브의 통일 문장으로 바꿨다. 400회 `run`의 수작업 `cmp`는 0062~0064에서 지웠다(검사기가 규칙 1 상태까지 지키고, 허브가 검수 때 따로 돌림). 0062에서도 지운 것은 허브 알림(0063·0064)을 같은 이유로 넓힌 것이다.
+
+### 허브 승인 전 확인 31건 처리표(개정 3c)
+
+번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW3-HUB-2026-10-16.md`의 번호다(T1~T7, t1~t24). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H15다. 다섯 문서에 같은 표를 붙였다. 46건 표 19번과 64건 표 R1·R4도 함께 정정했다(F9).
+
+| # | 처리 | 반영한 곳과 이유 |
+|---|---|---|
+| T1 | 반영(H15 F3) | 판정표 6.2 결정 기여 행 끝을 F3 문장으로: (i)(ii)는 실행기 완료 조건, (iii)은 (가)·R0·R1 측정의 첫 확인, 실패하면 멈춤, 코드가 6.1과 다르면 엔진 결함, 6.1대로이면 실패 보고·v2 |
+| T2 | 반영(H15 O1) | `contractRiskReport` 출력 `evaluationDay`(저장 안 함). 0062 시험 ‘실패 종료 평가일’ = `evaluationDay === failure.day`이고 `!== s.day`, ‘찾으면’ 문구 삭제. 설계 3.4 |
+| T3 | 반영(H15 F1) | 판정표 5.1 ‘돌릴 손잡이가 없는 어긋남’ 끝에 F1 문장 |
+| T4 | 반영(H15 F2) | 판정표 4절에 F2 문장, 5.1 ‘다시 재기’에 ‘(표본 밖은 4절)’ |
+| T5 | 반박됨(고치지 않음) | 검증 메모대로 판정표 5.1의 ‘판정과 손잡이가 부딪치면(예: …)’과 5.3 J4d 위 행이 이미 닫고 있음 |
+| T6 | 반영(H15 F3) | T1과 같음 |
+| T7 | 반영(H15 O2) | `summarize`의 profit에 `SALES_ALLOWANCE`(설계 5.1, 0064 1절), 고칠 수 있는 파일 `ledger.ts` 범위, 0064 시험 ‘클레임’에 마감 순자산 항등식, 변형 12 |
+| t1 | 반영(H15 F4) | 판정표 3.2 J3 후보 제외를 `MARGIN_BUFFER`·`FOCUS`로, 1.3 출력 2에 `MAX_CONTRIBUTION`(= `EXPAND`)·`MARGIN_BUFFER`·`FOCUS` |
+| t2 | 반영(H15 F9) | 46건 19번, 64건 R1·R4에 정정 표기 |
+| t3 | 반영(H15 O3) | 설계 3.4 ‘환산 꼴’: 줄마다 바꾸되 같은 환율의 USD 비용 줄은 합친 뒤 한 번. 0062 ‘열린 계약’, 0064 ‘연체 미수 평가’ 시험 식 |
+| t4 | 반영(H15 O4) | `claimFor`·`collectionPlan`은 `risk.ts`, 0064 시험 ‘미래 누설 없음(호출 없음)’, 변형 9의 짝 시험 |
+| t5 | 반영(H15 O5) | 0064 ‘연체 미수 평가’ 전제(평가일 환율 ≠ 청구 결제일 환율), 금액 = `outstandingMinor` |
+| t6 | 반영(H15 O6) | 0063 누설 시험 (a) 전제를 그 계약의 도착국 변경으로 한정, 두 `dutyFor` 값이 다름을 먼저 단언 |
+| t7 | 반영(H15 O7) | 0062 ‘열린 계약’ 시험의 구성법(71~73일 수락, 끝 뒤 도착 편 또는 관세 미지급, 도중 상태 허용) |
+| t8 | 반영(H15 O8) | 0063 ‘수락 자금 검사 관세’를 `lag_days`를 늘린 프로필 사본으로 구성, 전제 단언, 변형 12 |
+| t9 | 반영(H15 O9) | 0063 ‘실패 기록 약정’을 수락일 뒤 실패일 전 공지 시드로, 비교 대상 `quotePreview`/`preview(…, { goodId })`, 변형 13. 설계 3.3의 ‘세율이 그대로면’ 삭제 |
+| t10 | 반영(H15 O10) | 0063 ‘자금 예약 관세’ 전제(N−1·N 운송 중, 예정 도착일 ≥ 시행일 > N−1)와 읽는 시점(마감 전) |
+| t11 | 반영(H15 O11) | 설계 3.4 미리보기: rules-3 직접 무역에서 `opts`(또는 `goodId`) 없이 부르면 예외, 실행기 호출은 경로 5 |
+| t12 | 반영(H15 F5) | 판정표 5.1 ‘닿지 않는 조건’의 (가) 문장, 5.3 J4d 아래 행(R1~R3만, R0은 실패) |
+| t13 | 반영(H15 F7) | 설계 6절 반대 방향 검사의 자료 경로(`sell_counterparties`, `operations.market_rules_ref`), 0062 1절 |
+| t14 | 반영(H15 F8) | 판정표 고정 기록 줄에 대조 규칙과 스크립트 커밋·sha256 칸 |
+| t15 | 허브 몫 | DECISIONS 잠금 문장 두 곳은 허브가 승인 커밋에서 H14-8 원문으로 맞춘다 |
+| t16 | 반영(H15 F6) | 판정표 5.1 같은 폭 규칙 끝에 F6 문장 |
+| t17 | 반영(H15 O12) | 3a(0873f93)에서 손대지 않을 파일 일곱·400회 cmp 정리가 들어갔음을 확인. 설계 9절에 덤프 꼴(`<scenarioId>__<policyId>__<seed>.run.json`·`.state.json`)을 더함. 2절 2 표는 3b에서 탐침으로 고침 |
+| t18 | 반영(H15 O13) | `claimFor(config, seed, sellOfferId, goodId)`, `collectionPlan(config, seed, sellOfferId, counterpartyId)`, `riskGrades`는 직접 무역만(주선 null), 누락 예외는 직접 무역 한정. 0064 1·2절, 설계 5.1·5.2 |
+| t19 | 반영(H15 F5) | t12와 같음 |
+| t20 | 반영(H15 O1·O4) | (a)는 T2, (b)는 t4와 같음 |
+| t21 | 반영(H15 O3) | t3과 같음 |
+| t22 | 반영(H15 F7) | t13과 같음 |
+| t23 | 반영(H15 O14) | 0062 1절: `RiskProfile`·`loadRiskProfile`은 다섯 묶음을 모두 변환, 엔진이 읽는 것은 `fx`뿐 |
+| t24 | 반영(H15 F9) | 설계 2절 5의 분석값 문장, 66건 표 S17의 ‘5.3 L2 행’은 판정표 5.3 L2 행에 ‘기준 회사의’를 넣어 맞춤 |
+
+- 기각은 T5 한 건이다(허브 검증에서 반박됨). 허브 몫은 t15와 SPEC 10.4·423 문장이다.
+- 허브 결정과 다르게 한 것은 없다.

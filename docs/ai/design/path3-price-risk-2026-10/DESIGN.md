@@ -1,9 +1,10 @@
-# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (초안, 개정 3)
+# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (초안, 개정 3c)
 
 - 지위: **초안, 허브 승인 전.** 세션 A, 2026-10-14 작성, 2026-10-16 개정 1. 지시서 초안은 `docs/ai/tasks/TASK-0062`~`0064`, 판정 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`다.
 - 개정 1: 허브 검토 `REVIEW-HUB-2026-10-16.md`(46건)와 허브 결정 `HUB-DECISIONS-2026-10-16.md`(H0~H5)를 반영했다. 처리표는 끝(13절)에 있다.
 - 개정 2(2026-10-16): 허브 재검토 `REREVIEW-HUB-2026-10-16.md`(R1~R31, m1~m33)와 허브 결정 H6~H13을 반영했다. 처리표는 13절 끝(‘허브 재검토 64건 처리표’)에 있다.
 - 개정 3(2026-10-16): 허브 2차 재검토 `REREVIEW2-HUB-2026-10-16.md`(S1~S19, n1~n47)와 허브 결정 H14를 반영했다. 처리표는 13절 맨 끝(‘허브 2차 재검토 66건 처리표’)에 있다. **6절(시작 프로필)은 판정표와 함께 동결 범위다(H14-8).**
+- 개정 3c(2026-10-16): 허브 승인 전 확인 `REREVIEW3-HUB-2026-10-16.md`(T1~T7, t1~t24)와 허브 결정 H15를 반영했다. 처리표는 13절 맨 끝(‘허브 승인 전 확인 31건 처리표’)에 있다.
 - 범위: PLAN 경로 3의 ① 원화 매입·달러 판매, ② 계약 뒤 관세 변경과 출항 부대비, ③ 화물 손상 클레임과 미수(지연·부분 지급).
 - 범위 밖과 담당 경로:
   - 판매가 연동, 대손(떼임): 뒤 단계
@@ -66,7 +67,7 @@
    - 상태·장부·저장·결산·지급 불이행 실패 기록은 **통화별 그대로**다.
    - 미리보기의 기존 칸도 통화별 그대로다. ‘USD 환산값’으로 바꾸지 않는다.
    - rules-3 미리보기에만 저장하지 않는 새 칸 `referenceEstimate`(참고 환율 환산 손익, 추정)를 둔다.
-   - 분석값(USD + KRW ÷ 1,300)은 rules-3 실행기 출력에서만 쓴다.
+   - 분석값(판정표 2절 식, USD 센트 + `krwToUsdMinor(KRW, baseKrwPerUsd)`)은 rules-3 실행기 출력에서만 쓴다(H15 F9).
    - **허용 자리는 목록으로 닫는다(허브 결정 H6).** ① rules-3 미리보기의 새 칸, ② rules-3 실행기의 분석값, ③ `contractRiskReport`(3.4의 조건), ④ 실행기 결정용 환산(판정표 6.1의 결정 기여). 이 밖에서는 두 통화를 더하지 않는다.
    - 화면에 보일 때는 ‘추정, 환율이 바뀌면 달라짐’ 표지를 늘 붙인다.
    - SPEC 10.4 첫째·셋째 항에 이 닫힌 목록의 예외 문장을 넣는 것은 허브 몫이다(승인 때, 검토 n5).
@@ -140,7 +141,7 @@
     - 매입이 USD이면 지금 `dutyEstimate` 그대로다.
 - **자금 검사(`fundsShortfall`).** 매입은 KRW 가용, 운임·관세 예상은 USD 가용으로 **나눠** 본다. 거절 문장도 통화마다 따로 쓴다.
 - **지급 불이행 실패 기록(검토 31번).**
-  - `processPaymentDefault`의 USD 약정액(`operations.ts:272-274`)은 혼합 통화 계약이면 **USD 몫만** 넣는다(예약 운임 + 위 표 ‘실패 기록’ 행의 `dutyFor` 관세. 세율이 그대로면 수락일 미리보기의 운임 + 관세와 같다). 원화 매입액을 더하지 않는다.
+  - `processPaymentDefault`의 USD 약정액(`operations.ts:272-274`)은 혼합 통화 계약이면 **USD 몫만** 넣는다(예약 운임 + 위 표 ‘실패 기록’ 행의 `dutyFor` 관세. 수락일 미리보기의 운임 + 관세와 같다. H15 O9). 원화 매입액을 더하지 않는다.
   - 원화 선택 지출 접두어 목록(`operations.ts:284-285`)에 `PURCHASE-`를 더하고, **`PURCHASE-` 분개만** 창을 `oldest.incurredDay − failureAgeDays ≤ e.day ≤ 실패일`로 넓힌다(허브 결정 H13, 검토 R18 가). 그래서 미지급 발생일 뒤에 받은 원화 매입 계약도 원인 기록에 남는다. 옛 시나리오에는 원화 `PURCHASE-`가 없어 rules-2 출력은 그대로다. 새 상태 칸은 없다. SPEC 423의 접두어 목록과 창 정의(`PURCHASE-`는 실패일까지) 수정은 허브 몫이다(검토 n28). 칸 이름 `optionalKrwSpendBeforeFirstUnpaid`와 화면 제목(`money-alerts.ts:30` ‘첫 미지급 전 … 원화 선택 지출’)의 뜻 어긋남은 0062 결과 보고 ‘범위 밖 발견’과 경로 11 지시서 목록에 넣는다.
 - **계약 보고서(허브 결정 H13, 검토 R17).** 서명을 `contractReport(s, contract, currency = contract.currency)`로 고정한다. 장부는 넘긴 통화로 읽고, 기존 칸(`contribution` 등)은 그 통화 몫이라고 주석에 적는다. `campaignSummary`의 통화별 계약 기여는 그 통화에 분개가 있는 계약을 모두 센다. rules-2에서는 계약이 단일 통화라 바이트가 같다. 실행기 지표(`sim/**`)는 고치지 않으므로, rules-3의 d03 ⑤ J7(옛 정의)·⑦은 USD 몫만이라는 진단 표지를 붙인다(판정표 3.1). 두 통화를 더한 값을 만들지 않는다.
 - **출항 전 취소·편 놓침.** 매입(원화)은 돌려받지 못한다(공급자 반품 없음). 운임 환급·취소비는 달러다. 지금 규칙의 금액을 통화별로 나눠 적용한다.
@@ -149,7 +150,7 @@
 
 **미리보기(허브 결정 H0)**
 - `preview`(`reports.ts:85`)에 맨 끝 선택 인수 `opts?: { goodId?: string; purchaseCurrency?: Currency }`를 더한다. 인수가 없으면 rules-2 결과가 바이트로 같다. `tradePreview`·`quotePreview`는 품목과 매입 통화를 넘긴다.
-  - rules-3에서 `opts.purchaseCurrency`가 없으면 `rowCurrency(config, 'BUY')`로 정한다(검토 m23). 경로 5 전까지 실행기가 `opts` 없이 불러도 통화가 섞이지 않는다.
+  - rules-3에서 `opts.purchaseCurrency`가 없으면 `rowCurrency(config, 'BUY')`로 정한다(검토 m23). rules-3 직접 무역에서 `opts` 없이(또는 `goodId` 없이) 부르면 예외다(3.3). 실행기 호출은 경로 5에서 고친다(H15 O11).
 - 참고 환율의 시드: `preview`는 `config.seed`, 상태를 받는 읽기 함수(`quotePreview`, `contractRiskReport`)는 `s.rng.seed`를 쓴다. 두 값이 같다는 전제를 주석에 적고, rules-3 시험에서 같음을 단언한다.
 - 기존 칸은 **통화별 그대로**다.
   - `purchase`는 매입 통화(원) 금액, `freight`·`duty`·`sale`은 USD 금액이다.
@@ -169,6 +170,7 @@
 - 대상: 직접 무역과 **주선** 계약 모두. 주선에서는 `schedule`·`fx`·`late`·`cancel`·`open_valuation`만 채우고 나머지는 0이다.
 - **위치(H14-5, 검토 S3·n43).** `contractRiskReport`는 `reports.ts`에 둔다. 환율은 `risk.ts`에서 import한 `referenceRate`로만 부른다. 그래서 누설 시험이 모듈 경계(`vi.mock('./risk')`)에서 환율을 바꿀 수 있다.
 - 허용 조건(H6): 상태·장부·저장·결산·실패 기록에 들어가지 않는다. 화면에 보일 때는 ‘추정, 환율이 바뀌면 달라짐’ 표지를 늘 붙인다.
+- **출력의 `evaluationDay`(H15 O1).** 아래 평가일을 출력 칸 `evaluationDay`로 함께 낸다(저장하지 않음). 시험이 실패 종료에서 `evaluationDay === failure.day`이고 `!== s.day`임을 단언한다.
 - **평가일(H6-2·H14-5, 검토 m4·R20·n1).** 끝난 상태(`phase === 'ENDED'`)에서는 실패로 끝났으면 `operations.failure.day`, 그 밖이면 `config.campaignDays`다. 끝나지 않은 상태에서는 `s.day`다. 실패 뒤의 `s.day`(실패일 + 1)는 쓰지 않는다. 엔진은 실패한 날 다음 묶음을 공개하지 않으므로, 실패일 + 1의 환율은 공개된 적이 없는 값일 수 있다. 평가일보다 뒤의 날짜(앞으로 올 결제일·도착일)의 환율과 아직 공지되지 않은 사건은 쓰지 않는다.
 - **R0(rules-2 상태, H6-4·검토 R4·R21).** rules-2 상태도 받는다. 위험 설정이 없으면 환율은 `config.operations.fx.baseKrwPerUsd`(1,300) 고정이고 `components.fx = 0`, `residual = 0`이다. 실행기에서는 `--risk R0` 출력에서만 부르고, rules-2 골든 명령(`--risk` 없음)의 출력에는 이 값이 들어가지 않는다. 시험(H14-2): 미지급이 없는 끝난(`COMPLETED`) 직접 무역 계약마다 `realized(원) = contractReport(s, c).contribution(센트) × (baseKrwPerUsd ÷ 100)`. 13 같은 상수를 시험에 쓰지 않고 `baseKrwPerUsd`에서 계산한다.
 - 용어(검토 17번): ‘약정 결제일’ = `contract.paymentDueDay`, ‘청구 결제일’ = `invoice.dueDay` = max(약정 결제일, 실제 인도일).
@@ -198,6 +200,7 @@
 - **평가일까지 일어난 사건만(H14-5, 검토 S1).** 3·4·6·8단계에는 발생일 ≤ 평가일인 사건만 넣는다. `contractRiskReport`는 `tariffEvents`(공지 전 사건), `surchargeBp`, `claimFor`, `collectionPlan`의 미래 값을 쓰지 않는다. 특히 `collectionPlan`은 부르지 않는다.
 - 채울 칸: TASK-0062는 0·1·2·5·7·9(0)·10, 0063은 3·4, 0064는 6·8.
 - 모든 금액은 원 단위 정수다. 환산은 `usdToKrwMinor` 하나로 한다(3.3).
+- **환산 꼴(H15 O3).** 각 단계의 합계는 줄마다 `usdToKrwMinor`로 바꿔 더한다. 다만 같은 평가 환율을 쓰는 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번만 바꾼다. 그래야 0단계가 `referenceEstimate.pnlKrw`(`usdToKrwMinor(freight + duty, rate)`)와 정확히 같다. 시험 식도 같은 꼴로 쓴다. 예: 연체 미수의 `collection = usdToKrwMinor(남은 금액, 평가일 환율) − usdToKrwMinor(남은 금액, 청구 결제일 환율)`.
 - 실행기 판정(L0~L3, J7 새 정의)과 경로 11 화면이 이 함수 하나를 쓴다. 화면에서 다시 계산하지 않는다. 화면은 rules-3 상태에서만 부른다(H6-4. R0은 `--risk R0` 실행기 출력에서만). 경로 11 화면은 통화별 현금 줄과 `components`를 ‘추정, 환율이 바뀌면 달라짐’ 표지(H6-3)와 함께 보이고 원화 틀을 기본으로 한다. 문구는 경로 11 지시서에서 정한다(검토 n6).
 
 ### 3.5 학생이 할 수 있는 판단
@@ -249,12 +252,13 @@
   - 손상이면 층을 뽑는다: 작은 손상(가중치 `claims.minor.weight_bp`, 판매액의 1~5%) 또는 큰 손상(`claims.major.weight_bp`, 15~30%).
   - 손상률 하한(1%)은 `MARGIN_BUFFER` 문턱(10%)보다 확실히 낮다. 그래서 작은 클레임은 마진 여유로 흡수되고, 큰 클레임만 손실이 된다.
 - **추첨 키(검토 43번).** 계약 순번(`CT{n}`)이 아니라 **판매 견적 ID**(`contract.sellOfferId`)다. 흐름 `CLAIM:{판매 견적}:hit`, `…:tier`, `…:rate`. 같은 견적은 정책이 달라도 같은 추첨을 받는다(공통 난수). 주선을 하나 더 받아 순번을 밀어 손상을 피하는 공략도 막는다.
-- **분개.** 새 계정 `SALES_ALLOWANCE`(매출 에누리), 분개 `CLAIM-{계약}`(매출 에누리 / 매출채권). 늦은 인도 감액(`priceReductionMinor`)과 따로 둔다. `ACCOUNT_KIND`는 `income`(매출 차감 계정, 차변 잔액)이고, rules-3 `contractReport`의 순매출(`netRevenue`)에 더해 클레임만큼 순매출이 준다(H14-10, 검토 n26). rules-2에는 이 분개가 없어 바이트가 같다. 둘 다 있으면 늦은 감액 뒤 남은 판매액에 손상률을 곱한다(USD 센트, half-up).
+- **함수의 자리와 서명(H15 O4·O13).** `claimFor(config, seed, sellOfferId, goodId)`와 `collectionPlan(config, seed, sellOfferId, counterpartyId)`는 `risk.ts`에 둔다. 추첨 키는 `sellOfferId` 그대로다. 프로필 누락 예외는 직접 무역의 품목·판매 거래처로 한정한다. `contractRiskReport`·`receivableSchedule`은 두 함수를 부르지 않는다(시험이 `vi.mock('./risk')` 감시로 호출 0회를 단언).
+- **분개.** 새 계정 `SALES_ALLOWANCE`(매출 에누리), 분개 `CLAIM-{계약}`(매출 에누리 / 매출채권). 늦은 인도 감액(`priceReductionMinor`)과 따로 둔다. `ACCOUNT_KIND`는 `income`(매출 차감 계정, 차변 잔액)이고, rules-3 `contractReport`의 순매출(`netRevenue`)에 더해 클레임만큼 순매출이 준다(H14-10, 검토 n26). `ledger.ts` `summarize`의 profit 식에 `SALES_ALLOWANCE` 잔액(음수)을 더한다. `BookSummary`에 새 필수 칸은 두지 않는다(H15 O2. 빠뜨리면 마감의 순자산 항등식이 깨진다). rules-2에는 이 분개가 없어 바이트가 같다. 둘 다 있으면 늦은 감액 뒤 남은 판매액에 손상률을 곱한다(USD 센트, half-up).
 - 보험은 없다(경로 7·9). 주선 화물은 제외한다(운송인 책임 한도 문제라 경로 7).
 
 ### 5.2 지연·부분 수금
 
-- **확률은 거래처의 공개 신용등급에 묶는다(검토 11번 B안).** 판매 거래처마다 가상 신용등급(A·B·C)을 두고, 등급마다 정시·지연·부분 확률을 둔다. 등급은 견적 미리보기 읽기 함수로 수락 전에 볼 수 있다(화면은 경로 11).
+- **확률은 거래처의 공개 신용등급에 묶는다(검토 11번 B안).** 판매 거래처마다 가상 신용등급(A·B·C)을 두고, 등급마다 정시·지연·부분 확률을 둔다. 등급은 견적 미리보기 읽기 함수로 수락 전에 볼 수 있다(화면은 경로 11). `riskGrades`는 rules-3 직접 무역 견적에만 내고 주선은 null이다(H15 O13).
   - 시작값(허브 결정 H11): 지연 확률 A 1000, B 2000, C 3000. 부분 수금 확률(`p_partial_bp`) A 500, B 1000, C 1500(고정). 부분 수금의 첫 수금 비율(`partial_bp`)은 5000(고정, 검토 n47). 정시가 아닌 비율은 A 15%, B 30%, C 45%다. 참고: Atradius 2025 아시아 조사의 지연 지급 비율 44%(지역 평균, 국가별 수치 아님, 한국은 조사 대상 밖, 세션 C 원문 확인 전).
   - 국가·도시 단위로 묶지 않는다. 보이는 원인 없이 도시에 위험을 붙이면 ‘중국·베트남 고객은 늦게 낸다’는 고정관념으로 읽힐 수 있기 때문이다.
   - 등급은 가상값이다. 실재 기업 신용평가를 흉내 내지 않는다. 교사용 자료에 성격을 밝힌다.
@@ -351,7 +355,7 @@
   - 등급마다 확률 합(`p_on_time + p_late + p_partial = 10000`), 손상 두 층 가중치 합 = 10000.
   - 세율 표·파손 등급의 품목이 품목 자료(`goods`)에 있는지(시나리오가 아니라 품목 자료 기준이다. 공유 프로필을 가리키는 (나) 시나리오가 의류 행 때문에 FAIL하지 않게).
   - 신용등급 표의 거래처가 시장 자료에 있는지.
-  - **반대 방향(H14-10, 검토 n21·n41).** 운영 rule_set(`engine_rules.rules_version`이 M2a-rules-2 이상인 시나리오가 `market_rules_ref`로 쓰는 rule_set)마다: 모든 직접 무역 판매 거래처(SELL 행의 `counterparty_id`)가 `by_counterparty`에 있다, 모든 `trade.goods`가 `claims.by_good`에 있다, 모든 (판매 도시의 나라(`world.json`의 `country_code`), `trade.goods`) 쌍이 `tariff.base`에 있다.
+  - **반대 방향(H14-10, 검토 n21·n41).** 운영 rule_set(`engine_rules.rules_version`이 M2a-rules-2 이상인 시나리오의 `operations.market_rules_ref`에서 # 뒤의 rule_set id. `base_scenario_id` 상속 포함, H15 F7)마다: 모든 직접 무역 판매 거래처(`trade.goods[].sell_counterparties[].counterparty_id`)가 `by_counterparty`에 있다, 모든 `trade.goods`가 `claims.by_good`에 있다, 모든 (판매 도시의 나라(`world.json`의 `country_code`), `trade.goods`) 쌍이 `tariff.base`에 있다.
   - `start_krw_per_usd` = `fx_krw_per_usd`.
 
 ## 7. 측정과 개발용 설정
@@ -383,7 +387,7 @@
 
 - 엔진 코드는 첫 화면 묶음에 들어간다. 지시서마다 첫 화면 gzip 전후를 적고, **지시서당 +2,500 B**를 넘으면 멈추고 보고한다(지금 여유 약 15.2 KB, 경보선 5 KB).
 - 옛 값: 2절 2항의 장치. 지시서마다 작업 뒤 TASK-0062a 골든 검사기의 종료 코드 0을 확인한다(규칙 1 400회 포함).
-  - **골든이 깨졌을 때의 진단 절차(H14-10, 허브 통일 문장).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. stateHash·probeHash만 다른 경우(실패 기록 등)도 이 diff로 보인다.
+  - **골든이 깨졌을 때의 진단 절차(H14-10, 허브 통일 문장).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. stateHash·probeHash만 다른 경우(실패 기록 등)도 이 diff로 보인다. 덤프는 실행마다 `<scenarioId>__<policyId>__<seed>.run.json`·`.state.json` 두 파일이다(H15 O12).
   - 손대지 않을 골든 파일: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
 - 새 규칙의 결정성: 같은 시드·같은 명령이면 같은 결과(시험). (흐름, 번호) 쌍 유일성 시험.
 
@@ -459,7 +463,7 @@
 | 16 | 반영(H0) | `cashNeed`는 USD 부분(number 유지), `cashNeedByCurrency`, `schedule` 통화 칸, 환산은 새 칸만. DESIGN 3.4 |
 | 17 | 반영 | 단계별 평가일 표, 약정·청구 결제일 용어, `open_valuation` 단계, 미지급은 갚은 날 환율로 `fx` 단계. DESIGN 3.4 |
 | 18 | 반영(=3) | 판정표 2절 대상 계약 집합 |
-| 19 | 반영 | 분석값 식(센트 = USD + halfUp(KRW ÷ 13)), `cell()`을 쓰는 판정 목록, J3 후보에서 `MARGIN_BUFFER`·`FOCUS`·`EXPAND` 제외. 판정표 2절·3.2 |
+| 19 | 반영(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | 분석값 식(센트 = USD + halfUp(KRW ÷ 13)), `cell()`을 쓰는 판정 목록, J3 후보에서 `MARGIN_BUFFER`·`FOCUS`·`EXPAND` 제외. 판정표 2절·3.2 |
 | 20 | 반영 | (가)·R0을 새 실행기로 재실행해 표 ①·⑤ 대조, 전체 묶음 정의, 6조건, 비용 재추정. 판정표 1.3 |
 | 21 | 반영 | 공유 프로필 하나, 조정 때 (가)·R1~R3도 재실행, `tariff.base`는 모든 품목, 검사기는 품목 자료 기준. 판정표 5.1, DESIGN 6절 |
 | 22 | 반영 | L3에 시드 짝 부호 검정(문턱표 미리 계산), L2에 시드 짝 조건, `MARGIN_BUFFER`는 직접 무역만. 0.75배는 ‘설계 판단’으로 근거 문장 고침. 판정표 3.2·6.2 |
@@ -497,10 +501,10 @@
 
 | # | 처리 | 반영한 곳과 이유 |
 |---|---|---|
-| R1 | 반영(H8) | rules-3 결정 기여 식(판매 − 운임 − 관세 − halfUp(매입원 × 100 ÷ 그날 참고 환율))을 정렬·양수 거름·늦은 편 검사에 씀. 판정표 6.1, 0절 2 비교 대상 |
+| R1 | 반영(H8)(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | rules-3 결정 기여 식(판매 − 운임 − 관세 − halfUp(매입원 × 100 ÷ 그날 참고 환율))을 정렬·양수 거름·늦은 편 검사에 씀. 판정표 6.1, 0절 2 비교 대상 |
 | R2 | 반영(H8) | 추가 환전은 ‘매입 통화 KRW ≠ 판매 통화’인 직접 무역 후보에만, 건너뜀 검사는 :129 뒤. 판정표 6.1 |
 | R3 | 반영(H7) | H5-2 괄호는 H7로 정정됨을 판정표 2절과 46건 표 3·26번에 적음. 허브가 이미 결정해 Q-C는 따로 두지 않음 |
-| R4 | 반영(H6-4) | `contractRiskReport`는 rules-2 상태도 받고 1,300 고정·`fx` = 0. R0 시험(realized = USD 기여 × 1,300). DESIGN 3.4, 0062 4절·시험 |
+| R4 | 반영(H6-4)(개정 3에서 H14-2로 대체: `krwToUsdMinor`·`divHalfAway`. R0 등식은 `contribution(센트) × baseKrwPerUsd ÷ 100`, 대상은 미지급 없는 `COMPLETED`) | `contractRiskReport`는 rules-2 상태도 받고 1,300 고정·`fx` = 0. R0 시험(realized = USD 기여 × 1,300). DESIGN 3.4, 0062 4절·시험 |
 | R5 | 반영(H10-4, a안) | D 손잡이 삭제. D 실패는 손잡이 없이 보고. 판정표 5.1·5.3 |
 | R6 | 반영(H10-5) | 판매 마진 손잡이의 자료 경로·식·범위(k ∈ −2~+3)·두 rule_set 같은 k·시작값(TASK-0065 병합값, 고정 기록 줄). 판정표 5.2 |
 | R7 | 반영(H10-3) | 어긋남 우선순위, 회마다 전체 재측정, 변형 사이 방향 충돌은 실패. 판정표 5.1 |
@@ -567,7 +571,7 @@
 
 ### 허브 2차 재검토 66건 처리표(개정 3)
 
-번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW2-HUB-2026-10-16.md`의 번호다(S1~S19, n1~n47). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H14다. 다섯 문서(판정표·설계·TASK-0062~0064)에 같은 표를 붙였다. 46건 표의 6·7·12·36·42·45번도 함께 정정했다(n32·n33).
+번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW2-HUB-2026-10-16.md`의 번호다(S1~S19, n1~n47). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H14다. 다섯 문서(판정표·설계·TASK-0062~0064)에 같은 표를 붙였다. 46건 표의 6·7·12·36·42·45번도 함께 정정했다(n32·n33). 개정 3c에서 46건 표 19번과 64건 표 R1·R4도 정정했다(H15 F9).
 
 | # | 처리 | 반영한 곳과 이유 |
 |---|---|---|
@@ -642,3 +646,44 @@
 - 원자료의 고칠 방향을 따르지 않은 것: S13의 진단 G(검증 메모가 선택 사항으로 봄, H14에 없음), n1의 `closedDays.at(-1)` 식(H14-5의 `operations.failure.day` 문장을 따름).
 - **허브 결정을 넘어 고른 것(허브 확인 바람).** ① 편이 없을 때 `tariffDay = knownThroughDay`를 자금 예약 밖(미리보기·수락 자금 검사·실패 기록)에도 씀(S15 검증 메모 권고). ② 1단계 `schedule`은 날짜만 옮기고 세율 차이는 모두 3단계가 맡음(S2·n22의 ‘그때’를 닫는 가장 단순한 규칙). ③ 관세 표 누락도 예외(H14-10의 ‘프로필에 없는 품목’을 관세에도 적용, n24·n41). ④ 의류 `p_claim_bp` 400 → 500(n17 고칠 방향, 동결 범위인 설계 6절의 값). ⑤ `referenceEstimate`의 USD 매입 방어 분기. ⑥ 새 거래처 ID 네 개의 이름. ⑦ 0062 시험 ‘취소(rules-2)’(n12의 선택안). ⑧ `goodId` 예외를 0062에서 구현하고 0062 ‘미리보기 기본값’ 시험을 `{ goodId }`만 넘기게 바꿈(H14-6을 0062의 `dutyFor` 서명과 함께 둠).
 - **개정 3 보충(허브 알림, TASK-0062a 확정본 `7cf3e5e`).** 골든 범위가 H9보다 넓어졌다(rules-2 탐침 해시, 규칙 1 400회, 두 묶음의 저장 왕복). 판정표 0절 5와 설계 2절 2·9절에 범위를 적고, ‘선택 인수 원칙이 탐침으로 시험된다’를 설계 2절 2에 더했다. 0062~0064의 손대지 않을 파일에 골든 파일 일곱(`tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`)을 넣고, 완료 조건의 `git diff --stat` 경로도 맞췄다. 진단 절차는 허브의 통일 문장으로 바꿨다. 400회 `run`의 수작업 `cmp`는 0062~0064에서 지웠다(검사기가 규칙 1 상태까지 지키고, 허브가 검수 때 따로 돌림). 0062에서도 지운 것은 허브 알림(0063·0064)을 같은 이유로 넓힌 것이다.
+
+### 허브 승인 전 확인 31건 처리표(개정 3c)
+
+번호는 `docs/ai/design/path3-price-risk-2026-10/REREVIEW3-HUB-2026-10-16.md`의 번호다(T1~T7, t1~t24). 허브 결정은 `HUB-DECISIONS-2026-10-16.md`의 H15다. 다섯 문서에 같은 표를 붙였다. 46건 표 19번과 64건 표 R1·R4도 함께 정정했다(F9).
+
+| # | 처리 | 반영한 곳과 이유 |
+|---|---|---|
+| T1 | 반영(H15 F3) | 판정표 6.2 결정 기여 행 끝을 F3 문장으로: (i)(ii)는 실행기 완료 조건, (iii)은 (가)·R0·R1 측정의 첫 확인, 실패하면 멈춤, 코드가 6.1과 다르면 엔진 결함, 6.1대로이면 실패 보고·v2 |
+| T2 | 반영(H15 O1) | `contractRiskReport` 출력 `evaluationDay`(저장 안 함). 0062 시험 ‘실패 종료 평가일’ = `evaluationDay === failure.day`이고 `!== s.day`, ‘찾으면’ 문구 삭제. 설계 3.4 |
+| T3 | 반영(H15 F1) | 판정표 5.1 ‘돌릴 손잡이가 없는 어긋남’ 끝에 F1 문장 |
+| T4 | 반영(H15 F2) | 판정표 4절에 F2 문장, 5.1 ‘다시 재기’에 ‘(표본 밖은 4절)’ |
+| T5 | 반박됨(고치지 않음) | 검증 메모대로 판정표 5.1의 ‘판정과 손잡이가 부딪치면(예: …)’과 5.3 J4d 위 행이 이미 닫고 있음 |
+| T6 | 반영(H15 F3) | T1과 같음 |
+| T7 | 반영(H15 O2) | `summarize`의 profit에 `SALES_ALLOWANCE`(설계 5.1, 0064 1절), 고칠 수 있는 파일 `ledger.ts` 범위, 0064 시험 ‘클레임’에 마감 순자산 항등식, 변형 12 |
+| t1 | 반영(H15 F4) | 판정표 3.2 J3 후보 제외를 `MARGIN_BUFFER`·`FOCUS`로, 1.3 출력 2에 `MAX_CONTRIBUTION`(= `EXPAND`)·`MARGIN_BUFFER`·`FOCUS` |
+| t2 | 반영(H15 F9) | 46건 19번, 64건 R1·R4에 정정 표기 |
+| t3 | 반영(H15 O3) | 설계 3.4 ‘환산 꼴’: 줄마다 바꾸되 같은 환율의 USD 비용 줄은 합친 뒤 한 번. 0062 ‘열린 계약’, 0064 ‘연체 미수 평가’ 시험 식 |
+| t4 | 반영(H15 O4) | `claimFor`·`collectionPlan`은 `risk.ts`, 0064 시험 ‘미래 누설 없음(호출 없음)’, 변형 9의 짝 시험 |
+| t5 | 반영(H15 O5) | 0064 ‘연체 미수 평가’ 전제(평가일 환율 ≠ 청구 결제일 환율), 금액 = `outstandingMinor` |
+| t6 | 반영(H15 O6) | 0063 누설 시험 (a) 전제를 그 계약의 도착국 변경으로 한정, 두 `dutyFor` 값이 다름을 먼저 단언 |
+| t7 | 반영(H15 O7) | 0062 ‘열린 계약’ 시험의 구성법(71~73일 수락, 끝 뒤 도착 편 또는 관세 미지급, 도중 상태 허용) |
+| t8 | 반영(H15 O8) | 0063 ‘수락 자금 검사 관세’를 `lag_days`를 늘린 프로필 사본으로 구성, 전제 단언, 변형 12 |
+| t9 | 반영(H15 O9) | 0063 ‘실패 기록 약정’을 수락일 뒤 실패일 전 공지 시드로, 비교 대상 `quotePreview`/`preview(…, { goodId })`, 변형 13. 설계 3.3의 ‘세율이 그대로면’ 삭제 |
+| t10 | 반영(H15 O10) | 0063 ‘자금 예약 관세’ 전제(N−1·N 운송 중, 예정 도착일 ≥ 시행일 > N−1)와 읽는 시점(마감 전) |
+| t11 | 반영(H15 O11) | 설계 3.4 미리보기: rules-3 직접 무역에서 `opts`(또는 `goodId`) 없이 부르면 예외, 실행기 호출은 경로 5 |
+| t12 | 반영(H15 F5) | 판정표 5.1 ‘닿지 않는 조건’의 (가) 문장, 5.3 J4d 아래 행(R1~R3만, R0은 실패) |
+| t13 | 반영(H15 F7) | 설계 6절 반대 방향 검사의 자료 경로(`sell_counterparties`, `operations.market_rules_ref`), 0062 1절 |
+| t14 | 반영(H15 F8) | 판정표 고정 기록 줄에 대조 규칙과 스크립트 커밋·sha256 칸 |
+| t15 | 허브 몫 | DECISIONS 잠금 문장 두 곳은 허브가 승인 커밋에서 H14-8 원문으로 맞춘다 |
+| t16 | 반영(H15 F6) | 판정표 5.1 같은 폭 규칙 끝에 F6 문장 |
+| t17 | 반영(H15 O12) | 3a(0873f93)에서 손대지 않을 파일 일곱·400회 cmp 정리가 들어갔음을 확인. 설계 9절에 덤프 꼴(`<scenarioId>__<policyId>__<seed>.run.json`·`.state.json`)을 더함. 2절 2 표는 3b에서 탐침으로 고침 |
+| t18 | 반영(H15 O13) | `claimFor(config, seed, sellOfferId, goodId)`, `collectionPlan(config, seed, sellOfferId, counterpartyId)`, `riskGrades`는 직접 무역만(주선 null), 누락 예외는 직접 무역 한정. 0064 1·2절, 설계 5.1·5.2 |
+| t19 | 반영(H15 F5) | t12와 같음 |
+| t20 | 반영(H15 O1·O4) | (a)는 T2, (b)는 t4와 같음 |
+| t21 | 반영(H15 O3) | t3과 같음 |
+| t22 | 반영(H15 F7) | t13과 같음 |
+| t23 | 반영(H15 O14) | 0062 1절: `RiskProfile`·`loadRiskProfile`은 다섯 묶음을 모두 변환, 엔진이 읽는 것은 `fx`뿐 |
+| t24 | 반영(H15 F9) | 설계 2절 5의 분석값 문장, 66건 표 S17의 ‘5.3 L2 행’은 판정표 5.3 L2 행에 ‘기준 회사의’를 넣어 맞춤 |
+
+- 기각은 T5 한 건이다(허브 검증에서 반박됨). 허브 몫은 t15와 SPEC 10.4·423 문장이다.
+- 허브 결정과 다르게 한 것은 없다.
