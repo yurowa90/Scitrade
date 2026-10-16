@@ -167,7 +167,7 @@ export function situationHtml(state: GameState, config: ScenarioConfig, view: Si
 export function openSituation(state: GameState, config: ScenarioConfig, opener: HTMLElement, onClose: () => void, warning?: PaymentWarning): void {
   const view = initialSituationView(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const root = document.createElement('section');
-  root.className = 'situation'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-labelledby', 'situation-h');
+  root.className = 'situation'; root.setAttribute('tabindex', '-1'); root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-labelledby', 'situation-h');
   const background = document.querySelector<HTMLElement>('#app')!;
   const previousInert = background.inert;
   const progress = background.querySelector<HTMLButtonElement>('[data-action="end-day"]')!;
@@ -202,8 +202,9 @@ export function openSituation(state: GameState, config: ScenarioConfig, opener: 
     if (ev.key === 'Tab') {
       const focusable = Array.from(root.querySelectorAll<HTMLElement>('button:not([disabled]), input, summary'));
       const first = focusable[0], last = focusable.at(-1);
-      if (ev.shiftKey && (document.activeElement === first || !focusable.includes(document.activeElement as HTMLElement))) { ev.preventDefault(); last?.focus(); }
-      else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first?.focus(); }
+      const start = document.activeElement === root || document.activeElement === root.querySelector('#situation-h');
+      if (ev.shiftKey && (document.activeElement === first || start)) { ev.preventDefault(); last?.focus(); }
+      else if (!ev.shiftKey && (document.activeElement === last || start)) { ev.preventDefault(); first?.focus(); }
     }
   });
   root.addEventListener('change', (ev) => {

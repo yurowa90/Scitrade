@@ -29,7 +29,7 @@ function modalDom(reduced = false) {
     let markup = '', nodes: any[] = [], text = '';
     const node: any = { tag, id: attributes.id, dataset: Object.fromEntries(Object.entries(attributes).filter(([k]) => k.startsWith('data-')).map(([k, v]) => [k.slice(5), v])),
       disabled: /\sdisabled(?:\s|$)/.test(attrs), children: [] as any[],
-      setAttribute: vi.fn(), remove: vi.fn(),
+      setAttribute: vi.fn((name: string, value: string) => { attributes[name] = value; }), remove: vi.fn(),
       isSameNode: (other: any) => node === other,
       contains: (other: any): boolean => node === other || nodes.includes(other) || node.children.some((child: any) => child.contains(other)),
       focus: () => { doc.activeElement = node; focused.push(node.id ? `#${node.id}` : `[data-situation="${node.dataset.situation}"]`); },
@@ -46,7 +46,7 @@ function modalDom(reduced = false) {
       set textContent(value: string) { text = value; if (node === live) announcements.push(value); },
       querySelector: (selector: string): any => node.querySelectorAll(selector)[0] ?? null,
       querySelectorAll: (selector: string): any[] => {
-        const own = nodes.filter((n) => selector.startsWith('#') ? n.id === selector.slice(1) : selector.startsWith('[data-situation="') ? n.dataset.situation === selector.match(/"([^"]+)"/)?.[1] : selector.includes('button') ? n.dataset.situation && !n.disabled || n.dataset.layer || /summary/.test(n.tag) : selector.includes('[data-situation]') ? n.dataset.situation : false);
+        const own = nodes.filter((n) => selector === '*' ? true : selector.startsWith('#') ? n.id === selector.slice(1) : selector.startsWith('[data-situation="') ? n.dataset.situation === selector.match(/"([^"]+)"/)?.[1] : selector.includes('button') ? n.dataset.situation && !n.disabled || n.dataset.layer || /summary/.test(n.tag) : selector.includes('[data-situation]') ? n.dataset.situation : false);
         return [...own, ...node.children.flatMap((c: any) => c.id && selector === `#${c.id}` ? [c] : c.querySelectorAll(selector))];
       },
     };
@@ -65,10 +65,23 @@ function modalDom(reduced = false) {
   };
   const mapClick = (offset: number, marks = [{ key: 'NE-PORT-001', x: 100, y: 100 }]) => {
     const stage = { querySelectorAll: () => marks.map((m) => ({ dataset: { port: m.key }, closest: () => null, getBoundingClientRect: () => ({ left: m.x - 2.4, top: m.y - 2.4, width: 4.8, height: 4.8 }) })) };
+    // SVG 빈 곳을 누르면 초점을 받을 수 있는 가장 가까운 조상으로 이동한다.
+    if (root.hasAttribute('tabindex')) root.focus(); else doc.activeElement = body;
     listeners.click!({ clientX: 100 + offset, clientY: 100, target: { closest: (selector: string) => selector === '.situation-stage' ? stage : null } });
   };
   const toggle = (id: string, checked: boolean) => { content.querySelector(`#situation-${id}`).focus(); listeners.change!({ target: { dataset: { layer: id }, checked } }); };
-  const key = (key: string, shiftKey = false) => listeners.keydown!({ key, shiftKey, preventDefault: vi.fn(), stopPropagation: vi.fn() });
+  const key = (key: string, shiftKey = false) => {
+    const event = { key, shiftKey, preventDefault: vi.fn(), stopPropagation: vi.fn() };
+    if (root.contains(doc.activeElement)) listeners.keydown!(event);
+    // 취소하지 않은 Tab은 현재 노드의 문서 위치부터 순차 탐색한다.
+    if (key === 'Tab' && !event.preventDefault.mock.calls.length) {
+      const order = content.querySelectorAll('*'), index = order.indexOf(doc.activeElement);
+      const candidates = new Set(root.querySelectorAll('button:not([disabled]), input, summary'));
+      const next = (shiftKey ? order.slice(0, index).reverse() : order.slice(index + 1)).find((node: any) => candidates.has(node));
+      if (next) next.focus(); else doc.activeElement = body;
+    }
+    return event;
+  };
   return { root, opener, progress, background, click, mapClick, toggle, key, get live() { return root.querySelector('#situation-live'); }, focused, announcements, doc };
 }
 
@@ -120,6 +133,37 @@ describe('TASK-0061 상황실 지도', () => {
     expect((document.activeElement as HTMLElement).id).toBe('situation-selection-h');
     dom.key('Tab', true); expect(dom.root.contains(document.activeElement)).toBe(true);
     dom.key('Escape'); expect(dom.root.remove).toHaveBeenCalledOnce(); expect(dom.opener.focus).toHaveBeenCalledOnce();
+  });
+  it('열자마자 빈 바다를 누른 뒤에도 초점과 Escape가 대화상자 안에서 동작한다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.mapClick(23);
+    expect(dom.root.contains(document.activeElement)).toBe(true);
+    dom.key('Escape'); expect(dom.root.remove).toHaveBeenCalledOnce(); expect(dom.opener.focus).toHaveBeenCalledOnce();
+  });
+  it('선택 칸으로 점이 이동한 뒤 같은 화면 좌표를 다시 눌러도 Escape로 닫힌다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.mapClick(0);
+    expect((document.activeElement as HTMLElement).id).toBe('situation-selection-h');
+    dom.mapClick(0, [{ key: 'NE-PORT-001', x: 100, y: 150 }]);
+    expect(dom.root.contains(document.activeElement)).toBe(true);
+    dom.key('Escape'); expect(dom.root.remove).toHaveBeenCalledOnce(); expect(dom.opener.focus).toHaveBeenCalledOnce();
+  });
+  it('선택 정보 제목의 Shift+Tab과 Tab은 문서 순서상 바로 앞뒤 요소로 간다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.mapClick(0);
+    const heading = document.activeElement as HTMLElement;
+    expect(dom.key('Tab', true).preventDefault).not.toHaveBeenCalled();
+    expect((document.activeElement as HTMLElement).dataset.situation).toBe('close');
+    heading.focus(); expect(dom.key('Tab').preventDefault).not.toHaveBeenCalled();
+    expect((document.activeElement as HTMLElement).id).toBe('situation-cargo');
+    dom.mapClick(0, [{ key: 'NE-PORT-001', x: 100, y: 100 }, { key: 'NE-PORT-002', x: 105, y: 100 }]);
+    dom.key('Tab'); expect((document.activeElement as HTMLElement).dataset.situation).toBe('pick');
+  });
+  it('대화상자 제목과 루트에서만 Tab 시작점을 처음과 마지막으로 보낸다', () => {
+    const dom = modalDom(); openSituation(empty(), config, dom.opener as unknown as HTMLElement, vi.fn());
+    dom.key('Tab', true); expect((document.activeElement as HTMLElement).id).toBe('situation-countries');
+    dom.mapClick(23); dom.key('Tab'); expect((document.activeElement as HTMLElement).dataset.situation).toBe('briefing');
+    dom.mapClick(23); dom.key('Tab', true); expect((document.activeElement as HTMLElement).id).toBe('situation-countries');
   });
   it('버튼은 같은 action·id로 초점을 복구하고 사라지면 제목에 둔다', () => {
     const dom = modalDom(); openSituation(delayed(), config, dom.opener as unknown as HTMLElement, vi.fn());
