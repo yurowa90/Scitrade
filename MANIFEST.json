@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 230015,
-      "sha256": "c6947d96414ea74562748e7b6d62239a68eb46ff795aeae225237ae29bd75196"
+      "size_bytes": 231543,
+      "sha256": "38d37128aa129b9748f9e993dc0b2991a9f58824e9c5182e7fb66f615a8ad533"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1687,13 +1687,13 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 106072,
-      "sha256": "e3233c9a0f6228b52ea2103987155d692f31dc52f5007a12bf2e8166fe0dcf18"
+      "size_bytes": 106313,
+      "sha256": "0f482d7a8f900defae45735677c873e5fa72b5863902ed9d95cfe97210b79bb4"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 49169,
-      "sha256": "c361c82d261f6ed98d68ccbb57a757a36eaaa27fa6c4472c282a6ced3919ef79"
+      "size_bytes": 49722,
+      "sha256": "cfb99f1b105a265442793b05f32a62db488aff2f722e58a7c2b932e0fc6f067b"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
@@ -2472,8 +2472,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 23782,
-      "sha256": "bfa03dbf7f5f2f9a740e3b2483ad6393551efcefb1b740cbfc6f2f19f18e8afe"
+      "size_bytes": 23754,
+      "sha256": "46d09c53f4c627eb2b4c16f71f499a96ca693ab077d56da8446fb9a52eb588b0"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2827,8 +2827,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
-      "size_bytes": 93762,
-      "sha256": "a7646b29a2fcbeafd5ab9f5fad8b48842577fef938c5ef26452aac6df027c9ae"
+      "size_bytes": 105368,
+      "sha256": "34704a90a790fc18527c4fddc3f365a9c50bb3b97824890adb5c39326ea808d6"
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",

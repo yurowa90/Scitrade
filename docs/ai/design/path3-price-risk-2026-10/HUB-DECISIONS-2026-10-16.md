@@ -595,7 +595,7 @@ TASK-0063 개정 3d를 허브가 시제품으로 만들어 세 관점으로 확�
   - 지연 = `U[lag_days[0], lag_days[1]]`(`…:{r}:lag`), 공지일 = `U[1, campaignDays − lag_days[1]]`(`…:{r}:notice`, 지연과 따로), 시행일 = 공지일 + 지연, 걸음 = `U[step_bp[0], step_bp[1]]`(`…:{r}:step`, 동결값 [−200, 800] 비대칭 그대로).
   - 무의미로 뺀 회차의 흐름도 뽑는다.
 - 부대비
-  - 주차 w = ⌊(출항일 − `publish.firstDay`) ÷ `publish.intervalDays`⌋ + 1. `lastDay`로 자르지 않는다(79·86일 출항은 다른 주차).
+  - 주차 w = ⌊(출항일 − `publish.firstDay`) ÷ `publish.intervalDays`⌋ + 1. `lastDay`로 자르지 않는다(79·86일 출항은 다른 주차). 주차는 `risk.ts`의 순수 함수 `surchargeWeek(config, 출항일)` 하나로 계산하고 출항 처리는 이 함수만 쓴다(TASK-0063 개정 3f, 시험 가능성 때문에 이름을 붙임).
   - `U[0, 9999] < p_zero_bp`이면 0(`SURCHARGE:{노선}:{w}:zero`), 아니면 `U[min_bp, max_bp]`(`…:value`).
   - 금액 = `applyBasisPoints(예약 운임, bp)`.
 
@@ -611,6 +611,8 @@ TASK-0063 개정 3d를 허브가 시제품으로 만들어 세 관점으로 확�
 - 판정에 일정 전체를 쓰지 않는다. 쓰면 공지 로그가 있느냐 없느냐로 미래 사건이 드러난다(golden#7의 제안은 쓰지 않음).
 - `tariffSchedule(state, config)`의 기준일 K는 끝나지 않은 상태에서 `s.day`, 끝난 상태에서 `contractRiskReport`의 평가일이다. 각 사건의 `fromBp`·`toBp`는 `rate(K, 그 사건 시행일)`을 그 사건을 빼고·넣어 계산한다. 그래서 뒤에 공지된 회차가 먼저 시행되면 그 공지일부터 앞 사건의 a·b가 바뀐다(ambiguity#5의 ‘공지일 값 고정’ 대신 같은 날 미리보기와 맞춘다).
 - 공지 로그의 a·b는 공지일의 `tariffSchedule` 값이다. 무의미 판정의 a·b와는 같은 나라 두 회차가 같은 날 공지될 때만 다를 수 있다.
+- `tariffSchedule`과 공지 로그의 순서는 공지일 순, 동점은 `tariff.base`에 처음 나온 나라 순, 그다음 회차다(TASK-0063 개정 3f).
+- 화면(경로 11)은 `tariffSchedule`의 a·b에 ‘오늘 기준 계산값’ 표지를 단다. 뒤에 공지된 회차가 먼저 시행되면 값이 바뀌기 때문이다(세션 A 관찰).
 
 ### H16-4. USD 매입의 관세 표 (ambiguity#12)
 
