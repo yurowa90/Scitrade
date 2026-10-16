@@ -2141,6 +2141,81 @@
       "sha256": "0093eb6e6a68070c6b27ef3b7f299cd9a14d1d02e9fec1d457707653edac02f4"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/README.md",
+      "size_bytes": 3602,
+      "sha256": "539a1ae432b33a265c44151cf510d038335077660c56d47e2a64512ab164fd30"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/chromebook-all-nolights.png",
+      "size_bytes": 141018,
+      "sha256": "ef4c653636419f2b2a0c3bd82d4cb5af0367c2ad0155fe3def79e20db5d29d2b"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/chromebook-all.png",
+      "size_bytes": 149951,
+      "sha256": "544a17df382b53d9f6f0b79d1674d18043f586e32ff201278e10b0aeb8238675"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/chromebook-briefing.png",
+      "size_bytes": 118388,
+      "sha256": "c7834c94685055972fc3a7d29b7c5e0498421cf301424492f9eb9fdf3c31c568"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/harness/m61dbgr3.js",
+      "size_bytes": 1819,
+      "sha256": "0d694cd57d5b24ccabe9957f4522c69013b24d44e32754af7a4c6a7c5c9f7417"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/harness/m61r3f.js",
+      "size_bytes": 2730,
+      "sha256": "b5a1375e5fbd9c57860d23b131312c7bc8489984e4f1ef8258929c86e4a527ce"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/harness/m61r3x.js",
+      "size_bytes": 6623,
+      "sha256": "c6c0a1d27bb98741449e5a5bcdd3c6eb9c85bf2cbde7097f4619dce804b6b0bc"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/ipad-all-nolights.png",
+      "size_bytes": 180038,
+      "sha256": "6763753ac66e3f95e81b3e208a569db9eea61d8d55af90b23a924d3164488a32"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/ipad-all.png",
+      "size_bytes": 207710,
+      "sha256": "901d8d47c433fae2c5e0e805deb0af4002bb1e34d31ad684f3fe2e2a6c089e33"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/ipad-briefing.png",
+      "size_bytes": 181377,
+      "sha256": "c41834f35da2b607dc7eae42ad707c6c1df9c65a9779bae95da8b6d4bfea7883"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/raw/cb.jsonl",
+      "size_bytes": 4351,
+      "sha256": "9512bf2f3214e3277407994ce12b87bd795654944fcfc3e13b282c0d913492fd"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/raw/extra.jsonl",
+      "size_bytes": 1122,
+      "sha256": "5e8e37f3ef65be9bb733bdc6be664929a1218d2c3ee72835548a0381cfa21f2b"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/raw/ipad.jsonl",
+      "size_bytes": 4333,
+      "sha256": "f2ee96709f1d39da7c4d723ade4b30abfb47c08f6ec6affce51b4a60425d2c58"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/raw/retap.jsonl",
+      "size_bytes": 452,
+      "sha256": "5fca0b5765068943a7231e7336856df2e91e37efb83efef83762cde48abbfc6c"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/impl-ff4beba/raw/sea-tap.jsonl",
+      "size_bytes": 598,
+      "sha256": "f2b3ff49eff4eef13fb50aaaee8bbabf754b30a198c3bedc98fcaf34695f964a"
+    },
+    {
       "path": "docs/ai/design/situation-map-10b1/ipad-all.png",
       "size_bytes": 224853,
       "sha256": "5827b905c05068dbc474be7eae3e7455e2120d9fc0853215887ef994642a04dd"

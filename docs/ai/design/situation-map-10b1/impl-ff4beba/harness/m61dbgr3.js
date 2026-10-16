@@ -1,0 +1,14 @@
+const L = require('./blib');
+(async () => { const r = await L.newPage('ipadminiL'); const pg = r.page;
+  await pg.goto('http://127.0.0.1:4390/s61r3/index.html'); await pg.waitForSelector('[data-action="end-day"]'); await L.sleep(700);
+  await L.tap(pg, '[data-action="situation"]', { touch: true }); await pg.waitForSelector('#situation-h'); await L.sleep(300);
+  await L.tap(pg, '.situation [data-situation="free"]', { touch: true }); await L.sleep(300);
+  const pt = await pg.evaluate(() => { const r = [...document.querySelectorAll('.situation-port[opacity="1"]')].map((c) => c.getBoundingClientRect()).find((r) => r.width && r.left > 40 && r.top > 120 && r.right < innerWidth - 300); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  const st = (tag) => pg.evaluate((t) => ({ t, active: document.activeElement?.id || document.activeElement?.tagName, sel: document.getElementById('situation-selection-h')?.textContent.slice(0, 30), hit: (() => { return null; })() }), tag);
+  const log = [];
+  await pg.touchscreen.tap(pt.x + 6, pt.y); await L.sleep(300); log.push(await st('tap1'));
+  const tgt = await pg.evaluate(({ x, y }) => { const e = document.elementFromPoint(x, y); return e?.tagName + '.' + (e?.getAttribute('class') || '') + (e?.closest('[data-situation]') ? '[in button]' : ''); }, pt); log.push({ elementAtPoint: tgt });
+  await pg.touchscreen.tap(pt.x, pt.y); await L.sleep(300); log.push(await st('tap2'));
+  await pg.mouse.click(pt.x, pt.y); await L.sleep(300); log.push(await st('mouse3'));
+  await pg.keyboard.press('Escape'); await L.sleep(300); log.push({ afterEscape: await pg.evaluate(() => ({ open: !!document.querySelector('.situation'), focus: document.activeElement?.dataset.action })) });
+  console.log(JSON.stringify({ pt, log })); await L.done(); process.exit(0); })();
