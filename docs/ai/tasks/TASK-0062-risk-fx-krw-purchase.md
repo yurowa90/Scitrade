@@ -1,9 +1,10 @@
-# TASK-0062 직접 무역 위험 ①: 원화 매입·달러 판매와 참고 환율 경로 (초안, 개정 3c)
+# TASK-0062 직접 무역 위험 ①: 원화 매입·달러 판매와 참고 환율 경로 (승인, 개정 3e)
 
-- **지위: 초안(세션 A, 2026-10-14, 개정 1·2·3 2026-10-16). 허브 승인과 `<BASE>` 치환 전에는 실행하지 않는다.**
+- **지위: 승인(허브, 2026-10-16). 실행할 수 있다.** 세션 A 초안(2026-10-14, 개정 1·2·3·3c 2026-10-16) 위에, 허브가 Codex 전 사전 확인(시제품으로 수행 가능성·변형 효과를 실측)에서 찾은 고침을 개정 3d로, 그 고침 문구를 다시 읽기 전용으로 검토해 찾은 고침을 개정 3e로 넣었다. 처리표는 맨 끝 ‘허브 사전 확인 처리표(개정 3d)’와 ‘허브 재검토 처리표(개정 3e)’다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
-- 선행: **TASK-0062a(rules-2 골든) 병합**, 허브 승인 커밋(판정표·설계·이 지시서), 설계 2절 2 표와 TASK-0062a 범위 표의 대조(세션 A). `<BASE>`는 이 셋을 모두 담은 개발 브랜치 커밋이다(허브가 치환할 때 적는다, 검토 n16). 기준 비교(`review_checks.sh`)는 `<BASE>`로 한다.
+- 선행(모두 충족): **TASK-0062a(rules-2 골든) 병합 `c4d6286`**, 판정표 승인 `9ce98fe`, 설계 2절 2 표와 TASK-0062a 범위 표의 대조(세션 A 개정 3b).
+- **`BASE`는 작업 트리를 만든 커밋, 곧 이 승인본을 담은 개발 브랜치 커밋이다**(검토 n16). 지시서가 자기 커밋 해시를 적을 수 없으므로, 작업을 시작할 때 `git rev-parse HEAD` 값을 결과 보고에 적고 그 값을 BASE로 쓴다. Codex는 커밋하지 않으므로 작업 뒤에도 HEAD가 BASE다. 기준 비교(`review_checks.sh --check`)와 완료 조건 5는 이 BASE로 한다.
 - 설계: `docs/ai/design/path3-price-risk-2026-10/DESIGN.md` 2·3·6·7·8·9절. **먼저 읽는다.** 이 지시서와 설계가 다르면 이 지시서가 우선이다.
 - 판정 기준: `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`. 이 작업은 측정하지 않는다. 측정은 경로 5다.
 - 목적: 직접 무역 계약이 수락 뒤 환율 때문에 원화 기준으로 손실이 날 수 있게 한다. 학습목표 O1(환율 판단)의 엔진 바탕이다.
@@ -27,6 +28,9 @@
 - 스키마(`schemas/` 해당 파일)와 `tools/validate_data.py`에 설계 6절의 검사를 넣는다.
   - 반례 시험은 기존 `MarketRulesTest`와 같은 방식으로 만든다. 자료 사본에서 값을 바꾸고 `check_market_rules`만 부른 뒤, 그 검사의 문장 자체를 단언한다(스키마 `shape`는 부르지 않는다). 반례: 등급 확률 합 ≠ 10000, 손상 두 층 가중치 합 ≠ 10000, 최소 > 최대, 품목 자료에 없는 품목, 시장 자료에 없는 거래처, `start_krw_per_usd` ≠ `fx_krw_per_usd`, 그리고 반대 방향 셋(운영 rule_set(`operations.market_rules_ref`의 # 뒤 id, `base_scenario_id` 상속 포함)의 판매 거래처 `trade.goods[].sell_counterparties[].counterparty_id`가 `by_counterparty`에 없음, `trade.goods` 품목이 `claims.by_good`에 없음, (판매 도시 나라, 품목)이 `tariff.base`에 없음. 설계 6절, 허브 결정 H14-10).
   - 프로필의 `basis`·`status` 표지(설계 6절)를 그대로 옮긴다.
+  - **검사 범위(허브 사전 확인).** 0~10000 범위는 확률·비율 칸에만 건다: `fx.step_bp`, `tariff.base[].rate_bp`·`tariff.min_bp`·`tariff.max_bp`, `surcharge`의 `*_bp`, `claims.by_good[].p_claim_bp`, `claims.minor`·`claims.major`의 `weight_bp`·`min_bp`·`max_bp`, `collections.grades[]`의 `p_*_bp`, `collections.partial_bp`. `tariff.step_bp`는 부호 있는 정수 짝으로 −10000 ≤ 하한 ≤ 상한 ≤ 10000을 본다(동결 프로필의 `[-200, 800]`가 통과해야 한다). 날 수(`tariff.lag_days`, `collections.late_min_days`·`late_max_days`)와 `tariff.max_changes`는 0 이상 정수이고, 짝은 하한 ≤ 상한이다. `fx`는 `min_krw_per_usd ≤ start_krw_per_usd ≤ max_krw_per_usd`.
+  - 반대 방향 검사는 `risk_profiles`의 **모든 프로필**에 건다(지금은 시작 프로필 하나다. 아직 시나리오가 `operations.risk`로 프로필을 고르지 않기 때문이다).
+  - 시험 파일은 `tools/test_validate_data.py`다. **기존 `test_goods_counts`의 3품목 경우(count=3)는 고정 자료를 함께 고친다**: 새로 더하는 품목의 `claims.by_good` 1행과 (판매 도시 나라 × 새 품목)의 `tariff.base` 행을 같은 사본의 모든 프로필에 넣는다. 단언(`assertEqual(errors, [])`)은 그대로 둔다. 다른 기존 시험은 고치지 않는다. 반대 방향 검사를 느슨하게 만들어 이 시험을 맞추지 않는다.
 
 ### 2. 참고 환율 경로와 환전
 
@@ -34,29 +38,38 @@
   - 주차는 시세 공개일 기준이다(`publish.first_day`, `interval_days`). 공개일 사이에는 값이 같다. 마지막 공개일 뒤는 마지막 값.
   - `drawUniform`을 커서 상태 없이 부르는 순수 함수다(흐름 `FX-REF`, 번호 = 주차). **`state.rng`의 커서를 바꾸지 않는다.**
   - 위험 설정에 `FX` 층이 없으면 프로필의 `start_krw_per_usd`를 돌려준다. 위험 설정 자체가 없으면(rules-2) `config.operations.fx.baseKrwPerUsd`를 돌려준다(허브 결정 H6-4).
+  - `config.operations`가 없으면(rules-1) 이 함수를 부르지 않는다. 부르면 예외다. rules-1 경로(`dutyFor`·환전·미리보기)는 `referenceRate`에 닿지 않는다(3절 `dutyFor` 분기).
 - **환산 도우미 둘과 반올림 하나**(설계 3.3, 허브 결정 H14-2)를 `risk.ts`에서 내보낸다. 이 지시서의 모든 원↔달러 환산(`dutyFor` 과세가격, `referenceEstimate`, `contractRiskReport`)이 이 둘만 쓴다.
   - `divHalfAway(n, d) = sign(n) × ⌊(2|n| + d) ÷ (2d)⌋`(d > 0 정수, 0.5는 0에서 먼 쪽. `applyBasisPoints`와 같은 규칙)
   - `krwToUsdMinor(krw, rate) = divHalfAway(krw × 100, rate)`, `usdToKrwMinor(cents, rate) = divHalfAway(cents × rate, 100)`
-- `exchangeAmounts(config, direction, usd, seed?, day?)`(`operations.ts:150`): 선택 인수 시드·날짜. 호출처 `operations.ts:168`은 `s.rng.seed`, `s.day`를, `readers.ts:97`(`exchangePreview`)은 오늘을 넘긴다. rules-3이면 기준 환율 자리에 그날 참고 환율을 쓰고, 차감은 지금 규칙 그대로다. 인수가 없으면 지금 식이다. 로그 문장의 ‘게임용 고정 환율’은 rules-3에서 ‘오늘 참고 환율’로 쓴다. rules-2 문장은 그대로다.
-- 고정 환율로 묶음 금액을 세는 함수들(설계 3.2): `usdLotKrw(config, s?: GameState)`(`operations.ts:225-226`), `paymentDefaultStatus`의 `lotsToSurvive`·`lotsToClearAll`·`krwToUsdRequiredMinor`(`:238-253`), `wageUsdLotsPerWeek`(`readers.ts:202`). 모두 맨 끝 선택 인수로 상태를 받는다. 없으면 지금 고정 환율 식(rules-2 바이트 그대로)이고, rules-3에서 없으면 예외다. 실행기 호출(`sim/operations-policy.ts:73`)은 이번에 고치지 않는다(경로 5).
+- `exchangeAmounts(config, direction, usd, seed?, day?)`(`operations.ts:150`): 선택 인수 시드·날짜. 호출처 `operations.ts:168`은 `s.rng.seed`, `s.day`를, `readers.ts:97`(`exchangePreview`)은 오늘을 넘긴다. rules-3이면 기준 환율 r = `referenceRate(config, seed, day)`, 차감 = `applyBasisPoints(r, spreadBasisPoints)`(rules-2 설정을 만드는 `scenario.ts:503`과 같은 꼴), USD→KRW 환율 = r − 차감, KRW→USD 환율 = r + 차감이다. 인수가 없으면 지금 식(rules-2 바이트 그대로)이고, rules-3에서 인수 없이 부르면 예외다(설계 3.2, 원칙 4). 로그 문장의 ‘게임용 고정 환율’은 rules-3에서 ‘오늘 참고 환율’로 쓴다. rules-2 문장은 그대로다.
+- 고정 환율로 묶음 금액을 세는 함수들(설계 3.2): `usdLotKrw`(`operations.ts:225-226`), `paymentDefaultStatus`의 `lotsToSurvive`·`lotsToClearAll`·`krwToUsdRequiredMinor`(`:238-253`), `weeklyBottleneck`의 `wageUsdLotsPerWeek`(`readers.ts:202`).
+  - **새 선택 인수는 `usdLotKrw(config, s?: GameState)`의 `s` 하나다.** 없으면 지금 고정 환율 식(rules-2 바이트 그대로)이고, rules-3에서 없으면 예외다. rules-3 값 = `lotUsdMinor × (그날 USD→KRW 환율) / 100`(위 환전 식).
+  - `paymentDefaultStatus(s, config, day)`와 `weeklyBottleneck(s, config, …)`는 이미 상태를 받으므로 **서명을 바꾸지 않고** 안에서 `usdLotKrw(config, s)`를 부른다. 인수 없이 부르는 `processPaymentDefault`(`operations.ts:259`)와 화면(`money-alerts.ts`)이 rules-3에서 예외를 내지 않게 하기 위해서다. `krwToUsdRequiredMinor`는 그날 KRW→USD 환율을 쓴다.
+  - **환율 날짜는 `s.day`다**(`paymentDefaultStatus`의 `day` 인수가 아니다).
+  - 실행기 호출(`sim/operations-policy.ts:73`)은 이번에 고치지 않는다(경로 5).
+- **시드 출처(허브 사전 확인).** 상태를 받는 자리(환전, `usdLotKrw`, 자금 예약 `cashReservations`, 도착 관세, 실패 기록, 불변식, `quotePreview`, `contractRiskReport`)는 모두 `s.rng.seed`를 쓴다. `config.seed`는 상태가 없는 `preview`·`tradePreview`만 쓴다.
 
 ### 3. 원화 매입과 혼합 통화 계약
 
 설계 3.3 그대로다. 요점만 적는다.
 
-- **매입 통화 유도.** `rowCurrency(config, side)`(`risk.ts`)로 유도한다. 시세 행 타입(`types.ts:535`)과 `MarketBatch.rows`(`types.ts:560`)에 통화 칸을 두지 않는다. 생성기(`market.ts`)는 rules-3 원화 매입이면 매입 견적의 통화를 KRW, 단가를 원 단위로 만든다. `marketTable`(`market.ts:100`)은 매입 행 통화를 KRW로 낸다.
+- **매입 통화 유도.** `rowCurrency(config, side)`(`risk.ts`)로 유도한다. 시세 행 타입(`types.ts:535`)과 `MarketBatch.rows`(`types.ts:560`)에 통화 칸을 두지 않는다. **원화 값은 `withRiskLevel` 한 곳에서만 만든다**(5절: 설정의 시세 행 매입 기준가와 정적 매입 견적). 생성기(`market.ts`)와 `marketTable`(`market.ts:100`)은 값 크기를 바꾸지 않고 통화만 `rowCurrency(config, side)`로 정한다. 그래서 rules-3 원화 매입이면 생성된 매입 견적과 시세표 매입 행이 KRW이고, 단가는 설정 행에서 이미 원 단위다.
 - **수락**(`acceptTrade`, `engine.ts:308`): 매입·판매 통화가 달라도 rules-3이면 받는다. 계약 `currency`는 판매 통화다. 매입 통화는 견적에서 읽는다. 계약·화물·청구서에 칸을 더하지 않는다.
 - **자금 검사**: 매입은 KRW 가용, 운임·관세 예상은 USD 가용으로 따로 본다. 부족한 통화마다 거절 문장을 따로 낸다.
-- **분기 조건**: 아래 운임·관세·매출원가·실패 기록의 분기는 모두 ‘매입 통화 ≠ 판매 통화’다.
+- **분기 조건**: 아래 운임·관세의 장부 처리(화물 장부가에 더할지, USD 재고 분개로 쌓을지), 매출원가, 실패 기록 약정의 분기는 모두 ‘매입 통화 ≠ 판매 통화’다. 관세 금액 계산(`dutyFor`)의 분기만 ‘매입 통화가 `'KRW'`인가’다(아래).
 - **운임·관세**: 혼합 통화 계약이면 화물 장부가에 더하지 않고, 같은 계약 ID의 USD 재고 분개로만 쌓는다.
 - **관세: 한 함수 `dutyFor`**(설계 3.3의 서명과 호출처 표 그대로, 허브 결정 H13):
   - 서명: `dutyFor(config, seed, goodId, destinationCityId, tariffDay, knownThroughDay, purchaseMinor, purchaseCurrency, valueFxDay)`.
   - 여섯 호출처(`reports.ts:99` 미리보기, `engine.ts:319` 수락 자금 검사, `reservations.ts:33` 자금 예약, `engine.ts:1019` 도착 처리, `operations.ts:273` 실패 기록, `contractRiskReport`)가 모두 이 함수를 부르고, 넘기는 값은 설계 3.3의 표대로다(허브 결정 H14-6). **자금 예약의 `valueFxDay`는 `c.acceptedDay`다.** 자금 예약의 `tariffDay` 규칙, 편이 없을 때의 규칙(`tariffDay = knownThroughDay`), 실패 기록의 편(`listSailings(config, route, 수락일 + 1)[0]`)도 설계 3.3 그대로다.
-  - 매입 통화가 KRW이면 과세가격(USD 센트) = `krwToUsdMinor(원화 매입액, valueFxDay 참고 환율)`, 관세 = 과세가격 × 세율(개정 3에서 ×100 누락을 고침). 이번에는 세율이 시나리오 고정 세율이고 `goodId`·도착지·`tariffDay`·`knownThroughDay`는 쓰지 않는다(0063이 몸통만 바꾼다). 매입이 USD이면 지금 `dutyEstimate` 그대로다.
+  - **분기는 매입 통화가 `'KRW'`인지 하나다.** KRW이면 과세가격(USD 센트) = `krwToUsdMinor(원화 매입액, referenceRate(config, seed, valueFxDay))`, 관세 = `dutyEstimate(config, 과세가격)`(곧 `applyBasisPoints(과세가격, dutyRateBasisPoints)`. 개정 3에서 ×100 누락을 고쳤다). 그 밖(USD, 기존 시험이 쓰는 `'XXX'` 등)은 `referenceRate`를 부르지 않고 `dutyEstimate(config, purchaseMinor)` 그대로다. `=== 'USD'`로 분기하지 않는다(P0-ACC-01이 `'XXX'`로 이 경로를 지난다).
+  - 이번에는 세율이 시나리오 고정 세율이고 `goodId`·도착지·`tariffDay`·`knownThroughDay`는 쓰지 않는다(0063이 몸통만 바꾼다). 그래도 여섯 호출처는 설계 3.3 표의 값을 넘긴다(시험 ‘관세 호출 인수’가 확인한다).
+  - **위치는 `src/engine/risk.ts`다**(고정). 시험이 `vi.mock('./risk')` 통과형 첩자로 호출 인수를 본다. `risk.ts`는 `catalog.ts`의 `dutyEstimate`를 import한다(`catalog.ts`는 `money`와 타입만 import하므로 순환이 생기지 않는다). `dutyFor` 안의 `referenceRate` 호출은 같은 모듈 안이라 감싸기가 닿지 않는다. 그 환율일은 수락일(평가일 이전)이라 미래 누설 시험과 무관하다.
+  - 원천 검사: 작업 뒤 `src/engine/*.ts`(시험 파일 제외)의 `dutyEstimate(` 호출은 모두 `risk.ts`의 `dutyFor` 함수 몸통 안에 있다(두 분기에서 한 번씩 불러도 된다. 개수가 아니라 위치를 본다. 정의 `catalog.ts:75`는 세지 않는다).
 - **인도 때 매출원가**: 혼합 통화 계약이면 `COGS-{계약}-KRW`와 `COGS-{계약}-USD` 두 분개를 낸다. rules-2 분개 ID·금액은 그대로다.
 - **출항 전 취소·편 놓침**: 지금 규칙의 금액을 통화별로 나눠 적용한다(매입 원화는 돌려받지 못함, 운임 환급·취소비는 USD).
 - **지급 불이행 실패 기록**(허브 결정 H13, 검토 R18 가):
-  - `operations.ts:272-274`의 USD 약정액은 혼합 통화 계약이면 USD 몫만이다(예약 운임 + `dutyFor` 관세, 위 표의 실패 기록 값). 원화 매입액을 더하지 않는다.
+  - `operations.ts:272-274`의 USD 약정액은 혼합 통화 계약이면 USD 몫만이다(노선 운임 `routeBetween(…).bookingFeeMinor` + `dutyFor` 관세, 위 표의 실패 기록 값). 원화 매입액을 더하지 않는다. **단일 통화 계약은 지금 식 그대로다**: 직접 무역(rules-2 포함)은 `purchaseAmountMinor + 노선 운임 + 관세`, 주선은 노선 운임(매입 0·관세 0)이다.
   - `operations.ts:284-285`의 원화 선택 지출 접두어에 `PURCHASE-`를 더하고, **`PURCHASE-` 분개만** 창을 `oldest.incurredDay − failureAgeDays ≤ e.day ≤ 실패일`로 넓힌다. 다른 접두어의 창은 그대로다.
   - 원화 매입 약정을 따로 저장하지 않는다(H0의 ‘통화별로 나눠 저장’은 이 범위에서 ‘더하지 않는다’로 지킨다. 새 칸이 필요한 기록은 형식 7 묶음에서 한다).
   - 두 곳 모두 rules-2 값은 바이트로 같다.
@@ -81,14 +94,20 @@
   - 열린 계약: `realized = 현금 줄 + 남은 흐름 × 평가일 참고 환율`. 남은 흐름은 받을 채권 잔액, 운송 중·출항 전 판매, 아직 내지 않은 운임, **도착 전 계약의** 관세 예상(설계 3.3 표 `contractRiskReport` 행), 미지급 잔액이다. 도착 뒤 미지급 관세는 미지급 잔액으로만 센다. `open: true`와 `openFixedRateKrw`(남은 흐름만 `baseKrwPerUsd`로 평가한 계약 전체 마진)를 함께 낸다. 열린 = 남은 흐름이 하나라도 있는 계약(상태와 무관)이다.
   - 0단계 기대(직접 무역)는 수락일 미리보기의 `referenceEstimate.pnlKrw`와 같다. 1단계는 날짜만 옮기고 관세 금액은 0단계 그대로다.
   - 이번에 채우는 단계: 0(기대)·1 `schedule`·2 `fx`·5 `late`·7 `cancel`·10 `residual`. 9 `open_valuation`은 **구성상 0**이고 `open` 표지만 남긴다(설계 3.4). 3 `tariff`·4 `surcharge`·6 `claim`·8 `collection`은 0이다.
-  - 항등식: `realized − expected = 모든 칸의 합`, `residual = 0`. 원 단위 정수. 환산은 `usdToKrwMinor` 하나로 한다. `residual`이나 `open_valuation`을 ‘realized − 앞 단계 합’으로 메우지 않는다.
+  - **1단계 `schedule`은 구성상 0이다**(허브 사전 확인). 날짜만 옮기고 평가 환율·금액은 0단계 그대로이므로, 이 단계는 2단계가 쓸 줄의 날짜를 정하는 일만 한다. 0이 아닌 값을 만들려고 옮긴 날의 환율을 1단계에 쓰지 않는다(2단계와 이중으로 센다).
+  - **취소·편 놓침(7단계 `cancel`, 설계 3.4 표).** 출항 전 취소(`CANCELLED`): 1·2·5단계는 실제로 일어난 줄(매입 지급, 첫 운임 선지급)만 옮기고 바꾼다. 일어나지 않은 줄(판매, 관세, 내지 않은 운임)은 0단계 원화값 그대로 두었다가 7단계에서 그 값을 뺀다. 7단계에 새로 넣는 줄은 **원장 `CASH` 줄뿐**이고, 각 분개 날의 참고 환율로 바꿔 더한다: `FREIGHT-RELEASE-` 분개의 `CASH` 줄(환급 = 선급 운임 − 취소비, 양수), `CANCEL-COMP-` 분개의 `CASH` 줄(고객 취소 보상, 음수. 미지급이면 그 의무를 갚은 `SETTLE-` 분개의 날. 지금 자료는 보상이 0이라 없다). **`FREIGHT-RELEASE-`의 `CANCELLATION_EXPENSE` 줄(취소비)은 현금 줄이 아니므로 넣지 않는다.** 취소비는 2단계의 선급 운임(−)과 7단계의 환급(+)의 차이로 이미 들어 있다. 편 놓침: 첫 예약의 `FREIGHT-PREPAY-`를 기대 운임 줄로 보고(1·2단계), 7단계에 모든 `FREIGHT-RELEASE-`의 `CASH` 줄(환급)과 첫 예약 뒤의 모든 `FREIGHT-PREPAY-`의 `CASH` 줄(재예약 선지급)을 각 분개 날의 환율로 더한다. `realized`의 ‘취소 환급’도 이 `CASH` 줄로만 읽는다.
+  - **환산 꼴은 `realized`와 열린 계약의 남은 흐름에도 같다**: 같은 날 환율의 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번 `usdToKrwMinor`로 바꾸고, 판매·수금 줄은 따로 바꾼다(설계 3.4 ‘환산 꼴’). 그래야 항등식이 1원도 어긋나지 않는다.
+  - **반환 꼴**: `{ contractId, kind, evaluationDay, expected, realized, open, openFixedRateKrw, components: { schedule, fx, tariff, surcharge, late, claim, cancel, collection, open_valuation, residual } }`. 금액은 모두 원 단위 정수다. 판정표가 이 칸 이름을 그대로 쓴다.
+  - 항등식: `residual = realized − expected − (schedule + fx + tariff + surcharge + late + claim + cancel + collection + open_valuation)`으로 계산해 그대로 낸다(설계 3.4 표 10단계 ‘남은 차이’). 시험이 `residual === 0`을 단언한다. `realized`는 단계 값에서 거꾸로 구하지 않는다. 위 ‘열린 계약’ 항목의 정의(현금 줄 + 남은 흐름)와 ‘환산 꼴’ 항목대로 원장에서 따로 계산한다. 원 단위 정수. 환산은 `usdToKrwMinor` 하나로 한다. 1~9단계 칸(특히 `open_valuation`)을 ‘realized − 앞 단계 합’으로 메우지 않는다(개정 3e: 개정 3의 ‘`residual`도 메우지 않는다’는 설계 10단계 정의와 어긋나 고쳤다).
 - 실행기 정책은 이번에 고치지 않는다(경로 5 변형 지시서).
 
 ### 5. 측정용 설정 변환
 
 - `withRiskLevel(config, level, profile)`을 **새 `src/engine/risk.ts`에** 둔다(위치 고정). 이번에는 `R0`(그대로)과 `R1`(rules-3 + 원화 매입 + `FX`)만 만든다.
-  - 시세 행의 매입 기준가: USD 기준가 × `start_krw_per_usd`를 원 단위 half-up으로 바꾼다.
-  - **정적 매입 견적**(`config.offers`의 `supplier` 견적)도 같은 식으로 KRW로 바꾼다.
+  - 시세 행의 매입 기준가(원) = `usdToKrwMinor(USD 기준가(센트), profile.fx.start_krw_per_usd)`. ‘× start’만 하고 ÷100을 빠뜨리지 않는다(값이 100배가 된다).
+  - **정적 매입 견적**(`config.offers`의 `supplier` 견적)의 `unitPriceMinor`도 같은 식으로 바꾸고 `currency: 'KRW'`로 둔다.
+  - 원화 값은 이 함수 한 곳에서만 만든다(3절 ‘매입 통화 유도’).
+  - 설정 칸: `OperationsConfig.risk?: { profile: RiskProfile; layers: RiskLayer[] }`(선택 칸, `RiskLayer = 'FX' | 'TARIFF' | 'SURCHARGE' | 'CLAIM' | 'COLLECTION'`). `withRiskLevel`만 채운다. 선택 칸이므로 `scenario.ts` 로더는 고치지 않는다. R1의 `layers`는 `['FX']`다.
 - 실험 시나리오 ID를 자료에 더하지 않는다.
 
 ### 6. 저장·불변식
@@ -105,38 +124,42 @@
 - 시험은 옛 운영 시나리오에 `withRiskLevel(…, 'R1', riskProfiles()[0])`을 걸어 만든다. **시험에 자료 ID·조정 상수를 쓰지 않는다**(TASK-0027 R1). 값이 필요하면 프로필에서 읽는다.
 - 특정 사건(환율이 바뀐 날, 늦은 편 계약 등)이 필요하면 시드를 찾는다. 탐색은 시드 200개 안으로 제한하고, **찾았는지를 먼저 단언**한다.
 - 직접 무역을 받으려면 원화가 있어야 한다. 시험 구동기가 명령(환전 → 수락)을 직접 넣는다. 실행기 정책은 쓰지 않는다.
-- 옛 값 불변은 시험 안에서 `<BASE>`와 견줄 수 없다. TASK-0062a 골든(rules-2 105회와 규칙 1 400회, 탐침·저장 왕복 포함)과 기존 P0-M2A5 골든값 시험이 맡는다.
+- 옛 값 불변은 시험 안에서 BASE와 견줄 수 없다. TASK-0062a 골든(rules-2 105회와 규칙 1 400회, 탐침·저장 왕복 포함)과 기존 P0-M2A5 골든값 시험이 맡는다.
+- **rules-3과 `withRiskLevel`(R0 포함) 시험은 엔진 공개 함수만 쓴다**(`createGame`·`openDay`·`planState`·`commitDay` 등과 읽기 함수). `src/engine/sim/**`의 `simulate`·`runSuite`·d03은 부르지 않는다. 판정표 고정 기록 잠금: 고정 기록이 비어 있으면 새 rule_set이나 rules-3을 쓰는 d03·`runSuite`·`run.mjs` 실행(R0 포함)을 하지 않는다. 시험 ‘R0’도 시험 구동기로 끝난 직접 무역 계약을 만든다.
+- **`vi.mock('./risk')`는 파일 전체에 끌어올려진다.** 그래서 통과형으로 쓴다: `vi.mock('./risk', async (importOriginal) => { const m = await importOriginal<typeof import('./risk')>(); return { ...m, referenceRate: vi.fn(m.referenceRate), dutyFor: vi.fn(m.dutyFor) }; })`. 기본은 원래 함수에 위임한다. 미래 누설 시험 안에서만 `mockImplementation`으로 바꾸고 시험 끝(`afterEach`)에 원래 위임으로 되돌린다. 양성 대조에 쓸 상태 t′는 바꾸기 전에 만든다.
+- 의무·분개를 상태에 직접 넣는 시험은 그날 마감 뒤, 다음 날을 열기 전에 넣는다(`commitDay` 뒤, `openDay` 전. 아래에 날을 따로 적은 시험은 그 날을 따른다). 넣은 의무는 짝 `ACCOUNTS_PAYABLE` 분개와 함께 넣는다.
 
 | 시험 | 확인할 것 |
 |---|---|
-| 새 흐름 없음 | rules-2 운영 시나리오를 시드 하나로 90일 돌린 `state.rng.cursors`에 새 흐름 이름이 없다 |
+| 새 흐름 없음 | ① rules-2 운영 시나리오를 시드 하나로 90일 돌린 `state.rng.cursors`에 새 흐름 이름이 없다. ② **R1**: 시험 구동기로 서로 다른 환율 주 둘 이상에서 환전하고, 직접 무역을 수락해 도착·인도까지 진행한 뒤 `state.rng`가 같은 시드의 `createRng(seed)`와 같다(`cursors`가 `{}`). `FX-`로 시작하는 커서 키가 없다(변형 3을 잡는다) |
 | 흐름 유일성 | 위험 순수 함수가 쓰는 (흐름 이름, 번호) 쌍이 서로 겹치지 않는다 |
 | 환산 도우미 | 산술 상수 단언(자료 값이 아님, H14-2): `krwToUsdMinor(2600000, 1300) = 200000`, `divHalfAway(1, 2) = 1`, `divHalfAway(−1, 2) = −1`, `usdToKrwMinor(−50, 1300) = −650` |
-| 환율 순수성 | 같은 (seed, day)는 같은 값. 공개일 사이 같은 값. 값이 늘 [min, max] 안. 이웃 주의 변화율이 `step_bp` 안. 시드 두 개가 어느 주에서 다르다(찾아서 확인) |
-| 환율 상태 무관 | `referenceRate`를 여러 번 불러도 `state`가 같다. 저장·불러오기 뒤 같은 날 값이 같다 |
+| 환율 순수성 | 같은 (seed, day)는 같은 값. 공개일 사이 같은 값. 값이 늘 [min, max] 안. 이웃 주의 변화가 반올림 여유 안: `|v_k − v_{k−1}| × 10000 ≤ v_{k−1} × step_bp + 5000`(설계 식의 half-up 때문에 0.5원 여유가 있다. 경계 자르기는 변화를 줄이기만 한다). 식(half-up)을 바꿔 시험을 맞추지 않는다. 시드 두 개가 어느 주에서 다르다(찾아서 확인) |
+| 환율 상태 무관 | R1 도중 상태에서 `exchangePreview`·`quotePreview`·`cashReservations`·`paymentDefaultStatus`·`preview`와 환전 `planState`를 부르기 전후 원래 상태 JSON이 같다. 같은 날 환전 두 번의 `exchanges[].rateKrwPerUsd`가 서로 같고, 시험이 r = `referenceRate(config, s.rng.seed, s.day)`와 차감 `applyBasisPoints(r, config.operations.fx.spreadBasisPoints)`로 계산한 거래 환율(USD→KRW는 r − 차감, KRW→USD는 r + 차감)과 같다. 설정의 고정 `buyKrwPerUsd`·`sellKrwPerUsd`는 쓰지 않는다. 저장·불러오기 뒤 같은 날 값이 같다 |
 | 환전 | rules-3 환전의 원화 금액 = USD × (그날 참고 환율 ∓ 차감). 참고 환율이 1주차와 다른 주에 환전한 뒤 그날 마감 통과, 저장·불러오기 왕복(설정을 직접 넘김) 통과 |
-| 묶음 계산 | 참고 환율이 시작값보다 낮은 날을 찾아, 그날 `lotsToSurvive` × 그날 묶음 원화 ≥ 생존에 필요한 원화 − 원화 현금. rules-3에서 상태 없이 `usdLotKrw(config)`를 부르면 예외 |
+| 묶음 계산 | **같음 단언(허브 사전 확인).** 참고 환율이 시작값과 다르고 `failureAgeDays`보다 뒤인 날 d를 찾는다(찾았는지 단언). 시험 안에서 r = `referenceRate(config, s.rng.seed, s.day)`, 그날 묶음 L = `lotUsdMinor × (r − applyBasisPoints(r, spreadBasisPoints)) / 100`, 고정 묶음 F = `lotUsdMinor × buyKrwPerUsd / 100`을 계산하고 `L ≠ F`를 단언한다. d일 상태에 원화 의무(`incurredDay = d − failureAgeDays`, 짝 분개)를 넣어 x = 생존에 필요한 원화 − 원화 현금 = min(L, F) + 1로 만들고(의무 금액은 그 상태에서 계산), 전제 `ceil(x / L) ≠ ceil(x / F)`를 단언한다. 그다음 `usdLotKrw(config, s) === L`, `lotsToSurvive === ceil(x / L)`, `lotsToClearAll === ceil(max(0, y) / L)`(y = 원화 미지급 합 + `dailyKrwDue(s, config, s.day)` − 원화 현금. y에는 L·F 구별 전제를 두지 않는다). USD가 원인인 상태는 d일 상태의 다른 사본에 USD 의무(짝 분개, 금액 > USD 현금, `incurredDay` ≤ 다른 미지급 의무의 `incurredDay`. 같으면 USD가 먼저다)를 넣어 만든다. `usdShort`(의무 − USD 현금) > 0을 먼저 단언하고, `krwToUsdRequiredMinor === ceil(usdShort / lotUsdMinor) × lotUsdMinor × (r + applyBasisPoints(r, spreadBasisPoints)) / 100`. `weeklyBottleneck(s, config, 후보 ID)`(후보 ID는 설정의 `recruitment.candidateEmployeeIds`에서 읽는다. 후보 없이 부르면 이 칸이 `null`이다)의 `wageUsdLotsPerWeek === ceil(주급 원화 / L)`. rules-3에서 상태 없이 `usdLotKrw(config)`를 부르면 예외 |
 | 원화 매입 계약 | R1에서 직접 무역을 받으면 매입 분개는 KRW, 운임 분개는 USD, 인도 때 COGS가 통화별 두 분개. 통화별 원장 합이 0. 미리보기 `schedule`의 모든 줄에 `currency`가 있고 매입 줄은 `'KRW'`의 원 단위 |
 | 정적 매입 견적 | R1 설정 안의 모든 `supplier` 견적이 KRW다 |
-| 시세표·행 | R1 상태의 `marketTable`에서 매입 행 통화가 KRW, 판매 행이 USD. R1 상태 `batches[].rows`의 키 집합이 rules-2와 같다 |
+| 시세표·행 | R1 상태의 `marketTable`에서 매입 행 통화가 KRW, 판매 행이 USD. R1 상태 `batches[].rows`의 키 집합이 rules-2와 같다. **크기**: R1 설정의 시세 행 매입 기준가 = `usdToKrwMinor(R0 값, start_krw_per_usd)`(정확히 같음). 같은 시드 R0·R1의 생성 매입 견적마다 R1 단가 × 100이 R0 단가 × `start_krw_per_usd`의 ±1% 안이다(한 번 더 바꾸거나 바꾸지 않으면 깨진다) |
 | 미리보기 기본값 | rules-3에서 `opts = { goodId }`만 넘긴 `preview`의 매입 통화가 KRW로 처리되고, 기존 칸이 통화별 값이다. rules-3 직접 무역 `preview`를 `goodId` 없이 부르면 예외 |
 | 참고 추정 | rules-3 미리보기의 `referenceEstimate`가 4절의 식과 같다(`usdToKrwMinor`로 시험 안에서 다시 계산). 늦은 편 후보에서 `saleKrw`가 늦은 감액 뒤 sale의 환산이다 |
 | 자금 검사 | KRW가 모자라면 KRW 문장으로, USD가 모자라면 USD 문장으로 거절. `cashNeedByCurrency`가 두 기준과 같다 |
 | 취소 | 혼합 통화 계약 출항 전 취소의 통화별 금액 |
 | 취소(rules-2) | rules-2 운영 시나리오에서 출항 전 취소의 `FREIGHT-RELEASE` 분개가 선급 운임 − 취소비이고, 취소비가 설정 값과 같다(설정에서 계산, 설계 2절 2) |
 | 계약 보고서 통화 | R1 혼합 계약 인도 뒤 `contractReport(s, c, 'KRW').directCost` = KRW 매입액, `contractReport(s, c).contribution` = USD 몫, `campaignSummary`의 KRW `contractContribution` = −Σ KRW 매출원가. rules-2 상태에서는 지금 값과 같다(검토 n25) |
-| 관세 과세가격 | 여섯 호출처가 모두 `dutyFor`를 부른다. ① 수락일과 도착일의 환율 주가 다른 계약을 찾아(찾았는지와 두 환율이 다름을 먼저 단언), 도착 분개(`DUTY-…`)의 관세 = `krwToUsdMinor(원화 매입액, 수락일 참고 환율)` × 세율. ② 늦은 편 계약(수락일과 도착일의 환율 주가 다른 계약)을 찾아, **수락일 미리보기 관세 = 수락 뒤 매일의 자금 예약 관세 = 도착 관세**. ③ 늦은 편 미리보기(도착 예정이 다음 환율 주)의 관세 = `krwToUsdMinor(원화 매입, 오늘 참고 환율)` × 세율 |
+| 관세 과세가격 | ① 수락일과 도착일의 환율 주가 다른 계약을 만든다(예: 공개일 수락, 다음 주 편 예약. 만들었는지와 두 환율이 다름을 먼저 단언). 도착 분개(`DUTY-…`)의 관세 = `dutyEstimate(config, krwToUsdMinor(원화 매입액, 수락일 참고 환율))`. ② ①과 같은 계약에서 `referenceRate(수락일) ≠ referenceRate(도착일)`을 먼저 단언하고, **수락일 미리보기 관세 = 수락 뒤 매일의 자금 예약 관세 = 도착 관세**. ③ 늦은 편 미리보기(도착 예정이 다음 환율 주)에서 `referenceRate(오늘) ≠ referenceRate(도착 예정일)`과, 두 환율로 계산한 관세가 서로 다름을 먼저 단언한다(찾았는지 단언). 그다음 관세 = `dutyEstimate(config, krwToUsdMinor(원화 매입, 오늘 참고 환율))` |
+| 관세 호출 인수 | 통과형 `dutyFor` 첩자로 여섯 경로를 하나씩 일으킨다. `vite.config.ts`에 `clearMocks`가 없으므로(손대지 않을 파일) 경로마다 일으키기 직전에 `vi.mocked(dutyFor).mockClear()`를 부른다. 기록된 호출의 인수(`purchaseCurrency`·`valueFxDay`·`tariffDay`·`knownThroughDay`)를 설계 3.3 호출처 표와 견준다. ① 미리보기: `preview(…, { goodId })`를 바로 불러, 기록된 호출이 모두 미리보기 행 값이다. ② 수락 자금 검사: 다른 계약이 없는 상태에서 `plan` 없는 `ACCEPT_TRADE`를 `planState`로 일으켜, 기록된 호출이 모두 그 행 값이다(`plan`을 넣으면 `bookSailing`의 자금 검사가 새 계약의 예약 관세를 같은 값으로 불러 이 행을 가린다). ③ **자금 예약은 `cashReservations(s, config)`를 직접 불러 정확히 단언한다.** 진행 중인 직접 무역 계약이 하나뿐이고 `s.day !== c.acceptedDay`임을 먼저 단언하고, 호출이 정확히 한 번이다. 세 경우를 각각 본다: 예약 없음, `BOOKED`, 운송 중. `BOOKED`는 a일에 수락하고 같은 날 `listSailings(config, 노선 ID, a + 2)[1]`(다음 첫 편이 아닌 편)에 예약한 뒤 d = a + 1일 상태에서 보며, 예약 편 도착 예정일 ≠ `listSailings(config, 노선 ID, d + 1)[0]`의 도착 예정일을 먼저 단언한다. 단언: `valueFxDay === c.acceptedDay`, `knownThroughDay === s.day`, `purchaseCurrency === 'KRW'`, `tariffDay`는 그 경우의 규칙 값(운송 중 `max(예정 도착일, s.day)`, `BOOKED` 그 편의 도착 예정일, 예약 없음 다음 첫 편의 도착 예정일). 수락일·도착일 마감으로 자금 예약을 확인하지 않는다(수락일에는 오늘 = 수락일이고, 도착일에는 도착 처리 호출이 같은 값을 내 이 행을 가린다). ④ 도착 처리: 다른 계약과 명령이 없는 도착일 `commitDay`에서 기록된 호출이 모두 도착 행 값이다. ⑤ 실패 기록: 수락일 ≠ 실패일을 먼저 단언한다. 실패일 `commitDay`의 기록 가운데 `knownThroughDay`가 그 계약의 수락일인 호출이 있고, 그 호출이 실패 기록 행 값이다. ⑥ `contractRiskReport`: 0단계에서 미리보기를 다시 계산하므로 한 경로가 아니다. 도착한 계약은 기록된 호출이 모두 0단계 값(미리보기 행, 날은 수락일)이다. 도착 전 계약은 0단계 값과 도착 전 값(`tariffDay` = 자금 예약 규칙의 날이되 ‘오늘’ 자리에 평가일, `knownThroughDay` = 평가일, `valueFxDay` = 수락일)이 각각 한 번 이상 있고 다른 값은 없다. 0단계를 도착 전 인수로 계산해 호출을 하나로 합치지 않는다. 원천 검사: `src/engine/*.ts`(시험 제외)의 `dutyEstimate(` 호출은 모두 `risk.ts`의 `dutyFor` 몸통 안에 있다(위치를 본다. 정의는 세지 않는다) |
 | 실패 기록 | 혼합 계약을 수락한 날 원화 급여 미지급이 생겨 실패하는 시드를 찾아, 실패 기록의 계약 USD 약정액이 USD 몫과 같다. `oldest.incurredDay − failureAgeDays`부터 실패일까지 받은 원화 매입이 원화 선택 지출에 들어간다 |
-| USD 원인 실패(rules-2) | rules-2 운영 시나리오에 USD 의무를 주입해 USD가 원인인 지급 불이행 실패까지 실행한다(설정에서 계산한 날에). 실패 기록의 `obligationId`·`currency`(USD)·`amountMinor`가 주입한 의무와 같고, `usdCommitmentsSinceIncurred`의 계약 행 금액이 그 계약의 예약 운임 + `dutyFor` 관세(rules-2는 지금 `dutyEstimate`와 같은 값)이며, `optionalKrwSpendBeforeFirstUnpaid`에 `PURCHASE-` 행이 없다(설계 2절 2, 개정 3b) |
-| 실패 종료 평가일 | 위 실패 시드의 끝 상태에서 `contractRiskReport`의 출력 `evaluationDay === failure.day`이고 `evaluationDay !== s.day`다(H15 O1). 열린 계약의 `realized`는 남은 흐름을 `referenceRate(failure.day)`로 바꾼 값이다 |
-| 손익 읽기 | 끝난 계약마다 `residual = 0`(직접 무역·주선 모두). 환율이 수락일과 청구 결제일 사이에 바뀐 계약을 찾아 `components.fx ≠ 0`이고 부호가 환율 방향과 맞다(원화 강세면 음수). 늦은 편 계약의 `schedule`·`late`, 출항 전 취소 계약의 `cancel` |
-| 열린 계약 | **구성법(H15 O7).** 시드를 찾는 대신 시험 구동기로 만든다: 마지막 환율 주 전(71~73일)에 수락하고, 도착이 `campaignDays` 뒤인 편으로 예약하거나 도착 관세를 미지급으로 남긴다. 도중 상태(평가일 = `s.day`)로 시험해도 된다. **전제를 먼저 단언한다**: 남은 흐름 ≠ 0, `referenceRate(평가일)` ≠ `baseKrwPerUsd`, `referenceRate(평가일)` ≠ `referenceRate(acceptedDay)`(검토 n3·n42. 이 전제를 만족하는 시드는 시드 200개 안에서 찾고 찾았는지 단언). 그다음 `realized = 현금 줄 + usdToKrwMinor(남은 흐름, referenceRate(평가일))`(같은 환율의 USD 비용 줄은 합친 뒤 한 번, 설계 3.4 환산 꼴), `residual = 0`, `open_valuation = 0`, `open = true`, `openFixedRateKrw` = 같은 식에서 남은 흐름만 × `baseKrwPerUsd`. 도착 전 운송 중 계약의 남은 흐름에 관세 예상이 있고, 도착 뒤 관세 미지급 계약에서는 관세가 미지급 잔액으로만 한 번 들어간다 |
+| USD 원인 실패(rules-2) | rules-2 운영 시나리오에서 시험 구동기가 d일(설정에서 계산)에 **직접 무역 계약 하나와 주선 계약 하나**를 수락한다. d일 마감 뒤·d+1일을 열기 전에 `incurredDay = d`인 USD 의무와 짝 `ACCOUNTS_PAYABLE` 분개를 넣는다. 의무 금액은 실패일까지의 USD 현금 최대치(시작 USD + 그 사이 받을 수 있는 판매액)보다 크게 설정에서 계산한다(의무를 먼저 넣으면 USD 가용이 음수라 계약을 받을 수 없으므로 이 순서를 지킨다). USD가 원인인 지급 불이행 실패까지 실행한다. 실패 기록의 `obligationId`·`currency`(USD)·`amountMinor`가 주입한 의무와 같다. `usdCommitmentsSinceIncurred`에 직접 무역 계약 행이 있음을 먼저 단언하고, **그 행 금액 = `purchaseAmountMinor + routeBetween(…).bookingFeeMinor + dutyFor 관세`**(rules-2는 지금 `operations.ts:273`의 값, 곧 `dutyEstimate`와 같다), 주선 계약 행 = 노선 운임이다. 매입액을 빼는 것은 혼합 통화 계약(시험 ‘실패 기록’)뿐이다. `optionalKrwSpendBeforeFirstUnpaid`에 `PURCHASE-` 행이 없다(설계 2절 2, 개정 3b) |
+| 실패 종료 평가일 | 위 ‘실패 기록’ 실패 상태(R1)의 끝 상태에서 `contractRiskReport`의 출력 `evaluationDay === failure.day`이고 `evaluationDay !== s.day`다(H15 O1). 열린 계약이 생기도록 ‘실패 기록’ 구동기는 혼합 계약을 예약하지 않거나(출항 전 계약으로 남는다), 예정 반출일(도착 예정 + 노선의 `customsDays`)이 실패일보다 뒤인 편에 예약한다. 예약은 USD만 쓰므로 원화 미지급 날과 ‘실패 기록’의 단언은 그대로다(미지급이 생긴 뒤 원화 매입 계약을 새로 받으려 하지 않는다. 원화 가용이 음수라 받을 수 없다). **열린 계약이 있음을 먼저 단언한다.** 그 열린 계약의 `realized`는 남은 흐름을 `referenceRate(failure.day)`로 바꾼 값이다(환산 꼴은 4절) |
+| 손익 읽기 | 끝난 계약마다 시험 안에서 `realized`를 다시 계산한다: 원장에서 그 계약의 현금 줄(그 계약 ID가 붙은 분개의 `CASH` 줄과, 그 계약 관세 미지급 의무를 갚은 `SETTLE-` 분개)을 읽어 원화 줄은 그대로, USD 줄은 그 분개 날의 `referenceRate`와 4절 ‘환산 꼴’로 바꾼다. 이 값이 보고서의 `realized`와 같고 `residual === 0`이다(직접 무역·주선 모두). 환율이 수락일과 청구 결제일 사이에 바뀐 계약을 찾아 `components.fx ≠ 0`이고 부호가 환율 방향과 맞다(원화 강세면 음수). 늦은 편 계약에서 `schedule === 0`(구성상)이고 `late = usdToKrwMinor(실제 감액 뒤 판매, r₂) − usdToKrwMinor(기대 감액 뒤 판매, r₂)`다(r₂ = 수금 줄의 2단계 환율, 곧 청구 결제일(평가일 상한)의 참고 환율. 판매 줄을 따로 바꾼 뒤 뺀다). 취소는 운임을 예약한 뒤 출항 전 취소한 계약을 쓰고, `FREIGHT-RELEASE-` 분개에 `CANCELLATION_EXPENSE` 줄이 있음을 먼저 단언한다. 그 계약에서 `cancel = usdToKrwMinor(환급, 취소일 참고 환율) − (일어나지 않은 줄의 0단계 원화값, 부호 포함)`(시험 안에서 줄마다 다시 계산하고 취소비를 따로 빼지 않는다), `realized`는 원장 `CASH` 줄만의 환산 합, `residual === 0` |
+| 열린 계약 | **구성법(H15 O7, 허브 사전 확인).** 시드를 찾는 대신 시험 구동기로 만든다. (가) 운송 중 계약: 이른 날(예: 1일 정적 견적)에 수락하고 다음 주 편으로 예약한 뒤, 도착 전이고 평가일의 환율 주가 수락일과 다른 **도중 상태**(평가일 = `s.day`)로 시험한다. 끝 상태로 하려면 도착이 `campaignDays` 뒤인 편(설정에서 찾는다)에 예약한다. 수락일을 자료 상수(71~73일 등)로 적지 않고 `publish`·노선 설정에서 계산한다. (나) 도착 뒤 관세 미지급 계약: 수락일 다음 첫 편(정시)에 예약한다. 도착 전날 `openDay` 뒤·`commitDay` 전에 금액 X의 USD 의무(`incurredDay` = 그날)와 짝 `ACCOUNTS_PAYABLE` 분개를 넣는다. C = 그날 USD 현금 + 그날 결제일인 USD 청구서 합(마감에서 수금이 정산보다 먼저 들어온다)일 때 C − 도착 관세 + 1 ≤ X ≤ C로 정한다(가장 쉬운 값은 X = C). 그날 마감의 정산이 의무를 갚고 남은 USD 현금이 도착 관세보다 작아, 다음 날 도착 관세가 미지급이 된다(도착일 마감은 도착 처리가 수금·정산보다 먼저 돈다). 도착일 마감 뒤 `shipment.dutyPaid === false`임을 먼저 단언한다. 평가일은 도착 뒤의 날 가운데 수락일과 환율 주가 다르고 `contract.deliveryDeadlineDay` 이하인 날로 설정에서 찾는다(찾았는지 단언). 그러면 남은 판매의 늦은 감액이 0이라 감액 기준일 해석이 갈리지 않는다. 실패 전 도중 상태로 평가한다. **전제를 먼저 단언한다**: 남은 흐름 ≠ 0, `referenceRate(평가일)` ≠ `baseKrwPerUsd`, `referenceRate(평가일)` ≠ `referenceRate(acceptedDay)`(검토 n3·n42. 이 전제를 만족하는 시드는 시드 200개 안에서 찾고 찾았는지 단언). 그다음 `realized = Σ 현금 줄(환산 꼴대로) + usdToKrwMinor(남은 판매·채권, r_eval) − usdToKrwMinor(남은 운임 + 관세 예상 + 미지급, r_eval)`(r_eval = `referenceRate(평가일)`, 설계 3.4 환산 꼴), `residual = 0`, `open_valuation = 0`, `open = true`, `openFixedRateKrw` = 같은 식에서 남은 흐름만 × `baseKrwPerUsd`. 도착 전 운송 중 계약의 남은 흐름에 관세 예상이 있고, 도착 뒤 관세 미지급 계약에서는 관세가 미지급 잔액으로만 한 번 들어간다 |
 | 미래 누설 없음 | 세 단계로 한다(H14-5, 검토 S3). ① 전제: 상태 t에 청구 결제일(또는 예정 도착일)의 환율 주가 평가일의 주보다 뒤인 열린 계약 줄이 있고, 그 주의 감싼 환율이 원래 값과 다름을 단언한다. ② 같은 상태 t에서 평가일 뒤 주차의 환율만 다른 두 경우의 `contractRiskReport`가 같다. ③ 양성 대조: 그 날짜가 지난 상태 t′에서는 같은 감싸기로 같은 계약의 보고서가 달라진다. 감싸기는 `vi.mock('./risk')`로 모듈 경계에서 한다 |
 | R0 | rules-2 운영 시나리오(R0)에서 미지급이 없는 끝난(`COMPLETED`) 직접 무역 계약마다 `realized(원) = contractReport(s, c).contribution(센트) × (baseKrwPerUsd ÷ 100)`(13을 상수로 쓰지 않는다), `components.fx = 0`, `residual = 0` |
 | 시드 일치 | rules-3 미리보기의 `config.seed`와 상태의 `s.rng.seed`가 같다 |
 | 결정성 | 같은 시드·같은 명령 두 번이면 같은 상태 JSON |
 | 저장 | R1 진행 상태 저장·불러오기 왕복이 같다(설정을 직접 넘김). 옛 저장 시험은 그대로 통과 |
-| 불변식 | 혼합 통화 짝을 바꾼 저장 사본, 환전 원화액을 바꾼 저장 사본을 거부 |
+| 불변식 | 두 사본을 거부하고, **거부 오류에 새 검사의 문장이 들어 있음**을 단언한다(다른 검사가 먼저 거부해도 통과하는 빈 시험을 막는다). (a) R1 환전의 KRW 분개에서 `CURRENCY_TRANSFER`와 `FX_SPREAD_EXPENSE` 줄을 같은 양만큼 반대로 바꿔 분개 균형을 지킨 사본: ‘환전 분개 짝 또는 통화 간 이체가 다릅니다’. (b) 혼합 통화 계약의 `currency`를 `'KRW'`로 바꾼 사본(또는 그 판매 견적의 `currency`를 `'KRW'`로): 혼합 통화 짝 오류 문장 |
 
 - ‘미래 누설 없음’ 시험의 두 경우는 `vi.mock('./risk')`로 `referenceRate`를 감싸 평가일 뒤 주차의 값만 바꾸는 방식으로 만든다(자료 상수를 시험에 쓰지 않는다). `contractRiskReport`가 `reports.ts`에 있고 환율을 `risk.ts`에서 import하기 때문에 이 감싸기가 닿는다.
 
@@ -148,8 +171,8 @@
 |---|---|---|
 | 1 | rules-3 환전이 참고 환율 대신 고정 기준 환율(`fx.baseKrwPerUsd`)을 씀 | 환전 |
 | 2 | rules-2 환전 로그 문장에도 ‘오늘 참고 환율’ 문구를 씀 | 기존 `m2a5-money.test.ts`의 문장 단언 |
-| 3 | `referenceRate`가 `state.rng` 커서를 씀 | 환율 상태 무관, 새 흐름 없음 |
-| 4 | 손익 읽기가 수금 줄도 수락일 환율로 바꿈 | 손익 읽기(fx ≠ 0) |
+| 3 | rules-3 환전(`EXCHANGE_CURRENCY`)·관세 호출처가 `drawUniform(s.rng, 'FX-REF')`로 뽑아 `s.rng`를 되씀(값은 그대로, 커서만 진행. `referenceRate`는 상태를 받지 않으므로 이 꼴로 만든다) | 새 흐름 없음 ② |
+| 4 | 손익 읽기가 수금 줄도 수락일 환율로 바꿈 | 손익 읽기(`realized` 재계산·`residual = 0`, fx ≠ 0) |
 | 5 | 매출원가를 한 통화 분개 하나로 냄 | 원화 매입 계약 |
 | 6 | 자금 검사를 한 통화로 합침 | 자금 검사 |
 | 7 | 공개일이 아닌 날에도 환율이 바뀜 | 환율 순수성 |
@@ -157,7 +180,7 @@
 | 9 | 자금 예약이 오늘 또는 도착 예정일 환율을 씀 | 관세 과세가격 ② |
 | 10 | USD 약정에 원화 매입을 더함 | 실패 기록 |
 | 11 | 환전 불변식이 rules-3에서도 `baseKrwPerUsd`를 씀 | 환전(마감·왕복) |
-| 12 | `usdLotKrw`가 rules-3에서도 고정 환율을 씀 | 묶음 계산 |
+| 12 | `usdLotKrw`가 rules-3에서도 고정 환율을 씀(상태 인수와 예외는 그대로) | 묶음 계산(같음 단언) |
 | 13 | 열린 계약의 남은 흐름을 고정 환율로 평가 | 열린 계약(전제: 평가일 환율 ≠ `baseKrwPerUsd`) |
 | 14 | `contractRiskReport`가 평가일 뒤 결제일의 환율을 씀 | 미래 누설 없음 |
 | 15 | `PURCHASE-` 창을 넓히지 않음(발생일 전 14일만) | 실패 기록 |
@@ -165,12 +188,14 @@
 | 17 | `campaignSummary`가 계약 통화로만 거름(지금 `c.currency === currency`) | 계약 보고서 통화(검토 n25) |
 | 18 | 실패 종료에서 `s.day`를 평가일로 씀 | 실패 종료 평가일(`evaluationDay !== s.day`, 검토 n1·H15 O1) |
 | 19 | 과세가격에서 ×100을 뺌(원 ÷ 환율) | 환산 도우미, 관세 과세가격 ① |
+| 20 | 생성기가 매입 단가를 한 번 더 원화로 바꿈(또는 `withRiskLevel`이 ÷100을 빠뜨림) | 시세표·행(크기) |
+| 21 | 자금 예약 호출처(`reservations.ts:33`)의 인수를 틀리게 넘긴다. 21a: `valueFxDay`로 `c.acceptedDay` 대신 오늘(`s.day`)을 넘긴다. 21b: `BOOKED` 예약이 있어도 `tariffDay`로 다음 첫 편(`listSailings(…, s.day + 1)[0]`)의 도착 예정일을 넘긴다. 둘을 따로 돌리고 둘 다 잡혀야 21이 잡힌 것이다(변형 수는 21개 그대로) | 관세 호출 인수 ③(21a는 변형 9와 같아 관세 과세가격 ②도 잡는다. 21b는 0062 `dutyFor` 몸통이 `tariffDay`를 쓰지 않으므로 ③만 잡는다) |
 
 ## 고칠 수 있는 파일
 
 - `src/engine/engine.ts`, `market.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `catalog.ts`, `reservations.ts`, `types.ts`(`SUPPORTED_RULES_VERSIONS`·타입), `invariants.ts`, `operations-invariants.ts`, `save-shape.ts`(열거 값 추가만), 새 `src/engine/risk.ts`
 - `src/content/scenario.ts`(`loadRiskProfile`·`riskProfiles`와 타입만)
-- `data/market_rules.json`(`risk_profiles` 추가만), 해당 스키마, `tools/validate_data.py`(위험 프로필 검사만)와 그 시험
+- `data/market_rules.json`(`risk_profiles` 추가만), 해당 스키마, `tools/validate_data.py`(위험 프로필 검사만)와 `tools/test_validate_data.py`(새 반례와 `test_goods_counts` 3품목 고정 자료만)
 - 새 `src/engine/m2a5-risk-fx.test.ts`
 - `docs/ai/tasks/results/TASK-0062.md`, `MANIFEST.json`
 
@@ -185,19 +210,20 @@
 - **골든 진단 절차(허브 통일 문장, TASK-0062a).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. 이 검사기는 rules-2 105회(실행·상태·탐침 해시)와 규칙 1 400회(실행·상태 해시), 두 묶음의 저장 왕복을 지킨다. 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
 - 작업 뒤 TASK-0062a 골든 검사기가 종료 코드 0이다(`review_checks.sh`가 돌린다). 깨졌으면 파일별 diff를 결과 보고에 적는다.
 - P0-M2A5 골든값 불변. 옛 저장 시험 통과.
-- 첫 화면 gzip 전후를 적는다. **+2,500 B를 넘으면 멈추고 보고한다.**
+- 첫 화면 gzip 전후를 적는다. 측정은 BASE와 작업 뒤 각각 `npm run build` 다음 `node tools/check_bundle_size.mjs dist`의 첫 화면 줄이다. 자료 청크의 증가(`risk_profiles`, 허브 시제품 실측 약 +424 B)는 따로 적는다. **코드 증가분(첫 화면 증가 − 자료 몫)이 +2,500 B를 넘으면 멈추고 보고한다.** 지금 첫 화면은 125,035 B, 여유 14,965 B다(허브 실측 2026-10-16).
 - `any`를 새로 쓰지 않는다. 돈은 정수 최소 단위다.
 
 ## 완료 조건
 
 1. 지시 1~6 반영, 시험 표의 시험 모두 통과.
-2. `npx vitest run`, `npm run typecheck`, `npm run build`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 통과(골든 검사 포함).
-3. 변형 19개가 모두 잡힌다(또는 원래 코드와 같은 이유를 적었다).
+2. `npx vitest run`, `npm run typecheck`, `npm run build`, `python3 tools/validate_data.py`, `bash tools/ai/review_checks.sh --check BASE`(작업 시작 때 적은 해시) 통과(골든 검사 포함).
+3. 변형 21개가 모두 잡힌다(또는 원래 코드와 같은 이유를 적었다).
 4. 바꾼 파일이 ‘고칠 수 있는 파일’ 안이다.
-5. `git diff --stat <BASE> -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`가 빈 값이다(검토 n16).
+5. `git diff --stat BASE -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`가 빈 값이다(검토 n16). 같은 경로에서 `git status --porcelain --untracked-files=all -- …`도 빈 값이다(추적되지 않는 새 파일도 없다).
 
 ## 결과 보고에 넣을 것
 
+- 작업 시작 때의 `git rev-parse HEAD`(BASE)
 - 바꾼 곳(파일·함수)과 이유, rules-2와 rules-3 분기 목록, 새 선택 인수 목록
 - 상태 칸을 더하지 않았다는 확인(또는 멈춘 이유)
 - 시험 구동기로 만든 R1 계약 몇 건(정시·늦은 편·취소·열린 계약 각 1건 이상)의 `contractRiskReport` 표(기대·실현·칸별 값). **값을 고치지 않고 적기만 한다.** 90일 정책 실행은 경로 5 실행기 지시서에서 한다(지금 기준 정책은 원화 매입용 환전을 하지 않는다)
@@ -451,3 +477,59 @@
 
 - 기각은 T5 한 건이다(허브 검증에서 반박됨). 허브 몫은 t15와 SPEC 10.4·423 문장이다.
 - 허브 결정과 다르게 한 것은 없다.
+
+### 허브 사전 확인 처리표(개정 3d)
+
+허브가 Codex 실행 전에 이 지시서를 시제품으로 실측했다(2026-10-16, 사본 세 갈래: 골든 무변화, 시험·변형 수행 가능성, 파일·모호성). 시제품은 지시서 문구대로 공유 코드를 바꾸고 `node tools/check_rules2_golden.mjs`(rules-2 105회, 규칙 1 400회, 저장 왕복)를 돌려 **골든 일치**, `npx vitest run` 1,364개 통과였다(`dutyFor`를 KRW일 때만 환산하는 분기). 구현 지시는 rules-1·rules-2에 무해하다. 아래는 시험·변형·문구를 고친 목록이다.
+
+| # | 심각도(검증) | 찾은 것 | 반영한 곳 |
+|---|---|---|---|
+| P1 | 차단(확인) | 시험 ‘USD 원인 실패(rules-2)’가 직접 무역 행 금액에서 매입액을 뺐다. 맞는 구현에서 실패하고, 맞추면 골든(계약 약정 225행 중 직접 무역 98행)이 깨진다. 주입 순서도 없었다 | 시험 행(직접 무역 = 매입 + 노선 운임 + 관세, 주선 = 노선 운임, 수락 뒤 주입), 3절 실패 기록(‘노선 운임’, 단일 통화는 지금 식) |
+| P2 | 낮춤(부분) | 지위 ‘초안’, `<BASE>` 자리표시자, 자기 해시 문제, 설계 39행의 기준 커밋 | 머리(승인, BASE = 작업 트리 HEAD), 완료 조건 2·5, 설계 머리·2절 2 |
+| P3 | 중대(확인) | 반대 방향 검사가 기존 `test_goods_counts`(3품목, COFFEE)를 깨고, 고정 자료 수정 허용이 없었다 | 1절(3품목 고정 자료만 고침, 단언 유지), 고칠 수 있는 파일 |
+| P4 | 낮춤(부분) | bp 범위 0~10000을 모든 `*_bp`에 걸면 동결 프로필 `tariff.step_bp [-200, 800]`이 실패 | 1절 검사 범위 |
+| P5 | 경미 | 반대 방향 검사의 대상 프로필과 시험 파일 이름 | 1절 |
+| P6 | 낮춤(부분) | 환율 순수성 ‘변화율 ≤ step_bp’가 half-up 때문에 시드에 따라 실패(시드 1~200 중 9개, 최대 253.8bp) | 시험 ‘환율 순수성’(+5000 여유), 설계 3.2 |
+| P7 | 중대(확인) | 시험 ‘묶음 계산’의 부등식이 변형 12를 잡지 못함(71일 무명령 R1은 맞는 구현·변형 모두 1묶음). 환율 날짜·서명 모호 | 2절(새 선택 인수는 `usdLotKrw`의 `s` 하나, 기존 서명 유지, 환율일 `s.day`), 시험 같음 단언, 변형 12 |
+| P8 | 중대(확인) | 변형 3을 짝 시험이 잡지 못함(`referenceRate`는 상태를 받지 않아 두 시험이 늘 참) | 시험 ‘새 흐름 없음’ ②·‘환율 상태 무관’, 변형 3 문구 |
+| P9 | 중대(확인) | 시험 ‘열린 계약’의 ‘도착 뒤 관세 미지급’은 명령만으로 못 만들고, 71~73일 수락은 무명령 R1에서 원화가 57일에 바닥나 불가능 | 시험 ‘열린 계약’ 구성법 (가)·(나), 자료 상수 금지 |
+| P10 | 낮춤(부분) | 첫 화면 +2,500 B 정지선. 자료 JSON만 +424 B, 여유는 15.2 KB가 아니라 14,965 B | 지켜야 할 것(측정 방법, 자료 몫 따로, 코드만 +2,500 B), 설계 9절 |
+| P11 | 낮춤(부분) | 원화 변환 자리가 둘로 읽히고 크기 단언이 없음 | 3·5절(`withRiskLevel` 한 곳, ÷100), 시험 ‘시세표·행’ 크기, 변형 20 |
+| P12 | 낮춤(부분) | 취소 계약의 일어나지 않은 판매·관세 줄을 어느 단계가 맡는지 없음(골든 105회에는 취소 0건이라 측정 영향은 작음) | 4절 취소 규칙, 설계 3.4 표 7단계, 시험 ‘손익 읽기’ |
+| P13 | 경미 | `schedule`은 구성상 0인데 기대값이 없음 | 4절, 시험 ‘손익 읽기’, 설계 3.4 표 1단계 |
+| P14 | 경미 | `dutyFor` 분기를 `=== 'USD'`로 하면 P0-ACC-01(`'XXX'`)이 깨짐. rules-1에서 `referenceRate`를 부르면 400회 골든이 멈춤 | 2절, 3절 분기 |
+| P15 | 경미 | 관세 반올림 규칙(‘× 세율’) | 3절, 시험 ‘관세 과세가격’(`dutyEstimate(과세가격)`) |
+| P16 | 경미 | `dutyFor` 위치, 여섯 호출처 확인 방법, `vi.mock` 끌어올림 | 3절(위치 `risk.ts`, 원천 검사), 시험 머리(통과형 첩자), 시험 ‘관세 호출 인수’, 변형 21 |
+| P17 | 경미 | 시드 출처(상태 자리 `s.rng.seed`) | 2절 |
+| P18 | 경미 | 위험 설정 칸 꼴과 반환 칸 이름 | 4·5절 |
+| P19 | 경미 | `realized`의 환산 꼴, 열린 계약 기대식 | 4절, 시험 ‘열린 계약’ |
+| P20 | 경미 | 불변식 사본이 다른 검사에 먼저 걸리면 빈 시험 | 시험 ‘불변식’(균형 유지 사본, 문장 단언) |
+| P21 | 경미 | 완료 조건 5가 추적되지 않는 새 파일을 못 봄 | 완료 조건 5 |
+| P22 | 경미 | rules-3 시험이 sim 실행을 부르면 판정표 잠금 위반 | 시험 머리 |
+| P23 | 경미 | 실패 종료 상태에 열린 계약이 없을 수 있음 | 시험 ‘실패 종료 평가일’ |
+| P24 | 경미 | 관세 ②의 두 환율이 같을 수 있음 | 시험 ‘관세 과세가격’ ② 전제 |
+| P25 | 허브 추가 | rules-3 환전 차감의 반올림 꼴이 적혀 있지 않음 | 2절(`applyBasisPoints(r, spreadBasisPoints)`, `scenario.ts:503`과 같은 꼴) |
+
+- 기각 2건. ① 0062를 0062-1·0062-2로 나누기: 통과형 `vi.mock`으로 시험 파일 하나 안에서 해결되고, 정지선·취소 규칙은 위에서 고쳤다. 범위는 그대로 둔다. ② 변형 4를 시험이 놓친다: `residual`을 남은 차이(4절 항등식)로 내고, 시험이 끝난 계약의 `realized`를 원장 현금 줄로 다시 계산하므로 같은 시험이 잡는다(검증에서 반박. 이 전제가 문장으로 빠져 있던 것은 개정 3e에서 4절 항등식과 시험 ‘손익 읽기’에 넣었다).
+- 사전 확인 중 하위 에이전트가 저장소 연결 사본에서 `git stash`를 실행한 사고가 있었다. 허브가 해시를 확인하고 지웠으며 작업 트리는 깨끗했다. 이후 사본은 원본과 `.git`을 공유하지 않게 만든다. 원본과 `.git`을 공유하는 작업 트리에서는 읽기 전용 git 명령만 쓴다(WORKFLOW.md).
+
+### 허브 재검토 처리표(개정 3e)
+
+개정 3d의 고침 문구를 읽기 전용 검토 세 갈래(코드 사실, 시험 수행·변형 판별, 내부 일관성·범위)로 다시 보고, 중대 결함마다 반박 검증을 거쳤다(2026-10-16). 차단 결함은 없었다. 코드 사실(줄 번호·칸·계정·불변식 문장·순환 import 없음)과 산술 주장(x = min(L, F) + 1, 반올림 여유 +5000, ±1% 크기 단언)은 맞았고, 동결 범위(판정표, 설계 6절)는 바뀌지 않았다.
+
+| # | 심각도(검증) | 찾은 것 | 반영한 곳 |
+|---|---|---|---|
+| Q1 | 중대(확인) | 시험 ‘관세 호출 인수’가 `contractRiskReport`를 한 경로로 잘못 묶었고(0단계 미리보기 재계산으로 호출이 둘), 자금 예약을 볼 날·편을 정하지 않아 변형 21이 살아남을 수 있었다(수락일, 다음 첫 편 예약, 도착일 마감의 값 겹침, 첩자 기록 누적) | 시험 ‘관세 호출 인수’ ①~⑥(`mockClear`, `cashReservations` 직접 호출, `BOOKED` 구성), 변형 21a·21b |
+| Q2 | 중대(확인) | 취소 7단계 ‘환급·취소비 줄’을 글자대로 읽으면 선급 운임에서 이미 뺀 취소비를 한 번 더 뺀다 | 4절 취소 규칙(`CASH` 줄만), 시험 ‘손익 읽기’ 취소, 설계 3.4 `realized`·7단계 |
+| Q3 | 중대(확인) | 4절 ‘`residual`을 앞 단계 합으로 메우지 않는다’가 설계 10단계 ‘남은 차이’와 어긋나, 글자대로면 `residual`이 상수 0이 되어 변형 4를 못 잡는다 | 4절 항등식, 시험 ‘손익 읽기’(`realized` 원장 재계산), 변형 4 짝, 기각 ② 문장 |
+| Q4 | 경미 | `exchangeAmounts`의 rules-3 인수 누락 예외가 빠짐 | 2절 |
+| Q5 | 경미 | 분기 조건 두 문장(‘매입 ≠ 판매’와 `dutyFor`의 ‘KRW인가’)이 같은 관세 분기에 함께 걸림 | 3절 분기 조건 |
+| Q6 | 경미 | 원천 검사 ‘한 곳’이 개수로 읽힘(분기마다 호출이 둘) | 3절, 시험 ‘관세 호출 인수’ |
+| Q7 | 경미 | ‘설정의 차감’이 고정 차감 13으로 읽힐 수 있음 | 시험 ‘환율 상태 무관’ |
+| Q8 | 경미 | 묶음 계산 후반: `lotsToClearAll`에 전제를 붙이면 맞는 구현이 실패, `usdShort > 0` 전제 없음, 후보 없는 `weeklyBottleneck`은 `null` | 시험 ‘묶음 계산’ |
+| Q9 | 경미 | 관세 ③에 두 환율이 다름 전제가 없음 | 시험 ‘관세 과세가격’ ③ |
+| Q10 | 경미 | 열린 계약 (나)의 의무 금액 하한과 평가일 | 시험 ‘열린 계약’ (나) |
+| Q11 | 경미 | 실패 종료 상태에 열린 계약을 두는 방법이 실행 불가(미지급 뒤에는 원화 매입을 받을 수 없음) | 시험 ‘실패 종료 평가일’ |
+| Q12 | 경미 | sim 잠금 문장이 판정표보다 좁음(R0 포함) | 시험 머리 |
+| Q13 | 경미 | 늦은 감액 `late`의 환산 꼴 문장(지금 자료에서는 두 식이 같아 반박됐으나 표현을 4절과 맞춤) | 시험 ‘손익 읽기’ |
+| Q14 | 경미 | 설계 3.2·3.3의 옛 문장(생성기 원 단위, 예약 운임, 묶음 함수 서명), `IMPLEMENTATION_PLAN`의 ‘기준’, README 상태, 사본 규칙 문장과 WORKFLOW.md 누락 | 설계 3.2·3.3, `docs/IMPLEMENTATION_PLAN.md`, README, DECISIONS, `docs/ai/WORKFLOW.md` |
