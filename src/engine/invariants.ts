@@ -68,6 +68,10 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
     for (const contract of s.contracts) {
       if (contract.kind === 'DIRECT_TRADE' && c === contract.currency
         && offerDef(s, config, contract.buyOfferId!)?.currency !== contract.currency) {
+        const usdInventory = contractAmount(s.ledger, 'USD', contract.id, 'INVENTORY');
+        if (contract.deliveredDay !== null ? usdInventory !== 0 : usdInventory < 0) {
+          problems.push(`혼합 계약 ${contract.id}의 USD 재고 잔액(${usdInventory})이 맞지 않습니다`);
+        }
         lotTotal += contractAmount(s.ledger, c, contract.id, 'INVENTORY');
       }
     }

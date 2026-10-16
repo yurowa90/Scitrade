@@ -4,16 +4,21 @@ import { dutyEstimate, listSailings, routeBetween, routeOf } from './catalog';
 import { commitDay, createGame, openDay, planState } from './engine';
 import { balance, contractAmount, post } from './ledger';
 import { marketTable, offerDef, openTradePairs } from './market';
-import { applyBasisPoints, type Currency } from './money';
+import marketRulesData from '../../data/market_rules.json';
+import { applyBasisPoints, formatMoney, type Currency } from './money';
 import { dailyKrwDue, exchangeAmounts, paymentDefaultStatus, usdLotKrw } from './operations';
 import { exchangePreview, quotePreview, weeklyBottleneck } from './readers';
 import { campaignSummary, contractReport, contractRiskReport, preview, tradePreview } from './reports';
 import { cashReservations, fundsPosition } from './reservations';
 import { createRng, drawUniform } from './rng';
-import { divHalfAway, drawAt, dutyFor, krwToUsdMinor, referenceRate, usdToKrwMinor, withRiskLevel } from './risk';
+import { divHalfAway, dutyFor, krwToUsdMinor, referenceRate, usdToKrwMinor, withRiskLevel } from './risk';
 import { deserializeSave, serializeSave } from './save';
 import type { Contract, EngineCommand, GameState, ScenarioConfig } from './types';
 
+vi.mock('./rng', async (importOriginal) => {
+  const m = await importOriginal<typeof import('./rng')>();
+  return { ...m, drawUniform: vi.fn(m.drawUniform) };
+});
 vi.mock('./risk', async (importOriginal) => {
   const m = await importOriginal<typeof import('./risk')>();
   return { ...m, referenceRate: vi.fn(m.referenceRate), dutyFor: vi.fn(m.dutyFor) };
@@ -92,18 +97,55 @@ function cashValue(s: GameState, cfg: ScenarioConfig, c: Contract) {
     if (e.currency === 'KRW') total += l.amount;
     else {
       const r = referenceRate(cfg, s.rng.seed, e.day);
-      if (e.id.startsWith('RECEIPT-')) total += usdToKrwMinor(l.amount, r);
+      if (e.id.startsWith('RECEIPT-')) total += toKrw(l.amount, r);
       else costs.set(r, (costs.get(r) ?? 0) + l.amount);
     }
   }
-  for (const [r, n] of costs) total += usdToKrwMinor(n, r);
+  for (const [r, n] of costs) total += toKrw(n, r);
   return total;
+}
+// 제품 환산 도우미와 독립된 정수식으로 기대·현금의 환산을 검산한다.
+const halfAway = (n: number, d: number) => Math.sign(n) * Math.floor((2 * Math.abs(n) + d) / (2 * d));
+const toKrw = (cents: number, rate: number) => halfAway(cents * rate, 100);
+function expectedValue(s: GameState, cfg: ScenarioConfig, c: Contract) {
+  const r = referenceRate(cfg, s.rng.seed, c.acceptedDay);
+  const route = routeBetween(cfg, c.originCityId, c.destinationCityId)!;
+  const arrival = listSailings(cfg, route.id, c.acceptedDay + 1)[0]!.scheduledArrivalDay;
+  const lateDays = Math.max(0, arrival + cfg.terms.customsDays - c.deliveryDeadlineDay);
+  const reduction = Math.min(halfAway(c.saleAmountMinor * cfg.terms.lateDeliveryCapBasisPoints!, 10000), lateDays * cfg.terms.lateDeliveryPriceReductionMinor);
+  const krwPurchase = c.buyOfferId !== null && offerDef(s, cfg, c.buyOfferId!)!.currency === 'KRW';
+  const usdPurchase = krwPurchase ? halfAway(c.purchaseAmountMinor * 100, r) : c.purchaseAmountMinor;
+  const duty = c.kind === 'DIRECT_TRADE' ? halfAway(usdPurchase * cfg.terms.dutyRateBasisPoints, 10000) : 0;
+  return toKrw(c.saleAmountMinor - reduction, r) - (krwPurchase ? c.purchaseAmountMinor : 0)
+    - toKrw((krwPurchase ? 0 : c.purchaseAmountMinor) + route.bookingFeeMinor + duty, r);
+}
+function assertIdentity(s: GameState, cfg: ScenarioConfig, c: Contract, realized: number) {
+  const report = contractRiskReport(s, cfg, c.id);
+  const { residual, ...stages } = report.components;
+  expect(report.expected).toBe(expectedValue(s, cfg, c));
+  expect(realized - expectedValue(s, cfg, c)).toBe(Object.values(stages).reduce((n, v) => n + v, 0));
+  expect(residual).toBe(0);
 }
 const laterDay = base.operations!.market.publish.firstDay + base.operations!.market.publish.intervalDays;
 
 describe('TASK-0062 참고 환율과 통화별 계약', () => {
   it('프로필 다섯 묶음과 R0·R1 설정 변환·정적 견적', () => {
-    expect(loadRiskProfile(profile.id)).toEqual(profile);
+    for (const raw of marketRulesData.risk_profiles) {
+      expect(loadRiskProfile(raw.id)).toEqual({
+        id: raw.id, dataBasis: raw.data_basis, status: raw.status, basis: raw.basis,
+        fx: { startKrwPerUsd: raw.fx.start_krw_per_usd, stepBp: raw.fx.step_bp, minKrwPerUsd: raw.fx.min_krw_per_usd, maxKrwPerUsd: raw.fx.max_krw_per_usd },
+        tariff: { base: raw.tariff.base.map((r) => ({ countryCode: r.country_code, goodId: r.good_id, rateBp: r.rate_bp })),
+          maxChanges: raw.tariff.max_changes, lagDays: raw.tariff.lag_days, stepBp: raw.tariff.step_bp, minBp: raw.tariff.min_bp,
+          maxBp: raw.tariff.max_bp, basis: raw.tariff.basis, status: raw.tariff.status },
+        surcharge: { pZeroBp: raw.surcharge.p_zero_bp, minBp: raw.surcharge.min_bp, maxBp: raw.surcharge.max_bp },
+        claims: { byGood: raw.claims.by_good.map((r) => ({ goodId: r.good_id, grade: r.grade, pClaimBp: r.p_claim_bp })), basis: raw.claims.basis,
+          minor: { weightBp: raw.claims.minor.weight_bp, minBp: raw.claims.minor.min_bp, maxBp: raw.claims.minor.max_bp },
+          major: { weightBp: raw.claims.major.weight_bp, minBp: raw.claims.major.min_bp, maxBp: raw.claims.major.max_bp } },
+        collections: { byCounterparty: raw.collections.by_counterparty.map((r) => ({ counterpartyId: r.counterparty_id, grade: r.grade })),
+          grades: raw.collections.grades.map((r) => ({ grade: r.grade, pOnTimeBp: r.p_on_time_bp, pLateBp: r.p_late_bp, pPartialBp: r.p_partial_bp })),
+          basis: raw.collections.basis, partialBp: raw.collections.partial_bp, lateMinDays: raw.collections.late_min_days, lateMaxDays: raw.collections.late_max_days },
+      });
+    }
     expect(() => loadRiskProfile('없는 프로필')).toThrow();
     expect(Object.keys(profile)).toEqual(expect.arrayContaining(['fx', 'tariff', 'surcharge', 'claims', 'collections']));
     const before = JSON.stringify(base), cfg = config();
@@ -117,6 +159,8 @@ describe('TASK-0062 참고 환율과 통화별 계약', () => {
     expect(krwToUsdMinor(2600000, 1300)).toBe(200000);
     expect(divHalfAway(1, 2)).toBe(1); expect(divHalfAway(-1, 2)).toBe(-1);
     expect(usdToKrwMinor(-50, 1300)).toBe(-650);
+    expect(usdToKrwMinor(1, 50)).toBe(1); expect(usdToKrwMinor(-1, 50)).toBe(-1);
+    expect(krwToUsdMinor(-13, 2600)).toBe(-1); expect(krwToUsdMinor(13, 2600)).toBe(1);
     expect(() => divHalfAway(1, 0)).toThrow();
   });
   it('환율 순수성: 주간 경계·반올림 여유·상하한·마지막 공개일', () => {
@@ -141,11 +185,34 @@ describe('TASK-0062 참고 환율과 통화별 계약', () => {
     expect(referenceRate(base, a, laterDay)).toBe(base.operations!.fx.baseKrwPerUsd);
     expect(() => referenceRate({ ...base, operations: null }, a, laterDay)).toThrow();
   });
-  it('흐름 유일성: FX-REF 주차마다 독립 번호, 직접 난수와 일치', () => {
-    const p = base.operations!.market.publish;
-    const pairs = Array.from({ length: Math.floor((p.lastDay - p.firstDay) / p.intervalDays) }, (_, i) => ['FX-REF', i + 1] as const);
-    expect(new Set(pairs.map((pair) => JSON.stringify(pair))).size).toBe(pairs.length);
-    for (const [stream, index] of pairs) expect(drawAt(base.seed, stream, index)).toBe(drawUniform({ seed: base.seed, cursors: { [stream]: index } }, stream).value);
+  it('흐름 유일성: 관찰한 FX-REF 호출 번호가 정확히 1부터 마지막 걸음까지다', () => {
+    const cfg = config(), p = cfg.operations!.market.publish;
+    const count = Math.floor((p.lastDay - p.firstDay) / p.intervalDays);
+    vi.mocked(drawUniform).mockClear();
+    referenceRate(cfg, cfg.seed, p.lastDay);
+    const pairs = vi.mocked(drawUniform).mock.calls.map(([rng, stream]) => [stream, rng.cursors[stream]]);
+    expect(pairs).toHaveLength(count);
+    expect(new Set(pairs.map((pair) => JSON.stringify(pair))).size).toBe(count);
+    expect(pairs).toEqual(Array.from({ length: count }, (_, i) => ['FX-REF', i + 1]));
+  });
+  it('경로 오라클: 200시드의 모든 날을 독립 정수식으로 계산한다', () => {
+    const cfg = config(), p = cfg.operations!.market.publish, fx = profile.fx;
+    const count = Math.floor((p.lastDay - p.firstDay) / p.intervalDays);
+    for (let seed = 1; seed <= 200; seed++) {
+      const rates = [fx.startKrwPerUsd], steps: number[] = [];
+      for (let k = 1; k <= count; k++) {
+        const u = drawUniform({ seed, cursors: { 'FX-REF': k } }, 'FX-REF').value;
+        const step = Math.floor(u * (2 * fx.stepBp + 1)) - fx.stepBp;
+        steps.push(step);
+        rates.push(Math.max(fx.minKrwPerUsd, Math.min(fx.maxKrwPerUsd, halfAway(rates[k - 1]! * (10000 + step), 10000))));
+      }
+      expect(new Set(steps).size).toBeGreaterThan(1);
+      for (let day = 1; day <= cfg.campaignDays; day++) {
+        const week = Math.max(0, Math.floor((Math.min(day, p.lastDay) - p.firstDay) / p.intervalDays));
+        expect(referenceRate(cfg, seed, day), `시드 ${seed}, ${day}일`).toBe(rates[week]);
+      }
+      vi.mocked(drawUniform).mockClear();
+    }
   });
   it('환전·환율 상태 무관·시드 일치·저장·결정성', () => {
     const cfg = config(changedSeed(laterDay));
@@ -211,7 +278,12 @@ describe('TASK-0062 참고 환율과 통화별 계약', () => {
     expect(cogs.map((e) => e.id)).toEqual([`COGS-${c.id}-KRW`, `COGS-${c.id}-USD`]);
     for (const e of s.ledger.entries) expect(e.lines.reduce((n, l) => n + l.amount, 0)).toBe(0);
     expect(contractReport(s, c, 'KRW').directCost).toBe(c.purchaseAmountMinor);
-    expect(contractReport(s, c).contribution).toBe(contractAmount(s.ledger, 'USD', c.id, 'REVENUE') - contractAmount(s.ledger, 'USD', c.id, 'COST_OF_GOODS_SOLD'));
+    const freight = s.bookings.find((b) => b.id === c.bookingId)!.prepaidFreightMinor;
+    const duty = s.shipments.find((sh) => sh.contractId === c.id)!.dutyMinor!;
+    expect(contractReport(s, c).contribution).toBe(c.saleAmountMinor - c.priceReductionMinor - freight - duty);
+    expect(cogs.find((e) => e.id === `COGS-${c.id}-USD`)!.lines.find((l) => l.account === 'COST_OF_GOODS_SOLD')!.amount).toBe(freight + duty);
+    expect(cogs.find((e) => e.id === `COGS-${c.id}-KRW`)!.lines.find((l) => l.account === 'COST_OF_GOODS_SOLD')!.amount).toBe(c.purchaseAmountMinor);
+    expect(contractAmount(s.ledger, 'USD', c.id, 'INVENTORY')).toBe(0);
     expect(campaignSummary(s, cfg).byCurrency.find((b) => b.currency === 'KRW')!.contractContribution).toBe(-c.purchaseAmountMinor);
     roundtrip(s, cfg);
   });
@@ -231,12 +303,12 @@ describe('TASK-0062 참고 환율과 통화별 계약', () => {
     const drained = exchange(s, cfg, Math.floor(fundsPosition(s, cfg, 'KRW').available / exchangeAmounts(cfg, 'KRW_TO_USD', cfg.operations!.fx.lotUsdMinor, s.rng.seed, s.day).krw), 'KRW_TO_USD');
     expect(fundsPosition(drained, cfg, 'KRW').available).toBeLessThan(money.purchase);
     const krw = planState(drained, cfg, [{ id: '부족', type: 'ACCEPT_TRADE', ...pair }]);
-    expect(krw.results[0]!.status).toBe('REJECTED'); expect(krw.results[0]!.reasonKo).toContain('원');
+    expect(krw.results[0]!.status).toBe('REJECTED'); expect(krw.results[0]!.reasonKo).toContain(`필요 ${formatMoney('KRW', p.cashNeedByCurrency!.find((v) => v.currency === 'KRW')!.amountMinor)}`);
     const allUsd = Math.floor(fundsPosition(s, cfg, 'USD').available / cfg.operations!.fx.lotUsdMinor);
     const funded = exchange(s, cfg, allUsd);
     expect(fundsPosition(funded, cfg, 'KRW').available).toBeGreaterThanOrEqual(money.purchase);
     const usd = planState(funded, cfg, [{ id: '달러 부족', type: 'ACCEPT_TRADE', ...pair }]);
-    expect(usd.results[0]!.status).toBe('REJECTED'); expect(usd.results[0]!.reasonKo).toContain('USD');
+    expect(usd.results[0]!.status).toBe('REJECTED'); expect(usd.results[0]!.reasonKo).toContain(`필요 ${formatMoney('USD', p.cashNeedByCurrency!.find((v) => v.currency === 'USD')!.amountMinor)}`);
     expect(tradePreview(cfg, pair.buyOfferId, pair.sellOfferId, s.day)).toEqual(p);
   });
 
@@ -278,8 +350,7 @@ describe('TASK-0062 날짜·관세·손익', () => {
     let { s, c, sailing } = setup(cfg, 1);
     const r = referenceRate(cfg, s.rng.seed, c.acceptedDay), arrivalRate = referenceRate(cfg, s.rng.seed, sailing.scheduledArrivalDay);
     expect(r).not.toBe(arrivalRate);
-    const expected = dutyEstimate(cfg, krwToUsdMinor(c.purchaseAmountMinor, r));
-    const buy = offerDef(s, cfg, c.buyOfferId!)!, sell = offerDef(s, cfg, c.sellOfferId!)!;
+    const expected = halfAway(halfAway(c.purchaseAmountMinor * 100, r) * cfg.terms.dutyRateBasisPoints, 10000);
     const p = preview(cfg, c.kind, c.originCityId, c.destinationCityId, c.acceptedDay,
       { purchase: c.purchaseAmountMinor, sale: c.saleAmountMinor }, c.deliveryDeadlineDay, c.paymentDueDay, { goodId: c.goodId })!;
     expect(p.duty).toBe(expected);
@@ -288,26 +359,44 @@ describe('TASK-0062 날짜·관세·손익', () => {
       s = advance(s, cfg, s.day + 1);
     }
     expect(s.shipments[0]!.dutyMinor).toBe(expected);
-    const candidate = Array.from({ length: buy.validUntilDay - buy.publishDay + 1 }, (_, i) => buy.publishDay + i).find((day) => {
-      const q = preview(cfg, c.kind, buy.cityId, sell.cityId, day, { purchase: c.purchaseAmountMinor, sale: c.saleAmountMinor }, c.deliveryDeadlineDay, c.paymentDueDay, { goodId: c.goodId })!;
-      return q.lateOnNextSailing && q.arrivalDay !== null && referenceRate(cfg, cfg.seed, day) !== referenceRate(cfg, cfg.seed, q.arrivalDay)
-        && dutyEstimate(cfg, krwToUsdMinor(c.purchaseAmountMinor, referenceRate(cfg, cfg.seed, day))) !== dutyEstimate(cfg, krwToUsdMinor(c.purchaseAmountMinor, referenceRate(cfg, cfg.seed, q.arrivalDay)));
-    });
-    expect(candidate, '유효 기간의 늦은 편').toBeDefined();
-    const late = preview(cfg, c.kind, buy.cityId, sell.cityId, candidate!, { purchase: c.purchaseAmountMinor, sale: c.saleAmountMinor }, c.deliveryDeadlineDay, c.paymentDueDay, { goodId: c.goodId })!;
-    expect(late.duty).toBe(dutyEstimate(cfg, krwToUsdMinor(c.purchaseAmountMinor, referenceRate(cfg, cfg.seed, candidate!))));
-    expect(late.sale).toBeLessThan(c.saleAmountMinor);
-    expect(late.referenceEstimate!.saleKrw).toBe(usdToKrwMinor(late.sale, referenceRate(cfg, cfg.seed, candidate!)));
+    const dutyEntry = s.ledger.entries.find((e) => e.id === `DUTY-${s.shipments[0]!.id}`)!;
+    expect(dutyEntry.currency).toBe('USD');
+    expect(dutyEntry.lines.find((l) => l.account === 'INVENTORY')!.amount).toBe(expected);
+    let candidate: { p: NonNullable<ReturnType<typeof preview>>; day: number; purchase: number; sale: number } | undefined;
+    let search = advance(fresh(cfg), cfg, laterDay);
+    while (search.day <= 30 && !candidate) {
+      for (const pair of openTradePairs(search, cfg)) {
+        const lateBuy = offerDef(search, cfg, pair.buyOfferId)!, lateSell = offerDef(search, cfg, pair.sellOfferId)!;
+        const purchase = lateBuy.unitPriceMinor * lateBuy.quantity, sale = lateSell.unitPriceMinor * lateBuy.quantity;
+        const q = preview(cfg, c.kind, lateBuy.cityId, lateSell.cityId, search.day, { purchase, sale },
+          lateSell.deliveryDeadlineDay!, lateSell.paymentDueDay!, { goodId: lateBuy.goodId })!;
+        const rate = referenceRate(cfg, cfg.seed, search.day);
+        if (rate !== profile.fx.startKrwPerUsd && q.lateOnNextSailing && q.arrivalDay !== null
+          && rate !== referenceRate(cfg, cfg.seed, q.arrivalDay)
+          && dutyEstimate(cfg, krwToUsdMinor(purchase, rate)) !== dutyEstimate(cfg, krwToUsdMinor(purchase, referenceRate(cfg, cfg.seed, q.arrivalDay)))) {
+          candidate = { p: q, day: search.day, purchase, sale };
+          break;
+        }
+      }
+      if (!candidate) search = advance(search, cfg, search.day + 1);
+    }
+    expect(candidate, '유효 기간·바뀐 환율의 늦은 편').toBeDefined();
+    const late = candidate!.p, rate = referenceRate(cfg, cfg.seed, candidate!.day);
+    expect(late.duty).toBe(dutyEstimate(cfg, krwToUsdMinor(candidate!.purchase, rate)));
+    expect(late.sale).toBeLessThan(candidate!.sale);
+    expect(late.referenceEstimate).toEqual({ rateKrwPerUsd: rate, saleKrw: toKrw(late.sale, rate),
+      pnlKrw: toKrw(late.sale, rate) - candidate!.purchase - toKrw(late.freight + late.duty, rate) });
   });
   it.each([false, true])('손익 읽기: 독립 현금 재계산·환율 부호·R0 (주선 %s)', (forwarding) => {
-    const cfg = config(changedSeed(laterDay)), s = finished(cfg, 0, forwarding), c = s.contracts[0]!;
+    const cfg = config(changedSeed(laterDay)), s = finished(cfg, 1, forwarding), c = s.contracts[0]!;
     const report = contractRiskReport(s, cfg, c.id);
     expect(report.realized).toBe(cashValue(s, cfg, c)); expect(report.components.residual).toBe(0);
+    assertIdentity(s, cfg, c, cashValue(s, cfg, c));
     expect(report.components.fx).not.toBe(0);
     const receipt = s.ledger.entries.find((e) => e.contractId === c.id && e.id.startsWith('RECEIPT-'))!;
     const change = referenceRate(cfg, s.rng.seed, receipt.day) - referenceRate(cfg, s.rng.seed, c.acceptedDay);
     expect(Math.sign(report.components.fx)).toBe(Math.sign(change));
-    const oldCfg = config(cfg.seed, 'R0'), old = finished(oldCfg, 0, forwarding), oldC = old.contracts[0]!;
+    const oldCfg = config(cfg.seed, 'R0'), old = finished(oldCfg, 1, forwarding), oldC = old.contracts[0]!;
     const oldReport = contractRiskReport(old, oldCfg, oldC.id);
     expect(old.obligations.filter((o) => o.paidDay === null)).toEqual([]);
     expect(oldReport.realized).toBe(contractReport(old, oldC).contribution * oldCfg.operations!.fx.baseKrwPerUsd / 100);
@@ -332,6 +421,10 @@ describe('TASK-0062 날짜·관세·손익', () => {
     const refund = release.lines.find((l) => l.account === 'CASH')!.amount;
     const fee = release.lines.find((l) => l.account === 'CANCELLATION_EXPENSE')!.amount;
     expect(fee).toBe(cfg.terms.preDepartureCancellationFeeMinor);
+    if (level === 'R1') {
+      expect(release.currency).toBe('USD');
+      expect(s.ledger.entries.some((e) => e.contractId === c.id && e.currency === 'KRW' && e.lines.some((l) => l.account === 'CASH' && l.amount > 0))).toBe(false);
+    }
     expect(refund).toBe(s.bookings[0]!.prepaidFreightMinor - fee);
     const report = contractRiskReport(s, cfg, c.id), p = tradePreview(cfg, c.buyOfferId!, c.sellOfferId!, c.acceptedDay)!;
     const r0 = referenceRate(cfg, cfg.seed, c.acceptedDay), rc = referenceRate(cfg, cfg.seed, c.cancelledDay!);
@@ -424,7 +517,9 @@ describe('TASK-0062 열린 계약·실패·누설', () => {
       const unpaidDuty = s.obligations.filter((o) => o.paidDay === null && s.ledger.entries.some((e) => e.id === o.id && e.contractId === c.id)).reduce((n, o) => n + o.amountMinor, 0);
       expect(sale + duty + unpaidDuty).toBeGreaterThan(0);
       const report = contractRiskReport(s, cfg, c.id), cash = cashValue(s, cfg, c);
-      expect(report.realized).toBe(cash + usdToKrwMinor(sale, r) - usdToKrwMinor(duty + unpaidDuty, r));
+      const realized = cash + toKrw(sale, r) - toKrw(duty + unpaidDuty, r);
+      expect(report.realized).toBe(realized);
+      assertIdentity(s, cfg, c, realized);
       expect(report.openFixedRateKrw).toBe(cash + usdToKrwMinor(sale, cfg.operations!.fx.baseKrwPerUsd) - usdToKrwMinor(duty + unpaidDuty, cfg.operations!.fx.baseKrwPerUsd));
       expect(report.open).toBe(true); expect(report.components.open_valuation).toBe(0); expect(report.components.residual).toBe(0);
     }
@@ -481,8 +576,7 @@ describe('TASK-0062 열린 계약·실패·누설', () => {
     expect(failure).toMatchObject({ obligationId: '실패 USD 의무', currency: 'USD', amountMinor: amount });
     for (const c of s.contracts) {
       const route = routeBetween(cfg, c.originCityId, c.destinationCityId)!;
-      const duty = c.kind === 'DIRECT_TRADE' ? dutyFor(cfg, s.rng.seed, c.goodId, c.destinationCityId,
-        listSailings(cfg, route.id, d + 1)[0]!.scheduledArrivalDay, d, c.purchaseAmountMinor, 'USD', d) : 0;
+      const duty = c.kind === 'DIRECT_TRADE' ? dutyEstimate(cfg, c.purchaseAmountMinor) : 0;
       const row = failure.usdCommitmentsSinceIncurred.find((r) => r.id === c.id);
       expect(row).toBeDefined(); expect(row!.amountMinor).toBe(c.purchaseAmountMinor + route.bookingFeeMinor + duty);
     }
@@ -573,10 +667,146 @@ describe('TASK-0062 원천 검사와 보고 사례', () => {
     const cfg = config(changedSeed(laterDay));
     const normal = finished(cfg), late = finished(cfg, 1), initial = setup(cfg, 1);
     const cancelled = apply(advance(initial.s, cfg, laterDay), cfg, { id: '표 취소', type: 'CANCEL_CONTRACT', contractId: initial.c.id });
-    const open = advance(initial.s, cfg, initial.sailing.departureDay + 1);
-    const samples = [normal, late, cancelled, open].map((s, i) => ({ label: ['정시', '늦은 편', '취소', '열린 운송 중'][i], seed: cfg.seed,
+    const later = setup(cfg, 2);
+    const open = advance(later.s, cfg, laterDay);
+    expect(open.day).toBeLessThan(later.sailing.departureDay);
+    const futureDay = later.sailing.scheduledArrivalDay + cfg.terms.customsDays;
+    expect(referenceRate(cfg, cfg.seed, futureDay)).not.toBe(referenceRate(cfg, cfg.seed, open.day));
+    let completed = open;
+    while (completed.contracts[0]!.status !== 'COMPLETED' && completed.phase !== 'ENDED') completed = advance(completed, cfg, completed.day + 1);
+    expect(completed.contracts[0]!.status).toBe('COMPLETED');
+    expect(contractRiskReport(open, cfg, open.contracts[0]!.id).realized).not.toBe(contractRiskReport(completed, cfg, completed.contracts[0]!.id).realized);
+    console.log('TASK0062_R1_OPEN=' + JSON.stringify({ seed: cfg.seed, sailing: later.sailing.id, evaluationDay: open.day,
+      evaluationRate: referenceRate(cfg, cfg.seed, open.day), futureDay, futureRate: referenceRate(cfg, cfg.seed, futureDay), completed: contractRiskReport(completed, cfg, completed.contracts[0]!.id) }));
+    const samples = [normal, late, cancelled, open].map((s, i) => ({ label: ['정시', '늦은 편', '취소', '열린 출항 전'][i], seed: cfg.seed,
       ...contractRiskReport(s, cfg, s.contracts[0]!.id) }));
     for (const row of samples) expect(row.components.residual).toBe(0);
     console.log('TASK0062_REPORTS=' + JSON.stringify(samples));
+  });
+});
+
+describe('TASK-0062-R1 독립 회귀', () => {
+  it('혼합 계약 USD 재고 불변식: 인도 전 음수와 인도 뒤 잔액을 거부한다', () => {
+    const cfg = config();
+    for (const [delivered, delta] of [[false, -1], [true, -1], [true, 1]] as const) {
+      const s = delivered ? finished(cfg) : setup(cfg).s, c = s.contracts[0]!;
+      expect(c.deliveredDay !== null).toBe(delivered);
+      expect(contractAmount(s.ledger, 'USD', c.id, 'INVENTORY')).toBe(0);
+      post(s.ledger, { id: '시험 USD 재고 변조', day: s.day, contractId: c.id, currency: 'USD', reason: '시험 균형 분개',
+        lines: [{ account: 'INVENTORY', amount: delta }, { account: 'COST_OF_GOODS_SOLD', amount: -delta }] });
+      expect(() => deserializeSave(serializeSave(s), { config: cfg, dataVersion: cfg.dataVersion }))
+        .toThrow(`혼합 계약 ${c.id}의 USD 재고 잔액(${delta})이 맞지 않습니다`);
+    }
+  });
+  it.each(['KRW', 'USD'] as const)('자금 검사 경계: %s 기준 − 1은 거절, 기준은 수락', (currency) => {
+    const cfg = config();
+    const funded = exchange(fresh(cfg), cfg, 2), pair = openTradePairs(funded, cfg)[0]!;
+    const p = quotePreview(funded, cfg, pair)!;
+    const need = p.cashNeedByCurrency!.find((v) => v.currency === currency)!.amountMinor;
+    expect(need).toBeGreaterThan(0);
+    for (const difference of [-1, 0]) {
+      const s = structuredClone(funded), available = fundsPosition(s, cfg, currency).available;
+      expect(available).toBeGreaterThan(need);
+      inject(s, currency, available - need - difference, s.day, `경계 의무-${currency}`);
+      expect(fundsPosition(s, cfg, currency).available).toBe(need + difference);
+      const result = planState(s, cfg, [{ id: `경계-${difference}`, type: 'ACCEPT_TRADE', ...pair }]).results[0]!;
+      expect(result.status).toBe(difference === -1 ? 'REJECTED' : 'APPLIED');
+      if (difference === -1) expect(result.reasonKo).toContain(`필요 ${formatMoney(currency, need)}`);
+    }
+  });
+  it('참고 추정: 바뀐 환율 날의 미리보기와 수락 기대', () => {
+    const cfg = config(changedSeed(laterDay));
+    const day = Array.from({ length: cfg.campaignDays }, (_, i) => i + 1)
+      .find((d) => referenceRate(cfg, cfg.seed, d) !== profile.fx.startKrwPerUsd);
+    expect(day).toBeDefined();
+    let s = exchange(advance(fresh(cfg), cfg, day!), cfg, 2);
+    const pair = openTradePairs(s, cfg)[0]!, buy = offerDef(s, cfg, pair.buyOfferId)!, sell = offerDef(s, cfg, pair.sellOfferId)!;
+    const p = preview(cfg, 'DIRECT_TRADE', buy.cityId, sell.cityId, s.day,
+      { purchase: buy.unitPriceMinor * buy.quantity, sale: sell.unitPriceMinor * buy.quantity }, sell.deliveryDeadlineDay!, sell.paymentDueDay!, { goodId: buy.goodId })!;
+    const rate = referenceRate(cfg, cfg.seed, s.day);
+    expect(rate).not.toBe(profile.fx.startKrwPerUsd);
+    expect(p.referenceEstimate).toEqual({ rateKrwPerUsd: rate, saleKrw: toKrw(p.sale, rate),
+      pnlKrw: toKrw(p.sale, rate) - p.purchase - toKrw(p.freight + p.duty, rate) });
+    s = apply(s, cfg, { id: '바뀐 날 수락', type: 'ACCEPT_TRADE', ...pair });
+    const c = s.contracts[0]!;
+    expect(c.acceptedDay).toBe(day);
+    expect(contractRiskReport(s, cfg, c.id).expected).toBe(p.referenceEstimate!.pnlKrw);
+    expect(contractRiskReport(s, cfg, c.id).expected).toBe(expectedValue(s, cfg, c));
+  });
+  it.each(['R0', 'R1'] as const)('편 놓침 뒤 재예약 전 %s: 평가일 운임과 독립 현금 항등식', (level) => {
+    const cfg = config(changedSeed(laterDay), level);
+    let s = fresh(cfg);
+    if (level === 'R1') s = exchange(s, cfg, 2);
+    const pair = openTradePairs(s, cfg)[0]!, buy = offerDef(s, cfg, pair.buyOfferId)!, sell = offerDef(s, cfg, pair.sellOfferId)!;
+    const route = routeBetween(cfg, buy.cityId, sell.cityId)!, first = listSailings(cfg, route.id, s.day + 1)[0]!;
+    s = apply(s, cfg, { id: '준비 미배정', type: 'ACCEPT_TRADE', ...pair, plan: { sailingId: first.id } });
+    s = advance(s, cfg, first.departureDay + 1);
+    const prepaid = s.ledger.entries.find((e) => e.id.startsWith('FREIGHT-PREPAY-'))!;
+    if (level === 'R1') {
+      const day = Array.from({ length: cfg.campaignDays - s.day }, (_, i) => s.day + i)
+        .find((d) => referenceRate(cfg, cfg.seed, d) !== referenceRate(cfg, cfg.seed, prepaid.day));
+      expect(day, '첫 선지급일과 다른 환율의 평가일').toBeDefined();
+      s = advance(s, cfg, day!);
+      expect(referenceRate(cfg, cfg.seed, s.day)).not.toBe(referenceRate(cfg, cfg.seed, prepaid.day));
+    }
+    const c = s.contracts[0]!;
+    expect(s.bookings[0]!.status).toBe('CANCELLED'); expect(c.bookingId).toBeNull();
+    expect(s.shipments.some((sh) => sh.contractId === c.id)).toBe(false);
+    expect(cashReservations(s, cfg)).toContainEqual({ contractId: c.id, kind: 'FREIGHT', currency: 'USD', amountMinor: route.bookingFeeMinor });
+    const next = listSailings(cfg, route.id, s.day + 1)[0]!;
+    const lateDays = Math.max(0, next.scheduledArrivalDay + cfg.terms.customsDays - c.deliveryDeadlineDay);
+    const sale = c.saleAmountMinor - Math.min(halfAway(c.saleAmountMinor * cfg.terms.lateDeliveryCapBasisPoints!, 10000), lateDays * cfg.terms.lateDeliveryPriceReductionMinor);
+    const r = referenceRate(cfg, cfg.seed, s.day), r0 = referenceRate(cfg, cfg.seed, c.acceptedDay);
+    const duty = halfAway((level === 'R1' ? halfAway(c.purchaseAmountMinor * 100, r0) : c.purchaseAmountMinor) * cfg.terms.dutyRateBasisPoints, 10000);
+    // 현금 비용과 남은 운임·관세를 같은 환율끼리 합친 뒤 한 번 환산한다.
+    const costs = new Map<number, number>([[r, -route.bookingFeeMinor - duty]]);
+    let realized = toKrw(sale, r);
+    for (const e of s.ledger.entries.filter((e) => e.contractId === c.id)) {
+      for (const line of e.lines.filter((l) => l.account === 'CASH')) {
+        if (e.currency === 'KRW') realized += line.amount;
+        else {
+          const rate = referenceRate(cfg, cfg.seed, e.day);
+          costs.set(rate, (costs.get(rate) ?? 0) + line.amount);
+        }
+      }
+    }
+    for (const [rate, amount] of costs) realized += toKrw(amount, rate);
+    const report = contractRiskReport(s, cfg, c.id);
+    expect(report.realized).toBe(realized); expect(report.open).toBe(true);
+    assertIdentity(s, cfg, c, realized);
+    if (level === 'R0') expect(report.components.cancel).toBe(-usdToKrwMinor(cfg.terms.preDepartureCancellationFeeMinor, cfg.operations!.fx.baseKrwPerUsd));
+  });
+  it('환율 상태 무관: 진행 중 혼합 계약·미지급 의무에서도 읽기는 저장을 바꾸지 않는다', () => {
+    const cfg = config(changedSeed(laterDay));
+    let { s } = setup(cfg, 2);
+    s = advance(s, cfg, laterDay);
+    inject(s, 'KRW', balance(s.ledger, 'KRW', 'CASH') + 1, s.day, '읽기 원화 의무');
+    const before = serializeSave(s), c = s.contracts[0]!;
+    expect(c.deliveredDay).toBeNull();
+    expect(offerDef(s, cfg, c.buyOfferId!)!.currency).not.toBe(c.currency);
+    const pair = openTradePairs(s, cfg)[0]!;
+    expect(pair).toBeDefined();
+    exchangePreview(s, cfg, 'USD_TO_KRW', cfg.operations!.fx.lotUsdMinor);
+    quotePreview(s, cfg, pair);
+    vi.mocked(dutyFor).mockClear();
+    expect(cashReservations(s, cfg).some((r) => r.contractId === c.id && r.kind === 'DUTY')).toBe(true);
+    expect(vi.mocked(dutyFor).mock.calls.length).toBeGreaterThan(0);
+    const status = paymentDefaultStatus(s, cfg);
+    expect(status.oldest).not.toBeNull(); expect(status.recovery.lotsToClearAll).toBeGreaterThan(0);
+    contractRiskReport(s, cfg, c.id);
+    weeklyBottleneck(s, cfg, cfg.recruitment!.candidateEmployeeIds[0]!);
+    const buy = offerDef(s, cfg, pair.buyOfferId)!, sell = offerDef(s, cfg, pair.sellOfferId)!;
+    preview(cfg, 'DIRECT_TRADE', buy.cityId, sell.cityId, s.day,
+      { purchase: buy.unitPriceMinor * buy.quantity, sale: sell.unitPriceMinor * buy.quantity }, sell.deliveryDeadlineDay!, sell.paymentDueDay!, { goodId: buy.goodId });
+    expect(serializeSave(s)).toBe(before);
+  });
+  it('결정성: 같은 공개 명령 구동기를 두 번 돌린 저장 문자열이 같다', () => {
+    const cfg = config(changedSeed(laterDay));
+    const drive = () => {
+      let s = finished(cfg, 2);
+      s = exchange(s, cfg);
+      return serializeSave(commitDay(s, cfg, []).state);
+    };
+    expect(drive()).toBe(drive());
   });
 });

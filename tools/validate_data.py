@@ -941,6 +941,14 @@ def check_market_rules(documents, tables):
             for field in fields:
                 integer(group[field], 0, 10000, path + '.' + field)
         fx, tariff, surcharge, claims, collections = (p[k] for k in ('fx', 'tariff', 'surcharge', 'claims', 'collections'))
+        for rows, keys, label in (
+            (tariff['base'], ('country_code', 'good_id'), 'tariff.base'),
+            (claims['by_good'], ('good_id',), 'claims.by_good'),
+            (collections['by_counterparty'], ('counterparty_id',), 'collections.by_counterparty'),
+            (collections['grades'], ('grade',), 'collections.grades'),
+        ):
+            row_keys = [tuple(row[key] for key in keys) for row in rows]
+            check(len(row_keys) == len(set(row_keys)), prefix + label + ': 중복 행')
         bp(fx, ['step_bp'], 'fx')
         pair([fx['min_krw_per_usd'], fx['max_krw_per_usd']], 1, float('inf'), 'fx')
         check(type(fx['start_krw_per_usd']) is int and fx['min_krw_per_usd'] <= fx['start_krw_per_usd'] <= fx['max_krw_per_usd'],

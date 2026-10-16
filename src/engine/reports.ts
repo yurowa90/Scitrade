@@ -484,6 +484,7 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
   if (!cancelled) lateFlows[3]!.amount = sale;
   const afterLate = value(lateFlows);
   const cancelFlows = cancelled ? lateFlows.filter((_, i) => i === 0 || (i === 1 && !!firstPrepayment)) : [...lateFlows];
+  if (!cancelled && firstPrepayment && !shipment && !booking) cancelFlows.push(flow(-p.freight, evaluationDay));
   const adjustments = new Set(entries.filter((e) => e.id.startsWith('FREIGHT-RELEASE-') || e.id.startsWith('CANCEL-COMP-')
     || (e.id.startsWith('FREIGHT-PREPAY-') && e !== firstPrepayment)).map((e) => e.id));
   for (const e of [...entries, ...settlements]) {
