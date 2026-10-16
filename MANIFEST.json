@@ -1682,8 +1682,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 90734,
-      "sha256": "f9f6c53308b35b92e7bc7c8d4c6ca4b4320408de90dec0870a349c2fc82cc89c"
+      "size_bytes": 92214,
+      "sha256": "83c50d218039d52a4963c860db87c27ff5b84d2962a503bcdb61c5eda5dce4b6"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
@@ -2802,8 +2802,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
-      "size_bytes": 60087,
-      "sha256": "56830a5a79a888ed7093198a1e2d2b283cd8274407c025c168d8cd415d9b18c1"
+      "size_bytes": 60609,
+      "sha256": "e72b68b1e45250148503cdc5902e56d3de5c259198c046cf591cd6ba00167310"
     },
     {
       "path": "docs/ai/tasks/TASK-0062a-rules2-golden.md",

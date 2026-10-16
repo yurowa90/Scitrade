@@ -35,16 +35,22 @@
    - rules-2: **TASK-0062a의 골든**(개발 브랜치 `7cf3e5e` 확정본)이 지킨다. rules-2 묶음은 4정책 × 20시드와 대표 변형 5개(react, 투자+고용 둘, 두 번 고용, 조사 선행) × 5시드, 105회다. 골든은 두 묶음이다. rules-2 105회는 실행마다 `runHash`·`stateHash`(마지막 상태, `meta` 뺀 나머지, 로그 포함)·`probeHash`를 지킨다. `probeHash`는 7일마다 취소 `planState`, 원화→달러 `planState`, 읽기 함수(`paymentDefaultStatus`, `fundsPosition`, `cashReservations`, `upcomingPayments`, `campaignSummary`, `marketTable`, `contractReport`, `exchangePreview`)의 값을 해시한다. 규칙 1 400회는 `runHash`·`stateHash`를 지킨다(`tests/golden/rules1-run.tsv`). 두 묶음 모두 저장 왕복(serialize → deserialize → serialize가 바이트로 같음)을 검사한다. 기존 P0-M2A5 골든값 시험이 함께 지킨다.
    - **선택 인수 원칙이 시험으로 지켜진다.** ‘새 인수는 모두 선택 인수, 없으면 rules-2 동작 그대로’(H13)를 어기면, 미리보기·자금 예약 등 읽기 함수의 rules-2 값이 바뀌어 `probeHash`가 잡는다.
    - TASK-0062~0064는 골든 파일과 검사기를 고치지 않고 `--write`를 쓰지 않는다.
-   - **어떤 d03 정책도 지나가지 않는 경로**는 단위 시험이 지킨다. 아래 표는 세션 A가 시험 파일을 읽고 고친 잠정본이다(개정 3, 검토 S9·n12·n35). **TASK-0062a 병합 뒤 세션 A가 그 범위 표와 대조해 고친다(H14-10). 이 표는 동결 밖이다.** 확정된 0062a에서는 취소를 탐침(취소 `planState`)이, 원화→달러를 탐침(원화→달러 `planState`)과 아래 시험이 함께 지킨다. 대조를 마치기 전에는 TASK-0062를 시작하지 않는다.
+   - **어떤 d03 정책도 지나가지 않는 경로**는 탐침과 단위 시험이 지킨다. 아래 표는 TASK-0062a 결과 보고 ‘범위 보고 ③’(`docs/ai/tasks/results/TASK-0062a.md`)과 대조를 마친 판이다(개정 3b, H14-10). 이 표는 동결 밖이다. **대조 완료(개정 3b 커밋)**: TASK-0062의 기준 커밋은 TASK-0062a 병합 커밋 `c4d6286`이다. ‘없음’은 rules-2 실행 경로를 직접 검증하는 기존 시험이 없다는 뜻이고, 규칙 1 시험은 rules-2 보장으로 세지 않는다.
 
-     | 경로 | 지키는 시험(잠정) |
-     |---|---|
-     | 출항 전 취소·편 놓침 | `cancellation.test.ts`(rules-1이지만 rules-2와 같은 취소 조건값이라 공용 정산 `releaseBooking`·`cancelContract`의 금액을 지킨다). rules-2: `m2a5-readers.test.ts` P0-M2A5-20(취소 명령·보관 재구성), `sim/m2a5-sim.test.ts:284`(편 놓침 → CANCELLED). rules-2 정산 분개 금액 단언은 없어서 TASK-0062 시험 ‘취소(rules-2)’를 더했다 |
-     | 지연 대응(`RESPOND_TO_DELAY`) | rules-2 자료(`SCENARIO_M2_OPERATIONS`와 그 base)에 `port_restriction`이 없어 지연 공지·대응이 생기지 않는다(`src/content/scenario.ts:309-321`, `engine.ts:134-151`). **지킬 rules-2 경로 없음.** 명령 자체는 `m1-trade.test.ts`(규칙 1)가, 하역 대기 문장은 `m2a5-money.test.ts` S20·S24가 주입 설정으로 지킨다 |
-     | 원화→달러 환전(`KRW_TO_USD`) | `m2a5-money.test.ts` P0-M2A5-07 왕복 환전(:51-68), S5(:255), S6(:261) |
-     | USD 미지급(관세 등) | `m2a5-money.test.ts:96-104`(USD 과거 의무 정산), `:178-186`(USD 회복량) |
+     | 0062a 골든에서 0인 경로 | 지키는 것 | 0062~0064와 겹치는가 |
+     |---|---|---|
+     | 출항 전 취소(`CANCEL_CONTRACT`, 취소 계약 수) | 탐침(7일마다 취소 `planState`) + `sim/m2a5-sim.test.ts` ‘handlingJobs는 취소를 빼고 …’(주선 취소 적용) | 겹침(0062가 취소 금액을 통화별로 나눔). 탐침이 rules-2 취소 결과를 지킨다 |
+     | 원화→달러 환전(`KRW_TO_USD`) | 탐침(원화→달러 `planState`) + `m2a5-money.test.ts` ‘왕복 환전의 두 통화 장부와 분개 전체가 맞고 …’ | 겹침(0062가 환전 환율을 바꿈). 탐침과 이 시험이 지킨다 |
+     | USD 미지급(USD 의무 수, 끝 미지급 USD 합) | 읽기만: `m2a5-money.test.ts` ‘USD 원인 의무에는 합산한 다음 수금과 원화 환전 필요액을 제시한다’(주입한 의무의 회복 읽기) | 겹침(0062가 `paymentDefaultStatus`의 묶음 계산을 바꿈). 읽기는 탐침의 `paymentDefaultStatus`와 이 시험이 지킨다 |
+     | USD가 원인인 실패 실행 | **없음** | 겹침(0062가 `processPaymentDefault`의 USD 약정·원화 선택 지출을 고침). 그래서 TASK-0062 시험 표에 ‘USD 원인 실패(rules-2)’를 더했다 |
+     | 지연 대응(`RESPOND_TO_DELAY`, delayDecisions) | 없음. rules-2 자료(`SCENARIO_M2_OPERATIONS`와 그 base)에 `port_restriction`이 없어 닿지 않는 경로다(`src/content/scenario.ts:309-321`, `engine.ts:134-151`) | 겹치지 않음(0062~0064는 지연 공지·대응을 고치지 않음) |
+     | 훈련(`START_TRAINING`) | 없음(`m2a-growth.test.ts` CHAR-ACC-08은 규칙 1) | 겹치지 않음(0062~0064는 훈련 명령·훈련비를 고치지 않음. 원화 급여 묶음 계산은 탐침의 `paymentDefaultStatus`·`fundsPosition`이 지킨다). 시험을 더하지 않는다 |
+     | 실패 기록의 원화 선택 지출 행(`optionalKrwSpendBeforeFirstUnpaid`) | `m2a5-money.test.ts` ‘첫 미지급 전 14일 선택 지출만 포함하고 경계 밖·당일 지출은 뺀다’ | 겹침(0062가 `PURCHASE-` 창을 넓힘). rules-2에는 원화 `PURCHASE-`가 없어 이 시험이 그대로 통과해야 한다 |
+     | 실패 기록의 선복 약정 행(`SPACE_CONTRACT`) | `m2a5-money.test.ts` ‘실패 전 선복 서명 약정을 남기고 …’, ‘같은 날 계약과 선복 서명은 입력 순서대로 …’ | 겹침(0062가 USD 약정 계산을 고침). 이 두 시험이 지킨다 |
+     | 하역 대기 문장 | `m2a5-money.test.ts` S20·S24(주입 설정) | 겹치지 않음 |
 
-     - 0062a 범위 보고(명령 종류별 APPLIED 합계)로는 위 셋째·넷째 줄과 편 놓침이 보이지 않는다. 허브에 0062a 범위 보고에 세 가지를 더하자고 제안한다(검토 n13): 마지막 상태 `operations.exchanges`의 방향별 횟수, USD 미지급이 생긴 실행 수, `FREIGHT-RELEASE-*` 분개가 있는 실행 수.
+     - 0062a 골든에서 0이 아닌 경로(직접 무역 수락, 주선, 원화 환전 `USD_TO_KRW`, 실패 40회, 계약 USD 약정 225행 등)는 골든의 실행·상태·탐침 해시가 지킨다.
+     - 개정 3의 TASK-0062 시험 ‘취소(rules-2)’는 그대로 둔다. 탐침은 계획 결과를, 이 시험은 `FREIGHT-RELEASE` 분개 금액을 설정에서 계산해 본다.
 
    - rules-1: TASK-0062a 골든의 규칙 1 묶음(400회, `tests/golden/rules1-run.tsv`). 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
 3. **위험 값은 순수 함수로 만든다.** 환율 경로·관세 일정·부대비·클레임·수금 계획은 모두 `(seed, 흐름 이름, 번호)`만으로 정해진다.
