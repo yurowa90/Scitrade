@@ -1,4 +1,4 @@
-import { dutyFor } from './risk';
+import { dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
@@ -18,7 +18,7 @@ import {
   type Sailing,
 } from './catalog';
 import { balance, contractAmount, emptyLedger, post, type LedgerLine } from './ledger';
-import { formatMoney, type Currency } from './money';
+import { applyBasisPoints, formatMoney, type Currency } from './money';
 import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
@@ -154,6 +154,7 @@ export function openDay(state: GameState, config: ScenarioConfig): { state: Game
     announcements.push(notice);
     log(s, `항만 공지: ${notice.titleKo} (영향 화물 ${affected.length}건)`);
   }
+  for (const event of tariffSchedule(s, config)) if (event.noticeDay === s.day) log(s, event.labelKo);
   s.phase = 'AWAITING_INPUT';
   return { state: s, announcements };
 }
@@ -991,6 +992,15 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
           { account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor },
         ],
       });
+      const surcharge = config.operations?.risk?.layers.includes('SURCHARGE')
+        ? applyBasisPoints(booking.prepaidFreightMinor,
+          surchargeBp(config, s.rng.seed, booking.routeId, surchargeWeek(config, booking.departureDay))) : 0;
+      if (surcharge) {
+        payOrAccrue(s, config, route.currency, surcharge, `SURCHARGE-${booking.id}`,
+          `${booking.sailingId} 출항 부대비`, contract.id, 'INVENTORY');
+        if (lot.currency === contract.currency) lot.carryingAmountMinor += surcharge;
+        log(s, `${contract.id}: 출항 부대비 ${formatMoney(route.currency, surcharge)}`);
+      }
     }
     log(s, `${shipment.id} 출항: ${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}, 도착 예정 ${shipment.scheduledArrivalDay}일 (${contract.id})`);
   }
