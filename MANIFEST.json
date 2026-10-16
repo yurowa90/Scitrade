@@ -1681,6 +1681,11 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
+      "size_bytes": 99711,
+      "sha256": "0375192432348fbc3575c86c3a1bc53071fe9d5be0342e06a5a2a8eecc4e9193"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
       "size_bytes": 45280,
       "sha256": "61e11e48d9acc17ee2af5d81e6eb34cf0ea407c01caae75574b9e79d95ec44a4"
@@ -1704,6 +1709,11 @@
       "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-HUB-2026-10-16.md",
       "size_bytes": 230499,
       "sha256": "1e42a80cc4dfdfe1f83f21481fa6832cfccbfb6864cd57af88439450f5e2a468"
+    },
+    {
+      "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
+      "size_bytes": 79821,
+      "sha256": "a2f2480b49596460df4268b4a8baf385b63e0a7bbc0a72d1c15e19d698dee344"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2796,9 +2806,24 @@
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
     },
     {
+      "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
+      "size_bytes": 66905,
+      "sha256": "b3fceed442493db79610093392af3ce0b47ed15e858d39c9d72dfd23e2ccc1fb"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0062a-rules2-golden.md",
       "size_bytes": 18110,
       "sha256": "6c895e0e390355abd232b59422229074fba7ea19424f83d212cd96717a4c0f94"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
+      "size_bytes": 50741,
+      "sha256": "29334b56e449da09abc846a0a359df676b5dc1f1ebc78a0983ad36c73787f87a"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
+      "size_bytes": 52739,
+      "sha256": "7a2d67d239bd6aab19ce0fbd8b84365d01ebbacddd883ab771b8f2b297d6ec38"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
