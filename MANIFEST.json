@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 216305,
-      "sha256": "1c06ef7883c101c380db4122c7569f788070be72f8bc95a12ed5dcb2612ec449"
+      "size_bytes": 218777,
+      "sha256": "3ecf0da73f4db6e9af919d102c072b5ca28bcf4d23aa807c97a9c6f65ff8c050"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1682,8 +1682,13 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 7674,
-      "sha256": "aede428fb5fb4b7f0c7ded9a90b77b61cf3666af98ea7d989feb91f5a85fbcf1"
+      "size_bytes": 21549,
+      "sha256": "befb7aedf951217b28ae001a05f041a4d1420255455bb4e2ea2ce980dab33e3e"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
+      "size_bytes": 226720,
+      "sha256": "320f7dd73fc1ce0c11099d055571e84b2d28f5c04de43d1605389f2ea4d75675"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-HUB-2026-10-16.md",
