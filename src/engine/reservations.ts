@@ -1,8 +1,10 @@
+import { dutyFor } from './risk';
+import { offerDef } from './market';
 import { coveredSailings, spaceCovered, spaceEntryId } from './operations';
 // 하나의 예약 체계: 자금(체결한 계약이 앞으로 낼 돈), 직원 시간(진행 중 업무), 선복(출항편의 무게·부피).
 // 예약은 상태에서 매번 계산하며 따로 저장하지 않는다. 같은 돈·직원·공간을 두 곳에 기록하지 않기 위해서다.
 
-import { cargoSpace, dutyEstimate, routeBetween, routeOf, type Sailing } from './catalog';
+import { cargoSpace, listSailings, routeBetween, routeOf, type Sailing } from './catalog';
 import { isAvailableFromToday } from './employees';
 import { balance } from './ledger';
 import type { Currency } from './money';
@@ -30,7 +32,11 @@ export function cashReservations(s: GameState, config: ScenarioConfig): CashRese
       out.push({ contractId: c.id, kind: 'FREIGHT', currency: route.currency, amountMinor: route.bookingFeeMinor });
     }
     if (c.kind === 'DIRECT_TRADE' && (!shipment || shipment.dutyMinor === null)) {
-      const duty = dutyEstimate(config, c.purchaseAmountMinor);
+      const tariffDay = shipment ? Math.max(shipment.scheduledArrivalDay, s.day)
+        : booking?.status === 'BOOKED' ? booking.departureDay + routeOf(config, booking.routeId).transitDays
+          : route ? listSailings(config, route.id, s.day + 1)[0]?.scheduledArrivalDay ?? s.day : s.day;
+      const duty = dutyFor(config, s.rng.seed, c.goodId, c.destinationCityId, tariffDay, s.day,
+        c.purchaseAmountMinor, offerDef(s, config, c.buyOfferId!)!.currency, c.acceptedDay);
       if (duty > 0) out.push({ contractId: c.id, kind: 'DUTY', currency: c.currency, amountMinor: duty });
     }
   }

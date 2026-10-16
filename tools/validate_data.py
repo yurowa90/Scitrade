@@ -917,6 +917,85 @@ def check_market_rules(documents, tables):
             cap = late.get('cap_basis_points')
             check((type(cap) is int and 1 <= cap <= 10000) if late['basis'] == 'per_late_day_capped'
                   else 'cap_basis_points' not in late, f'{sid}: 지연 감액 상한 칸 오류')
+    # 모든 프로필은 현재 운영 시나리오가 상속해 쓰는 rule_set 전체를 덮어야 한다.
+    active_rules = set()
+    for sid in tables['scenarios']:
+        scenario = resolve_scenario(tables['scenarios'], sid)
+        if scenario.get('engine_rules', {}).get('rules_version') in ('M2a-rules-2', 'M2a-rules-3'):
+            ref = scenario.get('operations', {}).get('market_rules_ref', '')
+            if '#' in ref:
+                active_rules.add(ref.split('#', 1)[1])
+    profiles = market.get('risk_profiles', [])
+    check(bool(profiles), 'risk_profiles: 프로필이 필요함')
+    profile_ids = [p['id'] for p in profiles]
+    check(len(profile_ids) == len(set(profile_ids)), 'risk_profiles: 프로필 ID 중복')
+    for p in profiles:
+        prefix = f"risk_profiles: {p['id']}: "
+        def integer(value, low, high, field):
+            check(type(value) is int and low <= value <= high, prefix + field + ': 정수 범위 오류')
+        def pair(values, low, high, field):
+            valid = (len(values) == 2 and all(type(v) is int and low <= v <= high for v in values)
+                     and values[0] <= values[1])
+            check(valid, prefix + field + ': 최소·최대 범위 오류')
+        def bp(group, fields, path):
+            for field in fields:
+                integer(group[field], 0, 10000, path + '.' + field)
+        fx, tariff, surcharge, claims, collections = (p[k] for k in ('fx', 'tariff', 'surcharge', 'claims', 'collections'))
+        for rows, keys, label in (
+            (tariff['base'], ('country_code', 'good_id'), 'tariff.base'),
+            (claims['by_good'], ('good_id',), 'claims.by_good'),
+            (collections['by_counterparty'], ('counterparty_id',), 'collections.by_counterparty'),
+            (collections['grades'], ('grade',), 'collections.grades'),
+        ):
+            row_keys = [tuple(row[key] for key in keys) for row in rows]
+            check(len(row_keys) == len(set(row_keys)), prefix + label + ': 중복 행')
+        bp(fx, ['step_bp'], 'fx')
+        pair([fx['min_krw_per_usd'], fx['max_krw_per_usd']], 1, float('inf'), 'fx')
+        check(type(fx['start_krw_per_usd']) is int and fx['min_krw_per_usd'] <= fx['start_krw_per_usd'] <= fx['max_krw_per_usd'],
+              prefix + 'fx: 시작 환율 범위 오류')
+        check(fx['start_krw_per_usd'] == documents['game_config']['config']['fx_krw_per_usd'],
+              prefix + 'fx: 시작 환율이 fx_krw_per_usd와 다름')
+        integer(tariff['max_changes'], 0, float('inf'), 'tariff.max_changes')
+        pair(tariff['lag_days'], 0, float('inf'), 'tariff.lag_days')
+        pair(tariff['step_bp'], -10000, 10000, 'tariff.step_bp')
+        pair([tariff['min_bp'], tariff['max_bp']], 0, 10000, 'tariff')
+        bp(surcharge, ['p_zero_bp', 'min_bp', 'max_bp'], 'surcharge')
+        pair([surcharge['min_bp'], surcharge['max_bp']], 0, 10000, 'surcharge')
+        for tier in ('minor', 'major'):
+            bp(claims[tier], ['weight_bp', 'min_bp', 'max_bp'], 'claims.' + tier)
+            pair([claims[tier]['min_bp'], claims[tier]['max_bp']], 0, 10000, 'claims.' + tier)
+        check(claims['minor']['weight_bp'] + claims['major']['weight_bp'] == 10000,
+              prefix + 'claims: 손상 가중치 합은 10000이어야 함')
+        for row in tariff['base']:
+            bp(row, ['rate_bp'], 'tariff.base')
+            check(row['good_id'] in tables['goods'], prefix + 'tariff: 품목 자료에 없는 품목')
+        for row in claims['by_good']:
+            bp(row, ['p_claim_bp'], 'claims.by_good')
+            check(row['good_id'] in tables['goods'], prefix + 'claims: 품목 자료에 없는 품목')
+        grades = {row['grade'] for row in collections['grades']}
+        for row in collections['grades']:
+            fields = ['p_on_time_bp', 'p_late_bp', 'p_partial_bp']
+            bp(row, fields, 'collections.grades')
+            check(sum(row[f] for f in fields) == 10000, prefix + 'collections: 등급 확률 합은 10000이어야 함')
+        for row in collections['by_counterparty']:
+            check(row['counterparty_id'] in names, prefix + 'collections: 시장 자료에 없는 거래처')
+            check(row['grade'] in grades, prefix + 'collections: 정의되지 않은 등급')
+        bp(collections, ['partial_bp'], 'collections')
+        pair([collections['late_min_days'], collections['late_max_days']], 0, float('inf'), 'collections.late_days')
+        parties = {row['counterparty_id'] for row in collections['by_counterparty']}
+        claim_goods = {row['good_id'] for row in claims['by_good']}
+        tariff_keys = {(row['country_code'], row['good_id']) for row in tariff['base']}
+        for rule in market['rule_sets']:
+            if rule['id'] not in active_rules:
+                continue
+            for good in rule['trade']['goods']:
+                check(good['good_id'] in claim_goods, prefix + 'claims: 운영 품목 누락')
+                for party in good['sell_counterparties']:
+                    check(party['counterparty_id'] in parties, prefix + 'collections: 운영 판매 거래처 누락')
+                for city in rule['trade']['sell_city_ids']:
+                    country = tables['world'].get(city, {}).get('country_code')
+                    check((country, good['good_id']) in tariff_keys, prefix + 'tariff: 운영 판매국·품목 누락')
+
     param = next(p for p in documents['parameters']['items'] if p['id'] == 'PAR_PAYMENT_GRACE_DAYS')
     try:
         file, pointer = param['json_pointer'].split('#')

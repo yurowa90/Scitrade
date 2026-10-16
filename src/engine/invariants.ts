@@ -1,3 +1,4 @@
+import { offerDef } from './market';
 import { operationsProblems } from './operations-invariants';
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
 
@@ -5,7 +6,7 @@ import { cultureProblems } from './culture-invariants';
 import { findSailing, routeOf } from './catalog';
 import { completionReward } from './growth';
 import { isEmployed } from './employees';
-import { balance } from './ledger';
+import { balance, contractAmount } from './ledger';
 import type { Currency } from './money';
 import { sailingLoad } from './reservations';
 import type { GameState, ScenarioConfig } from './types';
@@ -61,9 +62,19 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
 
     // 회사 재고 장부는 회사 소유 화물만 담는다. 고객 화물은 장부가액이 없다.
     const inventory = balance(s.ledger, c, 'INVENTORY');
-    const lotTotal = s.cargoLots
+    let lotTotal = s.cargoLots
       .filter((l) => l.owner === 'COMPANY' && l.currency === c && l.status !== 'DELIVERED')
       .reduce((acc, l) => acc + l.carryingAmountMinor, 0);
+    for (const contract of s.contracts) {
+      if (contract.kind === 'DIRECT_TRADE' && c === contract.currency
+        && offerDef(s, config, contract.buyOfferId!)?.currency !== contract.currency) {
+        const usdInventory = contractAmount(s.ledger, 'USD', contract.id, 'INVENTORY');
+        if (contract.deliveredDay !== null ? usdInventory !== 0 : usdInventory < 0) {
+          problems.push(`혼합 계약 ${contract.id}의 USD 재고 잔액(${usdInventory})이 맞지 않습니다`);
+        }
+        lotTotal += contractAmount(s.ledger, c, contract.id, 'INVENTORY');
+      }
+    }
     if (inventory !== lotTotal) problems.push(`${c} 재고 장부(${inventory})와 회사 화물 장부가액 합계(${lotTotal})가 다릅니다`);
 
     const prepaid = balance(s.ledger, c, 'PREPAID_FREIGHT');

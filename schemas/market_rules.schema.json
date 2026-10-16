@@ -9,7 +9,8 @@
     "numeric_values_status",
     "rule_sets",
     "counterparties",
-    "$schema"
+    "$schema",
+    "risk_profiles"
   ],
   "properties": {
     "schema_version": {
@@ -410,6 +411,348 @@
     },
     "$schema": {
       "type": "string"
+    },
+    "risk_profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "data_basis",
+          "status",
+          "basis",
+          "fx",
+          "tariff",
+          "surcharge",
+          "claims",
+          "collections"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "data_basis": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "fx": {
+            "type": "object",
+            "required": [
+              "start_krw_per_usd",
+              "step_bp",
+              "min_krw_per_usd",
+              "max_krw_per_usd"
+            ],
+            "properties": {
+              "start_krw_per_usd": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "step_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "min_krw_per_usd": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "max_krw_per_usd": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          "tariff": {
+            "type": "object",
+            "required": [
+              "base",
+              "max_changes",
+              "lag_days",
+              "step_bp",
+              "min_bp",
+              "max_bp",
+              "basis",
+              "status"
+            ],
+            "properties": {
+              "base": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "country_code",
+                    "good_id",
+                    "rate_bp"
+                  ],
+                  "properties": {
+                    "country_code": {
+                      "type": "string"
+                    },
+                    "good_id": {
+                      "type": "string"
+                    },
+                    "rate_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "max_changes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "lag_days": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "step_bp": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -10000,
+                  "maximum": 10000
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "min_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "max_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "basis": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "surcharge": {
+            "type": "object",
+            "required": [
+              "p_zero_bp",
+              "min_bp",
+              "max_bp"
+            ],
+            "properties": {
+              "p_zero_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "min_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "max_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            },
+            "additionalProperties": false
+          },
+          "claims": {
+            "type": "object",
+            "required": [
+              "by_good",
+              "basis",
+              "minor",
+              "major"
+            ],
+            "properties": {
+              "by_good": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "good_id",
+                    "grade",
+                    "p_claim_bp"
+                  ],
+                  "properties": {
+                    "good_id": {
+                      "type": "string"
+                    },
+                    "grade": {
+                      "type": "string"
+                    },
+                    "p_claim_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "basis": {
+                "type": "string"
+              },
+              "minor": {
+                "type": "object",
+                "required": [
+                  "weight_bp",
+                  "min_bp",
+                  "max_bp"
+                ],
+                "properties": {
+                  "weight_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "min_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "max_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  }
+                },
+                "additionalProperties": false
+              },
+              "major": {
+                "type": "object",
+                "required": [
+                  "weight_bp",
+                  "min_bp",
+                  "max_bp"
+                ],
+                "properties": {
+                  "weight_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "min_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "max_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "collections": {
+            "type": "object",
+            "required": [
+              "by_counterparty",
+              "basis",
+              "grades",
+              "partial_bp",
+              "late_min_days",
+              "late_max_days"
+            ],
+            "properties": {
+              "by_counterparty": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "counterparty_id",
+                    "grade"
+                  ],
+                  "properties": {
+                    "counterparty_id": {
+                      "type": "string"
+                    },
+                    "grade": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "basis": {
+                "type": "string"
+              },
+              "grades": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "grade",
+                    "p_on_time_bp",
+                    "p_late_bp",
+                    "p_partial_bp"
+                  ],
+                  "properties": {
+                    "grade": {
+                      "type": "string"
+                    },
+                    "p_on_time_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "p_late_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "p_partial_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "partial_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "late_min_days": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "late_max_days": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false
