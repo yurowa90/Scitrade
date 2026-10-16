@@ -16,7 +16,7 @@ import type { GameState, ScenarioConfig } from '../engine/types';
 import { payrollRunwayKo } from './growth';
 import { esc } from './html';
 import { counterpartyNameKo, contractTitleKo, exchangeBlock, exchangeSelection, marketBlock, operationsQuoteFacts, paymentStatusKo } from './market';
-import { startUi } from './main-testkit';
+import { SITUATION_BUTTON, startUi } from './main-testkit';
 import { krwReportNoteKo, qtyKo, upcomingSummary } from './reports';
 import { scheduleItems } from './schedule';
 import { loadSaveText } from './session';
@@ -37,7 +37,7 @@ const unpaidState = () => {
 };
 const dayState = (day: number, config = cfg, unlock = false) => openDay(runDays(createGame(config), config, day - 1,
   unlock ? { 1: [{ id: 'FWD', type: 'ACCEPT_FORWARDING', offerId: config.offers.find((o) => o.kind === 'forwarding')!.id }, ...standardDayOneCommands(config).slice(1)] } : {}).state, config).state;
-const normalized = (html: string) => html.replace(/<select data-action="scenario">[\s\S]*?<\/select>/, '').replace(/빌드 [^<]+/, '빌드 BASE');
+const normalized = (html: string) => html.replace(SITUATION_BUTTON, '').replace(/<select data-action="scenario">[\s\S]*?<\/select>/, '').replace(/빌드 [^<]+/, '빌드 BASE');
 const usd = (n: number) => formatMoney('USD', n);
 const krw = (n: number) => formatMoney('KRW', n);
 const article = (html: string, key: string) => html.split('<article class="offer').slice(1).find((s) => s.includes(`data-key="${key}"`))!.split('</article>')[0]!;

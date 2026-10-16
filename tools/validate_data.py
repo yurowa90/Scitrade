@@ -929,6 +929,46 @@ def check_market_rules(documents, tables):
           'PAR_PAYMENT_GRACE_DAYS: 시나리오 값과 다름')
 
 
+def validate_situation_map(document, bounds):
+    """상황실 한 문서의 출처 확인·반입 등급·지도 좌표를 함께 검사한다."""
+    layers = document.get('layers', [])
+    ids = [layer.get('id') for layer in layers]
+    check(len(ids) == 5 and set(ids) == {'cargo', 'routes', 'ports', 'nightlights', 'countries'},
+          'situation_map: 겹치지 않는 다섯 층')
+    by_id = {layer.get('id'): layer for layer in layers}
+    for layer in layers:
+        check(layer.get('license_tier') in ('bundle_raw', 'derived_only', 'banned'),
+              'situation_map: 반입 등급')
+        check(layer.get('verification_status') in ('pending', 'verified'),
+              'situation_map: 확인 상태')
+        check(layer.get('license_tier') != 'banned', 'situation_map: 금지 층은 화면에 쓸 수 없음')
+        date = layer.get('retrieved_on')
+        check((date is None and layer.get('verification_status') != 'verified') or valid_date(date),
+              'situation_map: 확인된 층의 수집일은 날짜')
+    ports = document.get('ports', [])
+    port_ids = [port.get('id') for port in ports]
+    check(len(port_ids) == len(set(port_ids)), 'situation_map: 항만 ID 중복')
+    for port in ports:
+        lon, lat = port.get('lon'), port.get('lat')
+        check(type(lon) in (int, float) and type(lat) in (int, float)
+              and bounds['lon_min'] <= lon <= bounds['lon_max']
+              and bounds['lat_min'] <= lat <= bounds['lat_max'], 'situation_map: 항만 지도 경계')
+    countries = document.get('countries', [])
+    check(len(countries) == 3 and {c.get('id') for c in countries} == {'KOR', 'CHN', 'VNM'},
+          'situation_map: 세 국가')
+    for country in countries:
+        indicators = country.get('indicators', [])
+        check(len(indicators) == 4 and len({i.get('id') for i in indicators}) == 4,
+              'situation_map: 국가 지표 네 개')
+        for indicator in indicators:
+            layer = by_id.get(indicator.get('source_layer'), {})
+            check(layer.get('verification_status') != 'verified' or indicator.get('value') is not None,
+                  'situation_map: 확인된 국가 지표는 값 필요')
+            check(indicator.get('value') is None or
+                  (type(indicator.get('year')) is int and layer.get('verification_status') == 'verified'),
+                  'situation_map: 값은 정수 기준 연도와 확인된 층 필요')
+
+
 def main():
     documents = {}
     for file in sorted((ROOT / 'data').glob('*.json')):
@@ -938,6 +978,8 @@ def main():
         shape(data, schema, file.name)
     tables = {name: index(doc['items'], name)
               for name, doc in documents.items() if 'items' in doc}
+    map_asset = next(a for a in read('src/assets/manifest.json')['assets'] if a['id'] == 'MAP_EAST_ASIA')
+    validate_situation_map(documents['situation_map'], map_asset['bounds'])
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
     expected_counts = {'world': 21, 'goods': 8, 'routes': 6, 'employees': 6,
