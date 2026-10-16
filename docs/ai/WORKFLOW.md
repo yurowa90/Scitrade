@@ -52,6 +52,7 @@ README의 읽기 순서를 따른다. 현재 세션의 구현 단계를 명시�
 - 작업 끝에는 STATUS.md에 실제 변경과 실행한 검증, 남은 위험과 다음 단계를 기록한다. 실행하지 않은 인수 기준을 통과로 표시하지 않는다.
 - 문서·데이터를 변경하면 `python3 tools/build_package.py --manifest-only` 후 `python3 tools/validate_data.py`로 관련 파일 해시를 갱신·확인한다.
 - 배포 묶음은 `python3 tools/build_package.py`로 만든다. 생성된 ZIP·임시 파일·원본 광고 영상·원작 자산은 Git에 추가하지 않는다.
+- 하위 에이전트·작업 흐름이 쓰는 저장소 사본은 원본과 `.git`을 공유하지 않게 만든다(`git archive`로 `.git` 없이 풀거나, `git clone --local`로 독립 저장소를 만든다). 원본과 `.git`을 공유하는 작업 트리(`git worktree`)에서는 읽기 전용 git 명령(`diff`·`show`·`log`·`grep`)만 쓰고, `stash`·`checkout`·`reset`·`apply`·`commit`·`worktree`·`clean`은 쓰지 않는다(2026-10-16 허브).
 
 ## 역할 분담: Claude 총괄·검수, Codex 구현 (2026-10-05 사용자 결정)
 
