@@ -1,0 +1,812 @@
+[
+ {
+  "i": 0,
+  "name_en": "Haimen",
+  "name_ko": "하이먼",
+  "basis": "C"
+ },
+ {
+  "i": 1,
+  "name_en": "Qinhuangdao",
+  "name_ko": "친황다오",
+  "basis": "C"
+ },
+ {
+  "i": 2,
+  "name_en": "Yantian",
+  "name_ko": "옌톈",
+  "basis": "C"
+ },
+ {
+  "i": 3,
+  "name_en": "Yingkou",
+  "name_ko": "잉커우",
+  "basis": "C"
+ },
+ {
+  "i": 4,
+  "name_en": "Sorong",
+  "name_ko": "소롱",
+  "basis": "O"
+ },
+ {
+  "i": 5,
+  "name_en": "Omura",
+  "name_ko": "오무라",
+  "basis": "J"
+ },
+ {
+  "i": 6,
+  "name_en": "Amagasaki",
+  "name_ko": "아마가사키",
+  "basis": "J"
+ },
+ {
+  "i": 7,
+  "name_en": "Fushiki",
+  "name_ko": "후시키",
+  "basis": "J"
+ },
+ {
+  "i": 8,
+  "name_en": "Imabari",
+  "name_ko": "이마바리",
+  "basis": "J"
+ },
+ {
+  "i": 9,
+  "name_en": "Iwakuni",
+  "name_ko": "이와쿠니",
+  "basis": "J"
+ },
+ {
+  "i": 10,
+  "name_en": "Kainan",
+  "name_ko": "가이난",
+  "basis": "J"
+ },
+ {
+  "i": 11,
+  "name_en": "Kanazawa",
+  "name_ko": "가나자와",
+  "basis": "J"
+ },
+ {
+  "i": 12,
+  "name_en": "Kawasaki",
+  "name_ko": "가와사키",
+  "basis": "J"
+ },
+ {
+  "i": 13,
+  "name_en": "Kokura",
+  "name_ko": "고쿠라",
+  "basis": "J"
+ },
+ {
+  "i": 14,
+  "name_en": "Maizuru",
+  "name_ko": "마이즈루",
+  "basis": "J"
+ },
+ {
+  "i": 15,
+  "name_en": "Matsusaka",
+  "name_ko": "마쓰사카",
+  "basis": "J"
+ },
+ {
+  "i": 16,
+  "name_en": "Miyazu",
+  "name_ko": "미야즈",
+  "basis": "J"
+ },
+ {
+  "i": 17,
+  "name_en": "Muroran",
+  "name_ko": "무로란",
+  "basis": "J"
+ },
+ {
+  "i": 18,
+  "name_en": "Niigata",
+  "name_ko": "니가타",
+  "basis": "J"
+ },
+ {
+  "i": 19,
+  "name_en": "Saganoseki",
+  "name_ko": "사가노세키",
+  "basis": "J"
+ },
+ {
+  "i": 20,
+  "name_en": "Sasebo",
+  "name_ko": "사세보",
+  "basis": "J"
+ },
+ {
+  "i": 21,
+  "name_en": "Shimizu",
+  "name_ko": "시미즈",
+  "basis": "J"
+ },
+ {
+  "i": 22,
+  "name_en": "Shimotsu",
+  "name_ko": "시모쓰",
+  "basis": "J"
+ },
+ {
+  "i": 23,
+  "name_en": "Wakayama",
+  "name_ko": "와카야마",
+  "basis": "J"
+ },
+ {
+  "i": 24,
+  "name_en": "Yokosuka",
+  "name_ko": "요코스카",
+  "basis": "J"
+ },
+ {
+  "i": 25,
+  "name_en": "Kemaman",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 26,
+  "name_en": "Nakhodka",
+  "name_ko": "나홋카",
+  "basis": "O"
+ },
+ {
+  "i": 27,
+  "name_en": "Nakhodka",
+  "name_ko": "나홋카",
+  "basis": "O"
+ },
+ {
+  "i": 28,
+  "name_en": "Bangkok",
+  "name_ko": "방콕",
+  "basis": "O"
+ },
+ {
+  "i": 29,
+  "name_en": "Laem Chabang",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 30,
+  "name_en": "Sriracha",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 31,
+  "name_en": "Keelung",
+  "name_ko": "지룽",
+  "basis": "T"
+ },
+ {
+  "i": 32,
+  "name_en": "Guangzhou",
+  "name_ko": "광저우",
+  "basis": "C"
+ },
+ {
+  "i": 33,
+  "name_en": "Jiangyin",
+  "name_ko": "장인",
+  "basis": "C"
+ },
+ {
+  "i": 34,
+  "name_en": "Lianyungang",
+  "name_ko": "롄윈강",
+  "basis": "C"
+ },
+ {
+  "i": 35,
+  "name_en": "Sanya",
+  "name_ko": "싼야",
+  "basis": "C"
+ },
+ {
+  "i": 36,
+  "name_en": "Zhanjiang",
+  "name_ko": "잔장",
+  "basis": "C"
+ },
+ {
+  "i": 37,
+  "name_en": "Zhoushan",
+  "name_ko": "저우산",
+  "basis": "C"
+ },
+ {
+  "i": 38,
+  "name_en": "Yap",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 39,
+  "name_en": "Sorong",
+  "name_ko": "소롱",
+  "basis": "O"
+ },
+ {
+  "i": 40,
+  "name_en": "Nunukan",
+  "name_ko": "누누칸",
+  "basis": "O"
+ },
+ {
+  "i": 41,
+  "name_en": "Panjang",
+  "name_ko": "판장",
+  "basis": "O"
+ },
+ {
+  "i": 42,
+  "name_en": "Tanjung Priok",
+  "name_ko": "탄중프리옥",
+  "basis": "O"
+ },
+ {
+  "i": 43,
+  "name_en": "Nishinoomote",
+  "name_ko": "니시노오모테",
+  "basis": "J"
+ },
+ {
+  "i": 44,
+  "name_en": "Akita",
+  "name_ko": "아키타",
+  "basis": "J"
+ },
+ {
+  "i": 45,
+  "name_en": "Hachinohe",
+  "name_ko": "하치노헤",
+  "basis": "J"
+ },
+ {
+  "i": 46,
+  "name_en": "Ishigaki",
+  "name_ko": "이시가키",
+  "basis": "J"
+ },
+ {
+  "i": 47,
+  "name_en": "Matsuyama",
+  "name_ko": "마쓰야마",
+  "basis": "J"
+ },
+ {
+  "i": 48,
+  "name_en": "Sakata",
+  "name_ko": "사카타",
+  "basis": "J"
+ },
+ {
+  "i": 49,
+  "name_en": "Takamatsu",
+  "name_ko": "다카마쓰",
+  "basis": "J"
+ },
+ {
+  "i": 50,
+  "name_en": "Tottori",
+  "name_ko": "돗토리",
+  "basis": "J"
+ },
+ {
+  "i": 51,
+  "name_en": "Gunsan",
+  "name_ko": "군산",
+  "basis": "K"
+ },
+ {
+  "i": 52,
+  "name_en": "Pohang",
+  "name_ko": "포항",
+  "basis": "K"
+ },
+ {
+  "i": 53,
+  "name_en": "Samcheok",
+  "name_ko": "삼척",
+  "basis": "K"
+ },
+ {
+  "i": 54,
+  "name_en": "Sokcho",
+  "name_ko": "속초",
+  "basis": "K"
+ },
+ {
+  "i": 55,
+  "name_en": "Ulsan",
+  "name_ko": "울산",
+  "basis": "K"
+ },
+ {
+  "i": 56,
+  "name_en": "Malacca",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 57,
+  "name_en": "Port Dickson",
+  "name_ko": "포트딕슨",
+  "basis": "O"
+ },
+ {
+  "i": 58,
+  "name_en": "Dumaguete",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 59,
+  "name_en": "General Santos",
+  "name_ko": "제너럴산토스",
+  "basis": "O"
+ },
+ {
+  "i": 60,
+  "name_en": "Daru",
+  "name_ko": "다루",
+  "basis": "O"
+ },
+ {
+  "i": 61,
+  "name_en": "Madang",
+  "name_ko": "마당",
+  "basis": "O"
+ },
+ {
+  "i": 62,
+  "name_en": "Songkhla",
+  "name_ko": "송클라",
+  "basis": "O"
+ },
+ {
+  "i": 63,
+  "name_en": "Hai Phong",
+  "name_ko": "하이퐁",
+  "basis": "G"
+ },
+ {
+  "i": 64,
+  "name_en": "Phuket",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 65,
+  "name_en": "Pulau Pinang",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 66,
+  "name_en": "Belawan",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 67,
+  "name_en": "Semarang",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 68,
+  "name_en": "Kuching",
+  "name_ko": "쿠칭",
+  "basis": "O"
+ },
+ {
+  "i": 69,
+  "name_en": "Miri",
+  "name_ko": "미리",
+  "basis": "O"
+ },
+ {
+  "i": 70,
+  "name_en": "Kota Kinabalu",
+  "name_ko": "코타키나발루",
+  "basis": "O"
+ },
+ {
+  "i": 71,
+  "name_en": "Pelabuhan Sandakan",
+  "name_ko": "산다칸",
+  "basis": "O"
+ },
+ {
+  "i": 72,
+  "name_en": "Ujungpandang",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 73,
+  "name_en": "Davao",
+  "name_ko": "다바오",
+  "basis": "O"
+ },
+ {
+  "i": 74,
+  "name_en": "Nanjing",
+  "name_ko": "난징",
+  "basis": "C"
+ },
+ {
+  "i": 75,
+  "name_en": "Hankow",
+  "name_ko": "한커우",
+  "basis": "C"
+ },
+ {
+  "i": 76,
+  "name_en": "Chang Sha",
+  "name_ko": "창사",
+  "basis": "C"
+ },
+ {
+  "i": 77,
+  "name_en": "Beihai",
+  "name_ko": "베이하이",
+  "basis": "C"
+ },
+ {
+  "i": 78,
+  "name_en": "Jiangmen",
+  "name_ko": "장먼",
+  "basis": "C"
+ },
+ {
+  "i": 79,
+  "name_en": "Wenzhou",
+  "name_ko": "원저우",
+  "basis": "C"
+ },
+ {
+  "i": 80,
+  "name_en": "Yantai",
+  "name_ko": "옌타이",
+  "basis": "C"
+ },
+ {
+  "i": 81,
+  "name_en": "Zhuhai",
+  "name_ko": "주하이",
+  "basis": "C"
+ },
+ {
+  "i": 82,
+  "name_en": "Banjarmasin",
+  "name_ko": "반자르마신",
+  "basis": "O"
+ },
+ {
+  "i": 83,
+  "name_en": "Tanjung Pandan",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 84,
+  "name_en": "Aomori",
+  "name_ko": "아오모리",
+  "basis": "J"
+ },
+ {
+  "i": 85,
+  "name_en": "Hakodate",
+  "name_ko": "하코다테",
+  "basis": "J"
+ },
+ {
+  "i": 86,
+  "name_en": "Kagoshima",
+  "name_ko": "가고시마",
+  "basis": "J"
+ },
+ {
+  "i": 87,
+  "name_en": "Kochi",
+  "name_ko": "고치",
+  "basis": "J"
+ },
+ {
+  "i": 88,
+  "name_en": "Kushiro",
+  "name_ko": "구시로",
+  "basis": "J"
+ },
+ {
+  "i": 89,
+  "name_en": "Niihama",
+  "name_ko": "니이하마",
+  "basis": "J"
+ },
+ {
+  "i": 90,
+  "name_en": "Oita",
+  "name_ko": "오이타",
+  "basis": "J"
+ },
+ {
+  "i": 91,
+  "name_en": "Shimonoseki",
+  "name_ko": "시모노세키",
+  "basis": "J"
+ },
+ {
+  "i": 92,
+  "name_en": "Tomakomai",
+  "name_ko": "도마코마이",
+  "basis": "J"
+ },
+ {
+  "i": 93,
+  "name_en": "Toyama",
+  "name_ko": "도야마",
+  "basis": "J"
+ },
+ {
+  "i": 94,
+  "name_en": "Ube",
+  "name_ko": "우베",
+  "basis": "J"
+ },
+ {
+  "i": 95,
+  "name_en": "Saipan",
+  "name_ko": "사이판",
+  "basis": "O"
+ },
+ {
+  "i": 96,
+  "name_en": "Masbate",
+  "name_ko": "마스바테",
+  "basis": "O"
+ },
+ {
+  "i": 97,
+  "name_en": "Subic Bay",
+  "name_ko": "수빅만",
+  "basis": "O"
+ },
+ {
+  "i": 98,
+  "name_en": "Vanimo",
+  "name_ko": "바니모",
+  "basis": "O"
+ },
+ {
+  "i": 99,
+  "name_en": "Haikou",
+  "name_ko": "하이커우",
+  "basis": "C"
+ },
+ {
+  "i": 100,
+  "name_en": "Ningbo",
+  "name_ko": "닝보",
+  "basis": "C"
+ },
+ {
+  "i": 101,
+  "name_en": "Xiamen",
+  "name_ko": "샤먼",
+  "basis": "C"
+ },
+ {
+  "i": 102,
+  "name_en": "Surabaya",
+  "name_ko": "수라바야",
+  "basis": "O"
+ },
+ {
+  "i": 103,
+  "name_en": "Manado",
+  "name_ko": "마나도",
+  "basis": "O"
+ },
+ {
+  "i": 104,
+  "name_en": "Senipah",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 105,
+  "name_en": "Hiroshima",
+  "name_ko": "히로시마",
+  "basis": "J"
+ },
+ {
+  "i": 106,
+  "name_en": "Kobe",
+  "name_ko": "고베",
+  "basis": "J"
+ },
+ {
+  "i": 107,
+  "name_en": "Nagasaki",
+  "name_ko": "나가사키",
+  "basis": "J"
+ },
+ {
+  "i": 108,
+  "name_en": "Otaru",
+  "name_ko": "오타루",
+  "basis": "J"
+ },
+ {
+  "i": 109,
+  "name_en": "Tokyo",
+  "name_ko": "도쿄",
+  "basis": "J"
+ },
+ {
+  "i": 110,
+  "name_en": "Cebu",
+  "name_ko": "세부",
+  "basis": "O"
+ },
+ {
+  "i": 111,
+  "name_en": "Zamboanga",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 112,
+  "name_en": "Wewak",
+  "name_ko": "웨왁",
+  "basis": "O"
+ },
+ {
+  "i": 113,
+  "name_en": "Vladivostok",
+  "name_ko": "블라디보스토크",
+  "basis": "O"
+ },
+ {
+  "i": 114,
+  "name_en": "Kaohsiung",
+  "name_ko": "가오슝",
+  "basis": "T"
+ },
+ {
+  "i": 115,
+  "name_en": "Taichung",
+  "name_ko": "타이중",
+  "basis": "T"
+ },
+ {
+  "i": 116,
+  "name_en": "Da Nang",
+  "name_ko": "다낭",
+  "basis": "V"
+ },
+ {
+  "i": 117,
+  "name_en": "Dalian",
+  "name_ko": "다롄",
+  "basis": "C"
+ },
+ {
+  "i": 118,
+  "name_en": "Fuzhou",
+  "name_ko": "푸저우",
+  "basis": "C"
+ },
+ {
+  "i": 119,
+  "name_en": "Qingdao",
+  "name_ko": "칭다오",
+  "basis": "C"
+ },
+ {
+  "i": 120,
+  "name_en": "Shanghai",
+  "name_ko": "상하이",
+  "basis": "G"
+ },
+ {
+  "i": 121,
+  "name_en": "Shantou",
+  "name_ko": "산터우",
+  "basis": "C"
+ },
+ {
+  "i": 122,
+  "name_en": "Hong Kong",
+  "name_ko": "홍콩",
+  "basis": "G"
+ },
+ {
+  "i": 123,
+  "name_en": "Surabaya",
+  "name_ko": "수라바야",
+  "basis": "O"
+ },
+ {
+  "i": 124,
+  "name_en": "Kitakyushu",
+  "name_ko": "기타큐슈",
+  "basis": "J"
+ },
+ {
+  "i": 125,
+  "name_en": "Phnom Penh",
+  "name_ko": "프놈펜",
+  "basis": "O"
+ },
+ {
+  "i": 126,
+  "name_en": "Singapore",
+  "name_ko": "싱가포르",
+  "basis": "G"
+ },
+ {
+  "i": 127,
+  "name_en": "Bangkok",
+  "name_ko": "방콕",
+  "basis": "O"
+ },
+ {
+  "i": 128,
+  "name_en": "Ho Chi Minh City",
+  "name_ko": "",
+  "basis": ""
+ },
+ {
+  "i": 129,
+  "name_en": "Guangzhou",
+  "name_ko": "광저우",
+  "basis": "C"
+ },
+ {
+  "i": 130,
+  "name_en": "Tianjin",
+  "name_ko": "톈진",
+  "basis": "C"
+ },
+ {
+  "i": 131,
+  "name_en": "Osaka",
+  "name_ko": "오사카",
+  "basis": "J"
+ },
+ {
+  "i": 132,
+  "name_en": "Yokohama",
+  "name_ko": "요코하마",
+  "basis": "G"
+ },
+ {
+  "i": 133,
+  "name_en": "Manila",
+  "name_ko": "마닐라",
+  "basis": "O"
+ },
+ {
+  "i": 134,
+  "name_en": "Taipei",
+  "name_ko": "타이베이",
+  "basis": "T"
+ }
+]
