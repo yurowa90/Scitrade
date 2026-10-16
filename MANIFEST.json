@@ -97,8 +97,8 @@
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 11396,
-      "sha256": "5b8ab4522c198c02d97168f2faab39056722141c36ef484466a8d302cbcdaa1a"
+      "size_bytes": 14329,
+      "sha256": "efa63a1fbcedecd656ff52385ec1ac1f1849ccc1e4c4f7befc655542533c7454"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 225917,
-      "sha256": "497ca9055fe82928f0ff1dfc5dbee04dc2561af988ce5494df8be59c2e279a2a"
+      "size_bytes": 228125,
+      "sha256": "1c4bbdcd40c508bb58198c47bd098209f6f55358bc66a602de1c615524d4ec5c"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1681,9 +1681,14 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/CODEX-REVIEW-0062-HUB-2026-10-16.md",
+      "size_bytes": 142649,
+      "sha256": "dd58de45cb7bac2c2edee81ebdb2bcca0e2fec2896436ad6d4e1b9a735b89220"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 101787,
-      "sha256": "86c82cc0ed8e3b04ee9c0e5054238f60795494ea40dba771e197c57f5ba273d6"
+      "size_bytes": 102220,
+      "sha256": "4f51aa075c9c5fd1be505d7a96a5f0adbf234d8b6dc83ca191b5e44265c861d4"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
@@ -2467,8 +2472,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 23347,
-      "sha256": "aeab15c8b424475cfaafbb2934210e24e32a301d9cecdf4d0a3a4572b396dc2d"
+      "size_bytes": 23763,
+      "sha256": "5b982672985124e55faa7287c9d444e2b310707dd913653e55c34d16eb6ffcaf"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2806,6 +2811,11 @@
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
     },
     {
+      "path": "docs/ai/tasks/TASK-0062-R1-risk-fx-review-fixes.md",
+      "size_bytes": 18521,
+      "sha256": "3b6ba2a406233e517bf2aebe53985cce1f227be48a31622eb6e67abb0b8551a2"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
       "size_bytes": 97544,
       "sha256": "6ac1f55705797e4b432e1a3bf49580a7c745dd7a5b792bc784aaed0426ba054d"
@@ -3126,6 +3136,16 @@
       "sha256": "0c535294c6c0f523f0f1bc26df77f2955a849cf12325433777c374bd103f17a6"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0062-R1.md",
+      "size_bytes": 14381,
+      "sha256": "3659c50a037aa83dbeca04f904e885b518a14c60f3a79594e218753f0f3c5c53"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0062.md",
+      "size_bytes": 13271,
+      "sha256": "3474c2ee42a40e2daba9921d700cde57e118b68b65696fca864420825be9b089"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0062a.md",
       "size_bytes": 24825,
       "sha256": "cedc1978f77e9d319b7607c10a50c666b6245d9d677989c37d79f286814a8623"
@@ -3332,8 +3352,8 @@
     },
     {
       "path": "schemas/market_rules.schema.json",
-      "size_bytes": 11464,
-      "sha256": "31bc655e47b060ac23902db11b78d64b9acbeeff5f5dd75b312198d47c113246"
+      "size_bytes": 21074,
+      "sha256": "b5c8216da4f71f5ede7c08d482ed02dd8137bb1c6f10022dcfd9669895866769"
     },
     {
       "path": "schemas/observed_fx_sample.schema.json",
@@ -3612,13 +3632,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 76016,
-      "sha256": "e0b45141c30308080bdc915e13ec666651f34a40851c5a1bf28de60c16aac284"
+      "size_bytes": 84764,
+      "sha256": "f62123ba44b038ba85d75d2dab616e2c475d1064c7252ebc0a4f4ecc1a85b0a4"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 79100,
-      "sha256": "9942180e601e4d669b1af197183b349113ff1ce5a55f20fe3d99101aa658b33f"
+      "size_bytes": 84486,
+      "sha256": "53967e48d69128e0004fe42e01212c1fa7c6856e8fd10d21344fe3fb28155487"
     }
   ]
 }

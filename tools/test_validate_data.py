@@ -1118,6 +1118,135 @@ class MarketRulesTest(unittest.TestCase):
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])
 
+    def test_risk_counterexamples(self):
+        cases = [
+            ('probability', 'collections: 등급 확률 합은 10000이어야 함'),
+            ('weight', 'claims: 손상 가중치 합은 10000이어야 함'),
+            ('range', 'surcharge: 최소·최대 범위 오류'),
+            ('good', 'claims: 품목 자료에 없는 품목'),
+            ('tariff_good', 'tariff: 품목 자료에 없는 품목'),
+            ('party', 'collections: 시장 자료에 없는 거래처'),
+            ('fx', 'fx: 시작 환율이 fx_krw_per_usd와 다름'),
+            ('missing_party', 'collections: 운영 판매 거래처 누락'),
+            ('missing_good', 'claims: 운영 품목 누락'),
+            ('missing_tariff', 'tariff: 운영 판매국·품목 누락'),
+            ('step', 'tariff.step_bp: 최소·최대 범위 오류'),
+            ('days', 'collections.late_days: 최소·최대 범위 오류'),
+            ('bp', 'fx.step_bp: 정수 범위 오류'),
+        ]
+        for change, message in cases:
+            with self.subTest(change=change):
+                d, t = self.fixtures()
+                p = d['market_rules']['risk_profiles'][0]
+                if change == 'probability': p['collections']['grades'][0]['p_on_time_bp'] += 1
+                elif change == 'weight': p['claims']['minor']['weight_bp'] += 1
+                elif change == 'range': p['surcharge']['min_bp'] = p['surcharge']['max_bp'] + 1
+                elif change == 'good': p['claims']['by_good'][0]['good_id'] = 'UNKNOWN'
+                elif change == 'tariff_good': p['tariff']['base'][0]['good_id'] = 'UNKNOWN'
+                elif change == 'party': p['collections']['by_counterparty'][0]['counterparty_id'] = 'UNKNOWN'
+                elif change == 'fx': p['fx']['start_krw_per_usd'] += 1
+                elif change == 'missing_party': p['collections']['by_counterparty'] = []
+                elif change == 'missing_good': p['claims']['by_good'] = []
+                elif change == 'missing_tariff': p['tariff']['base'] = []
+                elif change == 'step': p['tariff']['step_bp'][0] = -10001
+                elif change == 'days': p['collections']['late_min_days'] = -1
+                elif change == 'bp': p['fx']['step_bp'] = 10001
+                self.assertIn(f"risk_profiles: {p['id']}: {message}", self.errors(d, t))
+
+    def test_risk_all_profiles(self):
+        d, t = self.fixtures()
+        p = copy.deepcopy(d['market_rules']['risk_profiles'][0])
+        p['id'] += '_SECOND'
+        p['collections']['by_counterparty'] = []
+        d['market_rules']['risk_profiles'].append(p)
+        self.assertIn(f"risk_profiles: {p['id']}: collections: 운영 판매 거래처 누락", self.errors(d, t))
+
+    def test_risk_inherited_rule_and_rules3(self):
+        for rules_version in (None, 'M2a-rules-3'):
+            with self.subTest(rules_version=rules_version):
+                d, t = self.fixtures()
+                parent = validator.resolve_scenario(t['scenarios'], 'SCENARIO_M2_OPERATIONS')
+                rule_id = parent['operations']['market_rules_ref'].split('#')[1]
+                rule = copy.deepcopy(next(r for r in d['market_rules']['rule_sets'] if r['id'] == rule_id))
+                rule['id'] = 'VARIANT_X'
+                covered = {r['counterparty_id'] for r in d['market_rules']['risk_profiles'][0]['collections']['by_counterparty']}
+                seller = next(r['id'] for r in d['market_rules']['counterparties'] if r['id'] not in covered)
+                self.assertNotIn(seller, covered)
+                rule['trade']['goods'][-1]['sell_counterparties'][-1]['counterparty_id'] = seller
+                d['market_rules']['rule_sets'].append(rule)
+                child = {'base_scenario_id': 'SCENARIO_M2_OPERATIONS',
+                         'operations': {'market_rules_ref': 'market_rules.json#VARIANT_X'}}
+                if rules_version:
+                    child['engine_rules'] = {'rules_version': rules_version}
+                t['scenarios']['SCENARIO_VARIANT_X'] = child
+                profile = d['market_rules']['risk_profiles'][0]
+                self.assertIn(f"risk_profiles: {profile['id']}: collections: 운영 판매 거래처 누락", self.errors(d, t))
+
+    def test_risk_missing_single_rows(self):
+        for missing, message in (
+            ('party', 'collections: 운영 판매 거래처 누락'),
+            ('good', 'claims: 운영 품목 누락'),
+            ('tariff', 'tariff: 운영 판매국·품목 누락'),
+        ):
+            with self.subTest(missing=missing):
+                d, t = self.fixtures()
+                parent = validator.resolve_scenario(t['scenarios'], 'SCENARIO_M2_OPERATIONS')
+                rule_id = parent['operations']['market_rules_ref'].split('#')[1]
+                rule = next(r for r in d['market_rules']['rule_sets'] if r['id'] == rule_id)
+                profile = d['market_rules']['risk_profiles'][0]
+                good = rule['trade']['goods'][-1]
+                if missing == 'party':
+                    rows, key = profile['collections']['by_counterparty'], 'counterparty_id'
+                    value = good['sell_counterparties'][-1][key]
+                    row = next(r for r in rows if r[key] == value)
+                elif missing == 'good':
+                    rows = profile['claims']['by_good']
+                    row = next(r for r in rows if r['good_id'] == good['good_id'])
+                else:
+                    rows = profile['tariff']['base']
+                    country = t['world'][rule['trade']['sell_city_ids'][1]]['country_code']
+                    row = next(r for r in rows if r['country_code'] == country and r['good_id'] == good['good_id'])
+                before = len(rows)
+                rows.remove(row)
+                self.assertEqual(len(rows), before - 1)
+                self.assertGreater(len(rows), 0)
+                self.assertIn(f"risk_profiles: {profile['id']}: {message}", self.errors(d, t))
+
+    def test_risk_additional_ranges_and_grade(self):
+        for change, message in (
+            ('start', 'fx: 시작 환율 범위 오류'),
+            ('fx_range', 'fx: 최소·최대 범위 오류'),
+            ('grade', 'collections: 정의되지 않은 등급'),
+            ('lag', 'tariff.lag_days: 최소·최대 범위 오류'),
+            ('tariff_range', 'tariff: 최소·최대 범위 오류'),
+            ('major_range', 'claims.major: 최소·최대 범위 오류'),
+        ):
+            with self.subTest(change=change):
+                d, t = self.fixtures()
+                p = d['market_rules']['risk_profiles'][0]
+                if change == 'start': p['fx']['min_krw_per_usd'] = p['fx']['start_krw_per_usd'] + 1
+                elif change == 'fx_range': p['fx']['min_krw_per_usd'] = p['fx']['max_krw_per_usd'] + 1
+                elif change == 'grade': p['collections']['by_counterparty'][0]['grade'] = 'UNKNOWN'
+                elif change == 'lag': p['tariff']['lag_days'] = [3, 0]
+                elif change == 'tariff_range': p['tariff']['min_bp'] = p['tariff']['max_bp'] + 1
+                elif change == 'major_range': p['claims']['major']['min_bp'] = p['claims']['major']['max_bp'] + 1
+                self.assertIn(f"risk_profiles: {p['id']}: {message}", self.errors(d, t))
+
+    def test_risk_duplicate_profile_id(self):
+        d, t = self.fixtures()
+        d['market_rules']['risk_profiles'].append(copy.deepcopy(d['market_rules']['risk_profiles'][0]))
+        self.assertIn('risk_profiles: 프로필 ID 중복', self.errors(d, t))
+
+    def test_risk_duplicate_rows(self):
+        for group, field in (('tariff', 'base'), ('claims', 'by_good'),
+                             ('collections', 'by_counterparty'), ('collections', 'grades')):
+            with self.subTest(group=group, field=field):
+                d, t = self.fixtures()
+                p = d['market_rules']['risk_profiles'][0]
+                rows = p[group][field]
+                rows.append(copy.deepcopy(rows[-1]))
+                self.assertIn(f"risk_profiles: {p['id']}: {group}.{field}: 중복 행", self.errors(d, t))
+
     def test_goods_counts(self):
         for count in (1, 3):
             with self.subTest(count=count):
@@ -1132,6 +1261,14 @@ class MarketRulesTest(unittest.TestCase):
                     good['good_id'] = next(g for g in t['goods'] if g not in {x['good_id'] for x in goods})
                     good['id_tag'] = 'THIRD'
                     goods.append(good)
+                    for profile in d['market_rules']['risk_profiles']:
+                        claim = copy.deepcopy(profile['claims']['by_good'][0])
+                        claim['good_id'] = good['good_id']
+                        profile['claims']['by_good'].append(claim)
+                        for country in {t['world'][city]['country_code'] for city in rule['trade']['sell_city_ids']}:
+                            tariff = copy.deepcopy(profile['tariff']['base'][0])
+                            tariff.update(country_code=country, good_id=good['good_id'])
+                            profile['tariff']['base'].append(tariff)
                     for row in list(rule['rows']):
                         if row['good_id'] == goods[0]['good_id']:
                             rule['rows'].append(dict(copy.deepcopy(row), good_id=good['good_id']))

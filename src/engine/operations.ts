@@ -1,5 +1,7 @@
 // 본사 운영의 계산과 명령. 금액은 통화별 최소 단위이며 환전도 두 장부에 따로 기록한다.
-import { cargoSpace, cityName, dutyEstimate, listSailings, routeBetween, routeOf, type Sailing } from './catalog';
+import { cargoSpace, cityName, listSailings, routeBetween, routeOf, type Sailing } from './catalog';
+import { dutyFor, referenceRate } from './risk';
+import { offerDef } from './market';
 import { isAvailableFromToday } from './employees';
 import { balance, post, type LedgerEntry } from './ledger';
 import { applyBasisPoints, formatMoney, MINOR_PER_MAJOR, type Currency } from './money';
@@ -147,8 +149,15 @@ export function usdFundsParts(s: GameState, config: ScenarioConfig): string[] {
   return parts;
 }
 /** 환전 명령과 미리 보기가 공유하는 두 통화 금액. */
-export function exchangeAmounts(config: ScenarioConfig, direction: ExchangeDirection, usd: number) {
+export function exchangeAmounts(config: ScenarioConfig, direction: ExchangeDirection, usd: number, seed?: number, day?: number) {
   const fx = config.operations?.fx;
+  if (config.rules.rulesVersion === 'M2a-rules-3') {
+    if (seed === undefined || day === undefined || !fx) throw new Error('규칙 3 환전에는 시드와 날짜가 필요합니다');
+    const r = referenceRate(config, seed, day), deduction = applyBasisPoints(r, fx.spreadBasisPoints);
+    const rate = direction === 'USD_TO_KRW' ? r - deduction : r + deduction;
+    const base = usd * r / MINOR_PER_MAJOR.USD, krw = usd * rate / MINOR_PER_MAJOR.USD;
+    return { rate, base, krw, spread: Math.abs(base - krw) };
+  }
   const rate = fx ? direction === 'USD_TO_KRW' ? fx.buyKrwPerUsd : fx.sellKrwPerUsd : 0;
   const base = usd * (fx?.baseKrwPerUsd ?? 0) / MINOR_PER_MAJOR.USD;
   const krw = usd * rate / MINOR_PER_MAJOR.USD;
@@ -165,13 +174,13 @@ export function applyOperationsCommand(s: GameState, config: ScenarioConfig, cmd
       const usd = cmd.usdAmountMinor;
       if (!Number.isSafeInteger(usd) || usd <= 0 || usd % o.fx.lotUsdMinor !== 0) return `환전은 ${o.fx.lotUsdMinor / MINOR_PER_MAJOR.USD} USD 단위입니다. 요청 ${formatMoney('USD', usd)}.`;
       const toKrw = cmd.direction === 'USD_TO_KRW';
-      const { rate, base, krw, spread } = exchangeAmounts(config, cmd.direction, usd);
+      const { rate, base, krw, spread } = exchangeAmounts(config, cmd.direction, usd, s.rng.seed, s.day);
       const usdFunds = fundsPosition(s, config, 'USD'), krwFunds = fundsPosition(s, config, 'KRW');
       if (toKrw && usdFunds.available < usd) return `환전할 수 있는 USD가 부족합니다. 요청 ${formatMoney('USD', usd)}, 사용 가능 ${formatMoney('USD', usdFunds.available)} = ${usdFundsParts(s, config).join(' − ')}.`;
       if (!toKrw && krwFunds.available < krw) return `환전할 수 있는 원화가 부족합니다. 필요 ${formatMoney('KRW', krw)}, 사용 가능 ${formatMoney('KRW', krwFunds.available)} = 현금 ${formatMoney('KRW', krwFunds.cash)}${krwFunds.unpaidObligations ? ` − 미지급 ${formatMoney('KRW', krwFunds.unpaidObligations)}` : ''}.`;
       const id = `FX${pad(state.exchanges.length + 1)}`;
       const from = toKrw ? formatMoney('USD', usd) : formatMoney('KRW', krw), to = toKrw ? formatMoney('KRW', krw) : formatMoney('USD', usd);
-      const reason = `환전: ${from} → ${to}(게임용 고정 환율 ${formatMoney('KRW', rate)}, 차감 ${formatMoney('KRW', spread)})`;
+      const reason = `환전: ${from} → ${to}(${config.rules.rulesVersion === 'M2a-rules-3' ? '오늘 참고 환율' : '게임용 고정 환율'} ${formatMoney('KRW', rate)}, 차감 ${formatMoney('KRW', spread)})`;
       const usdEntry: Omit<LedgerEntry, 'day'> = { id: `${id}-USD`, currency: 'USD', reason,
         lines: [{ account: toKrw ? 'CURRENCY_TRANSFER' : 'CASH', amount: usd }, { account: toKrw ? 'CASH' : 'CURRENCY_TRANSFER', amount: -usd }] };
       const krwEntry: Omit<LedgerEntry, 'day'> = { id: `${id}-KRW`, currency: 'KRW', reason,
@@ -222,7 +231,11 @@ export function dailyKrwDue(s: GameState, config: ScenarioConfig, day: number): 
   return wage + (s.ledger.postedIds[rentEntryId(day)] ? 0 : rentDueMinor(s, config, day));
 }
 /** USD 한 묶음을 원화로 바꿀 때 받는 금액. 임금 조달과 미지급 회복에 함께 쓴다. */
-export function usdLotKrw(config: ScenarioConfig): number {
+export function usdLotKrw(config: ScenarioConfig, s?: GameState): number {
+  if (config.rules.rulesVersion === 'M2a-rules-3') {
+    if (!s) throw new Error('규칙 3 묶음 계산에는 상태가 필요합니다');
+    return exchangeAmounts(config, 'USD_TO_KRW', config.operations!.fx.lotUsdMinor, s.rng.seed, s.day).krw;
+  }
   return config.operations ? config.operations.fx.lotUsdMinor * config.operations.fx.buyKrwPerUsd / MINOR_PER_MAJOR.USD : 0;
 }
 export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day = s.day) {
@@ -235,7 +248,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
   const krwUnpaid = unpaid.find((u) => u.currency === 'KRW')?.amountMinor ?? 0;
   const krwCash = balance(s.ledger, 'KRW', 'CASH');
   const usdAvailableMinor = fundsPosition(s, config, 'USD').available;
-  const lotKrw = usdLotKrw(config);
+  const lotKrw = usdLotKrw(config, s);
   const dueToSurviveMinor = cfg ? s.obligations.filter((o) => o.paidDay === null && o.currency === 'KRW' && o.incurredDay + cfg.failureAgeDays <= day).reduce((sum, o) => sum + o.amountMinor, 0) : 0;
   const usdOldest = oldest?.currency === 'USD';
   const nextReceipt = s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID').sort((a, b) => a.dueDay - b.dueDay)[0];
@@ -250,7 +263,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
       lotsToClearAll: usdOldest || !lotKrw ? null : Math.ceil(Math.max(0, krwUnpaid + dailyKrwDue(s, config, day) - krwCash) / lotKrw),
       usdAvailableLots: fx ? Math.max(0, Math.floor(usdAvailableMinor / fx.lotUsdMinor)) : 0,
       nextReceipt: usdOldest && nextReceipt ? { day: nextReceipt.dueDay, amountMinor: s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID' && i.dueDay === nextReceipt.dueDay).reduce((sum, i) => sum + i.amountMinor, 0) } : null,
-      krwToUsdRequiredMinor: usdOldest && fx ? Math.ceil(usdShort / fx.lotUsdMinor) * fx.lotUsdMinor * fx.sellKrwPerUsd / MINOR_PER_MAJOR.USD : null,
+      krwToUsdRequiredMinor: usdOldest && fx ? Math.ceil(usdShort / fx.lotUsdMinor) * fx.lotUsdMinor * (config.rules.rulesVersion === 'M2a-rules-3' ? exchangeAmounts(config, 'KRW_TO_USD', fx.lotUsdMinor, s.rng.seed, s.day).rate : fx.sellKrwPerUsd) / MINOR_PER_MAJOR.USD : null,
       heldSpendingKo: krwUnpaid > 0 ? '미지급이 있는 동안 고용 계약금·훈련·현지 활동·창고 확장은 자금 기준에서 막힙니다' : null } };
 }
 
@@ -269,8 +282,11 @@ export function processPaymentDefault(s: GameState, config: ScenarioConfig): voi
   if (!status.failsAtCloseToday) return;
   const commitments: (FailureRecord['usdCommitmentsSinceIncurred'][number] & { order: number })[] = [];
   for (const c of s.contracts.filter((c) => c.currency === 'USD' && c.acceptedDay >= oldest.incurredDay && c.acceptedDay <= s.day)) {
+    const route = routeBetween(config, c.originCityId, c.destinationCityId);
+    const buyCurrency = c.buyOfferId ? offerDef(s, config, c.buyOfferId)!.currency : c.currency;
+    const tariffDay = route ? listSailings(config, route.id, c.acceptedDay + 1)[0]?.scheduledArrivalDay ?? c.acceptedDay : c.acceptedDay;
     commitments.push({ kind: 'CONTRACT', id: c.id, day: c.acceptedDay,
-      amountMinor: c.purchaseAmountMinor + (routeBetween(config, c.originCityId, c.destinationCityId)?.bookingFeeMinor ?? 0) + (c.kind === 'DIRECT_TRADE' ? dutyEstimate(config, c.purchaseAmountMinor) : 0),
+      amountMinor: (buyCurrency === c.currency ? c.purchaseAmountMinor : 0) + (route?.bookingFeeMinor ?? 0) + (c.kind === 'DIRECT_TRADE' ? dutyFor(config, s.rng.seed, c.goodId, c.destinationCityId, tariffDay, c.acceptedDay, c.purchaseAmountMinor, buyCurrency, c.acceptedDay) : 0),
       order: s.log.findIndex((l) => l.textKo.startsWith(`계약 ${c.id} 체결`)) });
   }
   for (const c of ops.spaceContracts.filter((c) => c.currency === 'USD' && c.signedDay >= oldest.incurredDay && c.signedDay <= s.day)) {
@@ -281,8 +297,8 @@ export function processPaymentDefault(s: GameState, config: ScenarioConfig): voi
   ops.failure = { day: s.day, ...oldest, unpaidByCurrency: status.unpaidByCurrency, cashByCurrency: status.cashByCurrency,
     warningEvent: ops.defaultEvents.find((e) => e.obligationId === oldest.obligationId && e.level === 'WARNING') ?? null,
     dangerEvent: ops.defaultEvents.find((e) => e.obligationId === oldest.obligationId && e.level === 'DANGER') ?? null,
-    optionalKrwSpendBeforeFirstUnpaid: s.ledger.entries.filter((e) => e.currency === 'KRW' && e.day >= oldest.incurredDay - config.operations!.paymentDefault.failureAgeDays && e.day < oldest.incurredDay
-      && /^(SIGNING-|TRAINING-FEE-|CULTURE-FEE-|FACILITY-SETUP-)/.test(e.id)).map((e) => ({ entryId: e.id, day: e.day,
+    optionalKrwSpendBeforeFirstUnpaid: s.ledger.entries.filter((e) => e.currency === 'KRW' && e.day >= oldest.incurredDay - config.operations!.paymentDefault.failureAgeDays && (e.id.startsWith('PURCHASE-') ? e.day <= s.day : e.day < oldest.incurredDay)
+      && /^(SIGNING-|TRAINING-FEE-|CULTURE-FEE-|FACILITY-SETUP-|PURCHASE-)/.test(e.id)).map((e) => ({ entryId: e.id, day: e.day,
         amountMinor: -e.lines.filter((l) => l.account === 'CASH').reduce((sum, l) => sum + l.amount, 0), reasonKo: e.reason })),
     usdCommitmentsSinceIncurred: commitments.sort((a, b) => a.day - b.day || a.order - b.order).map(({ order: _order, ...c }) => c) };
   log(s, `경영 실패: ${oldest.incurredDay}일에 생긴 ${oldest.reasonKo} ${formatMoney(oldest.currency, oldest.amountMinor)}을 ${config.operations.paymentDefault.failureAgeDays}일 동안 갚지 못했습니다`);

@@ -1,3 +1,4 @@
+import { rowCurrency } from './risk';
 // 공개 묶음은 지역 난수만 사용한다. 플레이어 행동과 게임 난수 커서에 영향을 받지 않는다.
 import { cargoSpace, routeBetween } from './catalog';
 import { drawUniform } from './rng';
@@ -62,7 +63,7 @@ export function generateBatch(seed: number, k: number, prevIndex: MarketBatch['i
         counterpartyId: side === 'BUY' ? g.buyCounterpartyId : g.sellCounterparties.find((p) => p.cityId === cityId)!.counterpartyId,
         cityId, goodId: g.goodId, quantity: g.baseLot, quantityStep: g.baseLot,
         maxQuantity: maxLots.find((v) => v.goodId === g.goodId)!.lots * g.baseLot,
-        unitPriceMinor: halfUp(row.basePriceMinor * (100 + pct), 100), serviceFeeMinor: 0, currency: 'USD',
+        unitPriceMinor: halfUp(row.basePriceMinor * (100 + pct), 100), serviceFeeMinor: 0, currency: rowCurrency(config, side),
         destinationCityId: null, deliveryDeadlineDay: deadline, paymentDueDay: due,
         serviceClass: null, templateId: null, titleKo: null, prepWorkUnits: null });
     }
@@ -97,7 +98,7 @@ export function marketTable(state: GameState, config: ScenarioConfig) {
   const next = batch.publishDay + config.operations.market.publish.intervalDays;
   return batch.rows.map((r) => {
     const indexBp = batch.index.find((i) => i.goodId === r.goodId)!.bp;
-    return { cityId: r.cityId, goodId: r.goodId, side: r.side, basePriceMinor: r.basePriceMinor, currency: 'USD' as const,
+    return { cityId: r.cityId, goodId: r.goodId, side: r.side, basePriceMinor: r.basePriceMinor, currency: rowCurrency(config, r.side),
       indexPoints: halfUp(indexBp, 100), indexBp, observedDay: batch.publishDay, ageDays: state.day - batch.publishDay,
       nextObservationDay: next <= config.operations!.market.publish.lastDay ? next : null,
       hasQuoteInBatch: batch.offerIds.some((id) => { const o = offerDef(state, config, id)!;

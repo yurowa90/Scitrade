@@ -409,5 +409,130 @@
       "name_ko": "자동차 부품 화주"
     }
   ],
-  "$schema": "../schemas/market_rules.schema.json"
+  "$schema": "../schemas/market_rules.schema.json",
+  "risk_profiles": [
+    {
+      "id": "RISK_PROFILE_DEFAULT",
+      "data_basis": "DESIGN",
+      "status": "PRE_TUNING_2026-10-16",
+      "basis": "fictional_game_values_not_calibrated",
+      "fx": {
+        "start_krw_per_usd": 1300,
+        "step_bp": 250,
+        "min_krw_per_usd": 1170,
+        "max_krw_per_usd": 1430
+      },
+      "tariff": {
+        "base": [
+          {
+            "country_code": "CN",
+            "good_id": "APPAREL",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "CN",
+            "good_id": "COSMETICS",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "VN",
+            "good_id": "APPAREL",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "VN",
+            "good_id": "COSMETICS",
+            "rate_bp": 500
+          }
+        ],
+        "max_changes": 2,
+        "lag_days": [
+          0,
+          3
+        ],
+        "step_bp": [
+          -200,
+          800
+        ],
+        "min_bp": 0,
+        "max_bp": 3000,
+        "basis": "fictional_uniform_equal_to_rules2_5pct",
+        "status": "DESIGN_not_actual_destination_tariff"
+      },
+      "surcharge": {
+        "p_zero_bp": 7000,
+        "min_bp": 500,
+        "max_bp": 3000
+      },
+      "claims": {
+        "by_good": [
+          {
+            "good_id": "COSMETICS",
+            "grade": "MID",
+            "p_claim_bp": 900
+          },
+          {
+            "good_id": "APPAREL",
+            "grade": "LOW",
+            "p_claim_bp": 500
+          }
+        ],
+        "basis": "fictional_damage_grade",
+        "minor": {
+          "weight_bp": 8000,
+          "min_bp": 100,
+          "max_bp": 500
+        },
+        "major": {
+          "weight_bp": 2000,
+          "min_bp": 1500,
+          "max_bp": 3000
+        }
+      },
+      "collections": {
+        "by_counterparty": [
+          {
+            "counterparty_id": "CUSTOMER_DEMO",
+            "grade": "A"
+          },
+          {
+            "counterparty_id": "CUSTOMER_SHA_APPAREL",
+            "grade": "B"
+          },
+          {
+            "counterparty_id": "CUSTOMER_HAI_COSMETICS",
+            "grade": "C"
+          },
+          {
+            "counterparty_id": "CUSTOMER_DEMO_SHANGHAI",
+            "grade": "B"
+          }
+        ],
+        "basis": "fictional_grade",
+        "grades": [
+          {
+            "grade": "A",
+            "p_on_time_bp": 8500,
+            "p_late_bp": 1000,
+            "p_partial_bp": 500
+          },
+          {
+            "grade": "B",
+            "p_on_time_bp": 7000,
+            "p_late_bp": 2000,
+            "p_partial_bp": 1000
+          },
+          {
+            "grade": "C",
+            "p_on_time_bp": 5500,
+            "p_late_bp": 3000,
+            "p_partial_bp": 1500
+          }
+        ],
+        "partial_bp": 5000,
+        "late_min_days": 5,
+        "late_max_days": 15
+      }
+    }
+  ]
 }

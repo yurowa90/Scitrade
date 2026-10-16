@@ -1,3 +1,4 @@
+import { dutyFor } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
@@ -8,7 +9,6 @@ import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsD
 import {
   cargoSpace,
   cityName,
-  dutyEstimate,
   findSailing,
   goodOf,
   listSailings,
@@ -17,7 +17,7 @@ import {
   unitKo,
   type Sailing,
 } from './catalog';
-import { balance, emptyLedger, post, type LedgerLine } from './ledger';
+import { balance, contractAmount, emptyLedger, post, type LedgerLine } from './ledger';
 import { formatMoney, type Currency } from './money';
 import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
@@ -305,7 +305,7 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
       return `수량은 ${buy.quantityStep}${unitKo(goodOf(config, buy.goodId))} 단위로 ${buy.quantityStep} ~ ${Math.min(buy.maxQuantity, sell.maxQuantity)}${unitKo(goodOf(config, buy.goodId))}까지 고를 수 있습니다.`;
     }
   } else if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity || quantity !== buy.quantity) return '같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다 (분할 거래는 이후 단계).';
-  if (buy.currency !== sell.currency) return '매입과 판매의 통화가 다릅니다.';
+  if (buy.currency !== sell.currency && config.rules.rulesVersion !== 'M2a-rules-3') return '매입과 판매의 통화가 다릅니다.';
   const route = routeBetween(config, buy.cityId, sell.cityId);
   if (!route) return '두 항구를 잇는 노선이 없습니다.';
 
@@ -316,15 +316,23 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
       return `매입 자금이 부족합니다. 필요 ${formatMoney(buy.currency, purchase)}, 사용 가능 ${formatMoney(buy.currency, cash)}.`;
     }
   } else {
-    const duty = dutyEstimate(config, purchase);
-    const short = fundsShortfall(
-      s,
-      config,
-      buy.currency,
-      purchase + route.bookingFeeMinor + duty,
-      `매입 ${formatMoney(buy.currency, purchase)} + 운임 ${formatMoney(buy.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(buy.currency, duty)}`,
-    );
-    if (short) return short;
+    const duty = dutyFor(config, s.rng.seed, buy.goodId, sell.cityId,
+      listSailings(config, route.id, s.day + 1)[0]?.scheduledArrivalDay ?? s.day, s.day, purchase, buy.currency, s.day);
+    if (buy.currency !== sell.currency) {
+      const shortages = [fundsShortfall(s, config, buy.currency, purchase, `매입 ${formatMoney(buy.currency, purchase)}`),
+        fundsShortfall(s, config, sell.currency, route.bookingFeeMinor + duty,
+          `운임 ${formatMoney(sell.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(sell.currency, duty)}`)].filter(Boolean);
+      if (shortages.length) return shortages.join(' ');
+    } else {
+      const short = fundsShortfall(
+        s,
+        config,
+        buy.currency,
+        purchase + route.bookingFeeMinor + duty,
+        `매입 ${formatMoney(buy.currency, purchase)} + 운임 ${formatMoney(buy.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(buy.currency, duty)}`,
+      );
+      if (short) return short;
+    }
   }
 
   const storage = storageShortfall(s, config, buy.goodId, quantity);
@@ -344,7 +352,7 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     quantity: quantity,
     purchaseAmountMinor: purchase,
     saleAmountMinor: sell.unitPriceMinor * quantity,
-    currency: buy.currency,
+    currency: sell.currency,
     originCityId: buy.cityId,
     destinationCityId: sell.cityId,
     deliveryDeadlineDay: config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay ?? config.campaignDays,
@@ -972,7 +980,7 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
         ],
       });
     } else {
-      lot.carryingAmountMinor += booking.prepaidFreightMinor;
+      if (lot.currency === contract.currency) lot.carryingAmountMinor += booking.prepaidFreightMinor;
       postOrThrow(s, {
         id: `FREIGHT-CAPITALIZE-${booking.id}`,
         currency: route.currency,
@@ -1016,14 +1024,15 @@ function processArrivals(s: GameState, config: ScenarioConfig) {
       continue;
     }
     // 통관: 가상 과세 규칙 — 공급자 상품 송장 금액만 과세가격으로 본다.
-    const duty = dutyEstimate(config, contract.purchaseAmountMinor);
+    const duty = dutyFor(config, s.rng.seed, contract.goodId, contract.destinationCityId, s.day, s.day,
+      contract.purchaseAmountMinor, offerDef(s, config, contract.buyOfferId!)!.currency, contract.acceptedDay);
     sh.dutyMinor = duty;
     if (duty === 0) {
       sh.dutyPaid = true;
     } else {
       const paid = payOrAccrue(s, config, contract.currency, duty, `DUTY-${sh.id}`, `${sh.id} 수입 관세 (가상 세율)`, contract.id, 'INVENTORY');
       sh.dutyPaid = paid;
-      lot.carryingAmountMinor += duty;
+      if (lot.currency === contract.currency) lot.carryingAmountMinor += duty;
     }
     log(s, `${sh.id} 도착: ${cityName(config, contract.destinationCityId)}${waited}. 관세 ${formatMoney(contract.currency, duty)}${sh.dutyPaid ? ' 지급' : ' 미지급 — 납부 전 반출 불가'}`);
   }
@@ -1066,6 +1075,13 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
           { account: 'FORWARDING_WIP', amount: -booking.prepaidFreightMinor },
         ],
       });
+    } else if (lot.currency !== contract.currency) {
+      for (const currency of [lot.currency, contract.currency]) {
+        const amount = currency === lot.currency ? lot.carryingAmountMinor : contractAmount(s.ledger, currency, contract.id, 'INVENTORY');
+        postOrThrow(s, { id: `COGS-${contract.id}-${currency}`, currency, contractId: contract.id,
+          reason: '인도한 상품의 통화별 장부가액을 매출원가로 대체 (재고 → 매출원가)',
+          lines: [{ account: 'COST_OF_GOODS_SOLD', amount }, { account: 'INVENTORY', amount: -amount }] });
+      }
     } else {
       postOrThrow(s, {
         id: `COGS-${contract.id}`,

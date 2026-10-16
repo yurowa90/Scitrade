@@ -1,8 +1,10 @@
+import { dutyFor, referenceRate, rowCurrency, usdToKrwMinor } from './risk';
+import { offerDef } from './market';
 import { fixedCostsDue, lateDeliveryReduction, unpaidByCurrency } from './operations';
 import type { OperationsState } from './types';
 // 상태에서 계산하는 보고 값. 별도의 현금·이익을 저장하지 않는다.
 
-import { dutyEstimate, listSailings, offerOf, routeBetween, routeOf } from './catalog';
+import { listSailings, offerOf, routeBetween, routeOf } from './catalog';
 import { contractAmount, summarize, type BookSummary } from './ledger';
 import { cashReservations, spaceShortfall } from './reservations';
 import type { Currency } from './money';
@@ -18,8 +20,9 @@ export interface ContractReport {
   contribution: number;
 }
 
-export function contractReport(s: GameState, contract: Contract): ContractReport {
-  const c = contract.currency;
+/** 모든 금액·기여는 선택한 통화 몫이다. 서로 다른 통화를 합하지 않는다. */
+export function contractReport(s: GameState, contract: Contract, currency = contract.currency): ContractReport {
+  const c = currency;
   const amount = (a: Parameters<typeof contractAmount>[3]) => contractAmount(s.ledger, c, contract.id, a);
   const netRevenue = amount('REVENUE') + amount('FORWARDING_REVENUE');
   const directCost = amount('COST_OF_GOODS_SOLD') + amount('FORWARDING_COST');
@@ -67,8 +70,9 @@ export interface QuotePreview {
   duty: number;
   /** 직접 무역: 판매대금. 운송 주선: 서비스 대금. */
   sale: number;
+  /** 규칙 3: 원화 매입 제외, 판단 값 아님. */
   contributionBeforePayroll: number;
-  /** 수락하려면 필요한 돈 (M2a 자금 예약 규칙의 기준). */
+  /** 수락하려면 필요한 돈. 규칙 3: 원화 매입 제외, 판단 값 아님. */
   cashNeed: number;
   departureDay: number | null;
   arrivalDay: number | null;
@@ -79,7 +83,10 @@ export interface QuotePreview {
   paymentDueDay: number;
   /** 다음 출항편으로 보낼 때 실제로 받는 날. 인도 전에는 받지 않으므로 계약상 대금일보다 늦을 수 있다. */
   receiptDay: number;
-  schedule: { day: number; labelKo: string; amount: number }[];
+  cashNeedByCurrency?: { currency: Currency; amountMinor: number }[];
+  /** 추정, 환율이 바뀌면 달라짐. 저장·결산 금액이 아니다. */
+  referenceEstimate?: { rateKrwPerUsd: number; saleKrw: number; pnlKrw: number };
+  schedule: { day: number; labelKo: string; amount: number; currency?: Currency }[];
 }
 
 export function preview(
@@ -91,12 +98,17 @@ export function preview(
   money: { purchase: number; sale: number },
   deadline: number,
   paymentDueDay: number,
+  opts?: { goodId?: string; purchaseCurrency?: Currency },
 ): QuotePreview | null {
+  const risk = config.rules.rulesVersion === 'M2a-rules-3';
+  if (risk && kind === 'DIRECT_TRADE' && !opts?.goodId) throw new Error('규칙 3 직접 무역 미리보기에는 품목이 필요합니다');
+  const purchaseCurrency = opts?.purchaseCurrency ?? (risk ? rowCurrency(config, 'BUY') : config.tradeCurrency);
   const route = routeBetween(config, fromCityId, toCityId);
   if (!route) return null;
   const sailing = listSailings(config, route.id, bookingDay + 1)[0];
   const freight = route.bookingFeeMinor;
-  const duty = kind === 'DIRECT_TRADE' ? dutyEstimate(config, money.purchase) : 0;
+  const duty = kind === 'DIRECT_TRADE' ? dutyFor(config, config.seed, opts?.goodId ?? '', toCityId,
+    sailing?.scheduledArrivalDay ?? bookingDay, bookingDay, money.purchase, purchaseCurrency, bookingDay) : 0;
   const arrival = sailing ? sailing.scheduledArrivalDay : null;
   const release = arrival === null ? null : arrival + config.terms.customsDays;
   const late = release !== null && release > deadline;
@@ -112,15 +124,25 @@ export function preview(
   }
   if (release !== null) schedule.push({ day: release, labelKo: kind === 'FORWARDING' ? '인도: 주선 매출·채권 인식 (현금 변화 없음)' : '인도: 매출·채권 인식 (현금 변화 없음)', amount: 0 });
   schedule.push({ day: due, labelKo: '외상대금 수금', amount: sale });
+  const usdPurchase = risk && purchaseCurrency === 'KRW' ? 0 : money.purchase;
+  // 상태 없는 미리보기는 config.seed를 쓴다. 정상 실행에서는 상태 시드와 같다.
+  const rate = risk ? referenceRate(config, config.seed, bookingDay) : 0;
+  const saleKrw = risk ? usdToKrwMinor(sale, rate) : 0;
+  if (risk) for (const row of schedule) row.currency = row.labelKo === '매입 대금 지급' ? purchaseCurrency : 'USD';
   return {
+    ...(risk ? { cashNeedByCurrency: purchaseCurrency === 'KRW' && money.purchase
+      ? [{ currency: purchaseCurrency, amountMinor: money.purchase }, { currency: 'USD' as const, amountMinor: freight + duty }]
+      : [{ currency: 'USD' as const, amountMinor: usdPurchase + freight + duty }],
+      referenceEstimate: { rateKrwPerUsd: rate, saleKrw,
+        pnlKrw: saleKrw - (purchaseCurrency === 'KRW' ? money.purchase : 0) - usdToKrwMinor(usdPurchase + freight + duty, rate) } } : {}),
     kind,
     routeId: route.id,
     purchase: money.purchase,
     freight,
     duty,
     sale,
-    contributionBeforePayroll: sale - money.purchase - freight - duty,
-    cashNeed: money.purchase + freight + duty,
+    contributionBeforePayroll: sale - usdPurchase - freight - duty,
+    cashNeed: usdPurchase + freight + duty,
     departureDay: sailing?.departureDay ?? null,
     arrivalDay: arrival,
     deliveryDeadlineDay: deadline,
@@ -144,6 +166,7 @@ export function tradePreview(config: ScenarioConfig, buyOfferId: string, sellOff
     { purchase: buy.unitPriceMinor * buy.quantity, sale: sell.unitPriceMinor * sell.quantity },
     config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay ?? config.campaignDays,
     config.terms.paymentDueDay ?? sell.paymentDueDay ?? config.campaignDays,
+    { goodId: buy.goodId, purchaseCurrency: buy.currency },
   );
 }
 
@@ -353,8 +376,8 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
       spaceContractExpense: b.spaceContractExpense,
       fxSpreadExpense: b.fxSpreadExpense,
       currencyTransferNet: b.currencyTransferNet,
-      contractContribution: s.contracts.filter((c) => c.currency === currency)
-        .reduce((sum, c) => sum + contractReport(s, c).contribution, 0),
+      contractContribution: s.contracts.filter((c) => s.ledger.entries.some((e) => e.contractId === c.id && e.currency === currency))
+        .reduce((sum, c) => sum + contractReport(s, c, currency).contribution, 0),
     };
   });
   const contracts = { total: s.contracts.length, completed: 0, awaitingPayment: 0, inProgress: 0, cancelled: 0 };
@@ -378,4 +401,101 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
       obligationId: o.id, currency: o.currency, amountMinor: o.amountMinor, incurredDay: o.incurredDay, reasonKo: o.reasonKo,
     })).sort((a, b) => a.incurredDay - b.incurredDay || compareText(a.obligationId, b.obligationId)),
   };
+}
+
+interface RiskFlow { amount: number; currency: Currency; day: number; cost: boolean }
+
+/** 추정, 환율이 바뀌면 달라짐. 원장의 현금과 평가일까지 알려진 남은 흐름만 읽고 저장하지 않는다. */
+export function contractRiskReport(s: GameState, config: ScenarioConfig, contractId: string) {
+  const c = s.contracts.find((v) => v.id === contractId);
+  if (!c) throw new Error(`계약이 없습니다: ${contractId}`);
+  const evaluationDay = s.phase === 'ENDED' ? s.operations?.failure?.day ?? config.campaignDays : s.day;
+  const cfg = { ...config, seed: s.rng.seed }; // 정상 실행에서는 설정·상태 시드가 같다.
+  const buyCurrency = c.buyOfferId ? offerDef(s, config, c.buyOfferId)!.currency : c.currency;
+  const p = preview(cfg, c.kind, c.originCityId, c.destinationCityId, c.acceptedDay,
+    { purchase: c.purchaseAmountMinor, sale: c.saleAmountMinor }, c.deliveryDeadlineDay, c.paymentDueDay,
+    { goodId: c.goodId, purchaseCurrency: buyCurrency });
+  if (!p || !config.operations) throw new Error('계약 손익에는 노선과 운영 설정이 필요합니다');
+  const rateAt = (day: number) => referenceRate(config, s.rng.seed, Math.min(day, evaluationDay));
+  // 같은 환율의 USD 비용을 합친 뒤 한 번 반올림한다. 판매·수금은 각각 환산한다.
+  const value = (flows: RiskFlow[], fixedRate?: number): number => {
+    let total = 0;
+    const costs = new Map<number, number>();
+    for (const f of flows) {
+      if (f.currency === 'KRW') { total += f.amount; continue; }
+      const rate = fixedRate ?? rateAt(f.day);
+      if (f.cost) costs.set(rate, (costs.get(rate) ?? 0) + f.amount);
+      else total += usdToKrwMinor(f.amount, rate);
+    }
+    for (const [rate, amount] of costs) total += usdToKrwMinor(amount, rate);
+    return total;
+  };
+  const flow = (amount: number, day: number, cost = true, currency: Currency = c.currency): RiskFlow => ({ amount, day, cost, currency });
+  const entries = s.ledger.entries.filter((e) => e.contractId === c.id && e.day <= evaluationDay);
+  const ids = new Set(entries.map((e) => e.id));
+  const obligations = s.obligations.filter((o) => ids.has(o.id));
+  const settlements = s.ledger.entries.filter((e) => e.day <= evaluationDay && obligations.some((o) => e.id === `SETTLE-${o.id}`));
+  const cashFlows = [...entries, ...settlements].flatMap((e) => e.lines.filter((l) => l.account === 'CASH')
+    .map((l) => flow(l.amount, e.day, !e.id.startsWith('RECEIPT-'), e.currency)));
+  const prepayments = entries.filter((e) => e.id.startsWith('FREIGHT-PREPAY-'));
+  const firstPrepayment = prepayments[0];
+  const shipment = s.shipments.find((sh) => sh.contractId === c.id);
+  const booking = s.bookings.find((b) => b.id === c.bookingId && b.status === 'BOOKED');
+  const route = routeOf(config, p.routeId);
+  const tariffDay = shipment ? Math.max(shipment.scheduledArrivalDay, evaluationDay)
+    : booking ? booking.departureDay + route.transitDays
+      : listSailings(config, route.id, evaluationDay + 1)[0]?.scheduledArrivalDay ?? evaluationDay;
+  const dutyEntry = entries.find((e) => e.id.startsWith('DUTY-'));
+  const cancelled = c.status === 'CANCELLED';
+  const invoice = s.invoices.find((i) => i.contractId === c.id);
+  const deliveryDay = c.deliveredDay ?? Math.max(evaluationDay, shipment?.releaseDay ?? tariffDay + config.terms.customsDays);
+  const sale = c.saleAmountMinor - (c.deliveredDay !== null ? c.priceReductionMinor
+    : lateDeliveryReduction(config, c.saleAmountMinor, deliveryDay - c.deliveryDeadlineDay));
+  const receipts = entries.filter((e) => e.id.startsWith('RECEIPT-')).flatMap((e) => e.lines.filter((l) => l.account === 'CASH'))
+    .reduce((n, l) => n + l.amount, 0);
+  const remaining: RiskFlow[] = [];
+  if (!cancelled) {
+    const outstanding = invoice ? invoice.amountMinor - receipts : c.status === 'COMPLETED' ? 0 : sale;
+    if (outstanding) remaining.push(flow(outstanding, evaluationDay, false));
+    if (!shipment && !booking) remaining.push(flow(-p.freight, evaluationDay));
+    if (c.kind === 'DIRECT_TRADE' && !dutyEntry) {
+      const duty = dutyFor(config, s.rng.seed, c.goodId, c.destinationCityId, tariffDay, evaluationDay,
+        c.purchaseAmountMinor, buyCurrency, c.acceptedDay);
+      if (duty) remaining.push(flow(-duty, evaluationDay));
+    }
+  }
+  for (const o of obligations.filter((o) => o.paidDay === null)) remaining.push(flow(-o.amountMinor, evaluationDay, true, o.currency));
+  const realized = value([...cashFlows, ...remaining]);
+  const open = remaining.some((f) => f.amount !== 0);
+  // 실현값과 별도로, 기대 흐름의 순차 대체를 계산한다. 단계 차이로 실현값을 만들지 않는다.
+  const baseline = [flow(-p.purchase, c.acceptedDay, true, buyCurrency), flow(-p.freight, c.acceptedDay),
+    flow(-p.duty, c.acceptedDay), flow(p.sale, c.acceptedDay, false)];
+  const expected = value(baseline);
+  const paidDay = (id: string | undefined, fallback: number) => {
+    const o = obligations.find((o) => o.id === id);
+    return o ? o.paidDay ?? evaluationDay : fallback;
+  };
+  const fxFlows = baseline.map((f) => ({ ...f }));
+  fxFlows[1]!.day = firstPrepayment?.day ?? (cancelled ? c.acceptedDay : evaluationDay);
+  fxFlows[2]!.day = cancelled ? c.acceptedDay : paidDay(dutyEntry?.id, dutyEntry?.day ?? evaluationDay);
+  fxFlows[3]!.day = cancelled ? c.acceptedDay : invoice?.dueDay ?? Math.max(c.paymentDueDay, deliveryDay);
+  const afterFx = value(fxFlows);
+  const lateFlows = fxFlows.map((f) => ({ ...f }));
+  if (!cancelled) lateFlows[3]!.amount = sale;
+  const afterLate = value(lateFlows);
+  const cancelFlows = cancelled ? lateFlows.filter((_, i) => i === 0 || (i === 1 && !!firstPrepayment)) : [...lateFlows];
+  if (!cancelled && firstPrepayment && !shipment && !booking) cancelFlows.push(flow(-p.freight, evaluationDay));
+  const adjustments = new Set(entries.filter((e) => e.id.startsWith('FREIGHT-RELEASE-') || e.id.startsWith('CANCEL-COMP-')
+    || (e.id.startsWith('FREIGHT-PREPAY-') && e !== firstPrepayment)).map((e) => e.id));
+  for (const e of [...entries, ...settlements]) {
+    if (!adjustments.has(e.id) && !(e.id.startsWith('SETTLE-') && adjustments.has(e.id.slice('SETTLE-'.length)))) continue;
+    for (const l of e.lines) if (l.account === 'CASH') cancelFlows.push(flow(l.amount, e.day, true, e.currency));
+  }
+  // 취소 보상이 미지급이면 현금 지급 때까지 평가일의 의무로 남는다.
+  for (const o of obligations) if (o.paidDay === null && adjustments.has(o.id)) cancelFlows.push(flow(-o.amountMinor, evaluationDay, true, o.currency));
+  const components = { schedule: 0, fx: afterFx - expected, tariff: 0, surcharge: 0,
+    late: afterLate - afterFx, claim: 0, cancel: value(cancelFlows) - afterLate, collection: 0, open_valuation: 0, residual: 0 };
+  components.residual = realized - expected - Object.values(components).reduce((sum, n) => sum + n, 0);
+  return { contractId, kind: c.kind, evaluationDay, expected, realized, open,
+    openFixedRateKrw: value(cashFlows) + value(remaining, config.operations.fx.baseKrwPerUsd), components };
 }
