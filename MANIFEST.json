@@ -2452,8 +2452,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 21535,
-      "sha256": "954782c382a928e35d1294a6a7041c1fe58061c0366b87fd0dbd60506f0e4540"
+      "size_bytes": 22032,
+      "sha256": "e85121dcf1094723689591e8987031db154b9ae435c3b375c18ce2cccf7452cf"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2789,6 +2789,11 @@
       "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
       "size_bytes": 16721,
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0062a-rules2-golden.md",
+      "size_bytes": 18110,
+      "sha256": "6c895e0e390355abd232b59422229074fba7ea19424f83d212cd96717a4c0f94"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
