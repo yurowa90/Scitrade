@@ -1981,6 +1981,21 @@
       "sha256": "b7b91de9f3dc7442dd3ea685e32e62143602488052b1d935ab3544c249084e25"
     },
     {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/README.md",
+      "size_bytes": 2141,
+      "sha256": "565e187114ca107cca7157b661134cbc8ac10ec12e1c07e2126c854569190925"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/margin.jsonl",
+      "size_bytes": 3559,
+      "sha256": "3fe4457462825d0c1b15e7b3e7b5103b675867425addfd89c76fb028bc1d09b2"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/mpad.js",
+      "size_bytes": 4390,
+      "sha256": "be9b95849b682c575a91cd177c9d5466f6f4b783327d47d4954ff5e34a658f3e"
+    },
+    {
       "path": "docs/ai/design/situation-map-10b1/harness/nightlights.py",
       "size_bytes": 788,
       "sha256": "35adf9a1b775496de10d37842b928f283e6a0ce5aa91711eff4a366c6e6dc1b9"
