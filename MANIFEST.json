@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 21002,
-      "sha256": "93bb983a1aa08b1043a557cc459f7484567b5bba17d6c21d896b146c6fe505f5"
+      "size_bytes": 21252,
+      "sha256": "1805fa67885f7a190081c66a7dd99c69613238fa703c75be62975ca36cdc4ea2"
     },
     {
       "path": "docs/QUALITY_GATE_ALPHA.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 98800,
-      "sha256": "69d2f08b613bc06d3c96c934134a801e633eabcaf8b6b2772dd72a6352696a81"
+      "size_bytes": 100021,
+      "sha256": "440c1ff3aaee82da264b9270da8d043baf2399e0afbadbb5acbfcbdfc196c32c"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1712,8 +1712,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
-      "size_bytes": 80119,
-      "sha256": "1a4200377fdadc8ed81f39d926fcc6878049c45eb75ef2bdf35f431e26986283"
+      "size_bytes": 80125,
+      "sha256": "735ac695c2df165f074f8b43351c1d761843d0ab700114ad1a678edf96f24a28"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2467,8 +2467,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 22232,
-      "sha256": "a8357309de8c79e23dd3dd9f6615a5e5860c0e234ef0ac8c6c93fae6727ddb28"
+      "size_bytes": 23335,
+      "sha256": "24e1834332ae28c168edacab8c669c43cd39e6218566e2cd0de29cfc87fceda9"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
