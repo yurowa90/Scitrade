@@ -11,7 +11,7 @@ export const ENGINE_VERSION = '0.2.0';
  * 엔진이 아는 경제 규칙 판본. 판본은 시나리오가 정하고(data/scenarios.json의 engine_rules) 저장 파일에 남는다.
  * 규칙이 바뀌면 새 판본을 더하고, 다른 판본의 저장은 조용히 이어 쓰지 않는다.
  */
-export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1', 'M2a-rules-2'] as const;
+export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1', 'M2a-rules-2', 'M2a-rules-3'] as const;
 export type RulesVersion = (typeof SUPPORTED_RULES_VERSIONS)[number];
 
 // ── 정적 시나리오 설정 (data/*.json에서 만들어지며 상태에 저장하지 않는다) ──
@@ -526,7 +526,22 @@ export interface CommandResult {
 export type ServiceClass = 'STANDARD' | 'HANDLING';
 export type MarketSide = 'BUY' | 'SELL';
 export type ExchangeDirection = 'USD_TO_KRW' | 'KRW_TO_USD';
+export type RiskLayer = 'FX' | 'TARIFF' | 'SURCHARGE' | 'CLAIM' | 'COLLECTION';
+/** 설정 전용 위험 프로필. 상태·저장에는 넣지 않는다. */
+export interface RiskProfile {
+  id: string; dataBasis: string; status: string; basis: string;
+  fx: { startKrwPerUsd: number; stepBp: number; minKrwPerUsd: number; maxKrwPerUsd: number };
+  tariff: { base: { countryCode: string; goodId: string; rateBp: number }[];
+    maxChanges: number; lagDays: number[]; stepBp: number[]; minBp: number; maxBp: number; basis: string; status: string };
+  surcharge: { pZeroBp: number; minBp: number; maxBp: number };
+  claims: { byGood: { goodId: string; grade: string; pClaimBp: number }[]; basis: string;
+    minor: { weightBp: number; minBp: number; maxBp: number }; major: { weightBp: number; minBp: number; maxBp: number } };
+  collections: { byCounterparty: { counterpartyId: string; grade: string }[]; basis: string;
+    grades: { grade: string; pOnTimeBp: number; pLateBp: number; pPartialBp: number }[];
+    partialBp: number; lateMinDays: number; lateMaxDays: number };
+}
 export interface OperationsConfig {
+  risk?: { profile: RiskProfile; layers: RiskLayer[] };
   market: {
     publish: { firstDay: number; intervalDays: number; lastDay: number; validDays: number };
     rng: { streamPrefix: string; streamDigits: number };

@@ -1118,6 +1118,49 @@ class MarketRulesTest(unittest.TestCase):
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])
 
+    def test_risk_counterexamples(self):
+        cases = [
+            ('probability', 'collections: 등급 확률 합은 10000이어야 함'),
+            ('weight', 'claims: 손상 가중치 합은 10000이어야 함'),
+            ('range', 'surcharge: 최소·최대 범위 오류'),
+            ('good', 'claims: 품목 자료에 없는 품목'),
+            ('tariff_good', 'tariff: 품목 자료에 없는 품목'),
+            ('party', 'collections: 시장 자료에 없는 거래처'),
+            ('fx', 'fx: 시작 환율이 fx_krw_per_usd와 다름'),
+            ('missing_party', 'collections: 운영 판매 거래처 누락'),
+            ('missing_good', 'claims: 운영 품목 누락'),
+            ('missing_tariff', 'tariff: 운영 판매국·품목 누락'),
+            ('step', 'tariff.step_bp: 최소·최대 범위 오류'),
+            ('days', 'collections.late_days: 최소·최대 범위 오류'),
+            ('bp', 'fx.step_bp: 정수 범위 오류'),
+        ]
+        for change, message in cases:
+            with self.subTest(change=change):
+                d, t = self.fixtures()
+                p = d['market_rules']['risk_profiles'][0]
+                if change == 'probability': p['collections']['grades'][0]['p_on_time_bp'] += 1
+                elif change == 'weight': p['claims']['minor']['weight_bp'] += 1
+                elif change == 'range': p['surcharge']['min_bp'] = p['surcharge']['max_bp'] + 1
+                elif change == 'good': p['claims']['by_good'][0]['good_id'] = 'UNKNOWN'
+                elif change == 'tariff_good': p['tariff']['base'][0]['good_id'] = 'UNKNOWN'
+                elif change == 'party': p['collections']['by_counterparty'][0]['counterparty_id'] = 'UNKNOWN'
+                elif change == 'fx': p['fx']['start_krw_per_usd'] += 1
+                elif change == 'missing_party': p['collections']['by_counterparty'] = []
+                elif change == 'missing_good': p['claims']['by_good'] = []
+                elif change == 'missing_tariff': p['tariff']['base'] = []
+                elif change == 'step': p['tariff']['step_bp'][0] = -10001
+                elif change == 'days': p['collections']['late_min_days'] = -1
+                elif change == 'bp': p['fx']['step_bp'] = 10001
+                self.assertIn(f"risk_profiles: {p['id']}: {message}", self.errors(d, t))
+
+    def test_risk_all_profiles_and_inherited_rule(self):
+        d, t = self.fixtures()
+        p = copy.deepcopy(d['market_rules']['risk_profiles'][0])
+        p['id'] += '_SECOND'
+        p['collections']['by_counterparty'] = []
+        d['market_rules']['risk_profiles'].append(p)
+        self.assertIn(f"risk_profiles: {p['id']}: collections: 운영 판매 거래처 누락", self.errors(d, t))
+
     def test_goods_counts(self):
         for count in (1, 3):
             with self.subTest(count=count):
@@ -1132,6 +1175,14 @@ class MarketRulesTest(unittest.TestCase):
                     good['good_id'] = next(g for g in t['goods'] if g not in {x['good_id'] for x in goods})
                     good['id_tag'] = 'THIRD'
                     goods.append(good)
+                    for profile in d['market_rules']['risk_profiles']:
+                        claim = copy.deepcopy(profile['claims']['by_good'][0])
+                        claim['good_id'] = good['good_id']
+                        profile['claims']['by_good'].append(claim)
+                        for country in {t['world'][city]['country_code'] for city in rule['trade']['sell_city_ids']}:
+                            tariff = copy.deepcopy(profile['tariff']['base'][0])
+                            tariff.update(country_code=country, good_id=good['good_id'])
+                            profile['tariff']['base'].append(tariff)
                     for row in list(rule['rows']):
                         if row['good_id'] == goods[0]['good_id']:
                             rule['rows'].append(dict(copy.deepcopy(row), good_id=good['good_id']))

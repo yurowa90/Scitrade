@@ -1,5 +1,5 @@
 import marketRules from '../../data/market_rules.json';
-import type { OperationsConfig, Task } from '../engine/types';
+import type { OperationsConfig, RiskProfile, Task } from '../engine/types';
 import { applyBasisPoints } from '../engine/money';
 // data/*.json의 DESIGN fixture를 엔진 시나리오 설정으로 변환한다 (M1 거래 한 건, M2a 복수 계약).
 // USD 표시 금액은 여기서 한 번만 cents로 바꾼다. 계약 조건·규칙 판본·지연 사건도 data/scenarios.json에서 읽는다.
@@ -535,4 +535,28 @@ function toOperations(s: AnyRecord, cfg: AnyRecord): OperationsConfig | null {
       leadDays: o.space_contract.lead_days, reserveDaysAhead: o.space_contract.reserve_days_ahead, maxPerRoute: o.space_contract.max_per_route },
     paymentDefault: { warningFromAgeDays: o.payment_default.warning_from_age_days, dangerFromAgeDays: o.payment_default.danger_from_age_days, failureAgeDays: o.payment_default.failure_age_days },
   };
+}
+
+/** 자료의 다섯 위험 묶음을 엔진 설정으로 변환한다. 금액은 원·bp 그대로다. */
+export function loadRiskProfile(id: string): RiskProfile {
+  const p = marketRules.risk_profiles.find((p) => p.id === id);
+  if (!p) throw new Error(`위험 프로필이 없습니다: ${id}`);
+  const tier = (t: typeof p.claims.minor) => ({ weightBp: t.weight_bp, minBp: t.min_bp, maxBp: t.max_bp });
+  return {
+    id: p.id, dataBasis: p.data_basis, status: p.status, basis: p.basis,
+    fx: { startKrwPerUsd: p.fx.start_krw_per_usd, stepBp: p.fx.step_bp, minKrwPerUsd: p.fx.min_krw_per_usd, maxKrwPerUsd: p.fx.max_krw_per_usd },
+    tariff: { base: p.tariff.base.map((r) => ({ countryCode: r.country_code, goodId: r.good_id, rateBp: r.rate_bp })),
+      maxChanges: p.tariff.max_changes, lagDays: [...p.tariff.lag_days], stepBp: [...p.tariff.step_bp], minBp: p.tariff.min_bp,
+      maxBp: p.tariff.max_bp, basis: p.tariff.basis, status: p.tariff.status },
+    surcharge: { pZeroBp: p.surcharge.p_zero_bp, minBp: p.surcharge.min_bp, maxBp: p.surcharge.max_bp },
+    claims: { byGood: p.claims.by_good.map((r) => ({ goodId: r.good_id, grade: r.grade, pClaimBp: r.p_claim_bp })),
+      basis: p.claims.basis, minor: tier(p.claims.minor), major: tier(p.claims.major) },
+    collections: { byCounterparty: p.collections.by_counterparty.map((r) => ({ counterpartyId: r.counterparty_id, grade: r.grade })),
+      basis: p.collections.basis, grades: p.collections.grades.map((r) => ({ grade: r.grade,
+        pOnTimeBp: r.p_on_time_bp, pLateBp: r.p_late_bp, pPartialBp: r.p_partial_bp })),
+      partialBp: p.collections.partial_bp, lateMinDays: p.collections.late_min_days, lateMaxDays: p.collections.late_max_days },
+  };
+}
+export function riskProfiles(): RiskProfile[] {
+  return marketRules.risk_profiles.map((p) => loadRiskProfile(p.id));
 }

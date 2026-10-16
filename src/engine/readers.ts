@@ -24,6 +24,7 @@ export interface OperationsQuotePreview extends QuotePreview {
   volumeLiters: number; massGrams: number; storageAfterLiters: number; storageCapacityLiters: number;
   counterpartySpreadPct: { buy: number | null; sell: number | null };
   serviceClass: OfferDef['serviceClass']; titleKo: string | null;
+  /** 규칙 3: 원화 매입 제외, 판단 값 아님. */
   contributionPerPrepPtMinor: number; lateDeliveryReductionMinor: number;
   affectedContracts: { contractId: string; readyBefore: number | null; readyAfter: number | null; missesSailing: boolean }[];
 }
@@ -42,9 +43,10 @@ export function quotePreview(s: GameState, config: ScenarioConfig, offerIds: Quo
   const due = (trade ? config.terms.paymentDueDay : null) ?? sell?.paymentDueDay ?? config.campaignDays;
   const grossSale = trade ? (sell?.unitPriceMinor ?? 0) * q : buy?.serviceFeeMinor ?? 0;
   const route = buy && sell && routeBetween(config, buy.cityId, trade ? sell.cityId : sell.destinationCityId!);
-  const base = buy && sell && preview(config, trade ? 'DIRECT_TRADE' : 'FORWARDING', buy.cityId,
+  // 정상 실행에서는 config.seed와 s.rng.seed가 같다. 상태가 있는 읽기는 상태 시드를 따른다.
+  const base = buy && sell && preview({ ...config, seed: s.rng.seed }, trade ? 'DIRECT_TRADE' : 'FORWARDING', buy.cityId,
     trade ? sell.cityId : sell.destinationCityId!, s.day,
-    { purchase: trade ? buy.unitPriceMinor * q : 0, sale: grossSale }, deadline, due);
+    { purchase: trade ? buy.unitPriceMinor * q : 0, sale: grossSale }, deadline, due, { goodId: buy.goodId, purchaseCurrency: buy.currency });
   // 알 수 없는 견적도 명령의 거절 문장을 반환한다. 계산할 수 없는 수치는 0·일정은 null이다.
   const quote: QuotePreview = base || { kind: trade ? 'DIRECT_TRADE' : 'FORWARDING', routeId: route?.id ?? '',
     purchase: 0, freight: 0, duty: 0, sale: 0, contributionBeforePayroll: 0, cashNeed: 0,
@@ -94,7 +96,7 @@ export function quotePreview(s: GameState, config: ScenarioConfig, offerIds: Quo
 export function exchangePreview(s: GameState, config: ScenarioConfig, direction: ExchangeDirection, usdAmountMinor: number) {
   const { state: after, results } = planState(s, config, [{ id: previewId(s), type: 'EXCHANGE_CURRENCY', direction, usdAmountMinor }]);
   const allowed = results[0]!.status === 'APPLIED';
-  const { krw: krwMinor, spread: spreadKrwMinor } = exchangeAmounts(config, direction, usdAmountMinor);
+  const { krw: krwMinor, spread: spreadKrwMinor } = exchangeAmounts(config, direction, usdAmountMinor, s.rng.seed, s.day);
   const krwAvailableAfter = fundsPosition(after, config, 'KRW').available, today = dailyKrwDue(s, config, s.day);
   return { allowed, reasonKo: allowed ? null : results[0]!.reasonKo, krwMinor, spreadKrwMinor,
     usdAvailableBefore: fundsPosition(s, config, 'USD').available, usdAvailableAfter: fundsPosition(after, config, 'USD').available,
@@ -199,7 +201,7 @@ export function weeklyBottleneck(s: GameState, config: ScenarioConfig, candidate
     binding: { before: rows.filter((r) => r.before === usableBefore).map((r) => r.constraint), after: rows.filter((r) => r.after === usableAfter).map((r) => r.constraint) },
     usableBefore, usableAfter, extraJobsPerWeek: hire ? usableAfter - usableBefore : 0, remainingHandlingBatches,
     contributionPerJobMinor: Math.min(...templates.map((t) => t.serviceFeeMinor - routeBetween(config, config.homeCityId, t.destinationCityId)!.bookingFeeMinor)),
-    wageKrwPerWeek, wageUsdLotsPerWeek: wageKrwPerWeek === null ? null : Math.ceil(wageKrwPerWeek / usdLotKrw(config)) };
+    wageKrwPerWeek, wageUsdLotsPerWeek: wageKrwPerWeek === null ? null : Math.ceil(wageKrwPerWeek / usdLotKrw(config, s)) };
 }
 
 export function hiringOutlook(s: GameState, config: ScenarioConfig, candidateId: string) {
