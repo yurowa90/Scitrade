@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 20721,
-      "sha256": "9d96569aa5b7900f754d890c7d9d797ce14e205ac11e10d7f5809f945a2f288d"
+      "size_bytes": 21002,
+      "sha256": "93bb983a1aa08b1043a557cc459f7484567b5bba17d6c21d896b146c6fe505f5"
     },
     {
       "path": "docs/QUALITY_GATE_ALPHA.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 96583,
-      "sha256": "5a7d80ce53928b7323821a4ec10302c1e326a7bb5f82250a14dcec0866df6a3c"
+      "size_bytes": 98800,
+      "sha256": "69d2f08b613bc06d3c96c934134a801e633eabcaf8b6b2772dd72a6352696a81"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 10267,
-      "sha256": "3413fe2b3d50d4d22bde8026115244c3747b5136504dcd01bd58449e8facbac8"
+      "size_bytes": 10767,
+      "sha256": "ebdf69bfef43f610306b79af9bfe3870cdbac383eca31b69e100b09dc7c678d8"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -2462,8 +2462,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 22032,
-      "sha256": "e85121dcf1094723689591e8987031db154b9ae435c3b375c18ce2cccf7452cf"
+      "size_bytes": 22232,
+      "sha256": "a8357309de8c79e23dd3dd9f6615a5e5860c0e234ef0ac8c6c93fae6727ddb28"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3121,6 +3121,11 @@
       "sha256": "0c535294c6c0f523f0f1bc26df77f2955a849cf12325433777c374bd103f17a6"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0062a.md",
+      "size_bytes": 24825,
+      "sha256": "cedc1978f77e9d319b7607c10a50c666b6245d9d677989c37d79f286814a8623"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12517,
       "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
@@ -3396,14 +3401,24 @@
       "sha256": "47d5b959da0f08ae0a790a8b179537c500b337ca1545dcb40e48e63137e6fceb"
     },
     {
+      "path": "tests/golden/rules1-run.tsv",
+      "size_bytes": 69636,
+      "sha256": "284ac161b97ddca572a1e1209a06c02d2abbfaeff0ecb65c6318ea03dfb473b7"
+    },
+    {
+      "path": "tests/golden/rules2-d03.tsv",
+      "size_bytes": 25236,
+      "sha256": "2fa8f23fb54173e5066afb366f007a38d95e93b07c701ba57f67cc1bbac4f6eb"
+    },
+    {
       "path": "tools/ai/codex_task.sh",
       "size_bytes": 3810,
       "sha256": "761aa7e7a4f1f271b173f4edff555c4ac6f6d023d9c370fc677c879eeb12169d"
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 3019,
-      "sha256": "32d1b59c6dbac5b6c2f55587221f72f30661d14ff520903ba6b046feb024b218"
+      "size_bytes": 3109,
+      "sha256": "ecec1efa0cd04c96e640df188e590c91c9afb8852470feee00f91cc8d54406c6"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -3556,6 +3571,16 @@
       "sha256": "eba59636c6e9fa8edb360f0dad4db8114be354f4d3421371476d39e7f8e4d76b"
     },
     {
+      "path": "tools/check_rules2_golden.mjs",
+      "size_bytes": 9900,
+      "sha256": "03502454729e4e490f370c92f80049fc8b2f75801fbb0169968d0a84efe70153"
+    },
+    {
+      "path": "tools/check_rules2_golden.test.mjs",
+      "size_bytes": 5447,
+      "sha256": "606c16975844461fe290eb881d2112e3905f241a7b377047e2463cb255e11f98"
+    },
+    {
       "path": "tools/deploy/prepare_static.sh",
       "size_bytes": 3268,
       "sha256": "fcd503a7a893454f8c5a2744789c4f7da2c393367a5f88b57714529b035f6bb8"
@@ -3564,6 +3589,16 @@
       "path": "tools/fonts/subset_gowun_dodum.py",
       "size_bytes": 3491,
       "sha256": "90a555e6693d844666359de7e574077372c136a64baca680d9c6112a3e074341"
+    },
+    {
+      "path": "tools/rules2_golden_entry.ts",
+      "size_bytes": 762,
+      "sha256": "a3607073f1a6d55fbcd84cd7218305f280e3dbf080fd52e524373d8ed3f12357"
+    },
+    {
+      "path": "tools/rules2_golden_lib.mjs",
+      "size_bytes": 3641,
+      "sha256": "d1c90f1d4daaa1bdd764a835bab5b1c8cd4263464df3d073f0b732debcedc46d"
     },
     {
       "path": "tools/test_check_fact_mixing.py",
