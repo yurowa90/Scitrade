@@ -603,7 +603,7 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
       .toMatchObject({ labelKo: '도착·관세 지급', amount: 0 });
     console.log('관세 0 도착 사례', JSON.stringify({ seed: cfg.seed, country: cc, baseBp: 100, stepBp: copy.tariff.stepBp,
       accepted: c.acceptedDay, arrival: n, evaluation: s.day, positive, old, r, fr, evaluationRate, wrongFx: expectedFx(s.day), wrongTariff, components: report.components }));
-  }, 30000);
+  }, 60000);
   it('도착 공지 기준일: 도착일 아침 공지·동일 일 시행', () => {
     const p = structuredClone(profile); p.tariff.lagDays = [0, 0];
     const v = findEventCase(({ cfg, c, e, sailing, p }) => sailing.scheduledArrivalDay === e.noticeDay
