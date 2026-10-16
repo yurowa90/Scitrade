@@ -30,7 +30,7 @@
 
 ### 2. 새 rule_set 둘(`data/market_rules.json`)
 
-`M2A5_PYEONGTAEK`를 복사해 만든다. 아래에 적은 것 말고는 모든 값이 `M2A5_PYEONGTAEK`와 같다(`publish`, `regional_pct`, `counterparty_pct`, `forwarding` 전체, `drop_if_beyond_campaign`, `trade`의 `buy_city_id`·`sell_city_ids`·`max_lots_choices`·`sell_deadline_offset_days`·`payment_offset_days`).
+`M2A5_PYEONGTAEK`를 복사해 만든다. **`rule_sets` 배열 끝에 더한다**(기존 검사기 시험 고정 자료가 `rule_sets[0]`을 옛 rule_set으로 읽는다. 0062 사전 확인 P3과 같은 꼴). 아래에 적은 것 말고는 모든 값이 `M2A5_PYEONGTAEK`와 같다(`publish`, `regional_pct`, `counterparty_pct`, `forwarding` 전체, `drop_if_beyond_campaign`, `trade`의 `buy_city_id`·`sell_city_ids`·`max_lots_choices`·`sell_deadline_offset_days`·`payment_offset_days`).
 
 | 칸 | `M2A5_PYEONGTAEK_COS`((나)) | `M2A5_PYEONGTAEK_COS_LAVER`((다)) |
 |---|---|---|
@@ -103,6 +103,8 @@
 | 위험 변환 | `withRiskLevel(새 시나리오, R1~R3, riskProfiles()[0])`이 예외 없이 설정을 만든다(프로필 누락 예외가 나지 않는다) |
 | 1일 시작 | 시드 2001로 `createGame` 뒤 1일을 열고 마감할 수 있다. 정적 견적이 화장품 쌍과 주선 둘이다 |
 
+- 시험은 엔진 공개 함수(`createGame`·`openDay`·`commitDay`, 생성기·읽기 함수)만 쓴다. `src/engine/sim/**`의 `simulate`·`runSuite`·`runD03`는 부르지 않는다(판정표 0절 1 잠금, 0062 사전 확인 P22·Q12와 같은 규칙).
+
 - 검사기 반례 시험(`tools/test_validate_data.py`): 새 검사 셋마다 반례 하나(operations 다른 값, rows 빠짐, 거래처 재사용).
 
 ## 변형 시험
@@ -134,6 +136,7 @@
 
 - **골든 진단 절차(허브 통일 문장).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. 이 작업은 새 자료만 더하므로 골든은 깨지지 않아야 한다. 깨지면 원인(옛 항목을 건드렸는지, 생성기가 자료 전체에 기대는지)을 적고 멈춘다.
 - 측정 금지와 시험 시드(원칙).
+- **첫 화면 크기**(0062 사전 확인 P10과 같은 방법). BASE와 작업 뒤 각각 `npm run build` 다음 `node tools/check_bundle_size.mjs dist`의 첫 화면 줄을 적는다. 이 작업은 자료만 더하므로 증가분은 자료 청크 몫이다. 자료 몫과 코드 몫을 따로 적고, **코드 몫이 +2,500 B를 넘으면 멈추고 보고한다.** 자료 몫은 크기와 함께 보고만 한다.
 - `review_checks` 통과.
 
 ## 완료 조건
