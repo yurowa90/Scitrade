@@ -480,7 +480,8 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
   };
   const fxFlows = baseline.map((f) => ({ ...f }));
   fxFlows[1]!.day = firstPrepayment?.day ?? (cancelled ? c.acceptedDay : evaluationDay);
-  fxFlows[2]!.day = cancelled ? c.acceptedDay : paidDay(dutyEntry?.id, dutyEntry?.day ?? evaluationDay);
+  fxFlows[2]!.day = cancelled ? c.acceptedDay : dutyEntry ? paidDay(dutyEntry.id, dutyEntry.day)
+    : arrived ? shipment.arrivalDay! : evaluationDay;
   fxFlows[3]!.day = cancelled ? c.acceptedDay : invoice?.dueDay ?? Math.max(c.paymentDueDay, deliveryDay);
   const afterFx = value(fxFlows);
   const tariffFlows = fxFlows.map((f) => ({ ...f }));

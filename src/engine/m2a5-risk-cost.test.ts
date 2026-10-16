@@ -37,6 +37,11 @@ const bpAmount = (n: number, bp: number) => half(n * bp, 10000);
 const country = (cfg: ScenarioConfig, city: string) => cfg.cities.find((c) => c.id === city)!.countryCode;
 const week = (cfg: ScenarioConfig, day: number) => Math.floor((day - cfg.operations!.market.publish.firstDay) / cfg.operations!.market.publish.intervalDays) + 1;
 const fresh = (cfg: ScenarioConfig) => openDay(createGame(cfg), cfg).state;
+// 읽기 함수는 추첨 회차를 공개하지 않으므로 공지·시행 날짜로 사건을 대조한다.
+type Notice = Pick<TariffEvent, 'countryCode' | 'noticeDay' | 'effectiveDay'>;
+const eventKey = (e: Notice) => [e.countryCode, e.noticeDay, e.effectiveDay];
+const sameNotice = (a: Notice, b: Notice) => a.countryCode === b.countryCode
+  && a.noticeDay === b.noticeDay && a.effectiveDay === b.effectiveDay;
 
 // 제품 함수와 독립된 일정·정수 산술 오라클. 원본 난수 함수만 공유한다.
 function integer(seed: number, stream: string, a: number, b: number) {
@@ -285,7 +290,7 @@ describe('TASK-0063 순수 일정과 공지', () => {
       for (const e of events.filter((e) => e.countryCode === cc)) {
         const state = advance(fresh({ ...cfg, seed }), { ...cfg, seed }, e.noticeDay);
         expect(state.day).toBe(e.noticeDay);
-        const rates = tariffSchedule(state, cfg).find((v) => v.countryCode === cc && v.round === e.round)!.rates;
+        const rates = tariffSchedule(state, cfg).find((v) => sameNotice(v, e))!.rates;
         expect(rates).toEqual(oracleRates(cfg, seed, e, e.noticeDay));
         const a = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.fromBp);
         const b = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.toBp);
@@ -305,7 +310,9 @@ describe('TASK-0063 순수 일정과 공지', () => {
       const cfg = cfgFor(seed, p), events = oracleEvents(cfg, seed);
       for (const e of events) {
         if (!events.some((v) => v.noticeDay === e.noticeDay && v.countryCode !== e.countryCode)
-          || !events.some((v) => v.noticeDay < e.noticeDay)) continue;
+          || !events.some((v) => v.noticeDay < e.noticeDay)
+          || !events.some((a) => events.some((b) => a.countryCode === b.countryCode
+            && a.noticeDay < b.noticeDay && b.noticeDay <= e.noticeDay && a.round > b.round))) continue;
         const state = advance(fresh(cfg), cfg, e.noticeDay);
         if (state.day === e.noticeDay && state.phase !== 'ENDED') { found = { cfg, day: e.noticeDay }; break; }
       }
@@ -316,7 +323,14 @@ describe('TASK-0063 순수 일정과 공지', () => {
       .sort((a, b) => a.noticeDay - b.noticeDay || countries.indexOf(a.countryCode) - countries.indexOf(b.countryCode) || a.round - b.round);
     expect(new Set(ordered.filter((e) => e.noticeDay === day).map((e) => e.countryCode)).size).toBeGreaterThan(1);
     expect(ordered.some((e) => e.noticeDay < day)).toBe(true);
-    expect(tariffSchedule(state, cfg).map((e) => [e.countryCode, e.round])).toEqual(ordered.map((e) => [e.countryCode, e.round]));
+    expect(ordered.some((a) => ordered.some((b) => a.countryCode === b.countryCode
+      && a.noticeDay < b.noticeDay && a.round > b.round))).toBe(true);
+    const schedule = tariffSchedule(state, cfg);
+    expect(schedule.map(eventKey)).toEqual(ordered.map(eventKey));
+    for (const [i, e] of schedule.entries()) {
+      expect(e).not.toHaveProperty('round');
+      expect(e.seq).toBe(ordered.slice(0, i + 1).filter((v) => v.countryCode === e.countryCode).length);
+    }
     expect(state.log.filter((l) => l.day === day && l.textKo.includes('관세 일괄 변경')).map((l) => l.textKo))
       .toEqual(ordered.filter((e) => e.noticeDay === day).map((e) => oracleLabel(cfg, e, oracleRates(cfg, cfg.seed, e, day))));
   });
@@ -333,13 +347,25 @@ describe('TASK-0063 순수 일정과 공지', () => {
     expect(found).toBeDefined();
     const s = advance(fresh(found!.cfg), found!.cfg, found!.cfg.campaignDays + 1);
     expect(s.log.some((l) => l.textKo.startsWith(cc) && l.textKo.includes('관세 일괄 변경'))).toBe(false);
-    p.tariff.stepBp = [...profile.tariff.stepBp]; let contrast = false;
+    p.tariff.stepBp = [...profile.tariff.stepBp]; let contrast = false, gapChecked = false;
     for (let seed = 1; seed <= 200; seed++) {
       const cfg = cfgFor(seed, p), events = tariffEvents(cfg, seed); expect(events).toEqual(oracleEvents(cfg, seed));
       const selected = events.filter((e) => e.countryCode === cc); contrast ||= selected.length > 0;
+      if (!gapChecked && selected.some((e) => e.round > selected.length)) {
+        const day = Math.max(...selected.map((e) => e.noticeDay)), state = advance(fresh(cfg), cfg, day);
+        if (state.day === day && state.phase !== 'ENDED') {
+          expect(integer(seed, `TARIFF:${cc}:count`, 0, p.tariff.maxChanges)).toBeGreaterThan(selected.length);
+          expect(selected.some((e) => e.round > selected.length)).toBe(true);
+          const schedule = tariffSchedule(state, cfg).filter((e) => e.countryCode === cc);
+          expect(schedule.map(eventKey)).toEqual(selected.map(eventKey));
+          expect(schedule.map((e) => e.seq)).toEqual(selected.map((_, i) => i + 1));
+          for (const e of schedule) expect(e).not.toHaveProperty('round');
+          gapChecked = true;
+        }
+      }
       for (const e of selected.filter((e) => e.stepBp > 0)) expect(selected.some((v) => v.stepBp < 0 && v.effectiveDay <= e.effectiveDay && (v.noticeDay < e.noticeDay || (v.noticeDay === e.noticeDay && v.round < e.round)))).toBe(true);
     }
-    expect(contrast).toBe(true);
+    expect(contrast).toBe(true); expect(gapChecked).toBe(true);
   });
 });
 
@@ -393,11 +419,11 @@ describe('TASK-0063 공지 기준과 누설 차단', () => {
     expect(earlyRates).not.toEqual(laterRates);
     expect(atPreview(cfg, ctx, e2.noticeDay - 1).duty).toBe(old);
     const before = advance(fresh(cfg), cfg, e1.noticeDay - 1);
-    expect(tariffSchedule(before, cfg).some((e) => e.countryCode === e1.countryCode && e.round === e1.round)).toBe(false);
+    expect(tariffSchedule(before, cfg).some((e) => sameNotice(e, e1))).toBe(false);
     const early = advance(before, cfg, e1.noticeDay), late = advance(early, cfg, e2.noticeDay);
-    expect(tariffSchedule(early, cfg).find((e) => e.countryCode === e1.countryCode && e.round === e1.round)!.rates).toEqual(earlyRates);
+    expect(tariffSchedule(early, cfg).find((e) => sameNotice(e, e1))!.rates).toEqual(earlyRates);
     expect(early.log.filter((l) => l.day === e1.noticeDay).map((l) => l.textKo)).toContain(oracleLabel(cfg, e1, earlyRates));
-    expect(tariffSchedule(late, cfg).find((e) => e.countryCode === e1.countryCode && e.round === e1.round)!.rates).toEqual(laterRates);
+    expect(tariffSchedule(late, cfg).find((e) => sameNotice(e, e1))!.rates).toEqual(laterRates);
     expect(late.log.filter((l) => l.day === e2.noticeDay).map((l) => l.textKo)).toContain(oracleLabel(cfg, e2, oracleRates(cfg, cfg.seed, e2, e2.noticeDay)));
     for (const s of [early, late]) {
       const schedule = tariffSchedule(s, cfg).filter((e) => e.noticeDay === s.day);
@@ -516,7 +542,16 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
     const arrived = advance(before, cfg, n + 1), sh = arrived.shipments.find((sh) => sh.contractId === c.id)!;
     expect(sh.arrivalDay).toBe(n); expect(sh.dutyMinor).toBe(0); expect(sh.dutyPaid).toBe(true);
     expect(entryAmount(arrived, 'DUTY-', c)).toBeUndefined();
-    const s = advance(finish(arrived, cfg, c.id), cfg, positive.effectiveDay);
+    const completed = finish(arrived, cfg, c.id), arrivalRate = rateAt(cfg, cfg.seed, sh.arrivalDay!);
+    const publish = cfg.operations!.market.publish;
+    const evaluationDay = Array.from({ length: cfg.campaignDays }, (_, i) => i + 1).find((day) =>
+      day >= Math.max(completed.day, positive.effectiveDay)
+      && (day - publish.firstDay) % publish.intervalDays === 0
+      && rateAt(cfg, cfg.seed, day) !== arrivalRate);
+    expect(evaluationDay).toBeDefined();
+    const s = advance(completed, cfg, evaluationDay!);
+    expect(s.day).toBe(evaluationDay);
+    expect(rateAt(cfg, cfg.seed, s.day)).not.toBe(arrivalRate);
     expect(s.phase).not.toBe('ENDED'); expect(s.contracts.find((v) => v.id === c.id)!.status).toBe('COMPLETED');
     expect(s.day).toBeGreaterThanOrEqual(positive.effectiveDay);
     expect(oracleRate(cfg, events, cc, c.goodId, s.day, s.day)).toBeGreaterThan(0);
@@ -529,9 +564,29 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
     expect(report.realized).toBe(independent(s, cfg, c).realized);
     const first = listSailings(cfg, sailing.routeId, c.acceptedDay + 1)[0]!;
     const old = oracleDuty(cfg, cfg.seed, c.goodId, c.destinationCityId, first.scheduledArrivalDay, c.acceptedDay, c.purchaseAmountMinor, 'KRW', c.acceptedDay);
-    const r = rateAt(cfg, cfg.seed, s.day), freight = entryAmount(s, 'FREIGHT-PREPAY-', c)!;
+    const r = arrivalRate, freight = entryAmount(s, 'FREIGHT-PREPAY-', c)!;
     const fr = rateAt(cfg, cfg.seed, freight.day) === r ? freight.lines.find((l) => l.account === 'PREPAID_FREIGHT')!.amount : 0;
     expect(old).toBeGreaterThan(0);
+    const freightMinor = freight.lines.find((l) => l.account === 'PREPAID_FREIGHT')!.amount;
+    const freightRate = rateAt(cfg, cfg.seed, freight.day), invoice = s.invoices.find((i) => i.contractId === c.id)!;
+    const lateDays = Math.max(0, first.scheduledArrivalDay + cfg.terms.customsDays - c.deliveryDeadlineDay);
+    const sale0 = c.saleAmountMinor - Math.min(bpAmount(c.saleAmountMinor, cfg.terms.lateDeliveryCapBasisPoints!),
+      lateDays * cfg.terms.lateDeliveryPriceReductionMinor);
+    // 2단계의 기대 금액을 환율별로 묶어 환산한다. 날짜만 바꾼 변형도 따로 계산한다.
+    const expectedFx = (dutyDay: number) => {
+      const costs = new Map<number, number>([[freightRate, -freightMinor]]);
+      const dutyRate = rateAt(cfg, cfg.seed, dutyDay);
+      costs.set(dutyRate, (costs.get(dutyRate) ?? 0) - old);
+      return toKrw(sale0, rateAt(cfg, cfg.seed, Math.min(invoice.dueDay, s.day))) - c.purchaseAmountMinor
+        + [...costs].reduce((sum, [rate, amount]) => sum + toKrw(amount, rate), 0) - independent(s, cfg, c).expected;
+    };
+    const evaluationRate = rateAt(cfg, cfg.seed, s.day), evaluationFr = freightRate === evaluationRate ? freightMinor : 0;
+    const wrongTariff = toKrw(-evaluationFr, evaluationRate) - toKrw(-(evaluationFr + old), evaluationRate);
+    expect(expectedFx(sh.arrivalDay!)).not.toBe(expectedFx(s.day));
+    expect(toKrw(-fr, r) - toKrw(-(fr + old), r)).not.toBe(wrongTariff);
+    expect(report.components.fx).toBe(expectedFx(sh.arrivalDay!));
+    expect(report.components.fx).not.toBe(expectedFx(s.day));
+    expect(report.components.tariff).not.toBe(wrongTariff);
     expect(report.components.tariff).toBe(toKrw(-fr, r) - toKrw(-(fr + old), r));
     expect(report.components.residual).toBe(0); identity(s, cfg, c.id);
     // 같은 설정에서 공지된 0 세율을 실제 다음 편 미리보기에 적용한다.
@@ -547,7 +602,7 @@ describe('TASK-0063 엔진의 관세 적용일', () => {
     expect(p.schedule.find((line) => line.day === p.arrivalDay && line.labelKo.startsWith('도착')))
       .toMatchObject({ labelKo: '도착·관세 지급', amount: 0 });
     console.log('관세 0 도착 사례', JSON.stringify({ seed: cfg.seed, country: cc, baseBp: 100, stepBp: copy.tariff.stepBp,
-      accepted: c.acceptedDay, arrival: n, evaluation: s.day, positive, old, r, fr, components: report.components }));
+      accepted: c.acceptedDay, arrival: n, evaluation: s.day, positive, old, r, fr, evaluationRate, wrongFx: expectedFx(s.day), wrongTariff, components: report.components }));
   }, 30000);
   it('도착 공지 기준일: 도착일 아침 공지·동일 일 시행', () => {
     const p = structuredClone(profile); p.tariff.lagDays = [0, 0];
@@ -848,7 +903,7 @@ describe('TASK-0063 호환성과 진단', () => {
     expect(Object.keys(s.rng.cursors).filter((k) => /^(TARIFF|SURCHARGE|FX-REF)/.test(k))).toEqual([]);
     const ended = advance(s, cfg, cfg.campaignDays + 1), k = ended.operations?.failure?.day ?? cfg.campaignDays;
     expect(ended.phase).toBe('ENDED');
-    expect(tariffSchedule(ended, cfg).map((e) => [e.countryCode, e.round]).sort()).toEqual(oracleEvents(cfg, cfg.seed).filter((e) => e.noticeDay <= k).map((e) => [e.countryCode, e.round]).sort());
+    expect(tariffSchedule(ended, cfg).map(eventKey).sort()).toEqual(oracleEvents(cfg, cfg.seed).filter((e) => e.noticeDay <= k).map(eventKey).sort());
     console.log('순수 함수 표', JSON.stringify([1, 2, costSeeds().positive].map((seed) => ({ seed, events: tariffEvents(cfg, seed),
       surcharge: cfg.routes.map((r) => ({ route: r.id, weeks: [1, 2, 3].map((w) => surchargeBp(cfg, seed, r.id, w)) })) }))));
   });
@@ -877,8 +932,8 @@ describe('TASK-0063 호환성과 진단', () => {
     const schedule = tariffSchedule(s, cfg);
     expect(schedule.some((e) => e.noticeDay === f + 1)).toBe(false);
     expect(schedule.some((e) => e.noticeDay > f + 1)).toBe(false);
-    expect(schedule.map((e) => [e.countryCode, e.round])).toEqual(expected.map((e) => [e.countryCode, e.round]));
-    for (const e of schedule) expect(e.rates).toEqual(oracleRates(cfg, cfg.seed, events.find((v) => v.countryCode === e.countryCode && v.round === e.round)!, f));
+    expect(schedule.map(eventKey)).toEqual(expected.map(eventKey));
+    for (const e of schedule) expect(e.rates).toEqual(oracleRates(cfg, cfg.seed, events.find((v) => sameNotice(v, e))!, f));
     console.log('실패 종료 공지 사례', JSON.stringify({ seed: cfg.seed, failureDay: f, day: s.day, events, visible: schedule }));
   }, 60000);
   it('원천 검사: 부대비는 출항 분기·주차 함수 인수, 관세 일정은 위험 모듈·아침 공지만', () => {

@@ -86,6 +86,7 @@ export function tariffSchedule(s: GameState, config: ScenarioConfig) {
   const day = s.phase === 'ENDED' ? s.operations?.failure?.day ?? config.campaignDays : s.day;
   const countries = [...new Set(p.base.map((r) => r.countryCode))];
   const events = tariffEvents(config, s.rng.seed).filter((e) => e.noticeDay <= day);
+  const sequences = new Map<string, number>();
   return [...events].sort((a, b) => a.noticeDay - b.noticeDay
     || countries.indexOf(a.countryCode) - countries.indexOf(b.countryCode) || a.round - b.round).map((e) => {
     const rates = p.base.filter((r) => r.countryCode === e.countryCode).map((row) => ({ goodId: row.goodId,
@@ -94,7 +95,9 @@ export function tariffSchedule(s: GameState, config: ScenarioConfig) {
     const cities = config.cities.filter((c) => c.countryCode === e.countryCode).map((c) => cityName(config, c.id)).join('·');
     const labelKo = `${e.countryCode}${cities ? `(${cities})` : ''} 관세 일괄 변경(가상 세율): ${rates.map((r) =>
       `${goodOf(config, r.goodId).nameKo} ${r.fromBp / 100}% → ${r.toBp / 100}%`).join(', ')} (${e.effectiveDay}일부터)`;
-    return { countryCode: e.countryCode, round: e.round, noticeDay: e.noticeDay, effectiveDay: e.effectiveDay, rates, labelKo };
+    const seq = (sequences.get(e.countryCode) ?? 0) + 1;
+    sequences.set(e.countryCode, seq);
+    return { countryCode: e.countryCode, seq, noticeDay: e.noticeDay, effectiveDay: e.effectiveDay, rates, labelKo };
   });
 }
 
