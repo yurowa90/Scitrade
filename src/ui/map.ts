@@ -166,7 +166,7 @@ const fmtLon = (lon: number) => {
 };
 
 /** 시나리오 항로가 모두 들어가면 동아시아 확대 지도, 아니면 세계지도. */
-function chooseMap(config: ScenarioConfig, mode: MapMode): MapAsset | null {
+export function chooseMap(config: ScenarioConfig, mode: MapMode): MapAsset | null {
   if (mode === 'world' || !REGION_MAP) return WORLD_MAP ?? REGION_MAP;
   const pts = config.routes.flatMap((r) => loadRouteWaypoints(r.id));
   return pts.every((p) => inBounds(p, REGION_MAP.bounds)) ? REGION_MAP : (WORLD_MAP ?? REGION_MAP);
