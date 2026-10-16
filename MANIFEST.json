@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 225917,
-      "sha256": "497ca9055fe82928f0ff1dfc5dbee04dc2561af988ce5494df8be59c2e279a2a"
+      "size_bytes": 228125,
+      "sha256": "1c4bbdcd40c508bb58198c47bd098209f6f55358bc66a602de1c615524d4ec5c"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1681,9 +1681,14 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/CODEX-REVIEW-0062-HUB-2026-10-16.md",
+      "size_bytes": 142649,
+      "sha256": "dd58de45cb7bac2c2edee81ebdb2bcca0e2fec2896436ad6d4e1b9a735b89220"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 101787,
-      "sha256": "86c82cc0ed8e3b04ee9c0e5054238f60795494ea40dba771e197c57f5ba273d6"
+      "size_bytes": 102220,
+      "sha256": "4f51aa075c9c5fd1be505d7a96a5f0adbf234d8b6dc83ca191b5e44265c861d4"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
@@ -2467,8 +2472,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 23347,
-      "sha256": "aeab15c8b424475cfaafbb2934210e24e32a301d9cecdf4d0a3a4572b396dc2d"
+      "size_bytes": 23763,
+      "sha256": "5b982672985124e55faa7287c9d444e2b310707dd913653e55c34d16eb6ffcaf"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2804,6 +2809,11 @@
       "path": "docs/ai/tasks/TASK-0061-situation-map-v1.md",
       "size_bytes": 16721,
       "sha256": "debf0a558a78e8153f74e13f78db1ec1d951d5d6eba481b8ed30c5cbf39099fb"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0062-R1-risk-fx-review-fixes.md",
+      "size_bytes": 18521,
+      "sha256": "3b6ba2a406233e517bf2aebe53985cce1f227be48a31622eb6e67abb0b8551a2"
     },
     {
       "path": "docs/ai/tasks/TASK-0062-risk-fx-krw-purchase.md",
