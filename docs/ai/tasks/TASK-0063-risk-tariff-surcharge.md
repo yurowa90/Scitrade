@@ -1,136 +1,238 @@
-# TASK-0063 직접 무역 위험 ②: 신고일 세율의 관세 변경과 출항 부대비 (허브 사전 확인 중, 개정 3d)
+# TASK-0063 직접 무역 위험 ②: 신고일 세율의 관세 변경과 출항 부대비 (허브 사전 확인 중, 개정 3e)
 
-- **지위: 허브 사전 확인 중(개정 3d). 허브 승인 전에는 실행하지 않는다.** 세션 A 초안(2026-10-14, 개정 1·2·3·3c 2026-10-16) 위에 TASK-0062 검수에서 나온 같은 꼴의 고침과 세션 A 점검 목록 C1~C8을 개정 3d로 넣었다. 처리표는 맨 끝 ‘허브 사전 확인 1차 처리표(개정 3d)’다.
+- **지위: 허브 사전 확인 중(개정 3e). 허브 승인 전에는 실행하지 않는다.**
+  - 세션 A 초안(2026-10-14, 개정 1·2·3·3c 2026-10-16) 위에 두 차례 고침을 넣었다.
+    - 개정 3d: TASK-0062 검수에서 나온 같은 꼴의 고침, 세션 A 점검 목록 C1~C8.
+    - 개정 3e: 허브 시제품 사전 확인(골든 무해·시험 실현성·모호성 세 관점, 중대 결함마다 반박 검증)의 고침, 허브 결정 H16.
+  - 처리표는 맨 끝 ‘허브 사전 확인 1차 처리표(개정 3d)’와 ‘허브 사전 확인 2차 처리표(개정 3e)’다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
 - 선행(충족): TASK-0062(+R1) 반영(병합 `0de9d29`, 기록 `ce924b9`).
 - **`BASE`는 작업 트리를 만든 커밋(이 지시서의 승인본을 담은 개발 브랜치 커밋)이다.** 작업 시작 때 `git rev-parse HEAD`를 결과 보고에 적고 그 값을 BASE로 쓴다. 기준 비교(`review_checks.sh --check`)와 골든 경로 확인은 이 BASE로 한다.
-- **TASK-0062 지시서(개정 3e)와 TASK-0062-R1의 원칙·시험 방식을 그대로 따른다.** 특히 4절 항등식(`residual`은 남은 차이로 계산), 4절 ‘환산 꼴’, 7단계 취소 규칙(`CASH` 줄만, 재예약 전 운임), 시험 머리의 통과형 `vi.mock`·`mockClear`, 시드 출처(`s.rng.seed`)다.
-- 설계: `docs/ai/design/path3-price-risk-2026-10/DESIGN.md` 4·6·8·9절. TASK-0062의 원칙(새 규칙 판본에서만, 상태 칸 없음, 두 통화 합산 없음, 화면 없음)은 그대로다.
+- **TASK-0062 지시서(개정 3e)와 TASK-0062-R1의 원칙·시험 방식을 그대로 따른다.** 특히 다음이다.
+  - 4절 항등식(`residual`은 남은 차이로 계산)과 4절 ‘환산 꼴’
+  - 7단계 취소 규칙(`CASH` 줄만, 재예약 전 운임)
+  - 시험 머리의 통과형 `vi.mock`·`mockClear`
+  - 시드 출처(`s.rng.seed`)
+- 설계: `docs/ai/design/path3-price-risk-2026-10/DESIGN.md` 3.3·3.4·4·6·8·9절(개정 3h). TASK-0062의 원칙(새 규칙 판본에서만, 상태 칸 없음, 두 통화 합산 없음, 화면 없음)은 그대로다. 이 지시서와 설계가 다르면 이 지시서가 우선이다.
+- 허브 결정 H16(`HUB-DECISIONS-2026-10-16.md`): 추첨 식, 알려진 세율의 누적, 무의미 판정과 a·b의 기준일, USD 매입의 관세 표.
 - 목적: 수락 뒤 도착 전에 관세가 바뀌거나 출항 주 부대비가 붙어 원가가 바뀌게 한다. **정시 계약에도 닿아야 한다.** O2(비용 분담 판단), 일반계 [12경제04-02] 관세의 효과, 특성화고 [수입 05-05-02]의 바탕이다.
 
 ## 구현 지시
 
 ### 1. 관세 표와 변경 일정
 
-- 위험 설정에 `TARIFF` 층이 있으면 `dutyFor`(TASK-0062)의 몸통이 프로필의 `tariff.base`(도착국·품목별 기준 세율)를 읽는다. **표에 없는 (도착국, 품목)이 나오면 예외를 낸다**(허브 결정 H14-10. 조용히 고정 세율로 바꾸지 않는다). **서명과 호출처 값(설계 3.3의 표, 여섯 곳)은 바꾸지 않는다.** rules-2는 바뀌지 않는다.
-- 세율 = `tariffDay`의 세율 가운데 `knownThroughDay`까지 공지된 변경만 반영한 값이다. 도착 처리는 두 값이 모두 도착일이므로 **도착일(신고일) 세율**이 된다. 미리보기·자금 검사·예약은 `knownThroughDay` = 오늘이라 공지 전 변경을 반영하지 않는다. 자금 예약의 `tariffDay`(운송 중 `max(예정 도착일, 오늘)`, `BOOKED` 예약 편, 없거나 취소면 다음 첫 편, 편이 없으면 `knownThroughDay`), 수락 자금 검사의 다음 첫 편, 실패 기록의 `listSailings(수락일 + 1)[0]`은 TASK-0062가 이미 넣은 설계 3.3 그대로다(H14-6). 과세가격은 TASK-0062대로 `krwToUsdMinor`로 수락일 환율에 고정이다.
-- 변경 일정은 순수 함수 `tariffEvents(config, seed)`다(설계 4.1).
-  - 도착국마다 횟수 0~`max_changes`(흐름 `TARIFF:{국가}:count`). 회차마다 공지일(`TARIFF:{국가}:{회차}:notice`), 시행 지연 `[lag_days[0], lag_days[1]]`일(`…:lag`, 기본 [0, 3]), 걸음(`…:step`).
-  - 공지일은 캠페인 안에서 고르게 뽑되, 시행일이 캠페인 끝을 넘지 않게 한다.
+- 위험 설정에 `TARIFF` 층이 있으면 `dutyFor`(TASK-0062)의 몸통이 프로필의 `tariff.base`(도착국·품목별 기준 세율)를 읽는다.
+  - 도착국은 `destinationCityId`의 `config.cities[].countryCode`다.
+  - **표에 없는 (도착국, 품목)이 나오면 예외를 낸다**(허브 결정 H14-10). 조용히 고정 세율로 바꾸지 않는다.
+  - **서명과 호출처 값(설계 3.3의 표, 여섯 곳)은 바꾸지 않는다.** rules-2는 바뀌지 않는다.
+  - **매입 통화와 무관하다(H16-4).** `TARIFF` 층이 있으면 USD 매입(방어 분기)도 같은 표 세율을 쓴다. 과세가격 환산(`krwToUsdMinor`)만 KRW 매입일 때 한다. `TARIFF` 층이 없으면 TASK-0062 그대로다(시나리오 고정 세율, KRW만 환산).
+  - 관세 = `applyBasisPoints(과세가격, 세율bp)`(지금 `dutyEstimate`와 같은 반올림). `dutyEstimate(` 호출은 지금처럼 `risk.ts`의 `dutyFor` 몸통 안에만 둔다. TASK-0062 ‘관세 원천 호출’ 시험이 `export function dutyFor(`부터 `export function withRiskLevel(`까지를 보므로, 새 함수가 `dutyEstimate`를 부르지 않게 한다.
+- **알려진 세율(H16-2).** 나라·품목의 세율 `rate(K, T)`는 다음과 같이 구한다.
+  - 기준 세율에서 출발한다. 공지일 ≤ K이고 시행일 ≤ T인 사건만 고른다.
+  - 고른 사건을 시행일 순(동점은 공지일, 그다음 회차 번호)으로 하나씩 더하고, 더할 때마다 품목별로 `[min_bp, max_bp]`로 자른다.
+  - `dutyFor`는 K = `knownThroughDay`, T = `tariffDay`로 이 값을 쓴다. 도착 처리·미리보기·자금 검사·예약·실패 기록·`contractRiskReport` 모두 같다.
+  - **전체 일정으로 미리 계산한 사건별 ‘뒤 세율’을 세율로 쓰지 않는다.** 같은 나라 두 회차의 공지 순서와 시행 순서가 뒤집히면 아직 공지되지 않은 사건의 걸음이 섞이기 때문이다(설계 2절 3 미래 누설 금지).
+- 각 호출처의 `tariffDay`·`knownThroughDay`는 TASK-0062가 이미 넣은 설계 3.3 그대로다(H14-6).
+  - 도착 처리는 두 값이 모두 도착일이므로 **도착일(신고일) 세율**이 된다.
+  - 미리보기·자금 검사·예약은 `knownThroughDay` = 오늘이라 공지 전 변경을 반영하지 않는다.
+  - 자금 예약의 `tariffDay`: 운송 중 `max(예정 도착일, 오늘)`, `BOOKED` 예약 편, 없거나 취소면 다음 첫 편, 편이 없으면 `knownThroughDay`.
+  - 수락 자금 검사는 다음 첫 편, 실패 기록은 `listSailings(수락일 + 1)[0]`이다.
+  - 과세가격은 TASK-0062대로 수락일 환율에 고정이다.
+- 변경 일정은 순수 함수 `tariffEvents(config, seed)`다(설계 4.1). `TARIFF` 층이 없으면 빈 배열이다.
+  - **추첨 식(H16-1, 고정).**
+    - `u(흐름) = drawAt(seed, 흐름, 0)`(흐름마다 첫 추첨, 커서 0), `U[a, b] = a + ⌊u × (b − a + 1)⌋`.
+    - 도착국은 `tariff.base`에 처음 나온 순서의 `country_code`이고, 흐름의 {국가}도 이 코드다(예: `CN`).
+    - 나라마다 횟수 n = `U[0, max_changes]`(`TARIFF:{국가}:count`). 회차 r = 1..n만 뽑는다.
+    - 회차마다 다음을 뽑는다. 공지일은 지연과 따로 뽑는다.
+      - 지연 = `U[lag_days[0], lag_days[1]]`(`TARIFF:{국가}:{r}:lag`)
+      - 공지일 = `U[1, campaignDays − lag_days[1]]`(`…:{r}:notice`)
+      - 시행일 = 공지일 + 지연
+      - 걸음 = `U[step_bp[0], step_bp[1]]`(`…:{r}:step`). 동결값 `[−200, 800]`은 비대칭이다. ±로 바꾸지 않는다.
   - **사건 하나는 도착국 하나에 걸린다.** 같은 걸음을 그 나라의 모든 품목에 더하고, 품목마다 따로 `[min_bp, max_bp]`로 자른다. 품목마다 따로 뽑지 않는다.
-  - 걸음을 적용해도 어느 품목의 세율도 바뀌지 않으면 사건을 내지 않는다.
-  - **적용 순서**(검토 m21): 세율은 시행일 순(동점은 공지일, 그다음 회차 번호)으로 누적 적용한다. 무의미 판정과 로그의 옛 세율 a는 그 사건 직전에 시행 중인 세율 기준이다.
-- 미리보기 관세 예상은 **오늘까지 공지된** 변경만 반영한다(도착 예정일 기준 세율). 공지 전 변경은 반영하지 않는다.
-- 공지일 아침 처리에서 로그 한 줄: ‘{도착국} 관세 일괄 변경(가상 세율): {품목} a% → b%, … ({시행일}일부터)’. 국가 이름은 시나리오 도시 자료에서 읽는다. `tariffSchedule`의 문구에도 ‘가상 세율’ 표지를 붙인다(검토 n19).
-- 읽기 함수 `tariffSchedule(state, config)`: 오늘까지 공지된 사건만 돌려준다.
+  - **무의미 사건(H16-3).** 같은 나라 회차를 공지 순서(공지일, 동점은 회차 번호)로 하나씩 판정한다.
+    - 사건 e의 a는 공지 순서가 e보다 앞서 이미 남긴 사건 가운데 시행일 ≤ e의 시행일인 것을, 기준 세율에서 ‘알려진 세율’과 같은 순서·자르기로 누적한 값이다. b는 a에 e의 걸음을 더해 자른 값이다. 품목마다 계산한다.
+    - 그 나라 모든 품목에서 a = b이면 e를 일정에서 뺀다. 뺀 사건은 뒤 판정·모든 세율 계산·공지 로그·`tariffSchedule`에서 빠진다. 뒤에 공지된 사건 때문에 다시 의미가 생겨도 되살리지 않는다.
+    - 판정에 일정 전체(뒤에 공지될 사건)를 쓰지 않는다. 쓰면 공지 로그가 있느냐 없느냐로 아직 공지되지 않은 사건이 드러난다.
+    - 뺀 회차의 흐름도 뽑는다(흐름 고정).
+  - 돌려주는 꼴: 남긴 사건마다 `{ countryCode, round, noticeDay, effectiveDay, stepBp }`. a·b는 기준일에 따라 달라지므로 사건에 저장하지 않는다.
+- 미리보기 관세 예상은 **오늘까지 공지된** 변경만 반영한다(K = 오늘, T = 도착 예정일).
+- **공지 로그**(`TARIFF` 층이 있을 때만): 공지일 아침 처리에서 그날 공지된 사건마다 한 줄을 쓴다.
+  - 문장: ‘{국가 코드}({그 나라 시나리오 도시 이름}) 관세 일괄 변경(가상 세율): {품목 이름} a% → b%, … ({시행일}일부터)’.
+  - 도시 이름은 `config.cities` 가운데 `countryCode`가 같은 도시를 자료 순서대로 `cityName(config, id)`로 읽어 ‘·’로 잇는다. 그런 도시가 없으면 괄호를 뺀다.
+  - **엔진에 국가 이름 표(예: `{CN: '중국'}`)를 만들지 않는다.** 국가 이름 칸은 자료에 없다. `data/world.json`과 `src/content/scenario.ts`는 고칠 수 있는 파일이 아니다. 국가 이름 표시는 경로 11(화면)의 몫이다.
+  - a·b는 그날 `tariffSchedule`의 그 사건 `fromBp`·`toBp`와 같은 값이다(아래, K = 그 사건의 공지일). 무의미 판정의 a·b와는 같은 나라 두 회차가 같은 날 공지될 때만 다를 수 있다.
+- **읽기 함수 `tariffSchedule(state, config)`**(`risk.ts`, `TARIFF` 층이 있을 때만, 없으면 빈 배열).
+  - 기준일 K: 끝나지 않은 상태는 `s.day`, 끝난 상태는 `contractRiskReport`의 평가일 규칙(실패일 또는 `campaignDays`)이다.
+  - 공지일 ≤ K인 사건만 공지일 순(동점은 회차)으로 돌려준다. 꼴: `{ countryCode, round, noticeDay, effectiveDay, rates: { goodId, fromBp, toBp }[], labelKo }[]`.
+  - `fromBp`·`toBp`는 K = 기준일, T = 그 사건 시행일인 ‘알려진 세율’을, 남은 사건 집합에서 그 사건을 빼고(`fromBp`)·넣어(`toBp`) 계산한다. 그래서 뒤에 공지된 회차가 먼저 시행되면, 그 공지일부터 앞 사건의 `fromBp`·`toBp`가 바뀐다. 같은 날 미리보기 세율과 어긋나지 않는다.
+  - `labelKo`는 로그와 같은 문장 꼴이고 ‘가상 세율’ 표지를 담는다(검토 n19).
 
 ### 2. 출항 부대비
 
-- 위험 설정에 `SURCHARGE` 층이 있으면, **직접 무역** 예약의 **출항일**에 `예약 운임 × surchargeBp(노선, 출항 주) / 10000`을 USD로 낸다(`payOrAccrue`, 미지급 규칙 그대로). 0이면 분개를 내지 않는다. 분개 ID `SURCHARGE-{예약}`. 로그 한 줄.
-  - `surchargeBp`는 순수 함수다. 흐름 `SURCHARGE:{노선}:{주차}:zero`, `…:value`. 확률 `p_zero_bp`로 0, 아니면 `[min_bp, max_bp]` 정수 균등.
-  - 혼합 통화 계약은 계약 ID의 USD 재고 분개로만 쌓는다. 단일 통화 계약은 rules-2처럼 화물 장부가에도 더한다(분기: 매입 통화 ≠ 판매 통화).
-  - **주선 화물에는 붙이지 않는다**(설계 4.2: 화주에게 넘긴다. 회사 장부에 생기지 않는다).
-- 미리보기: `surchargeMaxBp`(프로필의 최대)만 읽을 수 있게 한다. 기대 마진에는 넣지 않는다.
+- 위험 설정에 `SURCHARGE` 층이 있으면, **그날 실제로 출항한 직접 무역 예약**에 부대비를 낸다.
+  - 위치: `processDepartures`의 출항 분기 안, `FREIGHT-CAPITALIZE-` 다음이다. 준비가 끝나지 않아 해제되는 예약(편 놓침)에는 매기지 않는다.
+  - 금액 = `applyBasisPoints(booking.prepaidFreightMinor, bp)`, bp = `surchargeBp(config, s.rng.seed, routeId, week)`. 0이면 분개를 내지 않는다.
+  - `payOrAccrue(s, config, 노선 통화, 금액, 'SURCHARGE-' + booking.id, 사유, contract.id, 'INVENTORY')`로 낸다(미지급 규칙 그대로). **`contractId`를 반드시 넘긴다.** 불변식·`COGS-{계약}-USD`·`contractRiskReport`가 `contractId`로 읽는다.
+  - 단일 통화 계약은 관세와 같은 조건으로 화물 장부가에도 더한다(`lot.currency === contract.currency`이면 `lot.carryingAmountMinor += 금액`).
+  - 혼합 통화 계약은 계약 ID의 USD 재고 분개로만 쌓는다. 인도 때 `COGS-{계약}-USD`에 함께 들어가고, TASK-0062-R1 불변식(인도 뒤 USD 재고 0)을 지킨다.
+  - 로그 한 줄.
+- **`surchargeBp(config, seed, routeId, week)`는 순수 함수다(H16-1).**
+  - 주차 w = ⌊(출항일 − `publish.firstDay`) ÷ `publish.intervalDays`⌋ + 1. `lastDay`로 자르지 않는다. 그래서 79·86일 출항은 다른 주차다.
+  - `U[0, 9999] < p_zero_bp`이면 0이다(`SURCHARGE:{routeId}:{w}:zero`). 아니면 `U[min_bp, max_bp]`다(`…:{w}:value`).
+  - `SURCHARGE` 층이 없으면 0이다.
+- **주선 화물에는 붙이지 않는다**(설계 4.2: 화주에게 넘긴다. 회사 장부에 생기지 않는다).
+- 미리보기: rules-3이고 `SURCHARGE` 층이 있는 **직접 무역** `preview`·`quotePreview` 결과에만 저장하지 않는 칸 `surchargeMaxBp`(= `profile.surcharge.maxBp`)를 더한다.
+  - 주선·R1·rules-2 결과에는 칸을 넣지 않는다(키가 없다).
+  - 기대 마진·`cashNeed`·`referenceEstimate`에는 넣지 않는다.
 
 ### 3. 손익 읽기
 
 - `contractRiskReport.components`의 3단계 `tariff`와 4단계 `surcharge`를 설계 3.4 표의 순서대로 채운다.
-  - **항등식은 TASK-0062 4절 그대로다**: `residual = realized − expected − (1~9단계 합)`으로 계산해 그대로 내고, 시험이 `residual === 0`을 단언한다. `residual`을 상수 0으로 두거나 단계 칸을 ‘realized − 앞 단계 합’으로 메우지 않는다(세션 A C1).
-  - **3단계는 0단계 관세 줄의 금액만 바꾼다**(세션 A 관찰): 바꿔 넣을 금액은 도착한 계약이면 `DUTY-` 분개의 금액, 도착 전이면 아래 `dutyFor` 값이다. 줄의 날짜(환율일)는 2단계에서 정한 날 그대로 둔다. 그래야 환율 차이(2단계)와 세율 차이(3단계)가 섞이지 않는다.
-  - **4단계는 새 줄 `SURCHARGE-` 분개(원장 금액, 그 분개 날 또는 미지급이면 갚은 날의 환율, 평가일 상한)를 더한다.** 같은 날 환율의 USD 비용 줄은 합친 뒤 한 번 바꾼다(환산 꼴).
-  - **취소(`CANCELLED`) 계약은 3·4단계가 0이다**(세션 A C5). 일어나지 않은 관세 줄은 TASK-0062 7단계가 0단계 값으로 뺀다. 출항 전에만 취소되므로 부대비 분개도 없다. 설계 3.4 표에 같은 줄을 넣었다(개정 3g).
+  - **항등식은 TASK-0062 4절 그대로다.**
+    - `residual = realized − expected − (1~9단계 합)`으로 계산해 그대로 내고, 시험이 `residual === 0`을 단언한다.
+    - `residual`을 상수 0으로 두거나 단계 칸을 ‘realized − 앞 단계 합’으로 메우지 않는다(세션 A C1).
+  - **3단계(직접 무역만).** 0단계 관세 줄의 **금액만** 바꾸고 날짜(환율일)는 2단계에서 정한 날 그대로 둔다(세션 A 관찰).
+    - 바꿔 넣을 금액: 도착한 계약은 `DUTY-` 분개 금액이다. 도착 전 계약은 지금 남은 흐름의 관세 예상을 만드는 **그 한 번의 `dutyFor` 호출 값**이다(인수는 설계 3.3 표 `contractRiskReport` 행의 도착 전 값: 자금 예약 규칙의 날(‘오늘’ 자리에 평가일), `knownThroughDay` = 평가일, `valueFxDay` = 수락일).
+    - 그 호출을 조건문 밖으로 끌어올려 남은 흐름과 3단계가 같은 값을 읽게 한다. **`contractRiskReport`에서 `dutyFor`를 새로 더 부르지 않는다.**
+    - 근거: TASK-0062 시험 ‘관세 호출 인수’가 다음 둘을 고정한다. 운송 중 계약의 호출은 [0단계 미리보기, 도착 전 값] 정확히 두 번이다(`m2a5-risk-fx.test.ts` ‘관세 호출 인수’, `toEqual`). 도착한 계약의 호출은 모두 미리보기 인수다. 이 시험은 고치지 않는다. 깨지면 시험이 아니라 `reports.ts`를 고친다.
+    - **칸 값은 USD 차이를 바꾼 값이 아니다.** `tariff = value(3단계 줄) − value(2단계 줄)`이다. `value`는 환산 꼴(같은 환율의 USD 비용 줄은 합친 뒤 한 번 `usdToKrwMinor`)이다. `usdToKrwMinor(새 금액 − 기대 금액, r)`처럼 차이를 한 번에 바꾸지 않는다.
+  - **4단계(직접 무역, 출항한 계약만).** 새 줄 `SURCHARGE-` 분개를 3단계 줄 위에 더한다.
+    - 금액은 원장 금액이다. 날짜는 그 분개 날이고, 미지급이면 갚은 날, 평가일까지 갚지 않았으면 평가일이다.
+    - `surcharge = value(4단계 줄) − value(3단계 줄)`. 5단계 이후는 4단계 줄 위에서 계속한다.
+  - **취소(`CANCELLED`) 계약은 3·4단계가 0이다**(세션 A C5). 일어나지 않은 관세 줄은 TASK-0062 7단계가 0단계 값으로 뺀다. 출항 전에만 취소되므로 부대비 분개도 없다. 3단계를 위해 `dutyFor`를 부르지 않는다.
+  - **주선(`FORWARDING`) 계약은 3·4단계가 0이고, `contractRiskReport`는 주선 계약에 `dutyFor`를 부르지 않는다**(설계 3.4 ‘주선은 schedule·fx·late·cancel·open_valuation만’). 주선에는 `DUTY-` 분개가 없다. ‘도착 전 = `dutyFor`’ 분기로 보내면 R2에서 주선 품목이 관세 표에 없어 1절대로 예외가 난다. 이 함수는 판정표 J7 새 정의(주선 포함)의 입력이다.
 - **평가일까지 일어난 사건만**(허브 결정 H14-5).
-  - 도착한 계약의 `tariff`는 `DUTY-` 분개를 읽는다. 도착 전 계약은 `dutyFor(자금 예약 규칙의 날(‘오늘’ 자리에 평가일), knownThroughDay = 평가일, valueFxDay = 수락일)` − 기대다. 그래서 평가일 뒤에 공지될 변경은 들어가지 않는다.
-  - 출항 전 계약의 `surcharge`는 0이다. 출항한 계약만 `SURCHARGE-` 분개를 읽는다. `contractRiskReport`는 `surchargeBp`·`tariffEvents`의 미래 값을 쓰지 않는다.
+  - 도착 전 계약의 관세는 `knownThroughDay` = 평가일인 `dutyFor` 값이라 평가일 뒤에 공지될 변경은 들어가지 않는다.
+  - 출항 전 계약의 `surcharge`는 0이다. `contractRiskReport`는 `surchargeBp`를 부르지 않고 `tariffEvents`의 미래 값을 쓰지 않는다.
 
 ### 4. 측정용 변환
 
-- `withRiskLevel`(`src/engine/risk.ts`)에 `R2`(R1 + `TARIFF` + `SURCHARGE`)를 더한다.
+- `withRiskLevel`(`src/engine/risk.ts`)에 `R2`를 더한다. `layers`는 `['FX', 'TARIFF', 'SURCHARGE']`이고 나머지는 R1과 같다(원화 매입 변환 포함).
 
 ## 시험(새 파일 `src/engine/m2a5-risk-cost.test.ts`)
 
-- 시험에 자료 ID·조정 상수를 쓰지 않는다. 필요한 사건은 시드를 찾아서 만든다(시드 200개 안, 찾았는지 먼저 단언). 사건을 먼저 찾고 그 사건에 맞춰 수락일·편을 고르는 구성도 된다(아래 ‘도착 공지 기준일’).
-- **rules-3과 `withRiskLevel`(R0 포함) 시험은 엔진 공개 함수만 쓴다**(`createGame`·`openDay`·`planState`·`commitDay` 등과 읽기 함수). `src/engine/sim/**`의 `simulate`·`runSuite`·d03은 부르지 않는다. 판정표 고정 기록 잠금: 고정 기록이 비어 있으면 새 rule_set이나 rules-3을 쓰는 d03·`runSuite`·`run.mjs` 실행(R0 포함)을 하지 않는다(세션 A C3). ‘정시 노출’의 ‘기준 정책을 흉내 낸 시험 구동기’도 이 파일 안의 명령 구동기다.
+- 시험에 자료 ID·조정 상수를 쓰지 않는다. 필요한 사건은 시드를 찾아서 만든다(시드 200개 안, 찾았는지 먼저 단언). 사건을 먼저 찾고 그 사건에 맞춰 수락일·편을 고르는 구성도 된다.
+  - **사건을 먼저 찾는 구성은 수락할 수 있는 사건만 고른다.** 찾기 조건에 다음을 넣고 찾았는지 단언한다: 그 공개일 묶음에 그 도착 도시 판매 견적이 있고, 수락(plan 포함)이 APPLIED다.
+  - 무명령에 환전만 하는 구동은 64일 무렵 USD가 바닥나고 79일 환전이 거절된다. 뒤쪽 공개일 수락은 실패할 수 있다.
+- **rules-3과 `withRiskLevel`(R0 포함) 시험은 엔진 공개 함수만 쓴다**(`createGame`·`openDay`·`planState`·`commitDay` 등과 읽기 함수).
+  - `src/engine/sim/**`의 `simulate`·`runSuite`·d03은 부르지 않는다.
+  - 판정표 고정 기록 잠금: 고정 기록이 비어 있으면 새 rule_set이나 rules-3을 쓰는 d03·`runSuite`·`run.mjs` 실행(R0 포함)을 하지 않는다(세션 A C3).
+  - ‘정시 노출’의 ‘기준 정책을 흉내 낸 시험 구동기’도 이 파일 안의 명령 구동기다.
 - 직접 무역을 받으려면 원화가 있어야 한다. 시험 구동기가 환전 명령을 직접 넣는다. 무명령 R1은 57일 무렵 원화가 바닥난다.
-- `vi.mock('./risk')`를 쓰면 TASK-0062 시험 머리처럼 통과형으로 쓰고, 첩자 기록을 읽기 직전에 `mockClear()`한다(`vite.config.ts`에 `clearMocks`가 없다).
-- 기대값은 시험 안에서 따로 계산한다. 시험 대상 함수(`dutyFor`·`tariffEvents`·`surchargeBp`·`contractRiskReport`·환산 도우미)를 기대값 계산에 그대로 쓰지 않는다. 필요하면 설계 4절 식을 시험 안의 정수식으로 다시 쓴다(TASK-0062-R1 R1-2·R1-8의 방식).
+- `vi.mock('./risk')`·`vi.mock('./rng')`를 쓰면 TASK-0062 시험 머리처럼 통과형으로 쓰고, 첩자 기록을 읽기 직전에 `mockClear()`한다(`vite.config.ts`에 `clearMocks`가 없다).
+  - `dutyFor`는 같은 모듈(`risk.ts`) 안에서 세율 계산을 부른다. 그래서 `vi.mock('./risk')`로 `tariffEvents`를 바꿔도 `dutyFor` 안에는 닿지 않는다. 누설 시험은 감싸기 대신 아래 ‘일정 오라클’로 계산한 기대값과 견준다.
+- **기대값은 시험 안에서 따로 계산한다.** `dutyFor`·`surchargeBp`·`contractRiskReport`·환산 도우미는 기대값 계산에 쓰지 않는다.
+  - `tariffEvents`는 사건을 찾는 데만 쓴다(공지일·시행일·걸음을 읽어 구성에 쓰는 것은 된다).
+  - 새 세율·부대비율·부대비 금액·`applyBasisPoints`·`divHalfAway`의 기대값은 ‘일정 오라클’의 시험 안 정수식으로 낸다(TASK-0062-R1 R1-2·R1-8의 방식).
+  - 전제 단언(‘두 값이 다름’ 등)에는 `dutyFor`를 불러도 된다(‘미래 누설 없음’ (a)①과 같은 방식).
+- **변형 결과가 원래 코드와 같게 나오면 이유를 적고 끝내지 말고, 먼저 그 시험의 전제(시드·편 선택)가 빠진 것인지 확인해 시험을 고친다.** 예: 부대비가 0인 주를 골라 변형 3·4가 같아진 경우.
 
 | 시험 | 확인할 것 |
 |---|---|
-| 새 층이 꺼진 R1 | R1 설정에서 `SURCHARGE-` 분개가 없고, 관세가 TASK-0062의 과세가격 시험과 같은 식이다 |
-| 관세 일정 순수성 | 같은 시드 같은 일정. 횟수·세율 범위·시행일 ≤ 캠페인 끝·지연이 `lag_days` 안. 변경이 있는 일정과 없는 일정을 각각 찾아 확인. 같은 나라 두 회차가 공지 3일 안에 겹치는 시드를 찾아 시행일 순 누적 적용을 확인 |
-| 사건 범위 | 한 사건이 그 나라의 모든 품목 세율을 같은 걸음으로 바꾼다. 같은 나라 두 품목의 세율 차이는 자르기가 없으면 그대로이고, 순서(a ≤ b)는 자르기가 있어도 뒤집히지 않는다. 시작 프로필은 두 품목의 세율이 같으므로, **프로필 사본에서 두 품목의 기준 세율을 서로 다르게 바꾼 설정**으로 한다(값은 사본의 세율 범위 안에서 계산, 검토 n19). 시험 구동은 지금 운영 규칙의 두 품목으로 한다 |
-| 무의미 사건 없음 | 모든 품목이 경계에 있으면 사건이 없다 |
-| 도착일 세율(정시) | **정시 계약**(납기 안에 도착하는 편: 도착 + 통관 ≤ 납기, 수락 때 미리보기 `lateOnNextSailing === false`)에서, 수락 뒤 공지된 변경이 도착 전에 시행된 경우를 찾아(사건을 먼저 찾고 공지일 직전 공개일에 수락하는 구성 가능, 세션 A C7) 관세가 새 세율이고 `components.tariff`가 기대와의 차이와 같다. 그 계약의 늦은 감액이 0이다 |
-| 도착 공지 기준일 | 도착 처리의 `knownThroughDay`가 도착일이다: **도착일 아침에 공지되고 같은 날 시행(지연 0)된 변경**이 도착 관세에 들어간다(H14-6, 검토 n45). **구성법(세션 A C7)**: 시드를 기다리지 않는다. 프로필 사본에서 `lag_days = [0, 0]`으로 두고, `tariffEvents`로 그 나라 사건의 공지일 N을 먼저 찾은 뒤 도착 예정일이 N인 편(설정의 노선 운항일에서 계산)에 맞춰 수락·예약한다. 찾았는지, 그 편 도착일 = N인지 먼저 단언한다 |
-| 자금 예약 관세 | 공지일을 N이라 한다. **전제를 먼저 단언한다**(H15 O10): 그 계약이 N−1과 N에 모두 운송 중이고, 예정 도착일 ≥ 시행일 > N−1이며, 변경이 그 계약의 도착국에 걸린다. 그날 명령 처리 시점(마감 전)의 `cashReservations` DUTY가 N−1에는 옛 세율, N에는 새 세율이다(H14-6) |
-| 수락 자금 검사 관세 | 시작 프로필로는 가려낼 경우가 없으므로 **프로필 사본에서 `lag_days`를 늘려 구성한다**(H15 O8). 전제를 먼저 단언한다: 공지일 ≤ 수락일 < 시행일이고, 다음 첫 편 도착 예정일 < 시행일 ≤ plan 편 도착 예정일이다. 그때 늦은 편 plan으로 수락하는 자금 검사의 관세가 다음 첫 편 도착 예정일 기준(옛 세율, 같은 날 미리보기 관세와 같음)이다(H14-6) |
-| 실패 기록 약정 | 수락일 뒤 실패일 전에 그 계약의 도착국에 변경이 공지된 시드에서 단언한다(전제를 먼저 단언, H15 O9). 실패 기록의 계약 USD 약정 = 수락일 상태의 `quotePreview`(또는 `preview(…, { goodId })`)의 freight + duty다(H14-6) |
-| `goodId` 누락 | R2 설정에서 직접 무역 `preview`를 `goodId` 없이 부르면 예외. 표에 없는 (도착국, 품목)을 가진 프로필 사본으로 `dutyFor`를 부르면 예외(검토 n24) |
-| 정시 노출 | 기준 정책을 흉내 낸 시험 구동기(정시 계약만)로 시드 몇 개를 돌려, `components.tariff ≠ 0`인 정시 계약이 있다고 단언한다 |
-| 공지 반영 | 공지 뒤 받은 견적의 미리보기 관세가 새 세율(도착 예정일이 시행일 뒤일 때) |
-| 비공지 미반영 | 공지 전 미리보기는 옛 세율 |
-| 부대비 | 직접 무역 출항일에만 분개. 0인 주는 분개 없음. 주선 화물엔 없음. `components.surcharge` 일치 |
-| 항등식 | 끝난 계약, 열린 운송 중 계약, **출항 전 취소 계약** 모두에서 시험 안에서 `realized`를 원장으로 다시 계산한다(그 계약의 `CASH` 줄: `PURCHASE-`·`FREIGHT-PREPAY-`·`FREIGHT-RELEASE-`·`DUTY-`·`SURCHARGE-`·`RECEIPT-`와, 그 계약 의무를 갚은 `SETTLE-` 분개). 이 값이 보고서 `realized`와 같고, `시험의 realized − 시험의 expected === 1~9단계 합`, `residual === 0`이다(검토 n22, 세션 A C1·C5). 취소 계약은 `tariff === 0`, `surcharge === 0`. 열린 운송 중 계약은 TASK-0062 시험 ‘열린 계약’ 구성법 (가)·(나)로 만든다(세션 A C6). 부대비가 미지급인 계약(USD 현금을 주입 의무로 비운 상태)도 하나 넣는다 |
-| 미래 누설 없음(관세·부대비) | 세 단계로 한다(H14-5, 검토 S1). (a) 관세: ① 전제: 운송 중 계약이 있고, **그 계약의 도착국에 걸린** 변경이 평가일 뒤에 공지되어 도착 전에 시행되는 시드를 찾았음을 단언한다. 그 계약에서 `dutyFor(…, knownThroughDay = 평가일)`과 `dutyFor(…, knownThroughDay = 도착 예정일)`이 다름도 먼저 단언한다(H15 O6). ② 그 상태의 `tariff`는 평가일까지 공지된 변경만 반영한다. ③ 양성 대조: 공지일이 지난 상태에서는 `tariff`가 달라진다. (b) 부대비: ① 전제: 출항 주 부대비 > 0인 출항 전 계약을 찾았음을 단언. ② 출항 전 상태의 `surcharge = 0`. ③ 양성 대조: 출항 뒤 상태에서는 `surcharge ≠ 0` |
-| 흐름 유일성 | **관찰형**(TASK-0062-R1 R1-2와 같은 통과형 `vi.mock('./rng')`): `tariffEvents`·`surchargeBp`·`referenceRate`를 캠페인 전체에 대해 부르는 동안 기록된 `(stream, cursor)` 쌍이 겹치지 않고, 흐름 이름이 설계 4.1·4.2의 꼴(`TARIFF:{국가}:count`, `TARIFF:{국가}:{회차}:notice|lag|step`, `SURCHARGE:{노선}:{주차}:zero|value`)이다. 시험 안에서 목록을 직접 만들어 견주지 않는다 |
-| 원천 검사 | 작업 뒤 `src/engine/*.ts`(시험 제외)에서 `surchargeBp(` 호출은 `engine.ts`의 출항 처리 안에만, `tariffEvents(` 호출은 `risk.ts`(`dutyFor` 몸통·`tariffSchedule`)와 `engine.ts`의 공지 로그 처리 안에만 있다(정의는 세지 않는다. 세션 A C8). `contractRiskReport`가 미래 값을 읽지 않음을 ‘미래 누설 없음’과 짝으로 지킨다. `tariffSchedule`은 `risk.ts`에 둔다 |
-| 운송 중 예약 tariffDay | TASK-0062 검수에서 넘어온 것. 설정 사본에 도착 항의 `portRestrictions`를 넣어 예정 도착일이 지났는데 아직 도착하지 않은(관세 미정) 운송 중 화물을 만든다(자료 파일은 고치지 않는다). 그 상태에서 `cashReservations`를 직접 부르고(`mockClear` 뒤) `dutyFor` 호출의 `tariffDay === s.day`(`max(예정 도착일, 오늘)`의 ‘오늘’ 쪽)임을 단언한다. 전제: `shipment.scheduledArrivalDay < s.day`, `arrivalDay === null`. 0063에서는 이 값이 세율을 고르므로 세율이 다른 두 날을 가르는 사건으로 구성하면 금액도 단언한다 |
+| 새 층이 꺼진 R1 | R1 설정에서 다음을 확인한다. `SURCHARGE-` 분개가 없다. 관세가 TASK-0062의 과세가격 시험과 같은 식이다. 캠페인 끝 상태의 `tariffEvents`·`tariffSchedule`이 빈 배열이다. 로그에 ‘관세 일괄 변경’ 줄이 없다. 미리보기에 `surchargeMaxBp` 키가 없다 |
+| 일정 오라클 | 1절 ‘추첨 식’·‘알려진 세율’·‘무의미 사건’과 2절 `surchargeBp` 식을 시험 안에서 다시 쓴다. 원본 `drawUniform`과 시험 안 정수식만 쓴다(`applyBasisPoints`·`divHalfAway`도 시험 안 정수식). 시작 프로필 R2 설정과 ‘공지 순서 역전’의 프로필 사본 설정 두 가지에서, 시드 1~200마다 세 가지가 이 오라클과 정확히 같음을 단언한다. ① `tariffEvents`(나라·회차·공지일·시행일·걸음·무의미 사건 생략). ② 여러 (K, T)의 `dutyFor` 관세. ③ 노선·주차마다의 `surchargeBp`. 79일과 86일 출항의 주차가 다름도 단언한다 |
+| 관세 일정 순수성 | 같은 시드 같은 일정. 횟수 ≤ `max_changes`, 걸음이 `step_bp` 안, 지연이 `lag_days` 안, 시행일 ≤ 캠페인 끝. 변경이 있는 일정과 없는 일정을 각각 찾아 확인 |
+| 공지 순서 역전 | **프로필 사본**에서 `max_changes` = 6, `lag_days` = `[0, 10]`, `max_bp` = 700으로 바꾼다(나머지는 그대로. 사본 값은 시험 안에서 정한다). 시작 프로필은 세율이 100~2100이라 자르기가 일어나지 않아 적용 순서를 가려내지 못하고, 공지·시행 역전 시드도 200개 안에 드물다. 사건(나라·회차·공지일·시행일·걸음)은 `tariffEvents`에서 읽고, 기대 세율은 일정 오라클로 계산한다. ① **적용 순서.** 날 d와 그 날의 `listSailings(노선, d + 1)[0]` 도착 예정일 A에서, 오라클의 시행일 순 누적(K = d, T = A)과 공지일 순 누적이 다른 (시드, 나라, d)를 찾는다. 찾았는지와 두 값이 다른지를 먼저 단언한다. 그 견적의 `preview(…, d, …, { goodId })` 관세가 시행일 순 값이다. ② **역전.** 같은 나라 두 남은 사건이 공지일 n1 < n2, 시행일 e1 > e2이고, d = n2 − 1의 다음 첫 편 도착 예정일 A ≥ e1인 시드를 찾는다. **전제를 먼저 단언한다**: 찾았다. 오라클 세율이 (i) T = A에서 K = n2 − 1 값 ≠ K = n2 값, (ii) 회차 n1의 `fromBp`·`toBp`가 K = n1 값 ≠ K = n2 값. 그때 (가) `preview(…, n2 − 1, …, { goodId })` 관세가 K = n2 − 1 오라클 값이다. (나) 엔진 공개 함수로 n1일까지 진행한 상태의 n1일 공지 로그 줄 a·b와 `tariffSchedule` 회차 n1의 `fromBp`·`toBp`가 K = n1 오라클 값이다. (다) 양성 대조: n2일까지 진행한 상태의 `tariffSchedule` 회차 n1 `fromBp`·`toBp`가 K = n2 오라클 값이고, n2일 공지 로그 줄의 a·b도 K = n2 오라클 값이다(e1 > e2라 n1 걸음이 a에 들어가지 않는다). ①과 ②는 다른 시드여도 된다 |
+| 사건 범위 | 한 사건이 그 나라의 모든 품목 세율을 같은 걸음으로 바꾼다. 같은 나라 두 품목의 세율 차이는 자르기가 없으면 그대로이고, 순서(a ≤ b)는 자르기가 있어도 뒤집히지 않는다. **프로필 사본에서 두 품목의 기준 세율을 서로 다르게, 그 가운데 하나를 경계 가까이 둔다**(값은 사본의 세율 범위 안에서 계산, 검토 n19). 자르기가 실제로 일어난 사건을 찾았음을 먼저 단언한다 |
+| 무의미 사건 없음 | 프로필 사본에서 한 나라의 모든 기준 세율 = `max_bp`, `step_bp` = `[0, 양수]`로 둔다. 그 나라 회차 흐름이 1개 이상 뽑힌 시드(관찰형 `vi.mock('./rng')`로 `TARIFF:{국가}:1:notice` 호출을 보고 판정, 단언)에서 그 나라 사건이 0개이고 공지 로그가 없다. 대조: 같은 사본에서 `step_bp`를 `[음수, 양수]`로 바꾸면 그 나라 사건이 생기는 시드가 있고(찾았는지 단언), 그 일정이 일정 오라클과 같다. 이때 양수 걸음 사건은 공지 순서가 앞서 남은 음수 걸음 사건이 그보다 먼저 시행될 때만 남는다 |
+| 도착일 세율(정시) | **정시 계약**(도착 + 통관 ≤ 납기, 수락 때 미리보기 `lateOnNextSailing === false`)에서, 수락 뒤 공지된 변경이 도착 전에 시행된 경우를 찾는다(사건을 먼저 찾고 공지일 직전 공개일에 수락하는 구성 가능, 세션 A C7). 다음을 단언한다. `DUTY-` 분개 금액 D새가 오라클의 도착일 세율 관세다. `components.tariff`가 0이 아니다. 그 값이 시험 안 정수식 `toKrw(−(Fr + D새), r) − toKrw(−(Fr + D옛), r)`과 같다(r = `DUTY-` 분개 날의 참고 환율, D옛 = 수락일 미리보기 duty, Fr = 첫 `FREIGHT-PREPAY-` 날 환율이 r과 같으면 그 운임 금액이고 다르면 0). 그 계약의 `residual === 0`, 늦은 감액 0 |
+| 도착 공지 기준일 | 도착 처리의 `knownThroughDay`가 도착일이다: **도착일 아침에 공지되고 같은 날 시행(지연 0)된 변경**이 도착 관세에 들어간다(H14-6, 검토 n45). **구성법**: 자연 프로필에서 지연 0 사건을 기다리지 않는다. 프로필 사본에서 `lag_days = [0, 0]`으로 둔다. 시드 200개 안에서 다음을 모두 만족하는 시드를 찾는다(찾았는지 단언): 그 나라 사건의 공지일 N이 그 나라 노선 편의 도착 예정일과 같다. 그 편 출항 전에 그 도착 도시로 가는 직접 무역 견적을 수락할 수 있다. 그 편 도착일 = N인지 먼저 단언한다 |
+| 자금 예약 관세 | 공지일을 N이라 한다. **전제를 먼저 단언한다**(H15 O10): 그 계약이 N−1과 N에 모두 운송 중이다. 예정 도착일 ≥ 시행일 > N−1이다. 변경이 그 계약의 도착국에 걸린다. 그날 명령 처리 시점(마감 전)의 `cashReservations` DUTY가 N−1에는 옛 세율, N에는 새 세율이다(H14-6) |
+| 수락 자금 검사 관세 | 시작 프로필로는 가려낼 경우가 없으므로 **프로필 사본에서 `lag_days`를 늘려 구성한다**(H15 O8). 전제를 먼저 단언한다: 공지일 ≤ 수락일 < 시행일이고, 다음 첫 편 도착 예정일 < 시행일 ≤ plan 편 도착 예정일이다. 그때 늦은 편 plan으로 수락하는 자금 검사의 관세가 다음 첫 편 도착 예정일 기준이다(옛 세율, 같은 날 미리보기 관세와 같음, H14-6). **관측 방법**: `dutyFor` 첩자(`mockClear` 뒤 그 `ACCEPT_TRADE`의 첫 호출의 `tariffDay`와 반환값), 또는 USD 가용을 0으로 둔 거절 문장의 ‘관세 X USD’로 한다. 수락 성공 여부만으로 단언하지 않는다 |
+| 실패 기록 약정 | 시작 프로필 R2에서 TASK-0062 `failureCase`와 같은 탐색으로 실패 상태를 찾는다. 다만 **첫 실패에서 멈추지 않고**, 아래 전제를 만족하는 실패가 나올 때까지 시드 200개 안에서 찾는다(찾았는지 단언). 그 계약을 c, `listSailings(cfg, 노선, c.acceptedDay + 1)[0]`의 도착 예정일을 A, 실패일을 F라 한다. **전제(H15 O9, O6과 같은 꼴)**: ① c의 도착국에 걸린 변경 가운데 `c.acceptedDay < 공지일 ≤ F`이고 `시행일 ≤ A`인 것이 있다. ② `dutyFor(…, tariffDay = A, knownThroughDay = c.acceptedDay, …)`와 `knownThroughDay`만 F로 바꾼 값이 서로 다르다. ①만으로는 자르기나 상쇄 때문에 다름이 보장되지 않으므로 ②를 따로 단언한다. 못 찾으면 프로필 사본(`lag_days = [0, 0]`)으로 찾는다. 그때 실패 기록의 계약 USD 약정 = 수락일 상태의 `quotePreview`(또는 `preview(…, { goodId })`)의 freight + duty다(H14-6) |
+| `goodId` 누락·관세 표 | R2 설정에서 직접 무역 `preview`를 `goodId` 없이 부르면 예외. 표에 없는 (도착국, 품목)을 가진 프로필 사본으로 `dutyFor`를 부르면 예외(검토 n24). R2 설정에서 `purchaseCurrency = 'USD'`로 부른 `dutyFor`가 오라클 표 세율 × 매입액(환산 없음)이다(H16-4) |
+| 정시 노출 | 기준 정책을 흉내 낸 시험 구동기(정시 계약만)로 시드 1부터 차례로 돌린다. `components.tariff ≠ 0`인 정시 계약이 나온 첫 시드(200개 안)를 찾고 찾았는지 단언한다. 시드 수를 미리 정하지 않는다. 찾은 시드와 비율을 결과 보고에 적는다 |
+| 공지 반영 | 공지 뒤 받은 견적의 미리보기 관세가 새 세율이다. 전제: 도착 예정일 ≥ 시행일 |
+| 비공지 미반영 | 미리보기 날 d와 d 뒤에 공지되는(공지일 N > d) 그 견적 도착국 사건을 고른다. 가장 쉬운 d는 N − 1이다(`preview`는 `bookingDay` 인자로 아무 날에나 부를 수 있다). **전제를 먼저 단언한다**(H15 O6과 같은 꼴): `listSailings(config, 노선, d + 1)[0]`이 있고 그 도착 예정일 T ≥ 시행일이며, `dutyFor(…, tariffDay = T, knownThroughDay = d)` ≠ `dutyFor(…, tariffDay = T, knownThroughDay = T)`다. 그때 `preview(…, d, …, { goodId })`의 관세가 d까지 공지된 변경만 반영한 세율(오라클)이다. 공지일 직전 공개일을 d로 쓰면 약 절반은 T < 시행일이라 변형 2를 가리지 못한다 |
+| 부대비 | **전제 먼저**(시드 200개 안, 찾았는지 단언). 노선의 편 X 하나를 정한다(예: 기존 `setup`의 `later` 편). 직접 무역 계약을 X로 보냈을 때 출항일 마감 뒤 `SURCHARGE-` 분개가 생기는 시드 P와 생기지 않는 시드 Z를 각각 찾는다. 전제 확인에는 같은 시드·같은 편의 직접 무역 실행을 관찰하거나 `surchargeBp`를 불러도 된다. ① P의 직접 무역: `SURCHARGE-{예약}` 분개가 정확히 하나다. 분개 날 = 출항일이고 예약일과 다르다. 출항일 전 마감까지는 그 분개가 없다. 금액 = 오라클 식이다. ② Z의 직접 무역: `SURCHARGE-` 분개가 없고 `components.surcharge === 0`. ③ 주선: **P와 같은 시드·같은 편 X로 주선 계약만** 보낸다. 출항일 마감 뒤 원장에 `SURCHARGE-` 분개가 하나도 없고(계약 ID·예약 ID 모두), 주선 계약의 `components.surcharge === 0`이다. USD 현금 증감으로는 단언하지 않는다(시험 도우미의 환전이 USD 현금을 줄인다). ④ **환율이 다른 부대비 계약(변형 16용)**: 공개일 P에 수락하고 수락일 다음 **둘째 편**(설정에서 계산)에 예약해 끝(COMPLETED)까지 진행한다. 다음 전제를 먼저 단언한다. `SURCHARGE-` 분개가 출항일에 있고 금액 S > 0이다(원장에서 읽는다). 그 분개·`DUTY-`가 현금 지급이다. `referenceRate(출항일) ≠ referenceRate(acceptedDay)`다. 그 계약에서 시험이 원장으로 다시 계산한 `realized`가 보고서 값과 같고 `residual === 0`이다. 또 `components.surcharge === toKrw(−(Cr + S), r_s) − toKrw(−Cr, r_s)`이다(r_s = 출항일 참고 환율, Cr = 3단계 줄 가운데 환율이 r_s와 같은 USD 비용 줄의 합). 정시 편은 수락일과 출항일이 늘 같은 환율 주라 변형 16을 가리지 못한다 |
+| 주선(R2) | R2 설정에서 관세 표에 없는 (도착국, 품목)의 주선 견적을 설정·프로필에서 계산해 찾는다(자료 ID를 쓰지 않는다. 찾았는지 단언). 그 견적을 첫 편으로 수락·예약하고 완료까지 하루씩 진행한다. 출항 전·운송 중·도착 뒤·완료 상태를 모두 지났음을 단언한다. 각 상태에서 `mockClear()` 뒤 `contractRiskReport`가 예외 없이 `tariff === 0`, `surcharge === 0`, `residual === 0`이고, 그 호출 동안 `dutyFor` 호출이 0번이다 |
+| 항등식 | 끝난 계약, 열린 운송 중 계약, **출항 전 취소 계약**, 주선 계약 모두에서 시험 안에서 `realized`를 원장으로 다시 계산한다(그 계약 `contractId`가 붙은 모든 분개의 `CASH` 줄: `PURCHASE-`·`FREIGHT-PREPAY-`·`FREIGHT-RELEASE-`·`CANCEL-COMP-`·`DUTY-`·`SURCHARGE-`·`RECEIPT-`와, 그 계약 의무를 갚은 `SETTLE-` 분개). 이 값이 보고서 `realized`와 같고, `시험의 realized − 시험의 expected === 1~9단계 합`, `residual === 0`이다(검토 n22, 세션 A C1·C5). 열린 운송 중 계약은 TASK-0062 시험 ‘열린 계약’ 구성법 (가)·(나)로 만든다(세션 A C6). (가)에서는 **3단계 관세 줄 날짜(평가일)의 참고 환율 ≠ 수락일 참고 환율임을 먼저 단언한다**(변형 14의 전제. 정시 완료 계약은 수락일과 관세 지급일이 같은 환율 주라 변형 14를 가리지 못한다). 부대비가 미지급인 계약(USD 현금을 주입 의무로 비운 상태)도 하나 넣는다. **취소 계약은 `tariff === 0`, `surcharge === 0`이고, 그 가운데 하나는 관세 차이가 있게 만든다(변형 15).** 7단계가 관세 줄을 금액과 상관없이 빼므로, 3단계에 관세 차이가 새어도 `residual`은 0으로 남는다. 그래서 변형 15는 이 전제가 선 계약의 `tariff === 0`으로만 잡힌다. 구성: `tariffEvents`로 사건(공지일 N, 시행일 E)을 찾고, 그 나라로 가는 직접 무역을 N 전에 수락하고, 출항 전에 취소하고, 평가일 T ≥ N까지 진행한다. 전제 단언: `dutyFor(cfg, s.rng.seed, c.goodId, c.destinationCityId, listSailings(cfg, 노선, T + 1)[0]?.scheduledArrivalDay ?? T, T, c.purchaseAmountMinor, 매입 통화, c.acceptedDay)` ≠ 수락일 미리보기의 `duty` |
+| 미래 누설 없음(관세·부대비) | 세 단계로 한다(H14-5, 검토 S1). (a) 관세: ① 전제: 운송 중 계약이 있고, **그 계약의 도착국에 걸린** 변경이 평가일 뒤에 공지되어 도착 전에 시행되는 시드를 찾았음을 단언한다. 그 계약에서 `dutyFor(…, knownThroughDay = 평가일)`과 `dutyFor(…, knownThroughDay = 도착 예정일)`이 다름도 먼저 단언한다(H15 O6). ② 그 상태의 `tariff`는 평가일까지 공지된 변경만 반영한 값(오라클로 계산한 3단계 값, 환산 꼴)과 같다. `vi.mock`으로 `tariffEvents`를 바꾸지 않는다. ③ 양성 대조: 공지일이 지난 상태에서는 `tariff`가 달라진다. (b) 부대비: ① 전제: 출항 주 부대비 > 0인 출항 전 계약을 찾았음을 단언. ② 출항 전 상태의 `surcharge = 0`. ③ 양성 대조: 출항 뒤 상태에서는 `surcharge ≠ 0` |
+| 흐름 유일성 | **관찰형**(TASK-0062-R1 R1-2와 같은 통과형 `vi.mock('./rng')`). R2 설정에서 시드 1~200마다 따로 한다. `mockClear()` 뒤 세 함수를 부른다: `tariffEvents(cfg, seed)` 한 번, 설정의 모든 노선 × 그 노선 출항편의 출항 주차마다 `surchargeBp` 한 번씩, `referenceRate(cfg, seed, publish.lastDay)` 한 번(날마다 부르지 않는다. 같은 `(FX-REF, k)`가 되풀이되어 맞는 구현도 실패한다). 그 시드에서 기록된 `(stream, cursor)` 쌍이 서로 겹치지 않는다(시드 사이의 같은 이름은 견주지 않는다). 흐름 이름은 설계 4.1·4.2의 꼴(`FX-REF`, `TARIFF:{국가}:count`, `TARIFF:{국가}:{회차}:notice|lag|step`, `SURCHARGE:{노선}:{주차}:zero|value`)이고 TARIFF·SURCHARGE 흐름의 커서는 0이다. **전제를 먼저 단언한다**: 200시드 가운데 회차 번호가 2 이상인 `TARIFF:{국가}:{회차}:notice`가 기록된 시드가 있다. 시험 안에서 기대 목록을 직접 만들어 견주지 않는다 |
+| 원천 검사 | 작업 뒤 `src/engine/*.ts`(시험 제외)를 본다(세션 A C8, 정의는 세지 않는다). `surchargeBp(` 호출은 `engine.ts`의 출항 처리 안에만 있다. `tariffEvents(` 호출은 `risk.ts`(`dutyFor` 몸통·`tariffSchedule`·둘이 함께 쓰는 세율 누적 도우미)와 `engine.ts`의 공지 로그 처리 안에만 있다. `contractRiskReport`가 미래 값을 읽지 않음을 ‘미래 누설 없음’과 짝으로 지킨다 |
+| 운송 중 예약 tariffDay | TASK-0062 검수에서 넘어온 것. 설정 사본에 도착 항의 `portRestrictions`를 넣어, 예정 도착일이 지났는데 아직 도착하지 않은(관세 미정) 운송 중 화물을 만든다(자료 파일은 고치지 않는다). 전제: `shipment.scheduledArrivalDay < s.day`, `arrivalDay === null`. 그 상태에서 `cashReservations`를 직접 부르고(`mockClear` 뒤) `dutyFor` 호출의 `tariffDay === s.day`(`max(예정 도착일, 오늘)`의 ‘오늘’ 쪽)임을 단언한다. 0063에서는 이 값이 세율을 고르므로, 세율이 다른 두 날을 가르는 사건으로 구성하면 금액도 단언한다 |
 | 정시 손익 읽기 복구 | TASK-0062-R1에서 `m2a5-risk-fx.test.ts`의 ‘손익 읽기’가 정시 편(0)에서 늦은 편(1)으로 바뀌어, 정시 완료 계약의 독립 `realized`·fx 부호·R0 등식 단언이 빠졌다. 그 시험을 편 번호와 주선 여부의 매개변수로 바꿔(`it.each`, 정시·늦은 편 × 직접 무역·주선) 네 경우를 모두 돌린다. 기존 단언은 지우거나 약하게 하지 않는다 |
+| R2 변환·부대비 상한·공지된 관세 읽기 | `withRiskLevel(…, 'R2', p).operations.risk.layers`가 `['FX', 'TARIFF', 'SURCHARGE']`이고 나머지는 R1과 같다. R2 직접 무역 미리보기의 `surchargeMaxBp` = 프로필 `max_bp`이고 `referenceEstimate.pnlKrw`는 R1과 같은 식이다. R1·rules-2·주선 미리보기에는 그 키가 없다. `tariffSchedule`은 공지일 전날엔 그 사건이 없고 공지일엔 있다. a·b가 같은 날 로그와 같고 ‘가상 세율’을 담는다. 끝난 상태에서는 평가일 기준이다 |
 | 결정성·저장 | 같은 입력 같은 결과, 저장 왕복 같음(설정을 직접 넘김), `state.rng.cursors`에 새 흐름 키 없음 |
 
 ## 변형 시험
 
-결과가 원래 코드와 같은 변형이 나오면 ‘잡힘’으로 적지 말고 이유를 적는다.
+결과가 원래 코드와 같은 변형이 나오면 ‘잡힘’으로 적지 말고 이유를 적는다. 다만 그 전에 시험의 전제가 빠진 것인지 확인하고, 빠졌으면 시험을 고친다(위 시험 머리).
 
 | # | 변형 | 잡아야 할 시험 |
 |---|---|---|
 | 1 | 관세를 수락일 세율로 매김 | 도착일 세율(정시) |
-| 2 | 미리보기가 공지 전 변경까지 반영(미래 누설) | 비공지 미반영 |
-| 3 | 부대비를 예약일에 냄 | 부대비 |
-| 4 | 부대비를 주선 화물에도 붙임 | 부대비 |
+| 2 | 미리보기가 공지 전 변경까지 반영(미래 누설: `knownThroughDay` 자리에 `tariffDay`) | 비공지 미반영(전제 단언 포함) |
+| 3 | 부대비를 예약일에 냄 | 부대비(시드 P) |
+| 4 | 부대비를 주선 화물에도 붙임 | 부대비 ③(시드 P) |
 | 5 | `components.tariff`를 0으로 둠 | 도착일 세율(정시) 또는 항등식 |
-| 6 | 시행 지연을 7일 고정으로 둠 | 정시 노출 |
-| 7 | 품목마다 따로 걸음을 뽑음 | 사건 범위 |
+| 6 | 시행 지연을 7일 고정으로 둠 | 정시 노출, 일정 오라클 |
+| 7 | 품목마다 따로 걸음을 뽑음 | 사건 범위, 일정 오라클 |
 | 8 | `contractRiskReport`가 도착 전 계약의 관세를 `dutyFor(도착 예정일, 도착 예정일)`로 냄(공지 전 변경 반영) | 미래 누설 없음 (a) |
 | 9 | `contractRiskReport`가 출항 전 계약에 그 주 부대비를 미리 넣음 | 미래 누설 없음 (b) |
 | 10 | 자금 예약이 `knownThroughDay` 자리에 `tariffDay`를 씀 | 자금 예약 관세 |
-| 11 | 표에 없는 품목을 시나리오 고정 세율로 대체 | `goodId` 누락 |
+| 11 | 표에 없는 품목을 시나리오 고정 세율로 대체 | `goodId` 누락·관세 표 |
 | 12 | 수락 자금 검사가 plan 편 도착일을 `tariffDay`로 씀 | 수락 자금 검사 관세(H15 O8) |
-| 13 | 실패 기록이 `knownThroughDay`에 실패일을 씀 | 실패 기록 약정(H15 O9) |
-| 14 | `residual`을 0으로 고정하고 3단계 관세 줄의 날짜를 수락일로 옮김 | 항등식(독립 `realized`·expected) |
-| 15 | 취소 계약에 3단계 관세 차이를 넣음 | 항등식(취소 계약) |
-| 16 | 부대비 줄을 출항일이 아닌 수락일 환율로 바꿈 | 항등식 또는 부대비(전제: 두 환율이 다름) |
+| 13 | 실패 기록이 `knownThroughDay`에 실패일을 씀 | 실패 기록 약정(전제 ② 상태). TASK-0062 ‘관세 호출 인수’도 잡는다. 결과 보고에는 두 시험을 따로 적는다 |
+| 14 | `residual`을 0으로 고정하고 3단계 관세 줄의 날짜를 수락일로 옮김 | 항등식(독립 `realized`·expected. 잡는 계약은 열린 운송 중 계약 (가)) |
+| 15 | 취소 계약에 3단계 관세 차이를 넣음 | 항등식(관세 차이가 있게 만든 취소 계약의 `tariff === 0`. `residual`로는 잡히지 않는다) |
+| 16 | 부대비 줄을 출항일이 아닌 수락일 환율로 바꿈 | 부대비 ④(둘째 편, 환율 다름) |
 | 17 | 자금 예약 운송 중 `tariffDay`에서 `max`를 뺌(예정 도착일만) | 운송 중 예약 tariffDay |
-| 18 | `tariffEvents`가 모든 회차에 같은 번호의 흐름을 씀 | 흐름 유일성(관찰형) |
+| 18 | `tariffEvents`가 모든 회차에 같은 번호(회차 1)의 흐름을 씀 | 흐름 유일성(회차 ≥ 2 전제 시드), 일정 오라클 |
 | 19 | `surchargeBp`를 `engine.ts` 밖(예: `cashReservations`)에서도 부름 | 원천 검사 |
+| 20 | `contractRiskReport`가 주선 계약에도 도착 전 `dutyFor`를 부름(종류 가드 없음) | 주선(R2) |
+| 21 | `contractRiskReport`가 3단계를 위해 `dutyFor`를 한 번 더 부름 | TASK-0062 ‘관세 호출 인수’ |
+| 22 | `dutyFor`가 알려진 마지막 사건의 전체 일정 ‘뒤 세율’을 세율로 씀 | 공지 순서 역전 ② (가)(전제 (i)) |
+| 23 | 공지 로그·`tariffSchedule`의 a·b를 전체 일정 누적(공지 안 된 사건 포함)으로 냄 | 공지 순서 역전 ② (나)(전제 (ii)) |
+| 24 | 세율을 공지일 순으로 누적 | 공지 순서 역전 ①, 일정 오라클(사본 설정) |
+| 25 | `tariffSchedule`의 a·b를 오늘이 아니라 그 사건 공지일 기준으로 고정 | 공지 순서 역전 ② (다)(전제 (ii)) |
+| 31 | 무의미 판정에 일정 전체(뒤에 공지될 사건 포함)를 씀 | 일정 오라클(사본 설정) |
+| 26 | 추첨 균등식을 `⌊u × (b − a)⌋`로 바꿈(상한이 나오지 않음) | 일정 오라클 |
+| 27 | 부대비 주차를 `min(출항일, lastDay)`로 자름 | 일정 오라클 |
+| 28 | TARIFF·SURCHARGE 흐름의 커서를 1로 바꿈 | 일정 오라클, 흐름 유일성 |
+| 29 | 부대비 금액을 floor로 냄 | 일정 오라클 또는 부대비(전제: 운임 × bp를 10000으로 나눈 나머지 ≥ 5000인 주) |
+| 30 | `TARIFF` 층에서 USD 매입이 시나리오 고정 세율을 씀 | `goodId` 누락·관세 표 |
 
 ## 고칠 수 있는 파일
 
 - `src/engine/engine.ts`, `catalog.ts`, `operations.ts`, `readers.ts`, `reports.ts`, `reservations.ts`, `risk.ts`, `types.ts`, `invariants.ts`, `operations-invariants.ts`
-- `data/market_rules.json`(프로필의 `tariff`·`surcharge` 값 꼴 맞춤만), 스키마, `tools/validate_data.py`(관세 표 검사만), `tools/test_validate_data.py`(새 반례 시험 추가만, 검토 n40)
+- `tools/validate_data.py`(관세 표 검사 보강만, 필요할 때), `tools/test_validate_data.py`(새 반례 시험 추가만, 검토 n40)
 - 새 `src/engine/m2a5-risk-cost.test.ts`
-- `src/engine/m2a5-risk-fx.test.ts`(‘정시 손익 읽기 복구’의 매개변수화만. 기존 단언은 지우거나 약하게 하지 않는다)
+- `src/engine/m2a5-risk-fx.test.ts`(‘정시 손익 읽기 복구’의 매개변수화만. ‘관세 호출 인수’를 포함한 다른 시험은 고치지 않는다. 기존 단언은 지우거나 약하게 하지 않는다)
 - `docs/ai/tasks/results/TASK-0063.md`, `MANIFEST.json`
 
 ## 손대지 않을 파일
 
-TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자료 등). 골든 파일·검사기: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
+- TASK-0062와 같다(`src/ui/**`, `src/engine/sim/**`, 시나리오·품목 자료 등).
+- **`data/market_rules.json`, `schemas/market_rules.schema.json`, `src/content/scenario.ts`.** 시작 프로필은 설계 6절(동결)과 키 순서까지 같다(허브 확인). 스키마·로더는 `tariff`·`surcharge` 칸을 이미 담는다. TASK-0062 시험 ‘프로필 다섯 묶음’이 원자료와 1:1로 대조한다. 고쳐야 할 것 같으면 멈추고 보고한다.
+- 골든 파일·검사기: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
 
 ## 지켜야 할 것
 
-- **골든 진단 절차(허브 통일 문장, TASK-0062a).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. 이 검사기는 rules-2 105회(실행·상태·탐침 해시)와 규칙 1 400회(실행·상태 해시), 두 묶음의 저장 왕복을 지킨다. 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
+- **골든 진단 절차(허브 통일 문장, TASK-0062a).**
+  - 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다.
+  - `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다.
+  - 이 검사기는 rules-2 105회(실행·상태·탐침 해시)와 규칙 1 400회(실행·상태 해시), 두 묶음의 저장 왕복을 지킨다. 400회 `run`의 `cmp`는 허브가 검수 때 따로 돌린다.
 - **R1 분개 덤프(검토 40번).** 작업을 시작하기 전, 손대지 않은 작업 트리(BASE)에서 다음을 **저장소 밖** 고정 경로에 저장한다. 작업 뒤 같은 명령으로 다시 만들어 `cmp` 0을 확인하고, 결과 보고에 sha256을 적는다.
-  - 저장소 밖의 일회용 스크립트로 R1 설정을 시드 3개(2001 이상, 지시서 수준 시드 규칙)·고정 명령열로 돌린 관세·운임 분개 JSON(`<밖>/r1-cost-before.json`). 스크립트는 엔진 공개 함수만 쓴다(세션 A C4)
-- **TASK-0062a 골든 검사기 종료 코드 0**(따로 확인할 항목). 골든 파일·검사기·`review_checks.sh`(위 ‘손대지 않을 파일’ 목록)는 손대지 않고 `--write`를 쓰지 않는다. 완료 때 `git diff --stat BASE -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`와 같은 경로의 `git status --porcelain --untracked-files=all -- …`가 빈 값이다.
+  - 저장소 밖의 일회용 스크립트로 R1 설정을 시드 3개(2001 이상, 지시서 수준 시드 규칙)·고정 명령열로 돌린 관세·운임 분개 JSON(`<밖>/r1-cost-before.json`). 스크립트는 엔진 공개 함수만 쓴다(세션 A C4).
+- **TASK-0062a 골든 검사기 종료 코드 0**(따로 확인할 항목). 골든 파일·검사기·`review_checks.sh`(위 ‘손대지 않을 파일’ 목록)는 손대지 않고 `--write`를 쓰지 않는다. 완료 때 다음 둘이 빈 값이다.
+  - `git diff --stat BASE -- tests/golden tools/check_rules2_golden.mjs tools/check_rules2_golden.test.mjs tools/rules2_golden_lib.mjs tools/rules2_golden_entry.ts tools/ai/review_checks.sh`
+  - 같은 경로의 `git status --porcelain --untracked-files=all -- …`
 - P0-M2A5 골든값 불변, 옛 저장, `review_checks` 통과, 변형 표 전부.
-- 첫 화면 gzip 전후를 적는다. 측정은 BASE와 작업 뒤 각각 `npm run build` 다음 `node tools/check_bundle_size.mjs dist`의 첫 화면 줄이다. 자료 청크 증가는 따로 적는다. **코드 증가분(첫 화면 증가 − 자료 몫)이 +2,500 B를 넘으면 멈추고 보고한다.** 지금 첫 화면은 126,931 B, 여유 약 13.1 KB다(허브 실측, TASK-0062 병합 트리, 세션 A C2).
+- 첫 화면 gzip 전후를 적는다(세션 A C2).
+  - 측정은 BASE와 작업 뒤 각각 `npm run build` 다음 `node tools/check_bundle_size.mjs dist`의 첫 화면 줄이다. 자료 청크 증가는 따로 적는다.
+  - **코드 증가분(첫 화면 증가 − 자료 몫)이 +2,500 B를 넘으면 멈추고 보고한다.**
+  - 지금 첫 화면은 126,931 B, 여유 약 13.1 KB다(허브 실측, TASK-0062 병합 트리). 허브 시제품은 +855 B였다.
 
 ## 결과 보고에 넣을 것
 
-- 시드 몇 개의 관세 변경 일정과 부대비 표(순수 함수 출력), 시험 구동기로 만든 계약의 `components` 표(값을 고치지 않고 적기만). 정시 노출 시험에서 센 ‘세율이 바뀐 정시 계약’ 비율(진단 T의 미리보기). 90일 정책 실행은 경로 5에서 한다.
-- 첫 화면 gzip 전후, 시험 수, R1 분개 덤프의 `cmp`와 골든 `--dump` 파일별 diff(깨졌을 때), 변형 표, 범위 밖 발견, 질문.
+- 시드 몇 개의 관세 변경 일정과 부대비 표(순수 함수 출력)
+- 시험 구동기로 만든 계약의 `components` 표(값을 고치지 않고 적기만)
+- 정시 노출 시험에서 센 비율: ‘도착일 세율이 수락일 기대 세율과 다른 정시 계약’(판정표 진단 T의 정의). 90일 정책 실행은 경로 5에서 한다.
+- 첫 화면 gzip 전후, 시험 수, R1 분개 덤프의 `cmp`, 골든 `--dump` 파일별 diff(깨졌을 때), 변형 표, 범위 밖 발견, 질문.
+
+> **아래 처리표들은 다섯 문서 공용 기록이다.** 0063에서 할 일은 위 본문(구현 지시·시험·변형·파일 목록·지켜야 할 것)뿐이다. 다른 문서 몫 항목(예: 0064의 `claimFor`, 판정표의 `ledger.ts`)과 본문과 다른 옛 문구(예: 64건 표 m14의 ‘진단용 d03 출력 저장과 compare’는 개정 3에서 n14의 골든 `--dump` 전후 diff로 대체됨)는 따르지 않는다.
 
 ## 허브 검토 46건 처리표
 
@@ -401,3 +503,43 @@ TASK-0062 검수(허브 심층 검수·세션 A 설계자 검수·R1 독립 검�
 | D12 | 0062-R1 R1-2 | 흐름 유일성을 관찰형으로 | 시험 ‘흐름 유일성’, 변형 18 |
 | D13 | 0062 시험 방식 | 통과형 `vi.mock`·`mockClear`, 기대값 독립 계산, BASE 정의 | 머리, 시험 머리 |
 
+### 허브 사전 확인 2차 처리표(개정 3e)
+
+개정 3d(`60a048c`)를 허브가 독립 복제본에서 시제품으로 만들어 세 관점(골든 무해·시험 실현성·모호성)으로 확인했다. 발견마다 반박 검증을 한 번 더 거쳤다. 발견 49건(골든 16, 시험 19, 모호성 14)을 같은 뿌리끼리 묶어 E1~E28로 처리했다. 판정 칸은 ‘처음 심각도 / 검증 결과 → 최종 심각도’다.
+
+- 시제품 실측: 골든 검사기 종료 0(rules-2 105회, rules-1 400회), 시험 51개 파일 1,400개 통과(E1 고침 뒤), 첫 화면 gzip 126,927 B → 127,782 B(+855 B, 자료 청크 변화 없음). 혼합 계약 USD 재고 불변식과 `residual === 0`이 R2 구동기 8시드에서 매일 통과했다.
+- 기각은 없다. 다만 제안된 고침과 다르게 정한 곳은 각 행 ‘고친 것’에 적었다(E7·E10·E11·E17).
+
+| # | 발견(판정) | 고친 것 | 반영한 곳 |
+|---|---|---|---|
+| E1 | golden#1(major / 부분 → minor), tests#1(major / 부분 → minor), ambiguity#3(major / 부분 → minor): 3단계에서 `dutyFor`를 한 번 더 부르면 0062 ‘관세 호출 인수’(`toEqual` 두 건)가 깨지는데 그 시험은 고칠 수 없다 | 남은 흐름의 그 한 번의 호출 값을 끌어올려 3단계와 함께 쓴다. `contractRiskReport`에서 `dutyFor`를 더 부르지 않는다 | 3절 3단계, 변형 21 |
+| E2 | golden#2(major / 확인 → major): 주선 계약 가드가 없어 R2에서 관세 표 누락 예외 | 주선은 3·4단계 0, `dutyFor`를 부르지 않는다(설계 3.4) | 3절, 시험 ‘주선(R2)’, 변형 20 |
+| E3 | golden#3(major / 부분 → minor), tests#13·ambiguity#9(minor): 국가 이름 칸이 자료에 없다 | 로그는 ‘{국가 코드}({그 나라 시나리오 도시 이름})’. 엔진에 국가 이름 표를 두지 않는다. 국가 이름 표시는 경로 11 | 1절 공지 로그 |
+| E4 | golden#4(major / 부분 → minor), tests#3(major / 확인 → major), ambiguity#6(변형 13): 실패 기록 전제가 약해 변형 13이 지나간다(첫 적중 시드 2) | 전제 ① 시행일 ≤ A, ② 두 `dutyFor` 값이 다름을 따로 단언. 못 찾으면 `lag_days [0, 0]` 사본 | 시험 ‘실패 기록 약정’, 변형 13 |
+| E5 | golden#5(major / 반박 → minor), tests#17(minor): 변형 14는 관세 줄 날짜 환율 ≠ 수락일 환율일 때만 드러난다 | 반박 근거대로 열린 계약 (가)가 이미 잡는다. 그 전제를 명시적으로 단언하게 했다 | 시험 ‘항등식’, 변형 14 |
+| E6 | golden#6(major / 확인 → major), tests#5(major / 확인 → major), ambiguity#6(변형 15): 취소 계약 변형 15는 `residual`로 잡히지 않는다 | 관세 차이가 있게 만든 취소 계약의 `tariff === 0`으로만 잡는다. 구성법과 전제 단언 | 시험 ‘항등식’, 변형 15 |
+| E7 | golden#7(major / 부분 → major), tests#8(major / 확인 → major), ambiguity#5(major / 확인 → major): 공지·시행 순서가 뒤집히면 로그·`tariffSchedule`의 a·b(와 미리 계산한 b를 쓰는 `dutyFor`)가 아직 공지되지 않은 사건을 드러낸다. 시작 프로필로는 자르기가 없어 적용 순서도 가려낼 수 없다 | 허브 결정 H16-2(알려진 세율 `rate(K, T)`를 다시 누적), H16-3(무의미 판정은 공지 순서·그때 알려진 것만, 로그 a·b = 그날 `tariffSchedule`, `tariffSchedule`은 기준일 K로 다시 계산). golden#7의 ‘무의미 판정은 일정 전체 기준’은 쓰지 않았다(공지 로그의 유무로 미래 사건이 드러난다). ambiguity#5의 ‘`tariffSchedule` a·b는 공지일 값 고정’ 대신 기준일 K로 다시 계산해 같은 날 미리보기와 맞췄다. 시험 사본은 ambiguity#5 검증 의견대로 `max_changes` 6·`lag_days` [0, 10]·`max_bp` 700 | 1절 ‘알려진 세율’·‘무의미 사건’·공지 로그·`tariffSchedule`, 시험 ‘공지 순서 역전’·‘일정 오라클’(사본 설정), 변형 22~25·31, 설계 4.1 |
+| E8 | golden#8(minor), tests#2(major / 확인 → minor), ambiguity#6(변형 2): 비공지 미반영에 ‘도착 예정일 ≥ 시행일’ 전제가 없다 | 두 `dutyFor` 값이 다름을 먼저 단언, d = N − 1 권장 | 시험 ‘비공지 미반영’, 변형 2 |
+| E9 | golden#9(minor): 편 놓침으로 해제된 예약에도 부대비를 매기면 `residual ≠ 0` | 그날 실제로 출항한 예약에만, `FREIGHT-CAPITALIZE-` 다음 | 2절 |
+| E10 | golden#10(minor), tests#12(minor), ambiguity#4(major / 부분 → major): 추첨 식·회차 번호·커서·{국가} 키·주차·0 판정·반올림이 없다 | 허브 결정 H16-1로 고정: `u = drawAt(seed, 흐름, 0)`, `U[a, b] = a + ⌊u(b − a + 1)⌋`, 회차 1..n, 공지일 `U[1, campaignDays − lag_days[1]]`, 주차 = ⌊(출항일 − firstDay) ÷ intervalDays⌋ + 1(`lastDay`로 자르지 않음), `U[0, 9999] < p_zero_bp`이면 0, 금액은 `applyBasisPoints`. golden#10의 커서 1 대신 0(흐름마다 한 번만 뽑는다) | 1절 ‘추첨 식’, 2절 `surchargeBp`, 시험 ‘일정 오라클’, 변형 26~29, 설계 4.1·4.2 |
+| E11 | golden#11(minor), tests#7(major / 확인 → major), ambiguity#1(major / 확인 → major): 흐름 유일성의 호출 범위가 없고 회차 ≥ 2 전제가 없다 | 시드마다 따로 관찰, `referenceRate`는 마지막 공개일 한 번, 회차 ≥ 2 기록 시드가 있음을 먼저 단언. ambiguity#1의 ‘횟수 = `max_changes`인 시드 하나’ 대신 시드 1~200 전부를 관찰한다 | 시험 ‘흐름 유일성’, 변형 18·28 |
+| E12 | golden#12(minor), tests#10(minor), ambiguity#14(minor): 시작 프로필로는 경계에 닿지 않아 자르기·무의미 사건 시험을 만들 수 없다 | 사건 범위: 사본의 두 품목 기준 세율을 다르게, 하나는 경계 가까이, 자르기 사건을 찾았음을 단언. 무의미 사건 없음: 기준 = `max_bp`, `step_bp` = [0, 양수] 사본, 회차 흐름을 뽑은 시드에서 사건 0. 대조 사본은 오라클과 같음 | 시험 ‘사건 범위’·‘무의미 사건 없음’, 변형 7 |
+| E13 | golden#13(minor), tests#18(minor), ambiguity#10(minor): `surchargeMaxBp`의 자리·조건·시험이 없다 | rules-3·`SURCHARGE` 층·직접 무역 `preview`·`quotePreview` 결과에만 저장하지 않는 칸. 주선·R1·rules-2는 키 없음 | 2절, 시험 ‘R2 변환·부대비 상한·공지된 관세 읽기’·‘새 층이 꺼진 R1’ |
+| E14 | golden#14(minor): 공지 로그가 `TARIFF` 층으로 걸러진다는 문장이 없다 | 로그·`tariffEvents`·`tariffSchedule`은 `TARIFF` 층이 있을 때만 | 1절, 시험 ‘새 층이 꺼진 R1’ |
+| E15 | golden#15(minor), tests#14(minor), ambiguity#7(major / 확인 → minor): 동결 프로필 자료·스키마가 고칠 수 있는 파일에 있다 | `data/market_rules.json`·스키마·`scenario.ts`를 손대지 않을 파일로 옮김. 검사기는 관세 표 검사 보강만 | 고칠 수 있는 파일, 손대지 않을 파일 |
+| E16 | golden#16(minor), ambiguity#10(minor): `tariffSchedule`의 기준일·반환 꼴·‘가상 세율’ 표지가 없다 | 기준일 K(끝나지 않은 상태 `s.day`, 끝난 상태 평가일), 꼴 `{ countryCode, round, noticeDay, effectiveDay, rates, labelKo }` | 1절 |
+| E17 | tests#4(major / 확인 → major), ambiguity#6(변형 3·4): 부대비 0인 주(약 70%)에는 변형 3·4가 지나간다 | 같은 편 X에서 부대비가 생기는 시드 P·생기지 않는 시드 Z를 찾고, 주선은 P와 같은 시드·같은 편. tests#4의 ‘USD 현금이 운임 말고는 줄지 않음’은 쓰지 않았다(시험 도우미의 환전이 USD를 줄인다). 원장의 `SURCHARGE-` 분개 없음으로 단언 | 시험 ‘부대비’ ①~③, 변형 3·4 |
+| E18 | tests#6(major / 부분 → major), ambiguity#6(변형 16): 정시 편은 수락·출항이 같은 환율 주라 변형 16을 가리지 못한다 | 둘째 편 계약 ④, 전제(부대비 > 0, 두 환율 다름) 단언, 환산 꼴 식 | 시험 ‘부대비’ ④, 변형 16 |
+| E19 | tests#9(minor): 사건을 먼저 찾는 구성이 수락할 수 없는 사건을 고를 수 있다 | 찾기 조건에 ‘그 묶음에 판매 견적, 수락 APPLIED’를 넣는다 | 시험 머리 |
+| E20 | tests#11(minor): ‘정시 노출’이 시드를 미리 정한 것으로 읽힌다 | 시드 1부터 첫 적중까지, 찾은 시드와 비율을 보고 | 시험 ‘정시 노출’, 변형 6 |
+| E21 | tests#15(minor): `vi.mock('./risk')`로 `tariffEvents`를 바꿔도 `dutyFor` 안에 닿지 않는다 | 감싸기 대신 일정 오라클로 계산한 기대값과 견준다 | 시험 머리, ‘미래 누설 없음’ |
+| E22 | tests#16(minor): 수락 자금 검사의 관세를 무엇으로 관측할지 없다 | `dutyFor` 첩자 또는 거절 문장의 ‘관세 X USD’. 수락 성공 여부만으로 단언하지 않는다 | 시험 ‘수락 자금 검사 관세’, 변형 12 |
+| E23 | tests#19(minor), ambiguity#2(major / 부분 → minor): `tariff` 칸이 USD 차이처럼 읽힌다 | `tariff = value(3단계 줄) − value(2단계 줄)`, 환산 꼴. 시험 식 `toKrw(−(Fr + D새), r) − toKrw(−(Fr + D옛), r)` | 3절, 시험 ‘도착일 세율(정시)’ |
+| E24 | ambiguity#8(minor): `lag_days [0, 0]` 사본에서도 공지일 = 도착 예정일인 시드는 찾아야 나온다 | 시드 200개 안에서 찾고 단언, 그 편 도착일 = N을 먼저 단언 | 시험 ‘도착 공지 기준일’ |
+| E25 | ambiguity#11(minor): 부대비 분개의 `contractId`·차변 계정, realized 목록의 `CANCEL-COMP-`가 빠졌다 | `payOrAccrue(…, contract.id, 'INVENTORY')`, 항등식 목록에 `CANCEL-COMP-` | 2절, 시험 ‘항등식’ |
+| E26 | ambiguity#12(minor): USD 매입(방어 분기)에서 표 세율인지 고정 세율인지 없다 | 허브 결정 H16-4: `TARIFF` 층이면 매입 통화와 무관하게 표 세율, 과세가격 환산만 KRW일 때 | 1절, 시험 ‘`goodId` 누락·관세 표’, 변형 30, 설계 3.3 |
+| E27 | ambiguity#13(minor): 옛 처리표 m14(d03 `compare`)·다른 문서 몫 항목·설계 참조·진단 T 정의 | 처리표 앞 안내문, 머리의 설계 참조(3.3·3.4·4·6·8·9절, 개정 3h), 결과 보고의 진단 T 정의 | 머리, 결과 보고, 처리표 앞 |
+| E28 | 허브(이번 처리 중): 같은 날 같은 나라 두 회차가 공지되면 무의미 판정의 a·b와 로그의 a·b가 다를 수 있다. 무의미 사건 대조 ‘음수 걸음 사건만 남는다’는 틀린 문장이다 | 동점일 때만 다를 수 있음을 명시. 대조는 ‘오라클과 같고, 양수 걸음 사건은 앞서 남은 음수 걸음 사건이 먼저 시행될 때만 남는다’로. ‘공지 순서 역전’ 사본의 찾기 확률을 허브 모의(시드 2만 개)로 확인했다: ① 시드당 약 4.5%(200개 안 99.99%), ② 약 5.4%(200개 안 사실상 100%). 시작 프로필은 ① 0%, ② 0.4%(200개 안 56%) | 1절, 시험 ‘무의미 사건 없음’·‘공지 순서 역전’ |
+
+- 허브 결정과 다르게 한 것은 없다. 새 허브 결정은 H16-1~4다(`HUB-DECISIONS-2026-10-16.md`).
+- 승인 전에 개정 3e 본문을 독립 재확인한다(복사본은 원본과 `.git`을 나누지 않는다).
