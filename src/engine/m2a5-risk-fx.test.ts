@@ -387,8 +387,8 @@ describe('TASK-0062 날짜·관세·손익', () => {
     expect(late.referenceEstimate).toEqual({ rateKrwPerUsd: rate, saleKrw: toKrw(late.sale, rate),
       pnlKrw: toKrw(late.sale, rate) - candidate!.purchase - toKrw(late.freight + late.duty, rate) });
   });
-  it.each([false, true])('손익 읽기: 독립 현금 재계산·환율 부호·R0 (주선 %s)', (forwarding) => {
-    const cfg = config(changedSeed(laterDay)), s = finished(cfg, 1, forwarding), c = s.contracts[0]!;
+  it.each([[0, false], [0, true], [1, false], [1, true]] as const)('손익 읽기: 독립 현금 재계산·환율 부호·R0 (편 %s, 주선 %s)', (later, forwarding) => {
+    const cfg = config(changedSeed(laterDay)), s = finished(cfg, later, forwarding), c = s.contracts[0]!;
     const report = contractRiskReport(s, cfg, c.id);
     expect(report.realized).toBe(cashValue(s, cfg, c)); expect(report.components.residual).toBe(0);
     assertIdentity(s, cfg, c, cashValue(s, cfg, c));
@@ -396,7 +396,7 @@ describe('TASK-0062 날짜·관세·손익', () => {
     const receipt = s.ledger.entries.find((e) => e.contractId === c.id && e.id.startsWith('RECEIPT-'))!;
     const change = referenceRate(cfg, s.rng.seed, receipt.day) - referenceRate(cfg, s.rng.seed, c.acceptedDay);
     expect(Math.sign(report.components.fx)).toBe(Math.sign(change));
-    const oldCfg = config(cfg.seed, 'R0'), old = finished(oldCfg, 1, forwarding), oldC = old.contracts[0]!;
+    const oldCfg = config(cfg.seed, 'R0'), old = finished(oldCfg, later, forwarding), oldC = old.contracts[0]!;
     const oldReport = contractRiskReport(old, oldCfg, oldC.id);
     expect(old.obligations.filter((o) => o.paidDay === null)).toEqual([]);
     expect(oldReport.realized).toBe(contractReport(old, oldC).contribution * oldCfg.operations!.fx.baseKrwPerUsd / 100);
