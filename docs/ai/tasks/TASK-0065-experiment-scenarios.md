@@ -76,6 +76,7 @@
 
   - 상속은 맨 위 칸을 통째로 덮는다(`resolveScenarioRecord`). 그래서 `operations`는 전체를 복사해야 한다. 복사한 값이 `market_rules_ref` 말고 옛 값과 같은지 시험으로 확인한다.
   - `rules_version`은 상속한 `M2a-rules-2` 그대로다. R1~R3은 실행기가 `withRiskLevel`로 만든다(판정표 1.2). rules-3 시나리오 레코드(로더 분기·`operations.risk` 스키마)는 이번에 넣지 않는다. 학생에게 낼 때(경로 11 이후) 따로 한다.
+  - 그래서 검사기의 ‘operations는 M2a-rules-2가 필요하다’ 검사는 이번에 고치지 않는다(새 시나리오도 rules-2다). 나중에 rules-3 운영 시나리오를 자료로 둘 때 이 검사를 함께 고친다(허브 TASK-0062 검수에서 넘긴 항목). 결과 보고 ‘범위 밖 발견’에 적는다.
 
 ### 5. 실험 목록(`src/content/scenario.ts`)
 
