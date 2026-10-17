@@ -1,11 +1,11 @@
-# TASK-0065 경로 2 품목안 실험 시나리오: (나) 화장품 1품목, (다) 화장품 + 조미김 (초안 3)
+# TASK-0065 경로 2 품목안 실험 시나리오: (나) 화장품 1품목, (다) 화장품 + 조미김 (승인, 개정 3a)
 
-- **지위: 초안 3(세션 A, 2026-10-17. 초안 1·2는 2026-10-16·17). 허브 사전 확인(`PRECHECK-0065-HUB-2026-10-17.md`, 개발 브랜치 `695b29a`)과 허브 결정 H18을 반영했다. 처리표는 끝의 ‘허브 사전 확인 처리표(초안 3)’다. 허브의 좁힌 검증과 승인 전에는 실행하지 않는다.**
+- **지위: 승인(허브, 2026-10-17, 개정 3a). 이 지시서를 담은 개발 브랜치 커밋이 BASE다.** 세션 A 초안 3(2026-10-17, 초안 1·2는 2026-10-16·17) 위에 허브 좁힌 검증(처리표 끝 ‘허브 좁힌 검증 처리표(개정 3a)’)을 반영했다. 사전 확인은 `PRECHECK-0065-HUB-2026-10-17.md`, 결정은 H18(H18-5 정정 포함)이다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
 - 선행: TASK-0064 병합(개발 브랜치 `d749e9b`, 기록 `e318728`). **`BASE`는 작업 트리를 만든 커밋(이 지시서의 승인본을 담은 개발 브랜치 커밋)이다.** 작업 시작 때 `git rev-parse HEAD`를 결과 보고에 적고 그 값을 BASE로 쓴다(TASK-0064와 같은 규칙).
 - 코드 자리는 줄 번호가 아니라 함수·상수 이름으로 가리킨다.
-- 기준 문서: **판정표 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`(승인 `9ce98fe`) 1.1·3.3·5.2·6.2**, **설계 `docs/ai/design/path3-price-risk-2026-10/DESIGN.md` 6절(시작 프로필, 동결)**, **허브 결정 H18**(`HUB-DECISIONS-2026-10-16.md` 끝). 판정표와 설계 6절은 동결돼 있으므로 고치지 않는다. 이 지시서와 다르면 둘이 우선이고, 다르게 해야 할 이유가 생기면 멈추고 보고한다.
+- 기준 문서: **판정표 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`(승인 `9ce98fe`) 1.1·3.3·5.2·6.2**, **설계 `docs/ai/design/path3-price-risk-2026-10/DESIGN.md` 6절(시작 프로필, 동결)**, **허브 결정 H18**(`HUB-DECISIONS-2026-10-16.md` 끝, H18-5 정정 포함). 판정표와 설계 6절은 동결돼 있으므로 고치지 않는다. 이 지시서와 다르면 판정표·설계 6절이 우선이고(H18은 H18-5 정정을 담아 이 지시서와 같다), 다르게 해야 할 이유가 생기면 멈추고 보고한다.
 - 목적: 판정표의 품목 변형 (나)·(다)를 잴 자료를 만든다. 이 작업은 **측정하지 않는다.**
 - 이 작업의 병합 커밋은 판정표 ‘측정 전 고정 기록’에 들어간다. 허브는 병합 뒤 `data/market_rules.json`·`data/goods.json`의 sha256과 위험 프로필 대조(판정표 고정 기록의 대조 규칙, H15 F8) 결과를 적는다.
 
@@ -14,7 +14,7 @@
 - **동결 범위 안의 일이다(v2가 아니다).** 설계 6절은 김 행을 ‘TASK-0065가 더할 값(이 문서로 미리 고정, 동결 범위)’으로 이미 적었다(DESIGN.md 345행: 조미김 품목 행 기준 세율 CN·VN 500, `p_claim_bp` 500, 등급 LOW. 표의 김 판매처 둘 등급 C). 또 ‘`tariff.base`는 모든 변형의 품목을 담는다. … 0062는 의류·화장품 행만 넣고 TASK-0065가 김 행을 같은 값으로 더한다’(363행)고 적었다. 그러니 데이터 프로필에 김 행을 더하는 것은 동결된 설계를 이행하는 것이고, 동결 자료를 바꾸는 것이 아니다. 판정표 고정 기록의 대조 기대값도 ‘설계 6절 + 그 행들’이다(아래 3절).
 - **런타임 충돌은 설계가 다루지 않은 구현 결과다.** 설계 6절은 프로필 하나를 모든 변형이 공유한다고 정했지만, 김이 없는 시나리오에서 관세 공지 문장이 품목 이름을 찾다가 예외를 내는 경로(`tariffSchedule` → `goodOf`)는 다루지 않았다(허브 사전 확인 P1 실측: R2 시드 2001~2020에서 (가)·(나) 15/20 예외).
 - **H18-1의 고침(설정 만들 때 그 설정의 품목 행만 남김)은 6절의 예외 규칙과 맞는다.** 6절은 ‘프로필에 없는 (도착국, 품목)·품목·거래처가 실행 중에 나오면 예외’(363행, H14-10)라고 정했다. 거르기는 `config.goods`에 없는 품목의 행만 뺀다. 시나리오에 있는 품목의 행이 프로필에 없으면 지금처럼 예외가 난다. 그래서 예외 규칙은 그대로 살고, 김이 없는 시나리오가 김 행 때문에 멈추는 일만 없어진다.
-- **옛 측정값은 바뀌지 않는다.** 거르기 뒤 (가)의 프로필은 김 행을 더하기 전 프로필과 같다(배열 순서 포함). 같은 나라 행은 같은 걸음을 받고 김 행의 기준 세율(500)이 화장품과 같으므로, (다)에서도 무의미 사건 판정과 사건 일정은 (가)·(나)와 같다(공통 난수). 이 둘은 시험으로 보인다(‘김 없는 시나리오 구동’, ‘(가) 설정 동일’).
+- **옛 측정값은 바뀌지 않는다.** 거르기 뒤 (가) 프로필의 `tariff.base`·`claims.byGood`은 김 행을 더하기 전과 같다(배열 순서 포함). `collections.byCounterparty`와 `market.counterparties`에는 새 거래처 행이 더해지지만 (가)에는 그 거래처의 견적이 없어 (가)의 상태 전문은 같다(R2 상태 `cmp` 0, ‘지켜야 할 것’). 같은 나라 행은 같은 걸음을 받고 김 행의 기준 세율(500)이 화장품과 같으므로, (다)에서도 무의미 사건 판정과 사건 일정은 (가)·(나)와 같다(공통 난수). (가) 쪽은 시험 ‘(가) 설정 동일’로, (다)의 사건 일정이 같다는 것은 시험 ‘김 없는 시나리오 구동’의 tariffEvents 단언으로 보인다.
 
 ## 원칙
 
@@ -61,7 +61,7 @@
   - 조미김은 1묶음(100개) 금액을 화장품 1묶음(50개)과 같은 2,000 USD로 맞췄다. 무게·부피도 1묶음 기준으로 같다(1절). 판매가는 ‘김은 상해 중심’을 하이퐁 쪽 기준가를 낮게 두는 것으로만 표현한다(판정표 1.1).
   - 1묶음 순마진(운임 200·180, 관세 5% 가정, 판매가 대비): 조미김 하이퐁 260 USD(10.2%)·상해 380 USD(14.3%), 화장품 285 USD(11.0%)·370 USD(14.0%). **이 값은 판정표 5.2의 m₀이 아니다.** m₀ = SELL₀ ÷ BUY − 1은 조미김 하이퐁 28.0%·상해 33.0%, 화장품 29.25%·32.5%다(사전 확인 P14).
   - 가격은 병합 커밋에서 고정되고 해시로 잠긴다(판정표 5.2 판매 마진 행, H10-5).
-- **거래처(`counterparties`) 끝에 다섯을 더한다**: `CUSTOMER_HAI_COSMETICS_NEW`(하이퐁 화장품 신규 고객), `CUSTOMER_SHA_COSMETICS_NEW`(상해 화장품 신규 고객), `CUSTOMER_HAI_LAVER`(하이퐁 김 고객), `CUSTOMER_SHA_LAVER`(상해 김 고객), `SUPPLIER_DEMO_LAVER`(김 공급자).
+- **거래처(`counterparties`) 끝에 다섯을 더한다**: `CUSTOMER_HAI_COSMETICS_NEW`(하이퐁 화장품 신규 고객), `CUSTOMER_SHA_COSMETICS_NEW`(상하이 화장품 신규 고객), `CUSTOMER_HAI_LAVER`(하이퐁 김 고객), `CUSTOMER_SHA_LAVER`(상하이 김 고객), `SUPPLIER_DEMO_LAVER`(김 공급자). 괄호 안 문장이 `name_ko` 그대로다(기존 자료처럼 ‘상하이’로 적는다). 새 시나리오의 `title_ko`·`scope_note`는 base 시나리오 문장 꼴을 따르고 결과 보고에 적는다.
 
 ### 3. 위험 프로필에 더할 값과 설정 단계 거르기
 
@@ -72,9 +72,9 @@
   - 다른 값은 바꾸지 않는다. 설계 6절 JSON에 이 행들을 더한 것이 대조의 기대 프로필이다(판정표 고정 기록의 대조 규칙). 배열 안 순서는 대조에서 보지 않는다.
 - **`withRiskLevel` 거르기(H18-1, `src/engine/risk.ts`에서 고칠 수 있는 곳은 이 함수 몸통뿐).** 설정에 담을 프로필을 만들 때, 프로필의 복사본에서 `tariff.base`와 `claims.byGood`을 그 설정의 `config.goods`에 있는 품목(`goodId`) 행만 남긴다. 남긴 행의 순서는 원래 순서다. `collections`와 나머지 칸은 거르지 않는다. 원화 매입 변환 등 함수의 다른 동작은 그대로다. `R0`(위험 설정 없음)은 지금처럼 설정을 그대로 돌려준다.
   - 런타임 함수는 바꾸지 않는다. 그래서 시나리오에 있는 품목의 행이 프로필에 없으면 지금처럼 예외가 난다(H14-10).
-  - 결과: (가)의 R1~R3 설정은 김 행을 더하기 전 프로필로 만든 설정과 같다(시험 ‘(가) 설정 동일’).
-- **TASK-0063·0064 시험 두 곳을 함께 고친다(세션 A 시제품 실측, H18-1의 ‘고치지 않은 채 통과’ 정정).** 아래 두 시험은 공유 프로필(`riskProfiles()[0]`)의 행을 직접 돌며 거른 설정에 김 품목으로 순수 함수를 부르므로, 거르기 뒤 맞는 구현에서 예외로 실패한다(세션 A 실측: 김 행·거르기를 넣은 사본에서 이 두 시험만 실패, 아래처럼 고치면 전체 1,465개 통과). **루프가 도는 행만** 그 설정에 실린 행으로 바꾼다. 단언·기대값 식·다른 줄은 바꾸지 않는다.
-  - `src/engine/m2a5-risk-cost.test.ts` ‘사건 범위: 다른 기준 세율, 실제 경계 자르기, 품목 순서 보존’: 프로필 사본에서 고른 `rows`로 `dutyFor`·`fromBp`·`toBp`를 도는 곳을 `rows` 가운데 `cfg.goods`에 있는 품목 행(`used`)으로 바꾼다(사본의 세율을 바꾸는 앞쪽 두 줄은 그대로).
+  - 결과: (가)의 R1~R3 설정의 `tariff.base`·`claims.byGood`은 김 행을 더하기 전과 같다(시험 ‘(가) 설정 동일’은 공유 프로필 설정과 ‘김 tariff·claims 행만 뺀 사본’ 설정을 비교한다). 새 거래처 행은 (가) 설정에도 실린다.
+- **TASK-0063·0064 시험 두 곳을 함께 고친다(세션 A 시제품 실측, H18-5).** 아래 두 시험은 공유 프로필(`riskProfiles()[0]`)의 행을 직접 돌며 거른 설정에 김 품목으로 순수 함수를 부르므로, 거르기 뒤 맞는 구현에서 예외로 실패한다(세션 A 실측: 김 행·거르기를 넣은 사본에서 이 두 시험만 실패, 아래처럼 고치면 전체 1,465개 통과). 아래에 적은 자리만 그 설정에 실린 행으로 바꾼다. 단언·기대값 식·그 밖의 줄은 바꾸지 않는다.
+  - `src/engine/m2a5-risk-cost.test.ts` ‘사건 범위: 다른 기준 세율, 실제 경계 자르기, 품목 순서 보존’: `cfg` 정의 바로 다음 줄에 `const used = rows.filter((r) => cfg.goods.some((g) => g.id === r.goodId));` 한 줄을 더하고, ① `for (const row of rows)`(dutyFor 루프), ② `rows.map(…fromBp)`, ③ `rows.map(…toBp)` 세 곳의 `rows`를 `used`로 바꾼다(사본의 세율을 바꾸는 앞쪽 두 줄은 그대로. ②③을 두면 거른 설정의 rates에 김이 없어 `.fromBp`에서 TypeError, 허브 실측).
   - `src/engine/m2a5-risk-credit.test.ts` ‘일정 오라클(클레임·수금): 모든 품목·거래처·키, R2 표 미참조’: `for (const row of profile.claims.byGood)`를 `for (const row of cfg.operations!.risk!.profile.claims.byGood)`로 바꾼다.
   - 다른 0062·0063·0064 시험은 고치지 않는다. 그 밖에 실패하는 시험이 나오면 고치지 말고 멈추고 보고한다.
 
@@ -109,8 +109,8 @@
 - **실험 시나리오 판별(P7).** 검사기에 실험 ID 두 개를 상수로 둔다(`EXPERIMENT_SCENARIO_IDS`, 주석에 ‘`src/content/scenario.ts`의 같은 이름 상수와 같은 값’). 새 rule_set ID 둘도 상수로 둔다. 옛 rule_set은 배열 위치가 아니라 id `M2A5_PYEONGTAEK`로 고른다.
 - **새 검사 셋을 더한다.**
   1. **상속 동일(P7).** 실험 시나리오마다, 자기 `operations`에서 `market_rules_ref`를 뺀 값이 상속을 푼 base 시나리오의 `operations`에서 `market_rules_ref`를 뺀 값과 같다.
-  2. **판매 거래처 분리(P2).** 새 rule_set의 직접 무역 판매 거래처(`trade.goods[].sell_counterparties[].counterparty_id`와 SELL `rows`의 `counterparty_id`)는 id `M2A5_PYEONGTAEK` rule_set의 판매 거래처와 겹치지 않는다. 새 rule_set끼리는 함께 써도 된다((나)·(다)가 `CUSTOMER_*_COSMETICS_NEW`를 함께 쓴다).
-  3. **복사 동일성(P6).** ① 새 rule_set에서 `id`·`index.goods`·`trade.goods`·`rows`를 뺀 나머지가 옛 rule_set의 같은 값과 깊은 비교로 같다. ② 새 rule_set의 화장품 `trade.goods` 줄과 화장품 `rows`가 판매 거래처 칸(`sell_counterparties`의 `counterparty_id`, SELL 행의 `counterparty_id`)을 빼고 옛 rule_set의 화장품 줄·행과 같다. ③ `OFFER_SELL_02_NEW`가 `id`·`counterparty_id`를 빼고 `OFFER_SELL_02`와 같다.
+  2. **판매 거래처 분리(P2).** 새 rule_set의 직접 무역 판매 거래처(`trade.goods[].sell_counterparties[].counterparty_id`. `rows`에는 거래처 칸이 없다, 스키마)는 id `M2A5_PYEONGTAEK` rule_set의 판매 거래처와 겹치지 않는다. 새 rule_set끼리는 함께 써도 된다((나)·(다)가 `CUSTOMER_*_COSMETICS_NEW`를 함께 쓴다).
+  3. **복사 동일성(P6).** ① 새 rule_set에서 `id`·`index.goods`·`trade.goods`·`rows`를 뺀 나머지가 옛 rule_set의 같은 값과 깊은 비교로 같다. ② 새 rule_set의 화장품 `trade.goods` 줄과 화장품 `rows`가 `sell_counterparties`의 `counterparty_id`를 빼고 옛 rule_set의 화장품 줄과 같고, 화장품 `rows`는 옛 rule_set의 화장품 행과 그대로 같다. ③ `OFFER_SELL_02_NEW`가 `id`·`counterparty_id`를 빼고 `OFFER_SELL_02`와 같다.
 - **기존 검사의 확인(P8).** 새 rule_set의 `trade.goods`·`index.goods`·`rows` 정합은 기존 `check_market_rules`가 이미 모든 rule_set에 대해 본다. 새 검사를 만들지 않고, 반례(새 rule_set의 rows 하나 빠짐 → 시세표 행 집합 불일치)로 그 검사가 새 rule_set에도 도는 것만 확인한다.
 - **고정 수(P4).** `expected_counts`의 `goods` 8→9, `market_offers` 6→7, `scenarios` 8→10만 바꾼다. 다른 고정값은 그대로 두고, 자료에서 읽게 바꾸지 않는다. 결과 보고에 바꾼 줄을 적는다. MANIFEST는 `python3 tools/build_package.py --manifest-only`로 갱신한다.
 
@@ -128,7 +128,7 @@
 | 견적 수(J4a) | R0 설정, 시드 2001~2020, 위 ‘묶음 생성 문장’대로 모든 공개일 묶음을 만들어 묶음당 견적 수의 최댓값이 (나) 2G+6 = 8, (다) 10 이하다. G는 rule_set의 `trade.goods` 길이에서 읽는다 |
 | 거래처(P12) | 새 판매 거래처 넷(두 rule_set의 판매 거래처 가운데 base rule_set에 없는 것)이 모두 프로필 `collections.byCounterparty`에 있다. 화장품 두 판매처 등급이 서로 같고, 김 두 판매처 등급이 서로 같으며, 김 등급 ≠ 화장품 등급이다(값은 프로필에서 읽음). (나)·(다)의 화장품 판매 거래처 집합은 같다 |
 | 위험 변환 | R3 설정(시드 2001~2020)마다 ‘묶음 생성 문장’대로 모든 공개일 묶음을 만들고, 그 직접 무역 견적의 품목·판매 거래처마다 `claimFor(cfg, seed, 판매 견적 ID, 품목)`·`collectionPlan(cfg, seed, 판매 견적 ID, 거래처)`·`dutyFor(cfg, seed, 품목, 판매 도시, 공개일, 공개일, 매입 견적 금액, 매입 견적 통화, 공개일)`이 예외 없이 값을 낸다. 조미김 견적과 새 판매 거래처 넷이 각각 한 번 이상 나왔음을 먼저 단언한다. `withRiskLevel`만으로는 누락을 잡지 못하므로 이 호출이 필요하다 |
-| 김 없는 시나리오 구동(H18-1) | (가)·(나)·(다) × R2·R3 × 시드 2001~2020마다 `createGame`·`openDay`·`commitDay`를 무명령으로 캠페인 끝(`ENDED`)까지 돌려 예외가 없다. 먼저 공유 프로필(`riskProfiles()[0]`)의 `tariff.base`에 (가)·(나)의 `config.goods`에 없는 품목의 행이 있음을 단언한다(그래서 이 시험이 거르기를 실제로 잰다). 각 설정의 `operations.risk.profile.tariff.base`·`claims.byGood`의 모든 행 품목이 그 설정의 `config.goods`에 있다 |
+| 김 없는 시나리오 구동(H18-1) | (가)·(나)·(다) × R2·R3 × 시드 2001~2020마다 `createGame`·`openDay`·`commitDay`를 무명령으로 `phase`가 `ENDED`가 될 때까지 돌려 예외가 없다(무명령이면 원화 고정비로 72일 무렵 경영 실패로 끝난다. 허브 실측 120판 모두 72일. 그래도 거르기 생략 변형은 (가)·(나) 15/20에서 잡힌다). 시드마다 (나)·(다) R2 설정의 `tariffEvents(cfg, seed)`가 (가) R2 설정의 것과 `toEqual`이다. 시나리오마다 `it`을 나누고 각 `it`에 timeout 180000ms 이상을 준다. 먼저 공유 프로필(`riskProfiles()[0]`)의 `tariff.base`에 (가)·(나)의 `config.goods`에 없는 품목의 행이 있음을 단언한다(그래서 이 시험이 거르기를 실제로 잰다). 각 설정의 `operations.risk.profile.tariff.base`·`claims.byGood`의 모든 행 품목이 그 설정의 `config.goods`에 있다 |
 | (가) 설정 동일(H18-1) | 공유 프로필 사본에서 (가)의 `config.goods`에 없는 품목의 `tariff.base`·`claims.byGood` 행을 시험 안에서 뺀 프로필을 만든다. (가)(`OPERATIONS_SCENARIO_IDS[0]`)의 R1·R2·R3 설정(시드 2001)을 공유 프로필로 만든 것과 그 사본으로 만든 것이 `toEqual`이다 |
 | 1묶음 크기 | (다) 설정에서 `cargoSpace(cfg, 화장품, 화장품 base_lot)`와 `cargoSpace(cfg, 조미김, 조미김 base_lot)`의 무게·부피가 같다(값은 설정과 rule_set에서 읽는다) |
 | 1일 시작 | 실험 시나리오마다 시드 2001로 `createGame` 뒤 1일을 열고 마감할 수 있다. 정적 견적이 화장품 쌍 하나와 주선 둘이다 |
@@ -150,7 +150,7 @@
 | 7 | 조미김 `volume_m3_per_unit`을 0.02로 둠 | 1묶음 크기 |
 | 8 | 새 rule_set의 `regional_pct` 값 하나를 바꿈 | 검사기(복사 동일성 ①), 상속 |
 | 9 | `OFFER_SELL_02_NEW` 단가를 바꿈 | 검사기(복사 동일성 ③) |
-| 10 | `withRiskLevel` 거르기를 뺌(공유 프로필 그대로 담음) | 김 없는 시나리오 구동((가)·(나) R2 첫 관세 공지일 예외) |
+| 10 | `withRiskLevel` 거르기를 뺌(공유 프로필 그대로 담음) | 김 없는 시나리오 구동(행 소속 단언 또는 (가)·(나) R2 첫 관세 공지일 예외), (가) 설정 동일 |
 | 11 | 김 판매처 등급을 화장품과 같은 B로 둠 | 거래처 |
 
 ## 고칠 수 있는 파일
@@ -158,7 +158,7 @@
 - `data/goods.json`, `data/market_rules.json`, `data/market_offers.json`, `data/scenarios.json`(모두 **추가만**, 배열 끝. 옛 항목은 바꾸지 않는다)
 - `src/content/scenario.ts`(실험 목록과 `loadScenario` 타입만)
 - `src/engine/risk.ts`(**`withRiskLevel` 몸통만**, 3절 거르기)
-- `src/engine/m2a5-risk-cost.test.ts`·`src/engine/m2a5-risk-credit.test.ts`(**3절에 적은 두 루프만**)
+- `src/engine/m2a5-risk-cost.test.ts`·`src/engine/m2a5-risk-credit.test.ts`(**3절에 적은 두 시험의 지정한 자리만**)
 - `tools/validate_data.py`(6절의 상수·새 검사 셋·고정 수), `tools/test_validate_data.py`(반례 시험 추가만)
 - 새 `src/engine/m2a5-experiments.test.ts`
 - `docs/ai/tasks/results/TASK-0065.md`, `MANIFEST.json`
@@ -180,7 +180,7 @@
 ## 완료 조건
 
 1. 지시 1~6 반영, 시험 표의 시험 모두 통과.
-2. `npx vitest run`(0062·0063·0064 시험 포함, 3절의 두 루프 말고는 고치지 않은 채), `npm run typecheck`, `npm run build`, `python3 tools/validate_data.py`, `python3 -m unittest tools/test_validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 통과(골든 검사 포함).
+2. `npx vitest run`(0062·0063·0064 시험 포함, 3절의 두 시험의 지정한 자리 말고는 고치지 않은 채), `npm run typecheck`, `npm run build`, `python3 tools/validate_data.py`, `python3 tools/test_validate_data.py`, `bash tools/ai/review_checks.sh --check <BASE>` 통과(골든 검사 포함).
 3. 변형 표의 모든 행이 잡힌다(또는 원래 코드와 같은 이유를 적었다).
 4. `git diff <BASE> -- data/`가 추가 줄만 담는다(지운 줄·바꾼 줄 0). 결과 보고에 `git diff --stat`과 지운 줄 수 0을 적는다.
 
@@ -238,3 +238,21 @@
 ## 허브에 남기는 메모(초안 3, 세션 A)
 
 - **생성기 난수 순서와 D의 공통 난수.** 사전 확인 tests 관점 메모대로, `generateBatch`의 난수 소비가 품목 수 G에 따라 밀려 같은 시드에서도 (나)·(다)의 주선 틀 선택이 달라질 수 있다. 그러면 D((나)·(다) 비교)에 품목 폭과 무관한 주선 묶음 차이가 섞인다. 0065는 생성기를 고치지 않으므로 이번 범위가 아니다. 다만 D를 시드 짝 차이로 읽을지, 시드 평균의 차이로만 읽을지는 TASK-0066(실행기)·판정표 해석에서 정해야 한다. 0066 초안 0의 ‘결과 표 ⑨’에 이 주의를 한 줄 더할지 허브가 정해 달라.
+
+### 허브 좁힌 검증 처리표(개정 3a)
+
+초안 3(`ae04db8`)의 고친 문장을 세 렌즈(시제품 실현성·정합·변형 판별력)로 확인하고 major는 반박 검증을 거쳤다. 세션 A의 H18-1 정정(두 시험 고침)은 꼭 필요하고 충분하다고 실측됐다(거르기만: 2개 실패·1,463 통과, 두 시험 고침 뒤 시제품 포함 1,473 통과). 허브는 이 정정을 H18-5로 기록했다.
+
+| # | 발견 | 판정 | 고친 곳 |
+|---|---|---|---|
+| V1 | 완료 조건의 `python3 -m unittest tools/test_validate_data.py`가 ModuleNotFoundError | 확인(major) | `python3 tools/test_validate_data.py`(review_checks와 같은 꼴) |
+| V2 | ‘(가) 설정이 김 행 전과 같다’는 사실이 아님(collections·counterparties 행은 실림) | 확인(반박 검증에서 minor로 낮춤) | 머리·3절 문장을 tariff·claims 한정으로, 상태 전문은 같음 |
+| V3 | H18-1과 지시서 3절의 우선순위 | 반박(major 아님). 문구 정리 | H18-5 기록, 기준 문서 줄에 명시 |
+| V4 | 0063 시험 고침 자리(루프 하나로는 부족) | 확인(minor) | `used` 정의 한 줄과 세 자리 명시 |
+| V5 | `rows`에 없는 `counterparty_id` 칸 | 확인(minor) | 새 검사 2·3② 문장 |
+| V6 | 무명령 구동은 72일 실패로 끝남, (다) 사건 일정 단언 없음, timeout | 확인(minor) | ‘김 없는 시나리오 구동’ 문장·tariffEvents 단언·it 분할·180000ms |
+| V7 | 변형 10의 잡는 단언 | 확인(minor) | 변형 표 10행 |
+| V8 | 거래처 이름 ‘상해’/‘상하이’ | 확인(minor) | `name_ko`는 ‘상하이’ |
+
+- 세션 A ‘허브에 남기는 메모’(생성기 난수 소비가 G에 따라 밀려 D에 품목 폭과 무관한 차이가 섞임): H18-6으로 정했다. 0065 범위 밖이다.
+
