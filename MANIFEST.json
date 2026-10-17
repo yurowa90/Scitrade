@@ -82,8 +82,8 @@
     },
     {
       "path": "data/goods.json",
-      "size_bytes": 3642,
-      "sha256": "a4b130f82626fc9e3b12fd987895f1304582ac29b62a23356cea3ae1472107c8"
+      "size_bytes": 4068,
+      "sha256": "517b8df0e2e2edbbf24db0ab7ca1cb5bd6ac3b7a38a62a6ddb3f49688f875e1a"
     },
     {
       "path": "data/job_templates.json",
@@ -92,13 +92,13 @@
     },
     {
       "path": "data/market_offers.json",
-      "size_bytes": 4091,
-      "sha256": "11d98e6ec33084b5422478341b89b1fb2d7dba7c96347f22793292e1c13811d1"
+      "size_bytes": 4557,
+      "sha256": "96c209426246c539a14a3f5671a9630d21afea6f619690fa904f2490edabff43"
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 14329,
-      "sha256": "efa63a1fbcedecd656ff52385ec1ac1f1849ccc1e4c4f7befc655542533c7454"
+      "size_bytes": 34620,
+      "sha256": "a9a3eb45f395222613b6fca9893146863a99c6644fb00fa9cbc1bbc82c48b742"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -122,8 +122,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 23406,
-      "sha256": "c66f1d432cc95b2f894388c8cdfd72d288c602f9b1cb2ffe92e36553a4fa7b49"
+      "size_bytes": 29254,
+      "sha256": "6a82c36614fecb4d9f03ea1644716bc103ed9d2168161d06d9721cd23465a882"
     },
     {
       "path": "data/securities.json",
@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 241266,
-      "sha256": "615a392dbef7cf5561095628e979563e399f095e7d2287d0040ca8ae1f99cd96"
+      "size_bytes": 242211,
+      "sha256": "12e223f5dfd9137853b0920a40b0330110bc370d40f6ea5ccdf206ff0739690e"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 22681,
-      "sha256": "61f5fe474b7f6b8caffc5e90647460dd2a3d83feda44092e1fd1f1aa87cd4c67"
+      "size_bytes": 23016,
+      "sha256": "f6739f1c56662c5b621e477c9bef45bfeaf90d616c8306b1b935f6830fd8b1ef"
     },
     {
       "path": "docs/QUALITY_GATE_ALPHA.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 111512,
-      "sha256": "747544d5d7c5c8bb40e79aaf8e6e3e2554ea7220fbc076ed3d38c6624f99f628"
+      "size_bytes": 113938,
+      "sha256": "f603b9e9227ae0386345e6aee1870de6bc4ff5cb5e6ea9c354d831f4548d1d6a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 11009,
-      "sha256": "202e80b7d6c79300f572323602c9912e19581401a9edb9278f95294ce4e4248d"
+      "size_bytes": 11079,
+      "sha256": "8cd8439359cb3fdc195c48196f78dc914fafab4070c360d26ba1f3fb6af8d82a"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 1376,
-      "sha256": "46c669b9d487784f5a59ebc349ed0c0305da8eb2a81db6dd6b9069bae9e7248d"
+      "size_bytes": 64691,
+      "sha256": "227c7272535bae9fdba87eb460fea880ed5c8e86f8aeebf9b969f8fda0c1b049"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0065-HUB-2026-10-17.md",
@@ -2497,8 +2497,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25113,
-      "sha256": "a6ca5aba2d0c5deb0ca884891c161818b4171d9b08a53a01714fcd68425913a5"
+      "size_bytes": 25246,
+      "sha256": "8d4203b3f8879542e21b9c05e8954ef97a46f38d261ce1e235e01b297f440bf0"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2871,6 +2871,11 @@
       "sha256": "cac6c0dad7b5c592bb56f032ca2325b266bc0fd428ff7ca550484af0c996cae6"
     },
     {
+      "path": "docs/ai/tasks/TASK-0065-R1-validator-wiring.md",
+      "size_bytes": 2639,
+      "sha256": "ff0696139260f03e091eb0866dc7287541567c496a525a55aedbe2a5adee8d0b"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
       "size_bytes": 38910,
       "sha256": "c9714a7c4ab44d530d61993d0cce663c30aa33f855343fdef34fb4be995f287c"
@@ -3204,6 +3209,11 @@
       "path": "docs/ai/tasks/results/TASK-0064.md",
       "size_bytes": 28933,
       "sha256": "6354a923aa7bef32dc4363ff6ceab7f6fb4a1ff758c6bafc9967dd81c00a2675"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0065.md",
+      "size_bytes": 30151,
+      "sha256": "804af60805a35dcb4c3f2094c4ddfe792a6cf91561d4b9f0111b4a24ff7e4a2b"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",
@@ -3687,13 +3697,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 84764,
-      "sha256": "f62123ba44b038ba85d75d2dab616e2c475d1064c7252ebc0a4f4ecc1a85b0a4"
+      "size_bytes": 89662,
+      "sha256": "443a80eda22aec883f6e7e160f2e69755ba7a4a2c6e55aece3328dd469ae1ec7"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 84486,
-      "sha256": "53967e48d69128e0004fe42e01212c1fa7c6856e8fd10d21344fe3fb28155487"
+      "size_bytes": 87185,
+      "sha256": "a8021903aa100d5ac35fdbf7f01911c51bdc34b03b018acf3e10322a8b99b044"
     }
   ]
 }

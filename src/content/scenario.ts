@@ -42,6 +42,7 @@ export const M1_SCENARIO_IDS = [
 export const M2_SCENARIO_IDS = ['SCENARIO_M2_MULTI_TRADE'] as const;
 export const SCENARIO_IDS = [...M2_SCENARIO_IDS, ...M1_SCENARIO_IDS] as const;
 export const OPERATIONS_SCENARIO_IDS = ['SCENARIO_M2_OPERATIONS'] as const;
+export const EXPERIMENT_SCENARIO_IDS = ['SCENARIO_M2_OPS_COSMETICS', 'SCENARIO_M2_OPS_COS_LAVER'] as const;
 export const ALL_SCENARIO_IDS = [...SCENARIO_IDS, ...OPERATIONS_SCENARIO_IDS] as const;
 export type AnyScenarioId = (typeof ALL_SCENARIO_IDS)[number];
 export type M1ScenarioId = (typeof M1_SCENARIO_IDS)[number];
@@ -253,7 +254,7 @@ function toRules(id: string, raw: EngineRulesRaw | undefined): ScenarioRules {
 
 const SUPPORTED_PAYMENT_RULES = ['scenario_due_day_not_earlier_than_delivery_day', 'offer_due_day_not_earlier_than_delivery_day'];
 
-export function loadScenario(id: AnyScenarioId): ScenarioConfig {
+export function loadScenario(id: AnyScenarioId | (typeof EXPERIMENT_SCENARIO_IDS)[number]): ScenarioConfig {
   const cfg = (gameConfig as { config: AnyRecord }).config;
   const s = resolveScenarioRecord(id);
   const tradeCurrency = str(cfg, 'trade_currency') as Currency;
