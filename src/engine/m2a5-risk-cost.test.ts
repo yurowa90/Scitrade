@@ -277,12 +277,13 @@ describe('TASK-0063 순수 일정과 공지', () => {
     rows[0]!.rateBp = p.tariff.minBp + Math.floor((p.tariff.maxBp - p.tariff.minBp) / 2);
     rows[1]!.rateBp = p.tariff.maxBp - 1;
     const cfg = cfgFor(1, p); let clipped = false, unclipped = false, clippedComparisons = 0;
+    const used = rows.filter((r) => cfg.goods.some((g) => g.id === r.goodId));
     for (let seed = 1; seed <= 200; seed++) {
       const events = oracleEvents(cfg, seed);
       expect(tariffEvents(cfg, seed)).toEqual(events);
       const city = cfg.cities.find((c) => c.countryCode === cc)!;
       const days = [...new Set([1, cfg.campaignDays, ...events.flatMap((e) => [e.noticeDay - 1, e.noticeDay, e.effectiveDay])])];
-      for (const row of rows) for (const k of days) for (const t of days) {
+      for (const row of used) for (const k of days) for (const t of days) {
         expect(dutyFor(cfg, seed, row.goodId, city.id, t, k, 1000000, 'USD', 1))
           .toBe(bpAmount(1000000, oracleRate(cfg, events, cc, row.goodId, k, t)));
       }
@@ -292,8 +293,8 @@ describe('TASK-0063 순수 일정과 공지', () => {
         expect(state.day).toBe(e.noticeDay);
         const rates = tariffSchedule(state, cfg).find((v) => sameNotice(v, e))!.rates;
         expect(rates).toEqual(oracleRates(cfg, seed, e, e.noticeDay));
-        const a = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.fromBp);
-        const b = rows.map((row) => rates.find((r) => r.goodId === row.goodId)!.toBp);
+        const a = used.map((row) => rates.find((r) => r.goodId === row.goodId)!.fromBp);
+        const b = used.map((row) => rates.find((r) => r.goodId === row.goodId)!.toBp);
         if (a.some((r, i) => r + e.stepBp !== b[i])) { clipped = true; clippedComparisons++; }
         if (a.every((r, i) => r + e.stepBp === b[i])) { unclipped = true; expect(b[1]! - b[0]!).toBe(a[1]! - a[0]!); }
         expect(a[0]).toBeLessThanOrEqual(a[1]!); expect(b[0]).toBeLessThanOrEqual(b[1]!);

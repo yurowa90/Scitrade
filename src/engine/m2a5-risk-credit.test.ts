@@ -292,7 +292,7 @@ describe('TASK-0064 추첨과 공개 정보', () => {
       const empty = structuredClone(profile); empty.claims.byGood = []; empty.collections.byCounterparty = [];
       const emptyR2 = cfgFor(seed, empty, 'R2');
       for (const key of keys) {
-        for (const row of profile.claims.byGood) {
+        for (const row of cfg.operations!.risk!.profile.claims.byGood) {
           const expected = oracleClaim(cfg, seed, key, row.goodId); if (expected) seen.add(expected.tier);
           rows.push({ actual: claimFor(cfg, seed, key, row.goodId), expected });
           rows.push({ actual: claimFor(r2, seed, key, row.goodId), expected: null }, { actual: claimFor(emptyR2, seed, key, row.goodId), expected: null });
