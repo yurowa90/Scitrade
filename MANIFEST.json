@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 228125,
-      "sha256": "1c4bbdcd40c508bb58198c47bd098209f6f55358bc66a602de1c615524d4ec5c"
+      "size_bytes": 240404,
+      "sha256": "39a8e03c07f29a5e795cf5606052ad0fd276651fe7510a08f10271bea3efdea7"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -192,8 +192,8 @@
     },
     {
       "path": "docs/IMPLEMENTATION_PLAN.md",
-      "size_bytes": 21605,
-      "sha256": "7d174f984acc9a509176597f55e7f26d93db720fbb04feea19dc7098690cd142"
+      "size_bytes": 22681,
+      "sha256": "61f5fe474b7f6b8caffc5e90647460dd2a3d83feda44092e1fd1f1aa87cd4c67"
     },
     {
       "path": "docs/QUALITY_GATE_ALPHA.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 102947,
-      "sha256": "40cf03796e571dfeae01d64866cf3a5e574693c54cec8c5b43ce4fff58bf53a7"
+      "size_bytes": 111512,
+      "sha256": "747544d5d7c5c8bb40e79aaf8e6e3e2554ea7220fbc076ed3d38c6624f99f628"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -222,8 +222,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "size_bytes": 10837,
-      "sha256": "6d3fb9af26752776cc120f991127a413a95ef43c8fab83a3a9d7851ecaaee1d4"
+      "size_bytes": 11009,
+      "sha256": "202e80b7d6c79300f572323602c9912e19581401a9edb9278f95294ce4e4248d"
     },
     {
       "path": "docs/ai/CLASSIC_GAME_HANDOFF.md",
@@ -1686,14 +1686,19 @@
       "sha256": "dd58de45cb7bac2c2edee81ebdb2bcca0e2fec2896436ad6d4e1b9a735b89220"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/CODEX-REVIEW-0063-HUB-2026-10-16.md",
+      "size_bytes": 98543,
+      "sha256": "95b62554b0fd6c2eac58e9791ce71dcac871791294712045788f2e540ce3c736"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
-      "size_bytes": 102220,
-      "sha256": "4f51aa075c9c5fd1be505d7a96a5f0adbf234d8b6dc83ca191b5e44265c861d4"
+      "size_bytes": 113546,
+      "sha256": "3233cce51a7242aa784b577b69d5442cd3032087abaeaa7d46638a39716b0561"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 45280,
-      "sha256": "61e11e48d9acc17ee2af5d81e6eb34cf0ea407c01caae75574b9e79d95ec44a4"
+      "size_bytes": 60279,
+      "sha256": "98d8fa0c58e16ff9a594fc6736dbf59d11fdd1bb5b032506c044637f40b6b842"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
@@ -1787,8 +1792,8 @@
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
-      "size_bytes": 25161,
-      "sha256": "1085d2a9d3ced77b6c129b9709ccdc7a6a7f2d3a1be97485c9d661d52dbb84b8"
+      "size_bytes": 34302,
+      "sha256": "bc165da491411c6484d3587ad57ee0ffeb62b072c3b6d631a2f4fa24d3916772"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
@@ -1979,6 +1984,21 @@
       "path": "docs/ai/design/situation-map-10b1/data/ports-ea.json",
       "size_bytes": 3925,
       "sha256": "b7b91de9f3dc7442dd3ea685e32e62143602488052b1d935ab3544c249084e25"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/README.md",
+      "size_bytes": 2141,
+      "sha256": "565e187114ca107cca7157b661134cbc8ac10ec12e1c07e2126c854569190925"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/margin.jsonl",
+      "size_bytes": 3559,
+      "sha256": "3fe4457462825d0c1b15e7b3e7b5103b675867425addfd89c76fb028bc1d09b2"
+    },
+    {
+      "path": "docs/ai/design/situation-map-10b1/followup-start-margin/mpad.js",
+      "size_bytes": 4390,
+      "sha256": "be9b95849b682c575a91cd177c9d5466f6f4b783327d47d4954ff5e34a658f3e"
     },
     {
       "path": "docs/ai/design/situation-map-10b1/harness/nightlights.py",
@@ -2472,8 +2492,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 23736,
-      "sha256": "ac5ac5c41187284ce6911dad3be5f29a0d20918d3bea583adcc90bb12d5291fd"
+      "size_bytes": 24500,
+      "sha256": "2f58f26ca6f41216bb8611560a1d1783a36b3ae817e1af99b6eb5de728ce1a6c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2826,14 +2846,24 @@
       "sha256": "6c895e0e390355abd232b59422229074fba7ea19424f83d212cd96717a4c0f94"
     },
     {
+      "path": "docs/ai/tasks/TASK-0063-R1-risk-cost-review-fixes.md",
+      "size_bytes": 17349,
+      "sha256": "29a887ac57200a924405008de4059c7026e5f7ebc44c0d744d56685381a25c08"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0063-R2-risk-cost-review-fixes-2.md",
+      "size_bytes": 5270,
+      "sha256": "49aeec4e3c08b3b8fd0fbc7186f3e880ceffce0d32c7ac0ed3c8d0fba9386c41"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0063-risk-tariff-surcharge.md",
-      "size_bytes": 51034,
-      "sha256": "df99816854a11711aab4363de21eaa9791360a14511a7269d6f49a4f0812377a"
+      "size_bytes": 107784,
+      "sha256": "508e46c8439f8501c01d67aac263509fa47fe92add244ab335b90a62252cfb5e"
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 53032,
-      "sha256": "a2bc9da90fad8727ff2a65302d5ded77a31411ff0e2274baa4f37c17fa956916"
+      "size_bytes": 203576,
+      "sha256": "cac6c0dad7b5c592bb56f032ca2325b266bc0fd428ff7ca550484af0c996cae6"
     },
     {
       "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
@@ -3159,6 +3189,16 @@
       "path": "docs/ai/tasks/results/TASK-0062a.md",
       "size_bytes": 24825,
       "sha256": "cedc1978f77e9d319b7607c10a50c666b6245d9d677989c37d79f286814a8623"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0063.md",
+      "size_bytes": 38685,
+      "sha256": "ab7eef6db9fe82623275bff581a84f6171c5fd1e745ec49dcbe5282d892a9aea"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0064.md",
+      "size_bytes": 28933,
+      "sha256": "6354a923aa7bef32dc4363ff6ceab7f6fb4a1ff758c6bafc9967dd81c00a2675"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",

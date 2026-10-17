@@ -1,3 +1,4 @@
+import { receivedForInvoice } from './risk';
 import { offerDef } from './market';
 import { operationsProblems } from './operations-invariants';
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
@@ -94,7 +95,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
     const receivable = balance(s.ledger, c, 'ACCOUNTS_RECEIVABLE');
     const openInvoices = s.invoices
       .filter((i) => i.currency === c && i.status !== 'PAID')
-      .reduce((acc, i) => acc + i.amountMinor, 0);
+      .reduce((acc, i) => acc + i.amountMinor - receivedForInvoice(s, i.id), 0);
     if (receivable !== openInvoices) problems.push(`${c} 매출채권(${receivable})과 미수 청구서 합계(${openInvoices})가 다릅니다`);
 
     const payable = balance(s.ledger, c, 'ACCOUNTS_PAYABLE');

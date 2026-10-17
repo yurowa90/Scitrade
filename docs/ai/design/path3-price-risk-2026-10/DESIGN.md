@@ -1,6 +1,6 @@
-# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (승인, 개정 3f)
+# 경로 3 설계 명세: 직접 무역 가격·원가 위험 (승인, 개정 3j)
 
-- 지위: **승인(허브, 2026-10-16).** 6절은 판정표와 함께 동결이다(H14-8, 승인 `9ce98fe`). 개정 3d·3e는 허브 사전 확인과 그 재검토로, 개정 3f는 TASK-0062 Codex 결과 검수로 동결 밖(머리, 2절 2, 3.2, 3.3, 3.4, 9절)만 고쳤다. 세션 A, 2026-10-14 작성, 2026-10-16 개정 1. 지시서 초안은 `docs/ai/tasks/TASK-0062`~`0064`, 판정 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`다.
+- 지위: **승인(허브, 2026-10-16).** 6절은 판정표와 함께 동결이다(H14-8, 승인 `9ce98fe`). 개정 3d·3e는 허브 사전 확인과 그 재검토로, 개정 3f는 TASK-0062 Codex 결과 검수로, 개정 3g는 TASK-0063 사전 확인으로 동결 밖(머리, 2절 2, 3.2, 3.3, 3.4, 9절)만 고쳤다. 개정 3h는 TASK-0063 2차 사전 확인과 허브 결정 H16으로 동결 밖(머리, 3.3, 4.1, 4.2)만 고쳤다. 개정 3i는 TASK-0063 Codex 결과 검수(R1)로 동결 밖(머리, 3.3 표, 3.4 표, 4.1, 9절)만 고쳤다. 개정 3j는 TASK-0064 허브 사전 확인과 허브 결정 H17로 동결 밖(머리, 3.4 환산 꼴 예, 5.1, 5.2)만 고쳤다(처리표는 TASK-0064 지시서 끝 ‘허브 사전 확인 처리표(개정 3d)’, 결정은 `HUB-DECISIONS-2026-10-16.md` H17). 세션 A, 2026-10-14 작성, 2026-10-16 개정 1. 지시서 초안은 `docs/ai/tasks/TASK-0062`~`0064`, 판정 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md`다.
 - 개정 1: 허브 검토 `REVIEW-HUB-2026-10-16.md`(46건)와 허브 결정 `HUB-DECISIONS-2026-10-16.md`(H0~H5)를 반영했다. 처리표는 끝(13절)에 있다.
 - 개정 2(2026-10-16): 허브 재검토 `REREVIEW-HUB-2026-10-16.md`(R1~R31, m1~m33)와 허브 결정 H6~H13을 반영했다. 처리표는 13절 끝(‘허브 재검토 64건 처리표’)에 있다.
 - 개정 3(2026-10-16): 허브 2차 재검토 `REREVIEW2-HUB-2026-10-16.md`(S1~S19, n1~n47)와 허브 결정 H14를 반영했다. 처리표는 13절 맨 끝(‘허브 2차 재검토 66건 처리표’)에 있다. **6절(시작 프로필)은 판정표와 함께 동결 범위다(H14-8).**
@@ -118,7 +118,7 @@
   - `관세(USD) = 과세가격 × 세율`(정수 반올림은 `dutyEstimate`와 같은 `applyBasisPoints`, 개정 3e). 세율은 ‘세율 적용일’의 세율 가운데 ‘공지 기준일’까지 공지된 변경만 반영한 값이다. TARIFF 층이 없으면 시나리오 고정 세율이다.
   - 그래서 관세의 USD 금액은 세율 변경으로만 바뀌고, 원화 비용의 변화는 지급일 환율로 `fx` 칸에 들어간다.
   - **가정임을 밝힌다(교사용 자료 목록에 넣는다).** 실제 과세가격은 수입국으로 수출 판매된 거래가격(WTO 관세평가협정 제1조)에 운임·보험을 더한 값(제8조 2항. 한국·중국·베트남은 CIF)이다. 외화는 수입국이 정한 환율로, 신고일 기준으로 환산한다(제9조, 한국 관세법 제18조, 중국 해관 규정). 게임에는 도착국 통화가 없고 관세를 USD로 매기므로 이 환산을 두지 않는다. 원화 송장을 수락일 환율로 바꾼 값을 USD 수출 송장가 대용으로 쓴다. 정시 계약에서는 수락일과 신고일의 환율이 대개 같은 주다. CIF 과세는 경로 6이다.
-  - 분기 조건은 ‘매입 통화가 KRW일 때’다. 매입이 USD이면 지금 `dutyEstimate` 그대로다.
+  - 과세가격 환산의 분기 조건은 ‘매입 통화가 KRW일 때’다. 매입이 USD이면 과세가격은 매입액 그대로다. 세율은 매입 통화와 무관하다: TARIFF 층이 있으면 관세 표(4.1), 없으면 시나리오 고정 세율이다(개정 3h, H16-4).
   - **한 함수 `dutyFor`(허브 결정 H13·H14-6, 검토 R15·R24·S2·S15).** 관세를 계산하는 **여섯 곳(읽기 함수 포함)**이 이 함수 하나를 부른다. 서명은 TASK-0062에서 고정하고 0063은 몸통만 바꾼다.
 
     `dutyFor(config, seed, goodId, destinationCityId, tariffDay /*세율 적용일*/, knownThroughDay /*공지 기준일*/, purchaseMinor, purchaseCurrency, valueFxDay /*과세가격 환율일*/)`
@@ -130,7 +130,7 @@
     | 자금 예약 `reservations.ts:33` | 아래 ‘자금 예약의 tariffDay’ | 오늘 | **수락일**(`c.acceptedDay`) |
     | 도착 처리 `engine.ts:1019` | 도착일 | 도착일 | 수락일 |
     | 실패 기록 `operations.ts:273` | `listSailings(config, route, 수락일 + 1)[0]`의 도착 예정일(수락일 미리보기와 같은 편) | 수락일 | 수락일 |
-    | `contractRiskReport`(`reports.ts`) | 0단계 = 미리보기(수락일). 도착한 계약 = `DUTY-` 분개를 읽고 부르지 않음. 도착 전 = 자금 예약 규칙의 날(‘오늘’ 자리에 평가일) | 0단계 = 수락일. 도착 전 = 평가일 | 수락일 |
+    | `contractRiskReport`(`reports.ts`) | 0단계 = 미리보기(수락일). 도착한 계약(`shipment.dutyMinor !== null`, 개정 3i) = `DUTY-` 분개가 있으면 그 금액, 없으면(관세 0) 0이고 부르지 않음. 도착 전 = 자금 예약 규칙의 날(‘오늘’ 자리에 평가일) | 0단계 = 수락일. 도착 전 = 평가일 | 수락일 |
 
     - **자금 예약의 tariffDay.** 운송 중이면 `max(예정 도착일, 오늘)`. `BOOKED` 예약이 있으면 그 편의 도착 예정일. 예약이 없거나 취소됐으면 다음 첫 편(`listSailings(…, 오늘 + 1)[0]`)의 도착 예정일. `upcomingPayments`(`reports.ts:281-284`)와 같은 꼴이다.
     - **편이 없을 때.** ‘다음 첫 편’을 쓰는 모든 행에서 편이 없으면 `tariffDay = knownThroughDay`다(H14-6의 자금 예약 규칙을 미리보기·자금 검사·실패 기록에도 같게 쓴다. 미리보기의 `arrival`이 null인 경우, 검토 S15).
@@ -138,7 +138,7 @@
 
     - 자금 예약은 이미 체결한 계약이라 과세가격 환율일이 수락일이다(검토 m16·m26·m27). 그래서 세율이 그대로면 ‘수락일 미리보기 관세 = 수락 뒤 매일의 예약 관세 = 도착 관세’다.
     - 0062의 몸통은 `goodId`·도착지·`tariffDay`·`knownThroughDay`로 세율을 고르지 않는다(세율은 시나리오 고정). 0062는 인수 계산과 `goodId` 누락 예외만 넣고, 0063이 몸통에서 쓴다.
-    - 매입이 USD이면 지금 `dutyEstimate` 그대로다.
+    - TARIFF 층이 없고 매입이 USD이면 지금 `dutyEstimate` 그대로다. TARIFF 층이 있으면 USD 매입도 표 세율을 쓴다(개정 3h, H16-4).
 - **자금 검사(`fundsShortfall`).** 매입은 KRW 가용, 운임·관세 예상은 USD 가용으로 **나눠** 본다. 거절 문장도 통화마다 따로 쓴다.
 - **지급 불이행 실패 기록(검토 31번).**
   - `processPaymentDefault`의 USD 약정액(`operations.ts:272-274`)은 혼합 통화 계약이면 **USD 몫만** 넣는다(노선 운임 `routeBetween(…).bookingFeeMinor` + 위 표 ‘실패 기록’ 행의 `dutyFor` 관세. 수락일 미리보기의 운임 + 관세와 같다. H15 O9). 단일 통화 계약은 지금 식 그대로다(직접 무역 = 매입 + 노선 운임 + 관세, 주선 = 노선 운임, 개정 3e). 원화 매입액을 더하지 않는다.
@@ -188,8 +188,8 @@
 | 0 | (기대) | — | 모든 줄 수락일 |
 | 1 | `schedule` | 실제 출항편으로 날짜만 옮김. 관세 금액은 0단계 값 그대로다(세율 차이는 모두 3단계가 맡는다, 검토 S2·n22). **구성상 0**이다(2단계가 쓸 날짜를 정하는 단계, 개정 3d) | 수락일 그대로 |
 | 2 | `fx` | 각 줄의 평가 환율을 그 줄의 날짜 환율로: 운임은 예약일, 관세·부대비는 지급일(미지급이면 갚은 날), 수금은 청구 결제일. **평가일 뒤의 날짜는 평가일 환율** | 줄마다 그날(평가일까지) |
-| 3 | `tariff` | 도착한 계약: `DUTY-` 분개의 관세. 도착 전: 3.3 표 `contractRiskReport` 행의 도착 전 값(공지 기준일 = 평가일) | 2와 같음 |
-| 4 | `surcharge` | 출항한 계약: `SURCHARGE-` 분개. 출항 전: 0 | 2와 같음 |
+| 3 | `tariff` | 도착한 계약(`shipment.dutyMinor !== null`): `DUTY-` 분개의 관세, 분개가 없으면(관세 0) 0. 도착 전: 3.3 표 `contractRiskReport` 행의 도착 전 값(공지 기준일 = 평가일). 0단계 관세 줄의 **금액만** 바꾸고 날짜는 2단계 그대로다. **취소 계약은 0**(관세 줄은 7단계가 뺀다, 개정 3g) | 2와 같음 |
+| 4 | `surcharge` | 출항한 계약: `SURCHARGE-` 분개(새 줄, 그 분개 날 또는 미지급이면 갚은 날의 환율, 평가일 상한). 출항 전: 0. **취소 계약은 0**(개정 3g) | 2와 같음 |
 | 5 | `late` | 늦은 인도 감액 | 2와 같음 |
 | 6 | `claim` | 인도한 계약: `CLAIM-` 분개. 인도 전: 0 | 2와 같음 |
 | 7 | `cancel` | 출항 전 취소·편 놓침의 환급·취소비·재예약. **취소 계약**: 1·2·5단계는 일어난 줄(매입, 첫 운임 선지급)만 옮기고 바꾸며, 일어나지 않은 줄(판매, 관세, 내지 않은 운임)은 0단계 원화값 그대로 두었다가 이 단계에서 뺀다. 이 단계에 새로 넣는 줄은 원장 `CASH` 줄뿐이다: 환급(`FREIGHT-RELEASE-`의 `CASH` 줄)과 고객 취소 보상(`CANCEL-COMP-`의 `CASH` 줄)을 그 분개 날의 환율로 넣는다. 취소비(`CANCELLATION_EXPENSE` 줄)는 현금 줄이 아니라 넣지 않는다(선급 운임 − 환급에 이미 들어 있다). **편 놓침**: 첫 예약의 `FREIGHT-PREPAY-`를 기대 운임 줄로 보고, 모든 환급(`CASH` 줄)과 첫 예약 뒤의 재예약 선지급(`CASH` 줄)을 넣는다. **아직 재예약하지 않았으면** 다시 낼 운임(‘열린 계약’ 남은 흐름의 운임 줄과 같은 금액)을 평가일 환율로 넣는다(개정 3d·3e·3f) | 2와 같음(새 줄은 그 분개 날) |
@@ -200,7 +200,7 @@
 - **평가일까지 일어난 사건만(H14-5, 검토 S1).** 3·4·6·8단계에는 발생일 ≤ 평가일인 사건만 넣는다. `contractRiskReport`는 `tariffEvents`(공지 전 사건), `surchargeBp`, `claimFor`, `collectionPlan`의 미래 값을 쓰지 않는다. 특히 `collectionPlan`은 부르지 않는다.
 - 채울 칸: TASK-0062는 0·1·2·5·7·9(0)·10, 0063은 3·4, 0064는 6·8.
 - 모든 금액은 원 단위 정수다. 환산은 `usdToKrwMinor` 하나로 한다(3.3).
-- **환산 꼴(H15 O3).** 각 단계의 합계는 줄마다 `usdToKrwMinor`로 바꿔 더한다. 다만 같은 평가 환율을 쓰는 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번만 바꾼다. 그래야 0단계가 `referenceEstimate.pnlKrw`(`usdToKrwMinor(freight + duty, rate)`)와 정확히 같다. 시험 식도 같은 꼴로 쓴다. 예: 연체 미수의 `collection = usdToKrwMinor(남은 금액, 평가일 환율) − usdToKrwMinor(남은 금액, 청구 결제일 환율)`.
+- **환산 꼴(H15 O3).** 각 단계의 합계는 줄마다 `usdToKrwMinor`로 바꿔 더한다. 다만 같은 평가 환율을 쓰는 USD 비용 줄(운임·관세·부대비)은 합친 뒤 한 번만 바꾼다. 그래야 0단계가 `referenceEstimate.pnlKrw`(`usdToKrwMinor(freight + duty, rate)`)와 정확히 같다. 시험 식도 같은 꼴로 쓴다. 예: 받은 금액이 0인 지연 청구서의 `collection = usdToKrwMinor(남은 금액, 평가일 환율) − usdToKrwMinor(남은 금액, 청구 결제일 환율)`(부분 청구서는 받은 수금 줄을 줄마다 그 분개 날 환율로 바꾸므로 ‘남은 금액만 옮긴 식’과 1원 다를 수 있다. 시험 ‘연체 미수 평가’는 받은 금액이 0인 지연 청구서로만 하고, 부분 청구서는 줄 꼴로 따로 단언한다, H17-6).
 - 실행기 판정(L0~L3, J7 새 정의)과 경로 11 화면이 이 함수 하나를 쓴다. 화면에서 다시 계산하지 않는다. 화면은 rules-3 상태에서만 부른다(H6-4. R0은 `--risk R0` 실행기 출력에서만). 경로 11 화면은 통화별 현금 줄과 `components`를 ‘추정, 환율이 바뀌면 달라짐’ 표지(H6-3)와 함께 보이고 원화 틀을 기본으로 한다. 문구는 경로 11 지시서에서 정한다(검토 n6).
 
 ### 3.5 학생이 할 수 있는 판단
@@ -223,11 +223,17 @@
   - 같은 걸음을 그 나라 `tariff.base`의 모든 품목에 더하고, 품목마다 따로 `[min_bp, max_bp]`로 자른다.
   - 그래서 같은 나라 두 품목의 세율 차이는 자르기가 없으면 그대로이고, 순서(a ≤ b)는 자르기가 있어도 뒤집히지 않는다(시험). 시작 프로필은 두 품목의 세율이 같아서(a = b) 이 시험은 프로필 사본에서 두 품목의 기준 세율을 서로 다르게 바꾼 설정으로 한다(검토 n19). 이 차이가 HS가 바뀌면 세율이 바뀐다는 학습 장면(경로 7)의 바탕이다.
   - 흐름 이름에는 품목을 넣지 않는다. 품목마다 따로 뽑지 않는다.
-  - 걸음을 적용해도 어느 품목의 세율도 바뀌지 않으면(모두 경계에 있음) 사건을 내지 않는다.
+  - 걸음을 적용해도 어느 품목의 세율도 바뀌지 않으면(모두 경계에 있음) 사건을 내지 않는다. 판정은 아래 ‘무의미 판정’대로 그 사건 공지 때 알려진 것만 쓴다(개정 3h).
   - 기준 세율 예시는 0보다 크게 둔다. 0에서 음수 걸음이 잘려 인상 쪽으로만 쏠리지 않게 하기 위해서다.
 - **일정.** 순수 함수 `tariffEvents(config, seed)`다. 도착국마다 횟수 0~`max_changes`(흐름 `TARIFF:{국가}:count`), 회차마다 공지일(`…:{회차}:notice`)·지연(`…:lag`)·걸음(`…:step`). 시행일은 캠페인 끝을 넘지 않는다.
-  - **적용 순서(검토 m21).** 세율은 시행일 순(동점은 공지일, 그다음 회차 번호)으로 누적 적용한다. 무의미 사건 판정과 로그의 옛 세율 a는 그 사건 직전에 시행 중인 세율 기준이다.
-- **반영.** 미리보기 관세 예상은 오늘까지 공지된 변경만 반영한다(도착 예정일 기준 세율). 공지일 아침에 로그를 남긴다: ‘{도착국} 관세 일괄 변경(가상 세율): {품목} a% → b%, …’(검토 n19). 읽기 함수 `tariffSchedule(state, config)`는 오늘까지 공지된 사건만 돌려준다.
+  - **추첨 식(개정 3h, H16-1).** `u(흐름) = drawAt(seed, 흐름, 0)`, `U[a, b] = a + ⌊u × (b − a + 1)⌋`. 도착국은 `tariff.base`에 처음 나온 순서의 `country_code`이고 흐름의 {국가}도 이 코드다. 횟수 n = `U[0, max_changes]`, 회차 r = 1..n. 지연 = `U[lag_days[0], lag_days[1]]`, 공지일 = `U[1, campaignDays − lag_days[1]]`(지연과 따로 뽑는다), 시행일 = 공지일 + 지연, 걸음 = `U[step_bp[0], step_bp[1]]`(비대칭 그대로). 무의미로 뺀 회차의 흐름도 뽑는다.
+  - **알려진 세율(개정 3h, H16-2, 검토 m21 보충).** 나라·품목의 세율 `rate(K, T)`: 기준 세율에서 출발해, 공지일 ≤ K이고 시행일 ≤ T인 남은 사건을 시행일 순(동점은 공지일, 그다음 회차 번호)으로 하나씩 더하고 더할 때마다 `[min_bp, max_bp]`로 자른다. `dutyFor`는 K = `knownThroughDay`, T = `tariffDay`다. 전체 일정으로 미리 계산한 사건별 ‘뒤 세율’을 쓰지 않는다. 공지 순서와 시행 순서가 뒤집히면 공지 전 사건의 걸음이 섞이기 때문이다(2절 3).
+  - **무의미 판정(개정 3h, H16-3).** 같은 나라 회차를 공지 순서(공지일, 동점은 회차)로 판정한다. 사건 e의 a는 공지 순서가 앞서 남긴 사건 가운데 시행일 ≤ e의 시행일인 것만 위 방식으로 누적한 값, b는 a에 e의 걸음을 더해 자른 값이다. 모든 품목에서 a = b이면 뺀다. 뺀 사건은 뒤에 의미가 생겨도 되살리지 않는다. 일정 전체로 판정하지 않는다(공지 로그의 유무로 미래 사건이 드러난다).
+  - 개정 3g까지의 문장 ‘무의미 사건 판정과 로그의 옛 세율 a는 그 사건 직전에 시행 중인 세율 기준이다’는 일정 전체로 읽으면 미래 누설이 생겨 위 두 항으로 바꿨다. 시작 프로필은 세율이 100~2100이라 자르기가 일어나지 않고, 적용 순서는 a·b에만 나타난다(시험은 프로필 사본으로 한다).
+- **반영.** 미리보기 관세 예상은 오늘까지 공지된 변경만 반영한다(K = 오늘, T = 도착 예정일). 공지일 아침에 로그를 남긴다: ‘{국가 코드}({그 나라 시나리오 도시 이름}) 관세 일괄 변경(가상 세율): {품목} a% → b%, … ({시행일}일부터)’(검토 n19). 국가 이름 칸은 자료에 없으므로 엔진에 국가 이름 표를 두지 않는다. 국가 이름 표시는 경로 11이다(개정 3h).
+  - 읽기 함수 `tariffSchedule(state, config)`는 기준일 K(끝나지 않은 상태 `s.day`, 끝난 상태 평가일)까지 공지된 사건만 공지일 순(동점은 `tariff.base`에 처음 나온 나라 순, 그다음 회차)으로 돌려준다. 공지 로그도 같은 순서다. 각 사건의 a·b(`fromBp`·`toBp`)는 K까지 알려진 세율(T = 그 사건 시행일)에서 그 사건을 빼고·넣어 계산한다. 그래서 같은 날 미리보기 세율과 어긋나지 않는다. 로그의 a·b는 공지일의 `tariffSchedule` 값이다. 무의미 판정의 a·b와는 같은 나라 두 회차가 같은 날 공지될 때만 다를 수 있다(개정 3h, H16-3).
+  - 로그·`tariffEvents`·`tariffSchedule`은 TARIFF 층이 있을 때만 사건을 낸다(없으면 빈 배열).
+  - `tariffSchedule`의 출력에 추첨 순서 번호 `round`를 두지 않는다. 회차 2가 먼저 공지되거나 무의미로 빠진 회차가 있으면 번호의 틈으로 아직 공지되지 않은 사건의 존재가 드러나는데, 읽기 함수는 화면만이 아니라 경로 5 정책·실행기의 입력이기 때문이다(2절 3의 원칙은 읽기 함수 원칙이다). 대신 나라별 공지 순서 번호 `seq`(1부터)를 낸다. 시험·로그는 사건을 (`countryCode`, `noticeDay`, `effectiveDay`)나 `tariffEvents`로 식별한다. 흐름 이름과 `tariffEvents`는 그대로다(개정 3i, H16-3 보충, TASK-0063-R2. 세션 A 안 A).
 - **진단 T.** R2에서 정시 계약이 수락일 기대와 다른 세율을 만나는 비율을 판정표에 진단값으로 적는다.
 - 학습: 일반계 [12경제04-02] 관세의 효과, 특성화고 [수입 05-05-02] 세율 확정, O2.
 
@@ -235,11 +241,11 @@
 
 - **현실 근거.** 해상 운임에는 예약 뒤 붙거나 바뀌는 할증(유류·혼잡·성수기)이 있다. 게임에서는 이름을 하나(‘출항 부대비’)로 묶는다. 실제 할증 이름과 요율을 흉내 내지 않는다.
 - **규칙.**
-  - 노선·주차마다 부대비율 `surchargeBp(route, week)`. 확률 `p_zero_bp`로 0, 아니면 `[min_bp, max_bp]` 정수 균등. 흐름 `SURCHARGE:{노선}:{주차}:zero`, `…:value`.
-  - **직접 무역 예약의 출항일에** 예약 운임 × 그 주 부대비율을 USD로 낸다(`payOrAccrue`, 미지급 규칙 그대로). 0이면 분개를 내지 않는다. 분개 ID `SURCHARGE-{예약}`.
+  - 노선·주차마다 부대비율 `surchargeBp(config, seed, routeId, week)`(순수 함수). 주차는 순수 함수 `surchargeWeek(config, 출항일)` 하나로 계산한다: w = ⌊(출항일 − `publish.firstDay`) ÷ `publish.intervalDays`⌋ + 1이고 `lastDay`로 자르지 않는다(출항 처리는 이 함수만 쓴다). `U[0, 9999] < p_zero_bp`이면 0(흐름 `SURCHARGE:{노선}:{w}:zero`), 아니면 `U[min_bp, max_bp]`(`…:value`). 추첨 식은 4.1과 같다(개정 3h, H16-1).
+  - **그날 실제로 출항한 직접 무역 예약에** 예약 운임 × 그 주 부대비율(`applyBasisPoints`)을 USD로 낸다(`payOrAccrue`, 미지급 규칙 그대로, 계약 ID와 차변 `INVENTORY`). 편 놓침으로 해제된 예약에는 매기지 않는다. 0이면 분개를 내지 않는다. 분개 ID `SURCHARGE-{예약}`(개정 3h).
   - 혼합 통화 계약은 계약 ID의 USD 재고 분개로만 쌓는다. 단일 통화 계약은 rules-2처럼 화물 장부가에도 더한다(분기: 매입 통화 ≠ 판매 통화).
   - **주선 화물에는 붙이지 않는다.** 실무처럼 화주에게 넘긴다(회사 장부에 생기지 않는다). 회사가 떠안게 하면 비현실적이고, 기여의 약 73%인 주선 경제(TASK-0032)를 흔들어 J2·J6·J7이 위험 규칙과 상관없는 이유로 바뀐다.
-  - 수락·예약 때는 그 주 값을 알 수 없다. 미리보기에는 상한(`surchargeMaxBp`)만 준다. 기대 마진에는 넣지 않는다.
+  - 수락·예약 때는 그 주 값을 알 수 없다. 미리보기에는 상한(`surchargeMaxBp`)만 준다. rules-3·SURCHARGE 층의 직접 무역 미리보기에만 저장하지 않는 칸으로 두고, 주선·R1·rules-2에는 키가 없다(개정 3h). 기대 마진에는 넣지 않는다.
 - `contractRiskReport.components`의 `tariff`, `surcharge`를 채운다.
 
 ## 5. ③ 클레임과 미수 (TASK-0064)
@@ -253,6 +259,8 @@
   - 손상률 하한(1%)은 `MARGIN_BUFFER` 문턱(10%)보다 확실히 낮다. 그래서 작은 클레임은 마진 여유로 흡수되고, 큰 클레임만 손실이 된다.
 - **추첨 키(검토 43번).** 계약 순번(`CT{n}`)이 아니라 **판매 견적 ID**(`contract.sellOfferId`)다. 흐름 `CLAIM:{판매 견적}:hit`, `…:tier`, `…:rate`. 같은 견적은 정책이 달라도 같은 추첨을 받는다(공통 난수). 주선을 하나 더 받아 순번을 밀어 손상을 피하는 공략도 막는다.
 - **함수의 자리와 서명(H15 O4·O13).** `claimFor(config, seed, sellOfferId, goodId)`와 `collectionPlan(config, seed, sellOfferId, counterpartyId)`는 `risk.ts`에 둔다. 추첨 키는 `sellOfferId` 그대로다. 프로필 누락 예외는 직접 무역의 품목·판매 거래처로 한정한다. `contractRiskReport`·`receivableSchedule`은 두 함수를 부르지 않는다(시험이 `vi.mock('./risk')` 감시로 호출 0회를 단언).
+- **추첨 식과 `claimFor`의 꼴(H17-1·2, 개정 3j).** `u(흐름) = drawAt(seed, 흐름, 0)`(흐름마다 한 번, 커서 0), `U[a, b] = a + ⌊u × (b − a + 1)⌋`. H16-1과 같다. 엔진은 `seed = s.rng.seed`로 부르고 `s.rng.cursors`는 읽거나 바꾸지 않는다. 흐름은 다섯 개뿐이다(`CLAIM:{o}:hit`·`…:tier`·`…:rate`, `COLLECT:{o}:mode`·`…:days`, {o} = `contract.sellOfferId`). `claimFor` → `null | { tier: 'MINOR' | 'MAJOR', rateBp }`. `CLAIM` 층이 없으면 `null`(표를 읽지 않는다). 층이 있으면 `claims.byGood`에서 `goodId` 행을 먼저 찾고, 없으면 추첨 전에 예외. 손상 = `U[0, 9999] < p_claim_bp`(`…:hit`). 손상이 아니면 `null`이고 `…:tier`·`…:rate`는 뽑지 않는다. 층 = `U[0, 9999] < minor.weight_bp`이면 `MINOR`, 아니면 `MAJOR`(`…:tier`). `rateBp = U[층.min_bp, 층.max_bp]`(`…:rate`). 클레임 금액 = `applyBasisPoints(늦은 감액 뒤 판매액, rateBp)`(half-up). 0이면 분개·로그를 내지 않는다.
+- **부르는 자리(H17-4).** `claimFor`는 `engine.ts` `processDeliveries` 안, 직접 무역(`kind === 'DIRECT_TRADE'`) 가드 뒤에서만 부른다. 순서: `SALE-` 분개(늦은 감액 뒤 `netSale`) → `CLAIM-{계약}` 분개(`contractId` 붙임) → 청구서 생성. 청구서 `amountMinor = netSale − 클레임`(손상률 상한이 3000bp라 `netSale > 0`이면 청구액 > 0). 로그는 ‘{계약} 화물 일부 손상: 고객이 대금 {금액} 감액 청구’다.
 - **분개.** 새 계정 `SALES_ALLOWANCE`(매출 에누리), 분개 `CLAIM-{계약}`(매출 에누리 / 매출채권). 늦은 인도 감액(`priceReductionMinor`)과 따로 둔다. `ACCOUNT_KIND`는 `income`(매출 차감 계정, 차변 잔액)이고, rules-3 `contractReport`의 순매출(`netRevenue`)에 더해 클레임만큼 순매출이 준다(H14-10, 검토 n26). `ledger.ts` `summarize`의 profit 식에 `SALES_ALLOWANCE` 잔액(음수)을 더한다. `BookSummary`에 새 필수 칸은 두지 않는다(H15 O2. 빠뜨리면 마감의 순자산 항등식이 깨진다). rules-2에는 이 분개가 없어 바이트가 같다. 둘 다 있으면 늦은 감액 뒤 남은 판매액에 손상률을 곱한다(USD 센트, half-up).
 - 보험은 없다(경로 7·9). 주선 화물은 제외한다(운송인 책임 한도 문제라 경로 7).
 
@@ -264,18 +272,22 @@
   - 등급은 가상값이다. 실재 기업 신용평가를 흉내 내지 않는다. 교사용 자료에 성격을 밝힌다.
 - **추첨 키.** 판매 견적 ID. 흐름 `COLLECT:{판매 견적}:mode`, `…:days`. 주선 청구서는 제외한다(지금처럼 정시 전액).
 - **방식.** 정시(지금과 같음), 지연(청구 결제일 + `[late_min, late_max]`일에 전액), 부분(청구 결제일에 `partial_bp` 몫, 나머지는 + `[late_min, late_max]`일).
+- **`collectionPlan`의 꼴(H17-3, 개정 3j).** `collectionPlan(config, seed, sellOfferId, counterpartyId)` → `{ mode: 'ON_TIME' | 'LATE' | 'PARTIAL', days }`. `counterpartyId`는 `contract.customerId`다. `COLLECTION` 층이 없으면 `{ mode: 'ON_TIME', days: 0 }`(표를 읽지 않는다). 층이 있으면 `collections.byCounterparty`에서 거래처 행을 찾고(없으면 예외) 그 등급의 `grades` 행을 쓴다. `v = U[0, 9999]`(`…:mode`). 구간 순서는 **정시 → 지연 → 부분**이다: `v < p_on_time_bp`이면 `ON_TIME`, `v < p_on_time_bp + p_late_bp`이면 `LATE`, 그 밖은 `PARTIAL`(검사기가 세 확률의 합 = 10000을 본다). `days = U[late_min_days, late_max_days]`(`…:days`). `ON_TIME`이면 `days = 0`이고 `…:days`는 뽑지 않는다. 지연과 부분의 나머지가 같은 `days`를 쓴다. 부분의 첫 수금 = `applyBasisPoints(청구액, partial_bp)`, 나머지 = 청구액 − 첫 수금(뺄셈이라 합이 늘 청구액이다. 비율은 추첨하지 않는다).
+- **부르는 자리(H17-4).** `collectionPlan`은 `engine.ts` `processCollections(s, config)` 안에서만 부른다. `COLLECTION` 층이 있을 때 `PAID`가 아니고 `dueDay ≤ s.day`인 직접 무역 청구서마다 그날 다시 부른다(계획은 저장하지 않는다). `processDeliveries`·읽기 함수·미리보기에서는 부르지 않는다. rules-2 경로(층 없음)와 주선 청구서는 지금의 `applyReceipt` 그대로다. 종류 가드는 두 호출 모두 부르기 전에 둔다(주선의 품목·화주는 프로필에 없을 수 있다).
 - **상태 표현.** 청구서의 `dueDay`(청구 결제일)는 그대로 둔다. 실제 수금은 `processCollections`가 순수 함수 `collectionPlan`을 읽어 처리한다.
-  - 부분 수금은 `receiptIds`에 두 번째 수금 ID를 더한다. 수금 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `engine.ts:1117`)에 `-1`, `-2`를 붙인다. 금액은 원장에서 읽는다. **청구서에 새 칸을 두지 않는다.**
+  - 부분 수금은 `receiptIds`에 두 번째 수금 ID를 더한다. 수금 ID는 지금 꼴(`RCPT-{청구서}`, 분개 `RECEIPT-RCPT-{청구서}`, `applyReceipt`)에 `-1`, `-2`를 붙인다. 금액은 원장에서 읽는다. **청구서에 새 칸을 두지 않는다.**
+  - 수금 처리·종결(H17-5): 지연은 청구 결제일 + `days`에 전액(`RCPT-{청구서}`, `applyReceipt`의 문장 그대로). 부분은 결제일에 첫 수금(`RCPT-{청구서}-1`), 결제일 + `days`에 나머지(`-2`). 둘 다 `receiptIds`에 넣고 `contractId`를 단다. 계약은 **마지막 수금에서만** `COMPLETED`, 청구서는 다 받았을 때만 `PAID`. 계획일이 캠페인 끝을 넘으면 받지 못한 채 채권으로 남는다.
+  - 로그 문장(H17-5, 고정. 새 문장은 이 셋뿐이고 날짜·방식·계획을 담지 않는다): 결제일에 받은 것이 없음 ‘{계약} 결제일에 대금이 들어오지 않음(남은 {금액})’, 부분 첫 수금 ‘{계약} 대금 일부 {금액} 수금(남은 {금액})’, 나머지 수금 ‘{계약} 대금 나머지 {금액} 수금. 계약 종결’. 인도 로그(‘현금은 {청구 결제일}일 수금 예정’)는 지금 문장 그대로다. 날 K의 마감 뒤에 보이는 모든 것(로그·`notices`·상태 칸·읽기 함수)은 K까지 일어난 수금만 반영한다.
   - 상태 전이(H14-10, 검토 n29·n37): 날 d의 마감에서 **수금 처리 뒤에**, d ≥ `dueDay`이고 남은 금액 > 0이면 `OVERDUE`, 다 받으면 `PAID`. 그래서 결제일 D 다음 상태(`s.day` = D+1)에서는 `OVERDUE`와 `overdueDays = 1`이 함께 보인다. 지금 엔진은 `OVERDUE`로 바꾼 적이 없다. rules-2에서는 이 상태에 들어가지 않는다.
 - **읽기 함수(검토 42·44·45번).**
-  - 새 함수 `receivableSchedule(s, config)`(`reports.ts`): 미수 청구서마다 `{ invoiceId, contractId, currency, dueDay, outstandingMinor, overdueDays }`. `outstandingMinor` = 청구액 − 원장의 받은 금액, `overdueDays` = max(0, s.day − dueDay). 정렬은 `dueDay`, 그다음 `invoiceId`. `collectionPlan`을 부르지 않는다(미래 누설 금지).
+  - 새 함수 `receivableSchedule(s, config)`(`reports.ts`): 미수 청구서마다 `{ invoiceId, contractId, currency, dueDay, outstandingMinor, overdueDays }`. `outstandingMinor` = 청구액 − 원장의 받은 금액, `overdueDays` = max(0, s.day − dueDay). 정렬은 `dueDay`, 그다음 `invoiceId`. `collectionPlan`을 부르지 않는다(미래 누설 금지). 결제일 전 행도 계획과 무관하게 `dueDay` = 청구 결제일, `outstandingMinor` = 청구액 − 받은 금액이다(H17-7).
   - `upcomingPayments`·`UpcomingPaymentKind`는 손대지 않는다(지급 일정이다. 수금 종류를 더하면 `src/ui/schedule.ts:94`의 never 분기가 깨진다).
   - `campaignSummary.openInvoices.amountMinor`는 남은 금액으로 낸다. rules-2에서는 지금 값과 같다.
   - `paymentDefaultStatus.recovery.nextReceipt`(`operations.ts:241·252`)는 **지금 규칙을 유지한다**(허브 결정 H13, 검토 R25 b). 연체 청구서의 연체 여부와 남은 금액은 `receivableSchedule`이 보인다. 연체(지연·부분) 청구서가 있으면 `nextReceipt`는 지난 결제일을 내고, 부분 수금 뒤에는 금액도 청구 전액이다(`operations.ts:241`은 `dueDay`로 거르지 않는다). 이 한계와 화면 문구(`money-alerts.ts:19`)를 결과 보고 ‘범위 밖 발견’에 적는다(검토 n30).
   - `progress.ts`의 `contractProgress`, `src/ui/schedule.ts:73-74`, `main.ts:400`은 고칠 수 없는 파일이다. rules-3이 화면에 없으므로 결과 보고의 ‘범위 밖 발견’에 적는다.
 - **비용의 한계.** 캠페인 끝에 남은 채권은 채권으로 남는다(분석값 반영은 경로 5 실행기 지시서에서 확인한다). 대손은 이번에 없다. 미수의 비용은 ① 환율 노출이 길어지는 것과 ② 원화 급여 압박(환전 시점)뿐이다. **이자 비용이 없다는 한계**를 교사용 자료와 결과 보고에 적는다.
 - 지급 불이행 규칙은 회사의 지급 의무만 본다. 고객 미수가 회사 미지급으로 이어지면 기존 규칙대로 경고·실패가 된다. J1이 지켜볼 곳이다.
-- `components`의 `claim`, `collection`을 채운다.
+- `components`의 `claim`, `collection`을 채운다(H17-6). 항등식은 TASK-0062 4절 그대로다(`residual`은 남은 차이로 계산해 그대로 낸다). 6단계 `claim`: 5단계 줄을 복사해 판매 줄(색인 3)의 금액만 ‘늦은 감액 뒤 판매액 − `CLAIM-` 분개 금액’으로 바꾼다(날짜는 2단계 그대로. 평가일까지 `CLAIM-`이 없거나 취소 계약이면 바꾸지 않는다). 7단계 `cancel`은 6단계 줄에서 만든다. 8단계 `collection`(취소되지 않았고 청구서가 있는 계약만): 7단계 줄에서 판매 줄을 빼고 그 계약의 `RECEIPT-` 분개 `CASH` 줄을 줄마다 그 분개 날로 넣는다. 평가일까지 받지 못한 몫(청구액 − 원장 받은 금액)은 평가일 환율의 한 줄이다. 9단계 `open_valuation`은 구성상 0(H14-5). 취소 계약은 6·8단계가 0이고 인도 전 계약의 `claim`은 0이다. 수금은 원장 `RECEIPT-` 분개로만 읽고 `collectionPlan`·`claimFor`를 부르지 않는다.
 
 ## 6. 자료 형태
 
@@ -390,6 +402,7 @@
   - **골든이 깨졌을 때의 진단 절차(H14-10, 허브 통일 문장).** 작업 전에 `node tools/check_rules2_golden.mjs`가 0인지 확인하고, 0이 아니면 고치지 말고 멈춘다. `--dump <밖>/before`를 만든다. 깨지면 `--dump <밖>/after`를 만들어 파일별로 diff한다. stateHash·probeHash만 다른 경우(실패 기록 등)도 이 diff로 보인다. 덤프는 실행마다 `<scenarioId>__<policyId>__<seed>.run.json`·`.state.json` 두 파일이다(H15 O12).
   - 손대지 않을 골든 파일: `tests/golden/rules2-d03.tsv`, `tests/golden/rules1-run.tsv`, `tools/check_rules2_golden.mjs`, `tools/check_rules2_golden.test.mjs`, `tools/rules2_golden_lib.mjs`, `tools/rules2_golden_entry.ts`, `tools/ai/review_checks.sh`.
 - 새 규칙의 결정성: 같은 시드·같은 명령이면 같은 결과(시험). (흐름, 번호) 쌍 유일성 시험.
+- 저장의 짝(개정 3i): R1·R2·R3는 같은 규칙 판본(`M2a-rules-3`)을 쓰고 저장에는 위험 층 정보가 없다. 그래서 R1 저장을 R2 설정으로 불러와도 거절되지 않고, 과거 출항에 부대비가 없는데 읽기 함수는 R2 일정을 보인다. 측정 도구(경로 5)는 설정과 저장의 짝을 지킨다. 막을 필요가 생기면 저장 형식 7 묶음에서 저장 메타에 위험 층 지문을 넣는다.
 
 ## 10. 지시서 나누기
 

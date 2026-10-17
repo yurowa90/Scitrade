@@ -1,4 +1,4 @@
-import { dutyFor } from './risk';
+import { claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
@@ -18,7 +18,7 @@ import {
   type Sailing,
 } from './catalog';
 import { balance, contractAmount, emptyLedger, post, type LedgerLine } from './ledger';
-import { formatMoney, type Currency } from './money';
+import { applyBasisPoints, formatMoney, type Currency } from './money';
 import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
 import { createRng } from './rng';
 import {
@@ -154,6 +154,7 @@ export function openDay(state: GameState, config: ScenarioConfig): { state: Game
     announcements.push(notice);
     log(s, `항만 공지: ${notice.titleKo} (영향 화물 ${affected.length}건)`);
   }
+  for (const event of tariffSchedule(s, config)) if (event.noticeDay === s.day) log(s, event.labelKo);
   s.phase = 'AWAITING_INPUT';
   return { state: s, announcements };
 }
@@ -847,7 +848,7 @@ export function commitDay(
   // 5. 인도·납기 판정
   processDeliveries(s, config);
   // 6. 수금 → 밀린 지급 → 급여
-  processCollections(s);
+  processCollections(s, config);
   settleObligations(s);
   for (const cost of fixedCostsDue(s, config, day)) payOrAccrue(s, config, cost.currency, cost.amountMinor, cost.id, cost.reasonKo, undefined, cost.account);
   processPayroll(s, config);
@@ -991,6 +992,15 @@ function processDepartures(s: GameState, config: ScenarioConfig) {
           { account: 'PREPAID_FREIGHT', amount: -booking.prepaidFreightMinor },
         ],
       });
+      const surcharge = config.operations?.risk?.layers.includes('SURCHARGE')
+        ? applyBasisPoints(booking.prepaidFreightMinor,
+          surchargeBp(config, s.rng.seed, booking.routeId, surchargeWeek(config, booking.departureDay))) : 0;
+      if (surcharge) {
+        payOrAccrue(s, config, route.currency, surcharge, `SURCHARGE-${booking.id}`,
+          `${booking.sailingId} 출항 부대비`, contract.id, 'INVENTORY');
+        if (lot.currency === contract.currency) lot.carryingAmountMinor += surcharge;
+        log(s, `${contract.id}: 출항 부대비 ${formatMoney(route.currency, surcharge)}`);
+      }
     }
     log(s, `${shipment.id} 출항: ${cityName(config, route.fromCityId)} → ${cityName(config, route.toCityId)}, 도착 예정 ${shipment.scheduledArrivalDay}일 (${contract.id})`);
   }
@@ -1101,13 +1111,23 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
       log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료. 납기 ${lateDays}일 경과로 계약 금액 ${formatMoney(contract.currency, contract.saleAmountMinor)} 전액이 감액되어 받을 대금이 없습니다.`);
       continue;
     }
+    let claimMinor = 0;
+    if (contract.kind === 'DIRECT_TRADE') {
+      const claim = claimFor(config, s.rng.seed, contract.sellOfferId!, contract.goodId);
+      claimMinor = claim ? applyBasisPoints(netSale, claim.rateBp) : 0;
+      if (claimMinor > 0) postOrThrow(s, {
+        id: `CLAIM-${contract.id}`, currency: contract.currency, contractId: contract.id,
+        reason: '화물 손상 감액 청구 (매출 에누리 → 매출채권 차감)',
+        lines: [{ account: 'SALES_ALLOWANCE', amount: claimMinor }, { account: 'ACCOUNTS_RECEIVABLE', amount: -claimMinor }],
+      });
+    }
     const invoiceId = `INV-${contract.id}`;
     const dueDay = Math.max(contract.paymentDueDay, s.day);
     s.invoices.push({
       id: invoiceId,
       contractId: contract.id,
       currency: contract.currency,
-      amountMinor: netSale,
+      amountMinor: netSale - claimMinor,
       issuedDay: s.day,
       dueDay,
       status: 'OUTSTANDING',
@@ -1115,15 +1135,56 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
     });
     contract.invoiceId = invoiceId;
     log(s, `${contract.id} ${forwarding ? '고객 화물 ' : ''}인도 완료${lateDays > 0 ? ` (납기 ${lateDays}일 경과, 감액 ${formatMoney(contract.currency, reduction)})` : ' (납기 내)'}. ${forwarding ? '주선 매출' : '매출'} ${formatMoney(contract.currency, netSale)}는 채권으로 남고 현금은 ${dueDay}일 수금 예정`);
+    if (claimMinor > 0) log(s, `${contract.id} 화물 일부 손상: 고객이 대금 ${formatMoney(contract.currency, claimMinor)} 감액 청구`);
   }
 }
 
-function processCollections(s: GameState) {
+function processCollections(s: GameState, config: ScenarioConfig) {
   for (const inv of s.invoices) {
     if (inv.status === 'PAID' || inv.dueDay > s.day) continue;
-    // 고객은 결제일에 전액 지급한다. 연체·대손은 이후 단계.
-    applyReceipt(s, `RCPT-${inv.id}`, inv.id);
+    const contract = contractOf(s, inv.contractId);
+    if (contract.kind !== 'DIRECT_TRADE' || !config.operations?.risk?.layers.includes('COLLECTION')) {
+      applyReceipt(s, `RCPT-${inv.id}`, inv.id);
+      continue;
+    }
+    const plan = collectionPlan(config, s.rng.seed, contract.sellOfferId!, contract.customerId);
+    const before = receivedForInvoice(s, inv.id);
+    if (plan.mode === 'ON_TIME' || (plan.mode === 'LATE' && s.day >= inv.dueDay + plan.days)) {
+      applyReceipt(s, `RCPT-${inv.id}`, inv.id);
+    } else if (plan.mode === 'PARTIAL') {
+      const first = applyBasisPoints(inv.amountMinor, config.operations.risk.profile.collections.partialBp);
+      applyPartialReceipt(s, `RCPT-${inv.id}-1`, inv.id, first);
+      if (s.day >= inv.dueDay + plan.days) applyPartialReceipt(s, `RCPT-${inv.id}-2`, inv.id, inv.amountMinor - first);
+    }
+    const received = receivedForInvoice(s, inv.id), remaining = inv.amountMinor - received;
+    if (remaining > 0) inv.status = 'OVERDUE';
+    if (s.day === inv.dueDay && received === before) {
+      log(s, `${inv.contractId} 결제일에 대금이 들어오지 않음(남은 ${formatMoney(inv.currency, remaining)})`);
+    }
   }
+}
+
+/** 부분 수금은 금액을 받아 분개하고 마지막 수금에서만 계약을 종결한다. */
+function applyPartialReceipt(s: GameState, receiptId: string, invoiceId: string, amount: number): boolean {
+  const inv = s.invoices.find((i) => i.id === invoiceId);
+  if (!inv || inv.status === 'PAID' || inv.receiptIds.includes(receiptId)) return false;
+  if (amount === 0 || !post(s.ledger, {
+    id: `RECEIPT-${receiptId}`, day: s.day, currency: inv.currency, contractId: inv.contractId,
+    reason: '외상대금 부분 수금 (매출채권 → 현금)',
+    lines: [{ account: 'CASH', amount }, { account: 'ACCOUNTS_RECEIVABLE', amount: -amount }],
+  })) return false;
+  inv.receiptIds.push(receiptId);
+  const remaining = inv.amountMinor - receivedForInvoice(s, inv.id);
+  if (remaining === 0) {
+    inv.status = 'PAID';
+    const contract = contractOf(s, inv.contractId);
+    contract.status = 'COMPLETED';
+    contract.completedDay = s.day;
+    log(s, `${inv.contractId} 대금 나머지 ${formatMoney(inv.currency, amount)} 수금. 계약 종결`);
+  } else {
+    log(s, `${inv.contractId} 대금 일부 ${formatMoney(inv.currency, amount)} 수금(남은 ${formatMoney(inv.currency, remaining)})`);
+  }
+  return true;
 }
 
 /**
