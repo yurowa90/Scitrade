@@ -169,6 +169,11 @@ export function withRiskLevel(config: ScenarioConfig, level: 'R0' | 'R1' | 'R2' 
   c.rules.rulesVersion = 'M2a-rules-3';
   c.operations!.risk = { profile: structuredClone(profile), layers: level === 'R3'
     ? ['FX', 'TARIFF', 'SURCHARGE', 'CLAIM', 'COLLECTION'] : level === 'R2' ? ['FX', 'TARIFF', 'SURCHARGE'] : ['FX'] };
+  // 공유 프로필에서 이 시나리오에 없는 품목만 제외한다. 필요한 행의 누락은 실행 시 예외로 남긴다.
+  const usedGoods = new Set(config.goods.map((g) => g.id));
+  const usedProfile = c.operations!.risk.profile;
+  usedProfile.tariff.base = usedProfile.tariff.base.filter((row) => usedGoods.has(row.goodId));
+  usedProfile.claims.byGood = usedProfile.claims.byGood.filter((row) => usedGoods.has(row.goodId));
   for (const row of c.operations!.market.rows) {
     if (row.side === 'BUY') row.basePriceMinor = usdToKrwMinor(row.basePriceMinor, profile.fx.startKrwPerUsd);
   }

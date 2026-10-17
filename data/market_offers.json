@@ -136,6 +136,26 @@
       ],
       "note_ko": "자동차 부품 200상자(8m³, 2,400kg), 신고가액 12,000 USD(상자당 60 USD)는 DESIGN 설정이다. 고객 소유 화물이며 회사 재고·자산·매출이 아니다. 납기가 여유 있어 같은 출항편의 남은 부피에 따라 다음 편으로 미룰 수 있다."
     }
+    ,
+    {
+      "id": "OFFER_SELL_02_NEW",
+      "kind": "customer",
+      "counterparty_id": "CUSTOMER_SHA_COSMETICS_NEW",
+      "city_id": "SHANGHAI",
+      "good_id": "COSMETICS",
+      "quantity": 50,
+      "quantity_unit": "case",
+      "unit_price": {
+        "currency": "USD",
+        "amount": 50
+      },
+      "valid_until_day": 3,
+      "delivery_deadline_day": 8,
+      "payment_due_day": 12,
+      "source_refs": [
+        "DESIGN-V04"
+      ]
+    }
   ],
   "$schema": "../schemas/market_offers.schema.json"
 }

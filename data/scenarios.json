@@ -637,6 +637,196 @@
       "securities_enabled": false,
       "ipo_enabled": false
     }
+    ,
+    {
+      "id": "SCENARIO_M2_OPS_COSMETICS",
+      "base_scenario_id": "SCENARIO_M2_OPERATIONS",
+      "title_ko": "실험: 화장품 1품목 — 평택 본사 90일 운영",
+      "stage": "M2",
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "operations": {
+        "market_rules_ref": "market_rules.json#M2A5_PYEONGTAEK_COS",
+        "prep": {
+          "trade_extra_per_lot": 1,
+          "standard_m3_per_work_unit": 6,
+          "min_work_units": 2
+        },
+        "facility": {
+          "city_id": "PYEONGTAEK",
+          "storage_m3": 40,
+          "handling_work_units_per_day": 6,
+          "applies_to_task_kinds": [
+            "EXPORT_PREP",
+            "FORWARDING_PREP"
+          ],
+          "expansion": {
+            "max_count": 1,
+            "storage_m3": 20,
+            "handling_work_units_per_day": 3,
+            "setup_fee": {
+              "currency": "KRW",
+              "amount": 200000
+            },
+            "rent_increase": {
+              "currency": "KRW",
+              "amount": 250000
+            },
+            "effective_after_days": 1,
+            "rent_increase_from": "next_rent_day_on_or_after_effective_day"
+          }
+        },
+        "fixed_costs": {
+          "rent": {
+            "currency": "KRW",
+            "amount": 450000,
+            "period_days": 30,
+            "first_due_day": 1,
+            "timing": "prepaid_step6c"
+          }
+        },
+        "fx_exchange": {
+          "base_rate_ref": "game_config.json#/config/fx_krw_per_usd",
+          "spread_basis_points": 100,
+          "lot": {
+            "currency": "USD",
+            "amount": 100
+          },
+          "auto_exchange": false,
+          "status": "DESIGN_game_fixed_rate"
+        },
+        "space_contract": {
+          "route_ids": [
+            "ROUTE01",
+            "ROUTE02"
+          ],
+          "extra_m3": 10,
+          "extra_kg": 1500,
+          "fee_per_sailing": {
+            "currency": "USD",
+            "amount": 30
+          },
+          "lead_days": 7,
+          "covers": "departures_arriving_within_campaign",
+          "reserve_days_ahead": 7,
+          "cancellable": false,
+          "max_per_route": 1,
+          "charge": "every_covered_departure_take_or_pay"
+        },
+        "payment_default": {
+          "basis": "oldest_unpaid_obligation_any_currency",
+          "warning_from_age_days": 0,
+          "danger_from_age_days": 7,
+          "failure_age_days": 14,
+          "failure_check": "end_of_step6"
+        }
+      },
+      "offer_ids": [
+        "OFFER_BUY_02",
+        "OFFER_SELL_02_NEW",
+        "OFFER_FWD_01",
+        "OFFER_FWD_02"
+      ],
+      "scope_note": "M2a-5 실험: 화장품 1품목의 반복 견적·수량 고르기·창고·고정비·환전·지급 불이행. 측정용이며 학생 선택 목록에는 넣지 않는다."
+    }
+    ,
+    {
+      "id": "SCENARIO_M2_OPS_COS_LAVER",
+      "base_scenario_id": "SCENARIO_M2_OPERATIONS",
+      "title_ko": "실험: 화장품 + 조미김 — 평택 본사 90일 운영",
+      "stage": "M2",
+      "securities_enabled": false,
+      "ipo_enabled": false,
+      "source_refs": [
+        "DESIGN-V04"
+      ],
+      "operations": {
+        "market_rules_ref": "market_rules.json#M2A5_PYEONGTAEK_COS_LAVER",
+        "prep": {
+          "trade_extra_per_lot": 1,
+          "standard_m3_per_work_unit": 6,
+          "min_work_units": 2
+        },
+        "facility": {
+          "city_id": "PYEONGTAEK",
+          "storage_m3": 40,
+          "handling_work_units_per_day": 6,
+          "applies_to_task_kinds": [
+            "EXPORT_PREP",
+            "FORWARDING_PREP"
+          ],
+          "expansion": {
+            "max_count": 1,
+            "storage_m3": 20,
+            "handling_work_units_per_day": 3,
+            "setup_fee": {
+              "currency": "KRW",
+              "amount": 200000
+            },
+            "rent_increase": {
+              "currency": "KRW",
+              "amount": 250000
+            },
+            "effective_after_days": 1,
+            "rent_increase_from": "next_rent_day_on_or_after_effective_day"
+          }
+        },
+        "fixed_costs": {
+          "rent": {
+            "currency": "KRW",
+            "amount": 450000,
+            "period_days": 30,
+            "first_due_day": 1,
+            "timing": "prepaid_step6c"
+          }
+        },
+        "fx_exchange": {
+          "base_rate_ref": "game_config.json#/config/fx_krw_per_usd",
+          "spread_basis_points": 100,
+          "lot": {
+            "currency": "USD",
+            "amount": 100
+          },
+          "auto_exchange": false,
+          "status": "DESIGN_game_fixed_rate"
+        },
+        "space_contract": {
+          "route_ids": [
+            "ROUTE01",
+            "ROUTE02"
+          ],
+          "extra_m3": 10,
+          "extra_kg": 1500,
+          "fee_per_sailing": {
+            "currency": "USD",
+            "amount": 30
+          },
+          "lead_days": 7,
+          "covers": "departures_arriving_within_campaign",
+          "reserve_days_ahead": 7,
+          "cancellable": false,
+          "max_per_route": 1,
+          "charge": "every_covered_departure_take_or_pay"
+        },
+        "payment_default": {
+          "basis": "oldest_unpaid_obligation_any_currency",
+          "warning_from_age_days": 0,
+          "danger_from_age_days": 7,
+          "failure_age_days": 14,
+          "failure_check": "end_of_step6"
+        }
+      },
+      "offer_ids": [
+        "OFFER_BUY_02",
+        "OFFER_SELL_02_NEW",
+        "OFFER_FWD_01",
+        "OFFER_FWD_02"
+      ],
+      "scope_note": "M2a-5 실험: 화장품 + 조미김의 반복 견적·수량 고르기·창고·고정비·환전·지급 불이행. 측정용이며 학생 선택 목록에는 넣지 않는다."
+    }
   ],
   "$schema": "../schemas/scenarios.schema.json",
   "configuration_merge_rule": {

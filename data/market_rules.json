@@ -362,6 +362,676 @@
       },
       "drop_if_beyond_campaign": true
     }
+    ,
+    {
+      "id": "M2A5_PYEONGTAEK_COS",
+      "publish": {
+        "first_day": 1,
+        "interval_days": 7,
+        "last_day": 78,
+        "valid_days": 3
+      },
+      "rng": {
+        "stream_prefix": "MARKET-B",
+        "stream_digits": 2
+      },
+      "index": {
+        "goods": [
+          "COSMETICS"
+        ],
+        "start_bp": 10000,
+        "min_bp": 8500,
+        "max_bp": 11500,
+        "step_pct": [
+          -3,
+          3
+        ]
+      },
+      "regional_pct": [
+        -4,
+        4
+      ],
+      "counterparty_pct": [
+        -3,
+        3
+      ],
+      "rows": [
+        {
+          "city_id": "PYEONGTAEK",
+          "good_id": "COSMETICS",
+          "side": "BUY",
+          "base_price": {
+            "currency": "USD",
+            "amount": 40.0
+          }
+        },
+        {
+          "city_id": "HAIPHONG",
+          "good_id": "COSMETICS",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 51.7
+          }
+        },
+        {
+          "city_id": "SHANGHAI",
+          "good_id": "COSMETICS",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 53.0
+          }
+        }
+      ],
+      "trade": {
+        "buy_city_id": "PYEONGTAEK",
+        "sell_city_ids": [
+          "HAIPHONG",
+          "SHANGHAI"
+        ],
+        "goods": [
+          {
+            "good_id": "COSMETICS",
+            "id_tag": "COS",
+            "base_lot": 50,
+            "buy_counterparty_id": "SUPPLIER_DEMO_COSMETICS",
+            "sell_counterparties": [
+              {
+                "city_id": "HAIPHONG",
+                "counterparty_id": "CUSTOMER_HAI_COSMETICS_NEW"
+              },
+              {
+                "city_id": "SHANGHAI",
+                "counterparty_id": "CUSTOMER_SHA_COSMETICS_NEW"
+              }
+            ]
+          }
+        ],
+        "max_lots_choices": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sell_deadline_offset_days": 7,
+        "payment_offset_days": [
+          {
+            "city_id": "HAIPHONG",
+            "days": 9
+          },
+          {
+            "city_id": "SHANGHAI",
+            "days": 11
+          }
+        ]
+      },
+      "forwarding": {
+        "draws": [
+          {
+            "service_class": "STANDARD",
+            "count": 2
+          },
+          {
+            "service_class": "HANDLING",
+            "count": 4
+          }
+        ],
+        "templates": [
+          {
+            "id": "F1",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "FURNITURE",
+            "quantity": 120,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 380
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 9,
+            "counterparty_id": "SHIPPER_DEMO_FURNITURE",
+            "prep_work_units": null
+          },
+          {
+            "id": "F2",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "AUTO_PARTS",
+            "quantity": 200,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 300
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F3",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 300
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 11,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F4",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "AUTO_PARTS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 360
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F5",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "FURNITURE",
+            "quantity": 90,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 380
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 11,
+            "counterparty_id": "SHIPPER_DEMO_FURNITURE",
+            "prep_work_units": null
+          },
+          {
+            "id": "F6",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "ELECTRONICS",
+            "quantity": 200,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 280
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 9,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": null
+          },
+          {
+            "id": "H1",
+            "service_class": "HANDLING",
+            "title_ko": "라벨 작업 포함 전자제품",
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H2",
+            "service_class": "HANDLING",
+            "title_ko": "검수·소분 포함 화장품",
+            "good_id": "COSMETICS",
+            "quantity": 450,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_COSMETICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H3",
+            "service_class": "HANDLING",
+            "title_ko": "세트 포장 포함 의류",
+            "good_id": "APPAREL",
+            "quantity": 3000,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_APPAREL",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H4",
+            "service_class": "HANDLING",
+            "title_ko": "라벨 작업 포함 전자제품",
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H5",
+            "service_class": "HANDLING",
+            "title_ko": "재포장 포함 자동차 부품",
+            "good_id": "AUTO_PARTS",
+            "quantity": 225,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H6",
+            "service_class": "HANDLING",
+            "title_ko": "검수·소분 포함 화장품",
+            "good_id": "COSMETICS",
+            "quantity": 450,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_COSMETICS",
+            "prep_work_units": 12
+          }
+        ]
+      },
+      "drop_if_beyond_campaign": true
+    }
+    ,
+    {
+      "id": "M2A5_PYEONGTAEK_COS_LAVER",
+      "publish": {
+        "first_day": 1,
+        "interval_days": 7,
+        "last_day": 78,
+        "valid_days": 3
+      },
+      "rng": {
+        "stream_prefix": "MARKET-B",
+        "stream_digits": 2
+      },
+      "index": {
+        "goods": [
+          "COSMETICS",
+          "SEASONED_LAVER"
+        ],
+        "start_bp": 10000,
+        "min_bp": 8500,
+        "max_bp": 11500,
+        "step_pct": [
+          -3,
+          3
+        ]
+      },
+      "regional_pct": [
+        -4,
+        4
+      ],
+      "counterparty_pct": [
+        -3,
+        3
+      ],
+      "rows": [
+        {
+          "city_id": "PYEONGTAEK",
+          "good_id": "COSMETICS",
+          "side": "BUY",
+          "base_price": {
+            "currency": "USD",
+            "amount": 40.0
+          }
+        },
+        {
+          "city_id": "HAIPHONG",
+          "good_id": "COSMETICS",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 51.7
+          }
+        },
+        {
+          "city_id": "SHANGHAI",
+          "good_id": "COSMETICS",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 53.0
+          }
+        },
+        {
+          "city_id": "PYEONGTAEK",
+          "good_id": "SEASONED_LAVER",
+          "side": "BUY",
+          "base_price": {
+            "currency": "USD",
+            "amount": 20.0
+          }
+        },
+        {
+          "city_id": "HAIPHONG",
+          "good_id": "SEASONED_LAVER",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 25.6
+          }
+        },
+        {
+          "city_id": "SHANGHAI",
+          "good_id": "SEASONED_LAVER",
+          "side": "SELL",
+          "base_price": {
+            "currency": "USD",
+            "amount": 26.6
+          }
+        }
+      ],
+      "trade": {
+        "buy_city_id": "PYEONGTAEK",
+        "sell_city_ids": [
+          "HAIPHONG",
+          "SHANGHAI"
+        ],
+        "goods": [
+          {
+            "good_id": "COSMETICS",
+            "id_tag": "COS",
+            "base_lot": 50,
+            "buy_counterparty_id": "SUPPLIER_DEMO_COSMETICS",
+            "sell_counterparties": [
+              {
+                "city_id": "HAIPHONG",
+                "counterparty_id": "CUSTOMER_HAI_COSMETICS_NEW"
+              },
+              {
+                "city_id": "SHANGHAI",
+                "counterparty_id": "CUSTOMER_SHA_COSMETICS_NEW"
+              }
+            ]
+          },
+          {
+            "good_id": "SEASONED_LAVER",
+            "id_tag": "LAV",
+            "base_lot": 100,
+            "buy_counterparty_id": "SUPPLIER_DEMO_LAVER",
+            "sell_counterparties": [
+              {
+                "city_id": "HAIPHONG",
+                "counterparty_id": "CUSTOMER_HAI_LAVER"
+              },
+              {
+                "city_id": "SHANGHAI",
+                "counterparty_id": "CUSTOMER_SHA_LAVER"
+              }
+            ]
+          }
+        ],
+        "max_lots_choices": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sell_deadline_offset_days": 7,
+        "payment_offset_days": [
+          {
+            "city_id": "HAIPHONG",
+            "days": 9
+          },
+          {
+            "city_id": "SHANGHAI",
+            "days": 11
+          }
+        ]
+      },
+      "forwarding": {
+        "draws": [
+          {
+            "service_class": "STANDARD",
+            "count": 2
+          },
+          {
+            "service_class": "HANDLING",
+            "count": 4
+          }
+        ],
+        "templates": [
+          {
+            "id": "F1",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "FURNITURE",
+            "quantity": 120,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 380
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 9,
+            "counterparty_id": "SHIPPER_DEMO_FURNITURE",
+            "prep_work_units": null
+          },
+          {
+            "id": "F2",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "AUTO_PARTS",
+            "quantity": 200,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 300
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F3",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 300
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 11,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F4",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "AUTO_PARTS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 360
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": null
+          },
+          {
+            "id": "F5",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "FURNITURE",
+            "quantity": 90,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 380
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 11,
+            "counterparty_id": "SHIPPER_DEMO_FURNITURE",
+            "prep_work_units": null
+          },
+          {
+            "id": "F6",
+            "service_class": "STANDARD",
+            "title_ko": null,
+            "good_id": "ELECTRONICS",
+            "quantity": 200,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 280
+            },
+            "deadline_offset_days": 7,
+            "payment_offset_days": 9,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": null
+          },
+          {
+            "id": "H1",
+            "service_class": "HANDLING",
+            "title_ko": "라벨 작업 포함 전자제품",
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H2",
+            "service_class": "HANDLING",
+            "title_ko": "검수·소분 포함 화장품",
+            "good_id": "COSMETICS",
+            "quantity": 450,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_COSMETICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H3",
+            "service_class": "HANDLING",
+            "title_ko": "세트 포장 포함 의류",
+            "good_id": "APPAREL",
+            "quantity": 3000,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_APPAREL",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H4",
+            "service_class": "HANDLING",
+            "title_ko": "라벨 작업 포함 전자제품",
+            "good_id": "ELECTRONICS",
+            "quantity": 300,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_ELECTRONICS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H5",
+            "service_class": "HANDLING",
+            "title_ko": "재포장 포함 자동차 부품",
+            "good_id": "AUTO_PARTS",
+            "quantity": 225,
+            "destination_city_id": "SHANGHAI",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1020
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 18,
+            "counterparty_id": "SHIPPER_DEMO_AUTOPARTS",
+            "prep_work_units": 12
+          },
+          {
+            "id": "H6",
+            "service_class": "HANDLING",
+            "title_ko": "검수·소분 포함 화장품",
+            "good_id": "COSMETICS",
+            "quantity": 450,
+            "destination_city_id": "HAIPHONG",
+            "service_fee": {
+              "currency": "USD",
+              "amount": 1040
+            },
+            "deadline_offset_days": 14,
+            "payment_offset_days": 16,
+            "counterparty_id": "SHIPPER_DEMO_COSMETICS",
+            "prep_work_units": 12
+          }
+        ]
+      },
+      "drop_if_beyond_campaign": true
+    }
   ],
   "counterparties": [
     {
@@ -408,6 +1078,31 @@
       "id": "SHIPPER_DEMO_AUTOPARTS",
       "name_ko": "자동차 부품 화주"
     }
+    ,
+    {
+      "id": "CUSTOMER_HAI_COSMETICS_NEW",
+      "name_ko": "하이퐁 화장품 신규 고객"
+    }
+    ,
+    {
+      "id": "CUSTOMER_SHA_COSMETICS_NEW",
+      "name_ko": "상하이 화장품 신규 고객"
+    }
+    ,
+    {
+      "id": "CUSTOMER_HAI_LAVER",
+      "name_ko": "하이퐁 김 고객"
+    }
+    ,
+    {
+      "id": "CUSTOMER_SHA_LAVER",
+      "name_ko": "상하이 김 고객"
+    }
+    ,
+    {
+      "id": "SUPPLIER_DEMO_LAVER",
+      "name_ko": "김 공급자"
+    }
   ],
   "$schema": "../schemas/market_rules.schema.json",
   "risk_profiles": [
@@ -444,6 +1139,18 @@
             "good_id": "COSMETICS",
             "rate_bp": 500
           }
+          ,
+          {
+            "country_code": "CN",
+            "good_id": "SEASONED_LAVER",
+            "rate_bp": 500
+          }
+          ,
+          {
+            "country_code": "VN",
+            "good_id": "SEASONED_LAVER",
+            "rate_bp": 500
+          }
         ],
         "max_changes": 2,
         "lag_days": [
@@ -473,6 +1180,12 @@
           },
           {
             "good_id": "APPAREL",
+            "grade": "LOW",
+            "p_claim_bp": 500
+          }
+          ,
+          {
+            "good_id": "SEASONED_LAVER",
             "grade": "LOW",
             "p_claim_bp": 500
           }
@@ -506,6 +1219,26 @@
           {
             "counterparty_id": "CUSTOMER_DEMO_SHANGHAI",
             "grade": "B"
+          }
+          ,
+          {
+            "counterparty_id": "CUSTOMER_HAI_COSMETICS_NEW",
+            "grade": "B"
+          }
+          ,
+          {
+            "counterparty_id": "CUSTOMER_SHA_COSMETICS_NEW",
+            "grade": "B"
+          }
+          ,
+          {
+            "counterparty_id": "CUSTOMER_HAI_LAVER",
+            "grade": "C"
+          }
+          ,
+          {
+            "counterparty_id": "CUSTOMER_SHA_LAVER",
+            "grade": "C"
           }
         ],
         "basis": "fictional_grade",

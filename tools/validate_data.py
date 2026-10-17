@@ -18,6 +18,10 @@ ROOT = Path(__file__).resolve().parents[1]
 ERRORS = []
 CHECKS = 0
 
+# src/content/scenario.ts의 같은 이름 상수와 같은 값.
+EXPERIMENT_SCENARIO_IDS = ('SCENARIO_M2_OPS_COSMETICS', 'SCENARIO_M2_OPS_COS_LAVER')
+EXPERIMENT_RULE_SET_IDS = ('M2A5_PYEONGTAEK_COS', 'M2A5_PYEONGTAEK_COS_LAVER')
+
 
 def check(condition, message):
     global CHECKS
@@ -841,9 +845,57 @@ def check_test_title_links(cases, root=ROOT):
                           f'{path}: 시험 제목의 {cid}가 그 사례의 시험 연결에 없음')
 
 
+def check_experiments(documents, tables):
+    """실험의 상속·복사 조건과 옛 판매 거래처 분리를 잠근다."""
+    def without(record, *keys):
+        return {k: v for k, v in record.items() if k not in keys}
+
+    for sid in EXPERIMENT_SCENARIO_IDS:
+        scenario = tables['scenarios'].get(sid)
+        if scenario is None:
+            continue
+        base = resolve_scenario(tables['scenarios'], scenario['base_scenario_id'])
+        check(without(scenario['operations'], 'market_rules_ref') == without(base['operations'], 'market_rules_ref'),
+              f'{sid}: 실험 상속 동일성: operations가 base와 다름')
+
+    rules = {r['id']: r for r in documents['market_rules']['rule_sets']}
+    base = rules['M2A5_PYEONGTAEK']
+    def sellers(rule):
+        return {p['counterparty_id'] for g in rule['trade']['goods'] for p in g['sell_counterparties']}
+
+    def common_rule(rule):
+        return {**without(rule, 'id', 'index', 'trade', 'rows'),
+                'index': without(rule['index'], 'goods'), 'trade': without(rule['trade'], 'goods')}
+
+    def cosmetics(rule):
+        good = next((g for g in rule['trade']['goods'] if g['good_id'] == 'COSMETICS'), None)
+        if good is None:
+            return None
+        return {**without(good, 'sell_counterparties'),
+                'sell_counterparties': [without(p, 'counterparty_id') for p in good['sell_counterparties']]}
+
+    for rid in EXPERIMENT_RULE_SET_IDS:
+        rule = rules.get(rid)
+        if rule is None:
+            continue
+        check(sellers(rule).isdisjoint(sellers(base)), f'{rid}: 실험 판매 거래처가 옛 거래처와 겹침')
+        check(common_rule(rule) == common_rule(base), f'{rid}: 실험 복사 동일성: 공통 규칙이 다름')
+        check(cosmetics(rule) == cosmetics(base), f'{rid}: 실험 복사 동일성: 화장품 거래 조건이 다름')
+        check([r for r in rule['rows'] if r['good_id'] == 'COSMETICS']
+              == [r for r in base['rows'] if r['good_id'] == 'COSMETICS'],
+              f'{rid}: 실험 복사 동일성: 화장품 시세 행이 다름')
+
+    offers = tables['market_offers']
+    if 'OFFER_SELL_02_NEW' in offers:
+        check(without(offers['OFFER_SELL_02_NEW'], 'id', 'counterparty_id')
+              == without(offers['OFFER_SELL_02'], 'id', 'counterparty_id'),
+              'OFFER_SELL_02_NEW: 실험 복사 동일성: 정적 판매 견적이 다름')
+
+
 def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
+    check_experiments(documents, tables)
     names = {p['id'] for p in market['counterparties']}
     party_counts = {}
     for party in market['counterparties']:
@@ -1061,8 +1113,8 @@ def main():
     validate_situation_map(documents['situation_map'], map_asset['bounds'])
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
-    expected_counts = {'world': 21, 'goods': 8, 'routes': 6, 'employees': 6,
-                       'market_offers': 6, 'scenarios': 8, 'securities': 4,
+    expected_counts = {'world': 21, 'goods': 9, 'routes': 6, 'employees': 6,
+                       'market_offers': 7, 'scenarios': 10, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
