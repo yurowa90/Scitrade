@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 238615,
-      "sha256": "4da3ef26a51a7d04979999d6e02fdf111441ce51943f8c7f53ec1b5037fd7f12"
+      "size_bytes": 239518,
+      "sha256": "01ee23698cb829622ddb96df9e1dba1e640673fe31118a6b61cb94a2068d3086"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -2492,8 +2492,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 24588,
-      "sha256": "d58b59318122586f4f9f0a0e4ecc7fa6092fdf2369eeb3bf84445153d636b407"
+      "size_bytes": 24597,
+      "sha256": "631d14ee2d6b9a5be618319e517456e959dda016e3000f1d81749737c716fcdf"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2862,8 +2862,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
-      "size_bytes": 198128,
-      "sha256": "03c2cc9b6e17d4bd069f84acd9ef719054aa929f71cd7f42376fe9a4019d9e71"
+      "size_bytes": 203576,
+      "sha256": "cac6c0dad7b5c592bb56f032ca2325b266bc0fd428ff7ca550484af0c996cae6"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
