@@ -2871,6 +2871,11 @@
       "sha256": "cac6c0dad7b5c592bb56f032ca2325b266bc0fd428ff7ca550484af0c996cae6"
     },
     {
+      "path": "docs/ai/tasks/TASK-0065-R1-validator-wiring.md",
+      "size_bytes": 2639,
+      "sha256": "ff0696139260f03e091eb0866dc7287541567c496a525a55aedbe2a5adee8d0b"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
       "size_bytes": 38910,
       "sha256": "c9714a7c4ab44d530d61993d0cce663c30aa33f855343fdef34fb4be995f287c"
