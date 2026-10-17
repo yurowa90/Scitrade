@@ -13,6 +13,7 @@ export type Account =
   | 'ACCOUNTS_PAYABLE'
   | 'OPENING_EQUITY'
   | 'REVENUE'
+  | 'SALES_ALLOWANCE'
   | 'COST_OF_GOODS_SOLD'
   | 'FORWARDING_REVENUE'
   | 'FORWARDING_COST'
@@ -39,6 +40,7 @@ export const ACCOUNT_KIND: Record<Account, AccountKind> = {
   ACCOUNTS_PAYABLE: 'liability',
   OPENING_EQUITY: 'equity',
   REVENUE: 'income',
+  SALES_ALLOWANCE: 'income',
   COST_OF_GOODS_SOLD: 'expense',
   FORWARDING_REVENUE: 'income',
   FORWARDING_COST: 'expense',
@@ -205,7 +207,7 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
     spaceContractExpense,
     fxSpreadExpense,
     currencyTransferNet,
-    profit: revenue - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense - rentExpense - facilitySetupExpense - spaceContractExpense - fxSpreadExpense,
+    profit: revenue + b('SALES_ALLOWANCE') - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense - rentExpense - facilitySetupExpense - spaceContractExpense - fxSpreadExpense,
     openingEquity: b('OPENING_EQUITY'),
   };
 }

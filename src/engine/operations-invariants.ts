@@ -1,4 +1,4 @@
-import { referenceRate } from './risk';
+import { receivedForInvoice, referenceRate } from './risk';
 import { offerDef } from './market';
 // 저장 복원과 마감이 함께 쓰는 운영 규칙 검사. 경제 값은 수정하지 않는다.
 import { storageUsedLiters, storageCapacityLiters, handlingCapacityPt, fixedCostsDue } from './operations';
@@ -11,6 +11,19 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
   if ((s.operations !== null) !== (config.operations !== null)) problems.push('설정과 상태의 operations 유무가 다릅니다');
   const o = s.operations, c = config.operations;
   if (!o || !c) return problems;
+  for (const inv of s.invoices) {
+    const received = receivedForInvoice(s, inv.id);
+    if (received > inv.amountMinor) problems.push(`${inv.id}: 받은 금액(${received})이 청구액(${inv.amountMinor})을 넘습니다`);
+    if (inv.status === 'PAID' && received !== inv.amountMinor) problems.push(`${inv.id}: 수금 완료인데 받은 금액(${received})이 청구액(${inv.amountMinor})과 다릅니다`);
+  }
+  for (const entry of s.ledger.entries.filter((e) => e.id.startsWith('CLAIM-'))) {
+    const contract = s.contracts.find((v) => v.id === entry.contractId);
+    if (!contract || contract.kind !== 'DIRECT_TRADE') problems.push(`${entry.id}: 클레임 분개는 직접 무역 계약에만 있어야 합니다`);
+    const amount = entry.lines.filter((l) => l.account === 'SALES_ALLOWANCE').reduce((n, l) => n + l.amount, 0);
+    if (contract && amount > contract.saleAmountMinor - contract.priceReductionMinor) {
+      problems.push(`${entry.id}: 클레임(${amount})이 늦은 감액 뒤 판매액(${contract.saleAmountMinor - contract.priceReductionMinor})을 넘습니다`);
+    }
+  }
   if (storageUsedLiters(s, config) > storageCapacityLiters(s, config)) problems.push('보관량이 창고 보관 한도를 넘었습니다');
   const lastClosed = closing ? s.day : Math.max(0, ...s.closedDays);
   for (const row of o.handlingLog) {
