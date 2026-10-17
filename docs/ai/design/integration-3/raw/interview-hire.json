@@ -1,0 +1,495 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "interview-hire",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/i3/dist",
+  "dist_index_sha256": "02baa14df2159b1d5e4a5d67d8c4d0bf56309ed46a5ed8c3439be5e3778c7850",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 110.9,
+        "hire_from_bar": 467.1,
+        "hire_h": 37.3,
+        "iv_head_low_from_bar": 110.9,
+        "hire_low_from_bar": 467.1,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 98.3,
+        "hire_from_bar": 454.5,
+        "hire_h": 44,
+        "iv_head_low_from_bar": 98.3,
+        "hire_low_from_bar": 454.5,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 187.8,
+        "hire_from_bar": 543.9,
+        "hire_h": 44,
+        "iv_head_low_from_bar": 260.3,
+        "hire_low_from_bar": 616.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 187.8,
+        "hire_from_bar": 543.9,
+        "hire_h": 44,
+        "iv_head_low_from_bar": 208.3,
+        "hire_low_from_bar": 564.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 184.3,
+        "hire_from_bar": 540.4,
+        "hire_h": 44,
+        "iv_head_low_from_bar": 184.3,
+        "hire_low_from_bar": 540.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 183.9,
+        "hire_from_bar": 540.1,
+        "hire_h": 37.3,
+        "iv_head_low_from_bar": 422.9,
+        "hire_low_from_bar": 779.1,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 48
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "iv_head_from_bar": 188,
+        "hire_from_bar": 373.2,
+        "hire_h": 44,
+        "iv_head_low_from_bar": 311.5,
+        "hire_low_from_bar": 496.7,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "iv_head_from_bar",
+      "profile": "l1366",
+      "actual": 110.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "cb1366t",
+      "actual": 98.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "ipadAirL",
+      "actual": 187.8,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "ipadminiL",
+      "actual": 187.8,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 184.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "l1920",
+      "actual": 183.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_from_bar",
+      "profile": "t1000",
+      "actual": 188,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "l1366",
+      "actual": 467.1,
+      "min": 0,
+      "max": 468.4,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "cb1366t",
+      "actual": 454.5,
+      "min": 0,
+      "max": 455,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "ipadAirL",
+      "actual": 543.9,
+      "min": 0,
+      "max": 617.5,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "ipadminiL",
+      "actual": 543.9,
+      "min": 0,
+      "max": 565.5,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 540.4,
+      "min": 0,
+      "max": 541.5,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "l1920",
+      "actual": 540.1,
+      "min": 0,
+      "max": 780.4,
+      "ok": true
+    },
+    {
+      "value": "hire_from_bar",
+      "profile": "t1000",
+      "actual": 373.2,
+      "min": 0,
+      "max": 497.5,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "l1366",
+      "actual": 110.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "cb1366t",
+      "actual": 98.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "ipadAirL",
+      "actual": 260.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "ipadminiL",
+      "actual": 208.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 184.3,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "l1920",
+      "actual": 422.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "iv_head_low_from_bar",
+      "profile": "t1000",
+      "actual": 311.5,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "l1366",
+      "actual": 467.1,
+      "min": 0,
+      "max": 468.4,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "cb1366t",
+      "actual": 454.5,
+      "min": 0,
+      "max": 455,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "ipadAirL",
+      "actual": 616.4,
+      "min": 0,
+      "max": 617.5,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "ipadminiL",
+      "actual": 564.4,
+      "min": 0,
+      "max": 565.5,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 540.4,
+      "min": 0,
+      "max": 541.5,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "l1920",
+      "actual": 779.1,
+      "min": 0,
+      "max": 780.4,
+      "ok": true
+    },
+    {
+      "value": "hire_low_from_bar",
+      "profile": "t1000",
+      "actual": 496.7,
+      "min": 0,
+      "max": 497.5,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": true
+}

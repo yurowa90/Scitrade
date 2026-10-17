@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>배치 시안 비교</title>
+<style>
+:root{--bg:#f6f1e7;--paper:#fffdf8;--ink:#1f2a44;--soft:#4a5672;--line:#e3dccd;--mint:#e3f4ee;--mint-ink:#1f6b55;--sky:#dcecf8;--sky-ink:#2f5f93;--warn:#a64a25;--warn-bg:#fdebe1;--gold:#b88a1f;
+  --b-trade:#dcecf8;--b-queue:#ffe7b8;--b-crew:#e8dcf5;--b-res:#dff3ea;--b-low:#efe8d8;--b-bar:#1f2a44}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181f;--paper:#1d2129;--ink:#e8ecf4;--soft:#a9b3c7;--line:#353b48;--mint:#1d3a31;--mint-ink:#8fd6bd;--sky:#1d2f44;--sky-ink:#9cc6ea;--warn:#f0a07c;--warn-bg:#3d2419;--gold:#e0b850;
+  --b-trade:#24405c;--b-queue:#5c4a1f;--b-crew:#41345a;--b-res:#24493c;--b-low:#3a3528;--b-bar:#0d0f14}}
+:root[data-theme="dark"]{--bg:#15181f;--paper:#1d2129;--ink:#e8ecf4;--soft:#a9b3c7;--line:#353b48;--mint:#1d3a31;--mint-ink:#8fd6bd;--sky:#1d2f44;--sky-ink:#9cc6ea;--warn:#f0a07c;--warn-bg:#3d2419;--gold:#e0b850;
+  --b-trade:#24405c;--b-queue:#5c4a1f;--b-crew:#41345a;--b-res:#24493c;--b-low:#3a3528;--b-bar:#0d0f14}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',system-ui,sans-serif;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+main{max-width:1240px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.3rem 0 .2rem;line-height:1.3} h2{font-size:1.15rem;margin:1.6rem 0 .6rem} h3{font-size:1rem;margin:1.1rem 0 .4rem}
+p{margin:.4rem 0} ul{margin:.3rem 0 .3rem 1.2rem;padding:0} li{margin:.15rem 0}
+.muted{color:var(--soft);font-size:.9rem}
+.card{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
+.lead{font-size:1.02rem}
+.pill{display:inline-block;border-radius:999px;padding:.05rem .6rem;font-size:.8rem;font-weight:600;background:var(--sky);color:var(--sky-ink)}
+.pill.rec{background:var(--mint);color:var(--mint-ink)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+.tabs button{font:inherit;color:var(--ink);padding:10px 16px;min-height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tabs button:focus-visible{outline:3px solid var(--sky-ink);outline-offset:2px}
+.panel[hidden]{display:none}
+.two{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+/* 도식 */
+.wf{border:1.5px solid var(--line);border-radius:10px;background:var(--paper);padding:6px;font-size:11px;line-height:1.25;color:var(--ink)}
+.wf .bar{display:flex;gap:6px;align-items:center;background:var(--b-bar);color:#fff;border-radius:6px;padding:5px 7px;margin-bottom:6px}
+.wf .bar .sp{flex:1}
+.wf .bar .chip{border:1.5px solid #9cc6ea;color:#9cc6ea;border-radius:6px;padding:1px 5px;font-weight:700}
+.wf .bar .go{background:#fff;color:#1f2a44;border-radius:6px;padding:1px 6px;font-weight:700}
+.wf .grid{display:grid;grid-template-columns:2fr 1fr;gap:5px}
+.wf .col{display:flex;flex-direction:column;gap:5px;min-width:0}
+.wf .b{border-radius:6px;padding:5px 6px;border:1px solid rgba(0,0,0,.08)}
+.wf .trade{background:var(--b-trade)} .wf .queue{background:var(--b-queue);font-weight:700} .wf .crew{background:var(--b-crew)} .wf .res{background:var(--b-res)} .wf .low{background:var(--b-low)}
+.wf .sub{display:block;font-weight:400;opacity:.85;margin-top:2px}
+.wf .pane{border:2px dashed var(--sky-ink);border-radius:8px;padding:4px;display:flex;flex-direction:column;gap:5px;position:relative}
+.wf .pane::after{content:'↕ 따로 굴러감';position:absolute;right:4px;bottom:-15px;font-size:10px;color:var(--sky-ink)}
+.wf .lows{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:5px}
+.wf .tall{min-height:120px} .wf .mid{min-height:56px}
+figure{margin:10px 0} figure img{width:100%;height:auto;border:1.5px solid var(--line);border-radius:10px;display:block;background:#fff}
+figcaption{font-size:.85rem;color:var(--soft);margin-top:4px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr));gap:12px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1.5px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:760px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+thead th{color:var(--soft);font-weight:600;background:var(--paper);position:sticky;top:0}
+tbody th{font-weight:600;white-space:nowrap}
+.good{color:var(--mint-ink);font-weight:600} .bad{color:var(--warn);font-weight:600}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:10px} @media (max-width:640px){.pc{grid-template-columns:1fr}}
+.pc > div{border-radius:10px;padding:8px 12px} .pros{background:var(--mint)} .cons{background:var(--warn-bg)}
+.pc h4{margin:.1rem 0 .3rem;font-size:.92rem}
+details summary{cursor:pointer;color:var(--sky-ink);margin:.4rem 0;min-height:32px}
+code{font-size:.85em;background:var(--b-low);border-radius:4px;padding:0 .25rem}
+</style></head>
+<body><main>
+<h1>배치 시안 비교 — ‘오늘 할 일’ 위치 · 동료 상세 · 하루 진행 뒤 읽던 자리</h1>
+<p class="muted">2026-10-09 · 기준 커밋 <code>3b60314</code> · 백로그 B53(UX-04·UX-05·PPL-11·UX-23·PPL-35의 2·3) · Chromium 에뮬레이션 7개 프로필 · 시안은 버릴 시제품(선택 근거용)이며 사용자 선택을 기다린다. 자세한 수치와 방법은 같은 폴더의 <code>README.md</code>.</p>
+
+<section class="card lead">
+  <p><b>세 문제:</b> (1) T1 직후 ‘오늘 할 일’이 화면 밖(UX-04). (2) 동료 카드를 누르면 화면이 상세 단추로 굴러 카드가 사라지고, 상세를 펼쳐도 훈련 칸이 안 보인다(UX-05·PPL-11·P14-05). (3) 부산 현지 패널을 연 채 오른쪽 칸을 읽다 하루를 진행하면 그 칸이 밀린다(UX-23·PPL-35).</p>
+  <p><b>세 시안 공통:</b> 카드로 고르면 상세를 그 카드 바로 아래에(줄로 고르면 지금처럼 운영표 아래), 펼치면 훈련·고용 단추를 화면 안으로 가져온다. 7개 프로필 모두 카드가 제자리(−1~0px)이고 훈련 단추가 보인다. M1 화면은 HTML까지 그대로다.</p>
+  <p><b>다른 점:</b> A는 막대에 ‘오늘 할 일 N건’ 단추 + 마지막으로 조작한 열 기준, B는 계약을 견적판 위로·오른쪽 칸을 ‘오늘 할 일’부터, C는 오른쪽 칸을 따로 굴러가는 창으로.</p>
+  <p><span class="pill rec">권고</span> <b>공통 + A.</b> 막대 높이·첫 화면·M1을 바꾸지 않고 7개 프로필 모두에서 ‘오늘 할 일’ 건수가 하루 진행 옆에 보이며, 오른쪽 칸을 읽던 자리도 0px로 지킨다. C는 가장 강하지만 굴러가는 칸이 둘이 되고 WebKit을 재지 못했다. 사용성 시험에서 오른쪽 칸을 오래 읽는 모습이 보이면 그때 C를 다시 본다. K1(−414~−421px)은 세 시안 모두 그대로라 따로 다룬다.</p>
+</section>
+
+
+<h2>시안 셋</h2>
+<p class="muted">탭을 누르면 도식·바뀐 것·장단점·스크린숏(1366×657 마우스)이 바뀝니다. 도식의 노란 칸이 ‘오늘 할 일’입니다.</p>
+<div class="tabs" role="tablist" aria-label="시안">
+  <button role="tab" id="tab-0" aria-controls="p-0" aria-selected="true">지금(기준)</button>
+  <button role="tab" id="tab-A" aria-controls="p-A" aria-selected="false">A 제자리 고치기</button>
+  <button role="tab" id="tab-B" aria-controls="p-B" aria-selected="false">B 순서 바꾸기</button>
+  <button role="tab" id="tab-C" aria-controls="p-C" aria-selected="false">C 오른쪽 창</button>
+</div>
+<section class="panel card" id="p-0" role="tabpanel" aria-labelledby="tab-0">
+  <div class="two">
+    <div>
+      <div class="wf" aria-label="지금 배치 도식">
+        <div class="bar"><span>1일 · 현금 …</span><span class="sp"></span><span class="go">하루 진행 ▶</span></div>
+        <div class="grid">
+          <div class="col"><div class="b trade tall">거래·계약<span class="sub">견적판(6건) → 계약</span></div></div>
+          <div class="col"><div class="b crew tall">동료<span class="sub">카드 → 운영표 → 상세 → 영입·면담</span></div><div class="b res mid">자원 예약</div><div class="b queue">오늘 할 일</div></div>
+        </div>
+        <div class="lows"><div class="b low">지도</div><div class="b low">보고</div><div class="b low">기록</div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">지금(3b60314)</h3>
+      <ul>
+        <li>‘오늘 할 일’은 오른쪽 칸 맨 아래. T1 뒤 1366×657에서 띠보다 182~215px 아래, 1180·1024·1133px 폭에서는 제목만 띠 끝에 걸리고 항목은 밖.</li>
+        <li>카드를 누르면 운영표 아래 상세 단추로 굴러 카드가 124~458px 위로 밀린다. 상세를 펼쳐도 훈련 단추는 526~645px 아래(P14-05).</li>
+        <li>현지 패널을 연 채 오른쪽 칸을 읽다 하루 진행 → 그 제목이 −55~−82px, 미리 보기를 띄웠으면 −469px. K1 −414~−421px.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="shots">
+    <figure><img src="t1-1366-base.png" alt="지금: T1 뒤 화면. 오른쪽 칸에 자원 예약이 보이고 오늘 할 일은 화면 아래 밖에 있다" loading="lazy"><figcaption>T1 뒤: 오른쪽은 ‘자원 예약’, ‘오늘 할 일’은 화면 밖.</figcaption></figure>
+    <figure><img src="card-1366-base.png" alt="지금: 귀솔 카드를 누른 뒤. 화면이 운영표 아래 상세 단추로 굴러 카드는 위쪽 끝만 남았다" loading="lazy"><figcaption>카드를 누른 뒤: 화면이 상세 단추로 굴러 카드가 거의 사라짐.</figcaption></figure>
+  </div>
+</section>
+
+<section class="panel card" id="p-A" role="tabpanel" aria-labelledby="tab-A" hidden>
+  <div class="two">
+    <div>
+      <div class="wf" aria-label="시안 A 도식">
+        <div class="bar"><span>1일 · 현금 …</span><span class="sp"></span><span class="chip">오늘 할 일 3건</span><span class="go">하루 진행 ▶</span></div>
+        <div class="grid">
+          <div class="col"><div class="b trade tall">거래·계약<span class="sub">견적판 → 계약 (그대로)</span></div></div>
+          <div class="col"><div class="b crew tall">동료<span class="sub">카드 → <b>그 카드 아래 상세</b> → 운영표 → 영입·면담</span></div><div class="b res mid">자원 예약</div><div class="b queue">오늘 할 일</div></div>
+        </div>
+        <div class="lows"><div class="b low">지도</div><div class="b low">보고</div><div class="b low">기록</div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">A — 제자리 고치기 <span class="pill rec">권고</span></h3>
+      <ul>
+        <li>배치 격자·화면 코드 순서는 그대로. 고정 막대 ‘하루 진행’ 왼쪽에 <b>‘오늘 할 일 N건’</b> 단추 — 누르면 그 칸으로.</li>
+        <li>하루 진행 뒤 읽던 자리를 <b>마지막으로 누르거나 굴리거나 초점을 둔 열</b>에서 고른다(세 열일 때).</li>
+        <li>공통: 카드 아래 상세, 펼치면 훈련·고용 단추를 띠 안으로(알림 자리 72px 비움).</li>
+      </ul>
+      <div class="pc">
+  <div class="pros"><h4>좋은 점</h4><ul>
+    <li>가장 작은 변경(<code>main.ts</code>·<code>style.css</code>·<code>growth.ts</code> 한 줄). 격자·화면 코드 순서·거래 순서 그대로.</li>
+    <li>‘오늘 할 일 N건’이 하루 진행 바로 옆에 늘 보인다 — 7개 프로필 모두, 한 열 포함. 막대 높이는 그대로.</li>
+    <li>오른쪽 칸을 누르거나 굴리며 읽었으면 하루 진행 뒤 그 제목이 제자리(RQ·RQB·RR 0px, 세 열 6개 프로필).</li>
+  </ul></div>
+  <div class="cons"><h4>대가</h4><ul>
+    <li>‘오늘 할 일’ 칸 자체는 T1 뒤에도 화면 밖(1366×657에서 182~215px 아래). 단추를 누르면 읽던 계약을 떠난다.</li>
+    <li>마지막 조작 규칙은 오른쪽 칸을 누르거나 굴린 적이 있어야 작동. 스크롤 막대·키보드로만 내려 읽었으면 지금처럼 주 열 기준이다. 잘못 고르면 주 열이 그만큼 움직인다.</li>
+    <li>시험 1개(막대 HTML 전체를 고정한 TASK-0013 시험)를 금액 칸 비교로 고쳐야 한다.</li>
+  </ul></div>
+</div>
+
+    </div>
+  </div>
+  <div class="shots">
+    <figure><img src="t1-1366-A.png" alt="시안 A: T1 뒤 화면. 고정 막대에 오늘 할 일 3건 단추가 보인다" loading="lazy"><figcaption>T1 뒤: 막대에 ‘오늘 할 일 3건’. 칸 자체는 아직 화면 밖.</figcaption></figure>
+    <figure><img src="t1chip-1366-A.png" alt="시안 A: 오늘 할 일 단추를 누른 뒤. 오른쪽 칸의 오늘 할 일과 세 항목이 보인다" loading="lazy"><figcaption>단추를 한 번 누른 뒤: ‘오늘 할 일’ 제목과 항목.</figcaption></figure>
+    <figure><img src="card-1366-A.png" alt="시안 A: 귀솔 카드를 누른 뒤. 카드는 제자리이고 바로 아래에 성장·훈련 상세 단추가 있다" loading="lazy"><figcaption>카드를 누른 뒤: 카드는 제자리, 바로 아래 상세 단추.</figcaption></figure>
+    <figure><img src="detail-1366-A.png" alt="시안 A: 상세를 펼친 뒤. 일반 훈련 제목부터 훈련 단추까지 화면 안에 있다" loading="lazy"><figcaption>상세를 펼친 뒤: ‘일반 훈련’ 칸 전체와 단추.</figcaption></figure>
+  </div>
+</section>
+
+<section class="panel card" id="p-B" role="tabpanel" aria-labelledby="tab-B" hidden>
+  <div class="two">
+    <div>
+      <div class="wf" aria-label="시안 B 도식">
+        <div class="bar"><span>1일 · 현금 …</span><span class="sp"></span><span class="go">하루 진행 ▶</span></div>
+        <div class="grid">
+          <div class="col"><div class="b trade tall">거래·계약<span class="sub"><b>계약 → 견적판</b></span></div></div>
+          <div class="col"><div class="b queue">오늘 할 일</div><div class="b crew tall">동료<span class="sub">카드 → 그 카드 아래 상세 → …</span></div><div class="b res mid">자원 예약</div></div>
+        </div>
+        <div class="lows"><div class="b low">지도</div><div class="b low">보고</div><div class="b low">기록</div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">B — 순서 바꾸기</h3>
+      <ul>
+        <li>진행 중 <b>계약을 견적판 위로</b>. 수락하면 화면이 거래 칸 맨 위로 돌아온다.</li>
+        <li>오른쪽 칸 순서 <b>오늘 할 일 → 동료 → 자원 예약</b>, 화면 코드 순서 = 보이는 순서(Tab 순서도 바로잡힘).</li>
+        <li>읽던 자리 규칙은 A와 같다. 공통 부분 포함.</li>
+      </ul>
+      <div class="pc">
+  <div class="pros"><h4>좋은 점</h4><ul>
+    <li>세 열 6개 프로필에서 T1 뒤 ‘오늘 할 일’ 제목과 항목이 화면 안.</li>
+    <li>화면 코드 순서 = 보이는 순서(미룬 ‘Tab 순서’ 항목 해결).</li>
+    <li>계약이 위라 견적이 만료돼도 계약이 움직이지 않는다.</li>
+  </ul></div>
+  <div class="cons"><h4>대가</h4><ul>
+    <li>새 계약 제목이 막대 아래 72px — TASK-0014 기준(0~60px)을 넘는다.</li>
+    <li>한 열(1000×700)에서 T1 뒤 ‘오늘 할 일’이 2,280px 아래로 멀어진다(지금 133px).</li>
+    <li>거래 칸 순서가 바뀌어 사용성 시험 절차서(T1·T3 안내, ‘세 열에서 볼 것’)를 고쳐야 한다. 위쪽 ‘오늘 할 일’이 자라면 오른쪽 칸 전체가 밀린다.</li>
+  </ul></div>
+</div>
+
+    </div>
+  </div>
+  <div class="shots">
+    <figure><img src="t1-1366-B.png" alt="시안 B: T1 뒤 화면. 거래 칸 맨 위의 새 계약과 오른쪽 맨 위의 오늘 할 일이 함께 보인다" loading="lazy"><figcaption>T1 뒤: 새 계약과 ‘오늘 할 일’이 함께 보임(계약 제목은 막대 아래 72px).</figcaption></figure>
+    <figure><img src="t1-1000-B.png" alt="시안 B: 1000×700 한 열에서 T1 뒤. 계약이 맨 위에 있고 오늘 할 일은 견적판 아래 멀리 있다" loading="lazy"><figcaption>한 열(1000×700): ‘오늘 할 일’이 견적판 아래로 2,280px 멀어짐.</figcaption></figure>
+  </div>
+</section>
+
+<section class="panel card" id="p-C" role="tabpanel" aria-labelledby="tab-C" hidden>
+  <div class="two">
+    <div>
+      <div class="wf" aria-label="시안 C 도식">
+        <div class="bar"><span>1일 · 현금 …</span><span class="sp"></span><span class="go">하루 진행 ▶</span></div>
+        <div class="grid">
+          <div class="col"><div class="b trade tall">거래·계약<span class="sub">견적판 → 계약 (그대로)</span></div></div>
+          <div class="col"><div class="pane"><div class="b queue">오늘 할 일</div><div class="b crew mid">동료<span class="sub">카드 → 그 카드 아래 상세 → …</span></div><div class="b res">자원 예약</div></div></div>
+        </div>
+        <div class="lows" style="margin-top:20px"><div class="b low">지도</div><div class="b low">보고</div><div class="b low">기록</div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-top:0">C — 오른쪽 창</h3>
+      <ul>
+        <li>세 열에서 오른쪽 칸이 <b>고정 막대 아래 붙은 창</b>이 되어 따로 굴러간다(맨 위가 ‘오늘 할 일’).</li>
+        <li>다시 그릴 때마다 창의 굴림 위치를 되살린다. 하루 진행의 화면 굴림은 주 열에만 작용해 오른쪽 칸은 구조적으로 제자리.</li>
+        <li>거래 칸 순서·한 열 배치는 그대로. 공통 부분 포함.</li>
+      </ul>
+      <div class="pc">
+  <div class="pros"><h4>좋은 점</h4><ul>
+    <li>세 열에서 T1 뒤 ‘오늘 할 일’이 창 맨 위에 보인다.</li>
+    <li>오른쪽 칸을 읽던 자리는 조작 추적 없이 구조적으로 제자리(스크롤 막대·키보드여도). 주 열 대조(MQ)도 그대로.</li>
+    <li>화면 코드 순서 = 보이는 순서. 페이지가 오른쪽 칸 길이만큼 늘지 않는다.</li>
+  </ul></div>
+  <div class="cons"><h4>대가</h4><ul>
+    <li>굴러가는 칸이 둘. 오른쪽 위에서 휠·손가락을 쓰면 창만 굴러가고, 끝에 닿아도 페이지로 넘어가지 않는다.</li>
+    <li>창을 내려 동료를 보면 ‘오늘 할 일’은 다시 가려진다. 페이지 맨 위에서는 창 아래 끝 78~140px이 화면 밖(1024×768에서 카드 아래 상세 단추가 그 자리에 가림).</li>
+    <li>모든 다시 그리기에 창 위치 되살리기가 끼어들고, F1·띠 계산·시험 도구가 창을 알아야 한다. iPad Safari(WebKit) 미측정. K1은 그대로.</li>
+  </ul></div>
+</div>
+
+    </div>
+  </div>
+  <div class="shots">
+    <figure><img src="t1-1366-C.png" alt="시안 C: T1 뒤 화면. 오른쪽 창 맨 위에 오늘 할 일과 세 항목이 보인다" loading="lazy"><figcaption>T1 뒤: 오른쪽 창 맨 위 ‘오늘 할 일’.</figcaption></figure>
+    <figure><img src="detail-1366-C.png" alt="시안 C: 상세를 펼친 뒤. 오른쪽 창만 굴러 일반 훈련 칸이 보이고 주 열은 맨 위 그대로다" loading="lazy"><figcaption>상세를 펼친 뒤: 창만 굴러 ‘일반 훈련’ 칸, 주 열은 그대로.</figcaption></figure>
+    <figure><img src="day1-1366-C.png" alt="시안 C: 1일 첫 화면. 오른쪽 창의 아래 끝이 화면 아래로 이어진다" loading="lazy"><figcaption>1일 첫 화면: 페이지 맨 위에서는 창 아래 끝이 화면 밖(머리 막대만큼).</figcaption></figure>
+  </div>
+</section>
+
+
+<h2>수치 비교 (7개 프로필)</h2>
+<p class="muted">‘보임’은 고정 막대 아래부터 아래쪽 알림 위까지(시안 C는 오른쪽 창의 상자까지) 요소 전체가 들어온 것. 위치 변화는 화면 위 px(음수 = 위로). 각 칸은 한 번 잰 값이다.</p>
+<h3>T1 뒤 ‘오늘 할 일’ 제목 (띠 = 고정 막대 아래 ~ 아래쪽 알림 위)</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>215px 아래</td><td>182px 아래</td><td>제목만 보임</td><td>제목만 보임</td><td>제목만 보임</td><td>아래 끝에 걸침</td><td>133px 아래</td></tr>
+<tr><th>A 제자리</th><td>215px 아래 · 단추 보임</td><td>182px 아래 · 단추 보임</td><td>제목만 보임 · 단추 보임</td><td>제목만 보임 · 단추 보임</td><td>제목만 보임 · 단추 보임</td><td>아래 끝에 걸침 · 단추 보임</td><td>133px 아래 · 단추 보임</td></tr>
+<tr><th>B 순서</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>2280px 아래</td></tr>
+<tr><th>C 오른쪽 창</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>133px 아래</td></tr>
+</tbody></table></div>
+<h3>시안 A: T1 뒤 ‘오늘 할 일 N건’ 단추를 한 번 누른 뒤</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>A 제자리</th><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td><td>제목·첫 항목 보임</td></tr>
+</tbody></table></div>
+<h3>T1 뒤 새 계약 제목: 막대 아래 px (TASK-0014 기준 0~60)</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>3</td><td>3</td><td>3</td><td>3</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><th>A 제자리</th><td>3</td><td>3</td><td>3</td><td>3</td><td>2</td><td>3</td><td>3</td></tr>
+<tr><th>B 순서</th><td>72</td><td>72</td><td>72</td><td>73</td><td>72</td><td>72</td><td>73</td></tr>
+<tr><th>C 오른쪽 창</th><td>3</td><td>3</td><td>3</td><td>3</td><td>2</td><td>3</td><td>3</td></tr>
+</tbody></table></div>
+<h3>고정 막대 높이 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>72</td><td>79</td><td>79</td><td>79</td><td>79</td><td>72</td><td>79</td></tr>
+<tr><th>A 제자리</th><td>72</td><td>79</td><td>79</td><td>79</td><td>79</td><td>72</td><td>79</td></tr>
+<tr><th>B 순서</th><td>72</td><td>79</td><td>79</td><td>79</td><td>79</td><td>72</td><td>79</td></tr>
+<tr><th>C 오른쪽 창</th><td>72</td><td>79</td><td>79</td><td>79</td><td>79</td><td>72</td><td>79</td></tr>
+</tbody></table></div>
+<h3>1일 첫 화면: 거래 제목 위치 px / 첫 견적이 첫 화면에 있나</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>183 / 예</td><td>199 / 예</td><td>199 / 예</td><td>252 / 예</td><td>199 / 예</td><td>183 / 예</td><td>252 / 예</td></tr>
+<tr><th>A 제자리</th><td>183 / 예</td><td>199 / 예</td><td>199 / 예</td><td>252 / 예</td><td>199 / 예</td><td>183 / 예</td><td>252 / 예</td></tr>
+<tr><th>B 순서</th><td>183 / 예</td><td>199 / 예</td><td>199 / 예</td><td>252 / 예</td><td>199 / 예</td><td>183 / 예</td><td>252 / 예</td></tr>
+<tr><th>C 오른쪽 창</th><td>183 / 예</td><td>199 / 예</td><td>199 / 예</td><td>252 / 예</td><td>199 / 예</td><td>183 / 예</td><td>252 / 예</td></tr>
+</tbody></table></div>
+<h3>동료 카드 누름: 카드 위치 변화 px (막대+40에 두고 누름)</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>−436</td><td>−458</td><td>−295</td><td>−401</td><td>−371</td><td>−124</td><td>−163</td></tr>
+<tr><th>A 제자리</th><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>0</td></tr>
+<tr><th>B 순서</th><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>−1</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>운영표 줄 누름: 줄 위치 변화 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>카드 → 상세 펼침: 훈련 단추 / 훈련을 넣은 뒤 예정 표시</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>637px 아래</td><td>645px 아래</td><td>645px 아래</td><td>644px 아래</td><td>645px 아래</td><td>637px 아래</td><td>526px 아래</td></tr>
+<tr><th>A 제자리</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+<tr><th>B 순서</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+<tr><th>C 오른쪽 창</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+</tbody></table></div>
+<h3>운영표 줄 → 상세 펼침: 훈련 단추</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>352px 아래</td><td>382px 아래</td><td>219px 아래</td><td>324px 아래</td><td>295px 아래</td><td>40px 아래</td><td>274px 아래</td></tr>
+<tr><th>A 제자리</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+<tr><th>B 순서</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+<tr><th>C 오른쪽 창</th><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td><td>보임</td></tr>
+</tbody></table></div>
+<h3>4일 면담 펼침(면담 단추를 막대+120): 고용 단추 / 면담 칸 높이</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+<tr><th>A 제자리</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+<tr><th>B 순서</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+<tr><th>C 오른쪽 창</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+</tbody></table></div>
+<h3>카드를 띠 아래쪽(목표: 위 끝이 띠 아래 끝 −200px)에 두고 누름: 누르기 전 카드 위 끝 px에서 위치 변화 / 상세 펼친 뒤 훈련 단추</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>279에서 −525 / 훈련 637px 아래</td><td>311에서 −563 / 훈련 645px 아래</td><td>311에서 −400 / 훈련 645px 아래</td><td>365에서 −506 / 훈련 644px 아래</td><td>311에서 −476 / 훈련 645px 아래</td><td>279에서 −213 / 훈련 637px 아래</td><td>500에서 −403 / 훈련 526px 아래</td></tr>
+<tr><th>A 제자리</th><td>279에서 −2 / 훈련 보임</td><td>311에서 −41 / 훈련 보임</td><td>311에서 −1 / 훈련 보임</td><td>365에서 −1 / 훈련 보임</td><td>311에서 −1 / 훈련 보임</td><td>279에서 −1 / 훈련 보임</td><td>500에서 −204 / 훈련 보임</td></tr>
+<tr><th>B 순서</th><td>451에서 −174 / 훈련 보임</td><td>457에서 −187 / 훈련 보임</td><td>483에서 −50 / 훈련 보임</td><td>537에서 −156 / 훈련 보임</td><td>483에서 −126 / 훈련 보임</td><td>451에서 −1 / 훈련 보임</td><td>500에서 −204 / 훈련 보임</td></tr>
+<tr><th>C 오른쪽 창</th><td>451에서 −174 / 훈련 보임</td><td>457에서 −187 / 훈련 보임</td><td>483에서 −50 / 훈련 보임</td><td>537에서 −155 · 상세 단추 가림 / 훈련 보임</td><td>483에서 −126 / 훈련 보임</td><td>451에서 −1 / 훈련 보임</td><td>500에서 −204 / 훈련 보임</td></tr>
+</tbody></table></div>
+<h3>4일 면담 펼침(면담 단추를 띠 아래 끝 −80px): 고용 단추 / 면담 칸 높이</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>272px 아래 · 352px</td><td>283px 아래 · 358px</td><td>283px 아래 · 358px</td><td>283px 아래 · 358px</td><td>283px 아래 · 358px</td><td>272px 아래 · 352px</td><td>151px 아래 · 207px</td></tr>
+<tr><th>A 제자리</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+<tr><th>B 순서</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+<tr><th>C 오른쪽 창</th><td>보임 · 352px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 358px</td><td>보임 · 352px</td><td>보임 · 207px</td></tr>
+</tbody></table></div>
+<h3>현지 패널 연 채 하루 진행 — 오른쪽 ‘오늘 할 일’을 읽던 중(RQ): 그 제목의 이동 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>−82</td><td>−75</td><td>−75</td><td>−75</td><td>−75</td><td>−82</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>같은 경우, 미리 보기를 띄운 상태(RQB): ‘오늘 할 일’ 제목 이동 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>−469</td><td>−469</td><td>−469</td><td>−469</td><td>−469</td><td>−469</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>RQB에서 주 열(셋째 견적 제목) 이동 px — 오른쪽을 지킨 대가</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>+469</td><td>+469</td><td>+469</td><td>+469</td><td>+469</td><td>+469</td><td>0</td></tr>
+<tr><th>B 순서</th><td>+423</td><td>+423</td><td>+423</td><td>+423</td><td>+423</td><td>+423</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>오른쪽 ‘자원 예약’을 읽던 중(RR): 그 제목의 이동 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>−62</td><td>−55</td><td>−55</td><td>−55</td><td>−55</td><td>−62</td><td>+20</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>+20</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>+20</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>+20</td></tr>
+</tbody></table></div>
+<h3>대조 — 주 열 셋째 견적을 읽던 중(MQ): 그 제목의 이동 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+<h3>K1 — 4일, 미리 보기를 띄운 채 아래 계약을 읽던 중: 계약 제목 이동 px</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>−414</td><td>−421</td><td>−421</td><td>−421</td><td>−421</td><td>−414</td><td>−421</td></tr>
+<tr><th>A 제자리</th><td>−414</td><td>−421</td><td>−421</td><td>−421</td><td>−421</td><td>−414</td><td>−421</td></tr>
+<tr><th>B 순서</th><td>−414</td><td>−421</td><td>−421</td><td>−421</td><td>−421</td><td>−414</td><td>−421</td></tr>
+<tr><th>C 오른쪽 창</th><td>−414</td><td>−421</td><td>−421</td><td>−421</td><td>−421</td><td>−414</td><td>−421</td></tr>
+</tbody></table></div>
+<h3>M1 화면(1일·수락 뒤·2일 전체 HTML과 패널 위치)</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>기준</td><td>기준</td><td>기준</td><td>기준</td><td>기준</td><td>기준</td><td>기준</td></tr>
+<tr><th>A 제자리</th><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td></tr>
+<tr><th>B 순서</th><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td></tr>
+<tr><th>C 오른쪽 창</th><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td><td>같음</td></tr>
+</tbody></table></div>
+<h3>가로 넘침·칸 넘침 요소 수(1일·T1·T5 상태 합)</h3>
+<div class="tw"><table><thead><tr><th>시안</th><th>1366×657 마우스</th><th>1366×657 터치</th><th>1180×820 터치</th><th>1024×768 터치</th><th>1133×744 터치</th><th>1920×969 마우스</th><th>1000×700 한 열 터치</th></tr></thead><tbody>
+<tr><th>지금(3b60314)</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>A 제자리</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>B 순서</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><th>C 오른쪽 창</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table></div>
+
+
+<h2>권고와 남은 일</h2>
+<section class="card">
+  <p><b>권고: 공통 + A.</b> 근거와 Sol 지시서에 넣을 것은 <code>README.md</code> 7·8절.</p>
+  <ul>
+    <li>B는 세 열의 ‘오늘 할 일’을 가장 자연스럽게 보이지만, 새 계약 제목 기준(0~60px)을 넘고 한 열에서 ‘오늘 할 일’을 2,280px 멀리 보낸다.</li>
+    <li>C는 구조적으로 가장 단단하지만 굴러가는 칸이 둘이 되고, 모든 다시 그리기에 창 처리가 끼어든다. iPad Safari를 재지 못했다.</li>
+    <li>A의 ‘마지막 조작 열’ 규칙은 오른쪽 칸을 누르거나 굴린 적이 있을 때만 작동한다. 사용성 시험에서 오른쪽 칸을 어떻게 읽는지(휠·손가락·스크롤 막대) 함께 관찰한다.</li>
+    <li>K1은 주 열 안의 문제(남는 ② 제목 아래 미리 보기가 사라짐)라 열 규칙으로 풀리지 않는다. 후보: 마지막으로 굴린 손가락·포인터 높이에 가장 가까운 후보를 고르기, 또는 하루 진행 뒤에도 미리 보기 자리를 남기기(TASK-0012 결정과 충돌하므로 사용자 결정 필요).</li>
+  </ul>
+  <p class="muted">재지 못한 것: WebKit(iPad Safari) 실제 동작, 실제 손가락 굴림의 관성, 실제 배율(이번 측정은 에뮬레이션 배율), 화면 읽기 프로그램, 사람 사용성. 시안은 시험 빌드에 넣지 않았다.</p>
+</section>
+
+</main>
+<script>
+(() => {
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  const show = (t) => { for (const b of tabs) { const on = b === t; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; document.getElementById(b.getAttribute('aria-controls')).hidden = !on; } };
+  tabs.forEach((t, i) => { t.addEventListener('click', () => show(t)); t.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); show(n); } }); });
+  show(tabs[0]);
+})();
+</script>
+</body></html>

@@ -1,0 +1,57 @@
+{
+  "version": "3.0.0",
+  "query": "레퍼런스 게임 6종(대항해시대 시리즈·더 길드 3·Democracy 4·SuperPower 2·Victoria 3·거상)과 비교 작품, 무역상사 실무·국제물류, 국가 데이터·통상 외교, 신수·동물 직원, 교육 근거를 조사해 국제물류경영 학습 게임 Scitrade의 설계·제작 계획 근거를 마련한다",
+  "mode": "ultradeep",
+  "started_at": "2026-10-13T14:35:36.690234+00:00",
+  "finished_at": "2026-10-13T19:34:50.533896+00:00",
+  "assumptions": [
+    {
+      "assumption_id": "asm_0f2432ba",
+      "text": "사용자 비전: 무역상사를 키우며 국제물류·경영을 배우는 게임, 직원은 동물·신수(2026-10-13 사용자 진술)",
+      "materiality": "high",
+      "status": "user_confirmed"
+    },
+    {
+      "assumption_id": "asm_ae867726",
+      "text": "Democracy 4는 국가가 아닌 기업 경영 정책 그물로 옮기고, 국가 데이터·통상 외교는 회사 밖 환경(플레이어가 조종하지 않는 외부 노드·사건)으로 쓴다",
+      "materiality": "high",
+      "status": "user_confirmed"
+    },
+    {
+      "assumption_id": "asm_484f6eb3",
+      "text": "'필요하면 모두 엎어도 된다'는 허락이지 지시가 아니다. 엎을지는 근거로 판정해 사용자에게 제안한다",
+      "materiality": "high",
+      "status": "implicit"
+    },
+    {
+      "assumption_id": "asm_94ad1432",
+      "text": "이 조사는 플레이 실행이 아니라 공식 자료·학술·2차 자료 조사다",
+      "materiality": "medium",
+      "status": "implicit"
+    },
+    {
+      "assumption_id": "asm_2de9397c",
+      "text": "알파 범위(1장 완성판, 상용 출시 척도 8점)는 유지 전제로 두되 판정 결과에 따라 사용자에게 다시 묻는다",
+      "materiality": "high",
+      "status": "implicit"
+    },
+    {
+      "assumption_id": "asm_a738ea31",
+      "text": "검색 제공자: search-cli 없음, WebSearch/WebFetch 사용",
+      "materiality": "low",
+      "status": "evidence_validated"
+    }
+  ],
+  "provider_config": {
+    "primary": "WebSearch/WebFetch (workflow subagents)",
+    "scholarly": null
+  },
+  "report_dir": "docs/ai/design/research/reference-2026-10-13/",
+  "artifact_paths": {
+    "sources": "sources.jsonl",
+    "evidence": "evidence.jsonl",
+    "claims": "claims.jsonl",
+    "report": "research_report_20261013_scitrade_reference.md"
+  },
+  "continuation": null
+}

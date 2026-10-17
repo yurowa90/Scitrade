@@ -1,0 +1,306 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "crew-facet",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/i3/dist",
+  "dist_index_sha256": "02baa14df2159b1d5e4a5d67d8c4d0bf56309ed46a5ed8c3439be5e3778c7850",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 1992.6,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 2074.9,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 2081.8,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 2081.8,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 2081.8,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 1992.6,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "res_h_top_day1": 4418.3,
+        "facet_moved": 0,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "facet_moved",
+      "profile": "l1366",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "l1920",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "facet_moved",
+      "profile": "t1000",
+      "actual": 0,
+      "min": -1,
+      "max": 1,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": true
+}

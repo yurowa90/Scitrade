@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scitrade 시안 C 기록장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* 게임 src/ui/style.css의 토큰·기본 모양을 그대로 옮기고, 시안 C(기록장)만 아래에 덧붙였다. */
+:root {
+  --cream: #fbf6ec; --paper: #fffdf8; --mint: #dff3ea; --mint-deep: #3d8f74;
+  --sky: #dcecf8; --sky-deep: #3a6ea5; --navy: #1f2a44; --navy-soft: #4a5672;
+  --line: #e4dccb; --warn: #a64a25; --warn-bg: #fdebe1; --ok: #2f7a5f; --gold: #c9a24a;
+  --radius: 14px;
+  --shadow: 0 2px 0 rgba(31, 42, 68, 0.06), 0 8px 24px rgba(31, 42, 68, 0.06);
+  --book-edge: #ead9b0; --book-paper: #fffaf0; --rule: #e9e0cc;
+  color-scheme: only light;
+  --topbar-h: 0px; --toast-h: 0px; --sheet-top: 150px;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: var(--topbar-h); scroll-padding-bottom: var(--toast-h); }
+html, body { overscroll-behavior-y: none; }
+body {
+  margin: 0; background: var(--cream); color: var(--navy);
+  font-family: 'IBM Plex Sans KR', system-ui, sans-serif; font-size: 15px; line-height: 1.5;
+  word-break: keep-all; overflow-wrap: anywhere; overflow-anchor: none;
+}
+h2, h3, h4, .logo { font-family: 'Gowun Dodum', 'IBM Plex Sans KR', sans-serif; }
+h2 { font-size: 1.1rem; margin: 0 0 .6rem; display: flex; flex-wrap: wrap; gap: .1rem .5rem; align-items: baseline; }
+h2 small { flex-basis: 100%; }
+h2 small, h3 small { font-weight: 400; color: var(--navy-soft); font-size: .8rem; }
+h3 { font-size: 1rem; margin: 0 0 .5rem; }
+h4 { font-size: .95rem; margin: 0 0 .35rem; }
+button, select {
+  font: inherit; color: var(--navy); background: var(--paper);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: .4rem .75rem; cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--sky-deep); }
+button:disabled { background: #eee9df; color: var(--navy-soft); border-color: #bcb4a4; cursor: not-allowed; }
+button { touch-action: manipulation; }
+button.primary { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+button.link { border: none; background: none; color: var(--sky-deep); text-decoration: underline; padding: 0 .3rem; }
+:focus-visible { outline: 3px solid var(--sky-deep); outline-offset: 2px; }
+.muted { color: var(--navy-soft); }
+.small { font-size: .82rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.topbar { display: contents; }
+.masthead { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; padding: .7rem 1.2rem; background: var(--paper); }
+.statusbar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center;
+  padding: .5rem 1.2rem; background: var(--paper); border-bottom: 1.5px solid var(--line);
+}
+.masthead > *, .statusbar > * { min-width: 0; max-width: 100%; }
+.day-action { margin-left: auto; display: flex; flex-direction: column; align-items: center; }
+.amount-basis { font-size: .75rem; color: var(--navy-soft); }
+.brand { display: flex; flex-direction: column; line-height: 1.1; }
+.logo { font-size: 1.35rem; font-weight: 700; color: var(--mint-deep); }
+.sub { font-size: .75rem; color: var(--navy-soft); }
+.scenario { display: flex; flex-direction: column; font-size: .75rem; color: var(--navy-soft); gap: .15rem; }
+.scenario select { max-width: 100%; }
+.day { display: flex; flex-direction: column; font-size: .8rem; color: var(--navy-soft); }
+.day b { font-size: 1.25rem; color: var(--navy); }
+.stat { display: flex; flex-direction: column; font-size: .75rem; color: var(--navy-soft); }
+.stat b { font-size: 1.02rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+.stat b.omit { color: var(--navy-soft); font-weight: 400; }
+.actions { margin-left: auto; display: flex; gap: .4rem; flex-wrap: wrap; }
+.statusbar .primary:disabled { background: var(--navy-soft); color: #fff; }
+/* 기록장이 펼쳐진 동안만 머리말(저장 등)을 접는다. 고정 막대는 그대로이고 상태는 바뀌지 않는다. */
+body.book-open .masthead { display: none; }
+
+/* 가로 기기(1001px 이상) 계획 배치 + 오른쪽 칸 맨 위 ‘부산 현지’ */
+.layout {
+  display: grid; gap: 1rem; padding: 1rem 1.2rem 5.5rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 300px;
+  grid-template-areas:
+    "trade trade local"
+    "trade trade crew"
+    "trade trade resources"
+    "trade trade queue"
+    "world report log";
+  align-items: start;
+}
+.layout > * { min-width: 0; }
+.trade { grid-area: trade; } .local { grid-area: local; } .crew { grid-area: crew; }
+.resources { grid-area: resources; } .queue { grid-area: queue; }
+.world { grid-area: world; } .report { grid-area: report; } .log { grid-area: log; }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; grid-template-areas: "trade" "local" "queue" "crew" "resources" "report" "world" "log"; }
+}
+.panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); }
+[hidden] { display: none !important; }
+
+/* 거래(배경) */
+.offer, .contract { border: 1.5px dashed var(--line); border-radius: 12px; padding: .9rem; margin-bottom: .9rem; }
+.report-line { background: var(--mint); border-radius: 10px; padding: .6rem .8rem; margin-top: 0; }
+table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.money th { text-align: left; font-weight: 400; padding: .25rem 0; color: var(--navy-soft); }
+table.money td { text-align: right; padding: .25rem 0; }
+table.money tr.total th, table.money tr.total td { font-weight: 700; color: var(--navy); border-top: 1.5px solid var(--line); }
+table.money caption { text-align: left; font-weight: 700; padding-bottom: .3rem; }
+table.money tr.new-row th, table.money tr.new-row td { color: var(--navy); font-weight: 600; background: #fff6d8; }
+.tag-new { display: inline-block; margin-left: .3rem; font-size: .75rem; font-weight: 700; border: 1.5px solid var(--gold); color: #7a5a14; border-radius: 6px; padding: 0 .35rem; }
+.kind { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 6px; padding: .05rem .45rem; margin-right: .25rem; vertical-align: .1em; }
+.kind-trade { background: var(--sky); color: var(--sky-deep); }
+.kind-fwd { background: #f3e6c8; color: #7a5a14; }
+.quote-facts { margin: .5rem 0 0; padding-left: 1.1rem; font-size: .86rem; }
+.pipeline { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; padding: 0; margin: .3rem 0 .8rem; }
+.pipeline li { font-size: .78rem; padding: .2rem .55rem; border-radius: 999px; background: #f1ece0; color: var(--navy-soft); }
+.pipeline li.done { background: var(--mint); color: var(--mint-deep); }
+.pipeline li.now { background: var(--navy); color: #fff; font-weight: 600; }
+.facts { display: grid; grid-template-columns: 5.6rem 1fr; gap: .25rem .6rem; margin: 0 0 .3rem; font-size: .9rem; }
+.facts dt { color: var(--navy-soft); } .facts dd { margin: 0; }
+.bg-note { font-size: .78rem; color: var(--navy-soft); border-left: 3px solid var(--line); padding-left: .5rem; margin: 0 0 .8rem; }
+.pill { display: inline-block; background: var(--sky); color: var(--sky-deep); border-radius: 999px; padding: .1rem .7rem; font-size: .82rem; font-weight: 600; }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.reason { color: var(--warn); font-size: .85rem; }
+
+/* 동료·자원·오늘 할 일·기록 */
+.crew-cards { display: grid; gap: .6rem; }
+.mini-card { border-radius: 14px; padding: .55rem .7rem; background: linear-gradient(160deg, #fffaf0, #f3ead6); border: 3px solid #ead9b0; }
+.mini-card .nm { font-family: 'Gowun Dodum', sans-serif; font-size: 1.1rem; font-weight: 700; }
+.mini-card .meta { font-size: .8rem; color: var(--navy-soft); }
+.mini-card .st { font-size: .85rem; font-weight: 600; color: var(--mint-deep); }
+.mini-card .st.busy { color: var(--warn); }
+.crew-time { list-style: none; padding: 0; margin: .3rem 0; font-size: .86rem; }
+.crew-time li { padding: .3rem 0; border-bottom: 1px solid var(--line); }
+.crew-time small { display: block; color: var(--navy-soft); font-size: .78rem; }
+.flash { border-radius: 10px; padding: .5rem .7rem; font-size: .88rem; }
+.flash.info { background: var(--mint); }
+.flash.warn { background: var(--warn-bg); color: var(--warn); }
+.pending { padding-left: 1.2rem; margin: 0; }
+.pending li { padding: .2rem 0; }
+.log ul { list-style: none; padding: 0; margin: 0; }
+.log li { display: grid; grid-template-columns: 3rem 1fr; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.log li span { color: var(--navy-soft); }
+.books { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; }
+.map-ph { border-radius: 12px; border: 3px solid #c9a24a; background: #16365c; color: #fff6df; min-height: 180px; display: grid; place-items: center; font-size: .85rem; }
+.flash-toast {
+  position: fixed; bottom: .5rem; left: .65rem; right: .65rem; z-index: 6;
+  margin: 0 auto; max-width: 48rem; border: 1px solid var(--line); box-shadow: var(--shadow); pointer-events: none;
+}
+
+/* ── 부산 현지 (오른쪽 칸 맨 위) ── */
+.local { padding: .7rem .9rem; }
+.local-head { display: flex; align-items: center; gap: .5rem; }
+.local-head h2 { margin: 0; flex: 1; }
+.local-head h2 small { flex-basis: auto; }
+.local > p { margin: .25rem 0 0; }
+.venues { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .35rem; }
+.venue { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: .4rem; text-align: left; }
+.venue small { color: var(--navy-soft); font-size: .78rem; }
+.venue[aria-expanded="true"] { border-color: var(--sky-deep); background: #f6fbff; }
+.venue-book { border: 2px solid var(--book-edge); background: linear-gradient(160deg, #fffaf0, #f6ecd5); }
+.venue-book b { display: flex; align-items: center; gap: .35rem; }
+.venue-line { margin: .25rem .2rem .2rem; font-size: .85rem; padding: .35rem .55rem; background: var(--cream); border-radius: 8px; }
+.local-news { margin-top: .6rem; padding: .5rem .6rem; border-left: 3px solid var(--mint-deep); background: #f3fbf7; font-size: .85rem; }
+.local-news button { margin-top: .35rem; min-height: 44px; }
+.ico { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── 기록장 (거래 칸 위에 펼치는 고정 시트) ── */
+.book {
+  position: fixed; z-index: 4;
+  top: var(--sheet-top); bottom: max(var(--toast-h), 8px);
+  left: 1.2rem; right: 1.2rem; margin-inline: auto; max-width: 1240px;
+  display: flex; flex-direction: column;
+  background: var(--book-paper); border: 3px solid var(--book-edge); border-radius: 16px;
+  box-shadow: 0 6px 0 #e0cfa3, 0 18px 48px rgba(31, 42, 68, .22);
+  overflow: hidden;
+}
+.book-head { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; padding: .4rem .7rem; background: var(--paper); border-bottom: 1.5px solid var(--line); }
+.book-head h2 { margin: 0; flex-wrap: nowrap; align-items: center; gap: .4rem; white-space: nowrap; }
+.book-head h2 small { flex-basis: auto; white-space: normal; }
+.book-tabs { display: flex; flex-wrap: wrap; gap: .3rem; }
+.book-tabs button { min-height: 44px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; line-height: 1.2; padding: .2rem .6rem; font-size: .88rem; }
+.book-tabs button small { font-size: .75rem; color: var(--navy-soft); }
+.book-tabs button[aria-current="page"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+.book-tabs button[aria-current="page"] small { color: #dfe6f5; }
+.book-tools { margin-left: auto; display: flex; gap: .4rem; }
+.book-tools button { min-height: 44px; }
+.book-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: .7rem .9rem 2.4rem; }
+.book-queue { border-top: 1.5px solid var(--line); background: var(--paper); padding: .35rem .9rem; display: flex; flex-wrap: wrap; gap: .2rem 1rem; align-items: center; font-size: .88rem; }
+.book-queue h3 { margin: 0; font-size: .92rem; }
+.book-queue ol { margin: 0; padding-left: 1.1rem; }
+.book-queue li { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+.book-queue .hint { color: var(--navy-soft); font-size: .8rem; }
+
+/* 펼친 두 쪽 */
+.spread { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.page { padding: 0 1rem; min-width: 0; }
+.page.left { border-right: 2px solid var(--book-edge); padding-left: .2rem; }
+.page.right { padding-right: .2rem; }
+.page-head { display: grid; grid-template-columns: auto 1fr; gap: 0 .6rem; align-items: baseline; margin-bottom: .45rem; }
+.page-no { grid-row: span 2; font-family: 'Gowun Dodum', sans-serif; font-size: 1.05rem; font-weight: 700; color: #7a5a14; border: 2px solid var(--book-edge); border-radius: 8px; padding: .05rem .45rem; background: #fff; }
+.page-head h3 { margin: 0; font-size: 1.12rem; }
+.page-sub { margin: 0; font-size: .85rem; color: var(--navy-soft); }
+.obs { margin: 0 0 .5rem; padding-left: 1.1rem; font-size: .82rem; color: var(--navy-soft); }
+.need { margin: .55rem 0 0; padding: .45rem .65rem; border: 1.5px dashed #cdbf9c; border-radius: 10px; font-size: .88rem; background: #fff; }
+.need b { margin-right: .35rem; }
+.ribbon { margin: 0 0 .5rem; padding: .35rem .6rem; border-radius: 8px; background: var(--sky); color: var(--sky-deep); font-size: .85rem; font-weight: 600; }
+
+/* 네 줄 기록: 같은 크기·같은 상자. ‘말하지 않는 것’만 표시를 더 붙인다. */
+.rec { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.rec-row { border: 1.5px solid var(--rule); border-radius: 10px; padding: .4rem .65rem .45rem; background: #fff; }
+.lab { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .45rem; margin: 0; font-size: .85rem; font-weight: 700; }
+.lab small { font-weight: 400; color: var(--navy-soft); font-size: .78rem; }
+.lab-no { display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--navy); color: #fff; font-size: .75rem; align-self: center; }
+.txt { margin: .15rem 0 0; font-size: 15px; line-height: 1.55; }
+.txt.empty { color: var(--navy-soft); font-size: .85rem; border-bottom: 1.5px dashed #cfc6b2; min-height: 1.6em; padding-bottom: .1rem; }
+.rec-row.not { border: 2px solid var(--warn); background: #fff8f4; }
+.rec-row.not .lab-no { background: var(--warn); }
+.stamp { margin-left: auto; display: inline-flex; align-items: center; gap: .2rem; font-size: .75rem; font-weight: 700; color: var(--warn); border: 1.5px solid var(--warn); border-radius: 6px; padding: 0 .4rem; background: #fff; transform: rotate(-2deg); }
+.rec.compact { gap: 0; }
+.rec.compact .rec-row { border: none; border-bottom: 1.5px dashed #d8cfba; border-radius: 0; padding: .2rem .1rem; background: none; }
+.rec.compact .rec-row.not { border-left: 4px solid var(--warn); padding-left: .4rem; background: #fff8f4; }
+.rec.compact .lab { font-size: .82rem; }
+.rec.compact .lab .empty-mark { margin-left: auto; font-weight: 400; color: var(--navy-soft); font-size: .78rem; }
+.rec.compact .txt { font-size: .85rem; line-height: 1.45; }
+
+.rec-card { margin: 0; }
+.rec-meta { margin: 0 0 .45rem; font-size: .85rem; color: var(--navy-soft); }
+.rec-meta b { color: var(--navy); }
+.rec-foot { margin: .55rem 0 0; display: grid; gap: .3rem; font-size: .88rem; }
+.rec-foot p { margin: 0; }
+.unch { padding: .35rem .6rem; border-radius: 8px; background: var(--sky); }
+.unch b, .pv-tag { margin-right: .35rem; }
+
+/* 미리 보기: 1366×657에서도 넣기 단추까지 한 화면 */
+.fill-h { margin: 0 0 .35rem; font-size: 1.02rem; }
+.emp-pick { border: none; padding: 0; margin: 0 0 .55rem; }
+.emp-pick legend { font-family: 'Gowun Dodum', sans-serif; font-weight: 700; font-size: 1rem; padding: 0; margin-bottom: .3rem; }
+.emp-pick legend small { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 400; font-size: .8rem; color: var(--navy-soft); margin-left: .3rem; }
+.emp-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; }
+.emp { min-height: 44px; text-align: left; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .45rem; line-height: 1.25; padding: .3rem .7rem; }
+.emp b { font-family: 'Gowun Dodum', sans-serif; font-size: 1.02rem; }
+.emp small { color: var(--navy-soft); font-size: .78rem; }
+.emp[aria-pressed="true"] { border: 2.5px solid var(--navy); background: #f2f5fb; }
+.emp[aria-pressed="true"] b::before { content: '✓ '; }
+.preview { border: 1.5px solid var(--line); border-radius: 12px; background: #fff; padding: .55rem .7rem; }
+.preview > p { margin: 0 0 .35rem; font-size: .9rem; }
+.pv-first { padding: .3rem .55rem; border-radius: 8px; background: #fff6d8; border-left: 4px solid var(--gold); font-weight: 600; }
+.pv-first.bad { background: var(--warn-bg); border-left-color: var(--warn); color: var(--warn); }
+.pv-tag { display: inline-block; font-size: .75rem; font-weight: 700; border-radius: 6px; padding: 0 .4rem; border: 1.5px solid currentColor; }
+.pv-warn { padding: .3rem .55rem; border-radius: 8px; background: var(--warn-bg); color: #7a3517; }
+.pv-list { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: .25rem .6rem; margin: .1rem 0 .4rem; font-size: .88rem; }
+.pv-list dt { color: var(--navy-soft); font-size: .82rem; padding-top: .05rem; }
+.pv-list dd .muted { font-size: .8rem; }
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem; }
+.chips li { border: 1.5px solid var(--mint-deep); color: #245c4a; background: #f3fbf7; border-radius: 999px; padding: 0 .55rem; font-size: .82rem; font-weight: 600; }
+.pv-list dd { margin: 0; }
+.pv-list dd small { display: block; color: var(--navy-soft); font-size: .78rem; }
+.pv-list ul { margin: 0; padding-left: 1rem; }
+.rf1-warn { color: var(--warn); font-weight: 700; }
+.slot { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; min-height: 44px; }
+.slot button { min-height: 44px; }
+.slot .pill { display: inline-flex; align-items: center; min-height: 44px; font-size: .9rem; }
+.slot p { margin: 0; font-size: .8rem; color: var(--navy-soft); flex: 1 1 12rem; }
+
+/* 목차: 세 쪽 + 사람별 기록 */
+.toc-intro { margin: 0 0 .55rem; font-size: .85rem; color: var(--navy-soft); }
+.toc-pages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.mini { border: 2px solid var(--book-edge); border-radius: 12px; background: #fff; padding: .55rem .65rem; display: flex; flex-direction: column; gap: .35rem; }
+.mini.filled { border-color: var(--mint-deep); }
+.mini-no { margin: 0; font-size: .78rem; font-weight: 700; color: #7a5a14; display: flex; justify-content: space-between; gap: .4rem; }
+.mini-no .state { border: 1.5px solid currentColor; border-radius: 6px; padding: 0 .35rem; }
+.mini.filled .mini-no .state { color: var(--mint-deep); }
+.mini h4 { margin: 0; font-size: .98rem; }
+.mini .mini-sub { margin: 0; font-size: .8rem; color: var(--navy-soft); }
+.mini .need { margin: 0; font-size: .82rem; }
+.mini-meta { margin: 0; font-size: .8rem; color: var(--navy-soft); }
+.mini button { min-height: 44px; margin-top: auto; }
+.people { margin-top: .8rem; padding-top: .6rem; border-top: 2px solid var(--book-edge); }
+.people h3 small { margin-left: .3rem; }
+.people-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem 1.2rem; }
+.people ul { list-style: none; margin: 0; padding: 0; font-size: .88rem; }
+.people li { padding: .25rem 0; border-bottom: 1px dotted var(--line); }
+.people li b { margin-right: .4rem; }
+.people p { margin: .4rem 0 0; }
+
+/* 결과 줄이 천천히 쓰인다(움직임 줄이기 설정이면 바로 보인다). */
+.ink { animation: ink .75s ease-out both; animation-delay: calc(var(--i) * .45s + .1s); }
+@keyframes ink { from { clip-path: inset(0 100% 0 0); opacity: .25; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+.ink-stamp { animation: stamp .5s ease-out both; animation-delay: 1.6s; }
+@keyframes stamp { from { opacity: 0; transform: scale(1.5) rotate(-8deg); } to { opacity: 1; transform: scale(1) rotate(-2deg); } }
+@media (prefers-reduced-motion: reduce) { .ink, .ink-stamp { animation: none; } }
+
+/* 시안 표시 */
+.mock-tag { position: fixed; right: .5rem; bottom: .5rem; z-index: 7; display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; }
+.mock-tag > button { font-size: .8rem; font-weight: 700; padding: .2rem .6rem; border-radius: 999px; background: #3b2f5c; color: #fff; border-color: #3b2f5c; opacity: .92; }
+.mock-notes { width: min(25rem, calc(100vw - 1rem)); max-height: min(70vh, 34rem); overflow: auto; background: #fff; border: 2px solid #3b2f5c; border-radius: 12px; padding: .7rem .8rem; font-size: .82rem; box-shadow: var(--shadow); }
+.mock-notes h3 { font-size: .95rem; margin: 0 0 .3rem; }
+.mock-notes ul { margin: .2rem 0 .5rem; padding-left: 1rem; }
+.mock-notes button { min-height: 40px; }
+.rf1-demo { border: 1.5px dashed var(--warn); border-radius: 8px; padding: .3rem .5rem; margin: .2rem 0 .5rem; }
+
+@media (any-pointer: coarse) {
+  button, select, summary { min-height: 44px; }
+  select { font-size: 16px; }
+  button.link { padding: .55rem .65rem; }
+  .mock-tag > button { min-height: 44px; }
+}
+@media (pointer: coarse) {
+  button, select, summary { min-height: 44px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="masthead">
+      <div class="brand"><span class="logo">Scitrade</span><span class="sub">M2 시제품 · 규칙 M2a-rules-1 · DESIGN 가상값</span></div>
+      <label class="scenario">시나리오
+        <select data-act="noop-select"><option>복수 계약과 운송 주선 — 자금·인력·선복 예약</option></select>
+      </label>
+      <div class="actions">
+        <button data-act="noop" aria-disabled="true">저장</button>
+        <button data-act="noop" aria-disabled="true">불러오기</button>
+        <button data-act="noop" aria-disabled="true">내보내기</button>
+        <button data-act="noop" aria-disabled="true">가져오기</button>
+        <button data-act="noop" aria-disabled="true">처음부터</button>
+      </div>
+    </div>
+    <div class="statusbar" id="status-h" tabindex="-1" aria-label="오늘 상태">
+      <div class="day"><div class="date"><b id="sb-day">2일</b> / 90</div><span id="sb-phase">의사결정 중 · 시간 정지</span></div>
+      <div class="stat"><span>거래 현금 (USD)</span><b class="omit" title="시안에서 생략">—</b></div>
+      <div class="stat"><span>사용 가능 (예약 제외)</span><b class="omit" title="시안에서 생략">—</b></div>
+      <div class="stat"><span>운영 현금 (KRW)</span><b id="sb-krw">9,780,000원</b></div>
+      <div class="stat"><span>다음 수금</span><b class="omit" title="시안에서 생략">—</b></div>
+      <div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-act="end-day" data-step="end-day">하루 진행 ▶</button></div>
+    </div>
+  </header>
+
+  <main class="layout" id="main">
+    <section class="panel trade" aria-labelledby="trade-h">
+      <h2 id="trade-h">거래·계약 <small>진행 중 1건</small></h2>
+      <h3 class="board-title">견적판 <small>무엇을 맡을지 고르세요</small></h3>
+      <article class="offer" aria-labelledby="offer-h">
+        <h3 id="offer-h"><span class="kind kind-trade">직접 무역</span> 의류 100개 · 부산 → 요코하마</h3>
+        <p class="report-line"><b>귀솔의 보고</b> — “부산 공급자가 의류 100개을(를) 내놨고, 요코하마 고객이 같은 수량을 원합니다. 납기 8일, 대금은 10일에 받습니다.”</p>
+        <table class="money">
+          <tr><th>매입 (100개 × 10.00 USD)</th><td>−1,000.00 USD</td></tr>
+          <tr><th>운임 (선지급)</th><td>−200.00 USD</td></tr>
+          <tr><th>관세 (가상 세율 5% · 상품 송장 기준)</th><td>−50.00 USD</td></tr>
+          <tr><th>판매 (100개 × 14.00 USD)</th><td>+1,400.00 USD</td></tr>
+          <tr class="total"><th>예상 기여이익 (급여 전)</th><td>150.00 USD</td></tr>
+        </table>
+        <ul class="quote-facts"><li>수락하려면 사용 가능 자금 1,250.00 USD가 필요합니다 (매입·운임·관세를 미리 묶음).</li><li>화물 공간 50kg · 0.3m³</li></ul>
+        <p><button data-act="noop" aria-disabled="true">직접 무역 수락</button></p>
+      </article>
+      <h3>진행 중</h3>
+      <article class="contract" aria-labelledby="ct2-h">
+        <h3 id="ct2-h"><span class="kind kind-fwd">운송 주선</span> CT002</h3>
+        <ol class="pipeline"><li class="done">의뢰</li><li class="done">체결·화물 인수</li><li class="now" aria-current="step">준비 배정</li><li>선적 서류</li><li>출발 대기</li><li>운송</li><li>도착·반출</li><li>인도·채권</li><li>수금·종결</li></ol>
+        <dl class="facts"><dt>준비</dt><dd>CT002 운송 주선 준비 2pt — 미배정</dd><dt>운송</dt><dd>9일 출항편 예약됨</dd></dl>
+      </article>
+      <p class="bg-note">시안 배경: 견적판은 1일 화면에서 옮긴 자리표시입니다. 이 시안이 평가하는 것은 ‘부산 현지’와 기록장입니다.</p>
+    </section>
+
+    <section class="panel local" id="local" aria-labelledby="local-h"></section>
+
+    <aside class="panel crew" id="crew" aria-labelledby="crew-h"></aside>
+    <section class="panel resources" id="resources" aria-labelledby="res-h"></section>
+    <section class="panel queue" id="queue" aria-labelledby="queue-h"></section>
+    <section class="panel world" aria-labelledby="world-h">
+      <h2 id="world-h">세계지도 <small>운항 중인 화물 없음</small></h2>
+      <div class="map-ph">세계지도 자리 (시안에서 생략)</div>
+    </section>
+    <section class="panel report" id="report" aria-labelledby="report-h"></section>
+    <section class="panel log" id="log" aria-labelledby="log-h"></section>
+  </main>
+
+  <section class="book" id="book" aria-labelledby="book-h" hidden>
+    <div class="book-head" id="book-head"></div>
+    <div class="book-body" id="book-body"></div>
+    <div id="book-foot"></div>
+  </section>
+
+  <div class="flash-toast flash info" id="toast" role="status" hidden></div>
+
+  <div class="mock-tag">
+    <div class="mock-notes" id="mock-notes" hidden>
+      <h3>시안 C · 기록장 중심형</h3>
+      <p>‘부산 현지’를 열고 ‘문화생활·현지 탐방’을 고르면 부산 기록장이 거래 칸 위에 펼쳐집니다. 쪽을 고르는 것이 활동을 고르는 것입니다.</p>
+      <h3>TASK-0012 의무 항목 위치</h3>
+      <ul>
+        <li>RF-1: 미리 보기 ‘활동비·기간’ 줄(끝나는 날과 마지막 날). 넘기면 아래처럼 바뀝니다.</li>
+        <li>RF-2: 시작이 거절되면 ‘새로 생길 기록’ 줄이 없습니다. 1쪽을 귀솔로 넣은 뒤 2쪽에서 귀솔을 골라 보세요.</li>
+        <li>‘현지 활동비’ 행: 경영 보고 → 운영 장부 · KRW.</li>
+        <li>급여 문구: 미리 보기(현금 − 미지급 급여, 급여는 활동비와 별도).</li>
+        <li>P0-CITY-01: 열기·닫기만으로 날짜·현금이 그대로입니다. 금융센터 줄에 ‘주식(P1)·상장(P2) 없음’.</li>
+        <li>M1(현지 기능 없음): 아래 단추로 확인합니다.</li>
+      </ul>
+      <div class="rf1-demo" aria-label="RF-1 표시 예">
+        <dl class="pv-list"><dt>활동비·기간</dt><dd>20,000원 · 1일 · 91일에 끝남<small class="rf1-warn">⚠ 캠페인 마지막 날(90일)을 넘깁니다</small></dd></dl>
+      </div>
+      <p><button data-act="toggle-m1" id="m1-btn" aria-pressed="false">M1처럼 보기 (현지 기능 없음)</button></p>
+      <h3>시안 한계</h3>
+      <ul>
+        <li>USD 값과 하루 급여 차감은 넣지 않았습니다. 하루 진행 뒤 원화 현금은 활동비만 뺀 값입니다.</li>
+        <li>견적판·지도·동료 카드는 배경 자리표시입니다.</li>
+      </ul>
+    </div>
+    <button data-act="toggle-notes" aria-expanded="false" aria-controls="mock-notes" title="시안 C · 기록장 중심형 — 메모 열기">시안 C</button>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+// ── 자료: data/culture_activities.json(CA01~CA03), data/venues.json, 연락처 이름 ──
+const CAMPAIGN_DAYS = 90;
+const CITY = 'BUSAN';
+const CITY_KO = '부산';
+const UNCHANGED_KO = '가격·하루 처리량·운임·관세·거래 신뢰'; // culturePreview().unchangedKo
+const XP_FIRST = 10; // character_rules task_completion_xp
+const CONTACTS = {
+  NPC_MARKET: { id: 'NPC_MARKET', nameKo: '시장 상인 윤서' },
+  NPC_GUIDE: { id: 'NPC_GUIDE', nameKo: '지역 기록 안내자 하람' },
+};
+const ACTS = [
+  { id: 'CA01', no: 1, titleKo: '시장과 포장 요구 탐방', topicKo: '한 상인의 포장·보관 요구', costMinor: 20000, durationDays: 1, contactIds: ['NPC_MARKET'],
+    observationsKo: ['가상 상인에게 현재 판매 규격과 보관 공간의 제약을 묻습니다.', '한 사람의 답변임을 표시하고 추가 인터뷰가 필요한 항목을 기록합니다.'],
+    reportKo: { findingKo: '윤서: “지금 들여오는 상자는 우리 가게 선반에 다 들어가지 않아요. 더 작은 묶음이면 좋겠어요.”',
+      scopeKo: '판매점 1곳, 1명(윤서), 활동한 날 하루의 대화. 다른 가게나 손님에게는 확인하지 않았습니다.',
+      notClaimedKo: '부산의 다른 상인이나 손님도 작은 포장을 원한다는 뜻이 아닙니다.',
+      openQuestionKo: '윤서가 원하는 묶음 크기와 수량, 그런 규격을 이미 공급하는 거래처가 있는지.' } },
+  { id: 'CA02', no: 2, titleKo: '박물관과 항구 기록 산책', topicKo: '항구 기록을 읽을 때 확인할 질문', costMinor: 10000, durationDays: 1, contactIds: ['NPC_GUIDE'],
+    observationsKo: ['가상 전시의 서로 다른 설명을 비교하고 출처와 시점을 확인합니다.', '실제 지역사 사실은 검증한 자료가 추가되기 전까지 서술하지 않습니다.'],
+    reportKo: { findingKo: '하람: “같은 배를 두고 전시 안내문과 옛 장부의 날짜가 달라요. 어느 쪽이 맞는지 정하기 전에, 각각 누가 언제 무엇을 보고 썼는지부터 확인해야 해요.”',
+      scopeKo: '가상 전시 1곳의 기록 2건을 안내자 1명(하람)과 비교했습니다. 어느 기록이 맞는지는 확인하지 않았습니다.',
+      notClaimedKo: '두 기록 가운데 어느 쪽이 옳은지, 그리고 실제 부산항의 역사(이 전시는 가상입니다).',
+      openQuestionKo: '두 기록을 쓴 사람·시점·근거, 그리고 둘 다 틀렸을 가능성.' } },
+  { id: 'CA03', no: 3, titleKo: '언어 교류와 주문 확인', topicKo: '특정 상대의 주문 표현을 확인하는 방법', costMinor: 30000, durationDays: 1, contactIds: ['NPC_MARKET', 'NPC_GUIDE'],
+    observationsKo: ['가상 주문의 모호한 납기·수량 표현을 찾아 질문합니다.', '상대가 확인한 의미와 아직 불분명한 부분을 나누어 기록합니다.'],
+    reportKo: { findingKo: '윤서: “‘다음 주 초에 조금 더’라고 하면 저는 월요일에 열 상자 정도를 뜻해요.” / 하람: “같은 말도 사람마다 뜻이 다를 수 있으니, 날짜와 숫자로 다시 말해 달라고 하세요.”',
+      scopeKo: '2명(윤서·하람)과 하루의 대화. ‘월요일·열 상자 정도’는 윤서 본인에게 확인한 뜻입니다. 다른 거래처의 표현은 확인하지 않았습니다.',
+      notClaimedKo: '부산의 다른 상인도 같은 말을 같은 뜻으로 쓴다는 뜻이 아닙니다.',
+      openQuestionKo: '‘정도’가 몇 상자까지인지, 매주 같은 양인지.' } },
+];
+const EMPS = [
+  { id: 'EMP01', nameKo: '귀솔', speciesKo: '사막여우' },
+  { id: 'EMP02', nameKo: '물보리', speciesKo: '수달' },
+];
+// 문화 외 4곳은 한 줄 안내만(DECISIONS M2a-4). 문구는 실제 구현에서 src/ui/culture.ts 한 곳에 둔다.
+const VENUES = [
+  { id: 'VEN_TRADE', step: 'venue-trade', titleKo: '무역회관', lineKo: '견적과 계약은 ‘거래·계약’의 견적판에서 합니다.' },
+  { id: 'VEN_PORT', step: 'venue-port', titleKo: '항만 물류단지', lineKo: '운송편 예약은 각 계약 카드에서 합니다.' },
+  { id: 'VEN_LOUNGE', step: 'venue-lounge', titleKo: '비즈니스 라운지', lineKo: '직원 영입은 ‘동료’ 칸의 ‘후보’에서 합니다.' },
+  { id: 'VEN_CULTURE', step: 'venue-culture', titleKo: '문화생활·현지 탐방', book: true },
+  { id: 'VEN_FINANCE', step: 'venue-finance', titleKo: '금융센터', lineKo: '주식(P1)·상장(P2) 없음. 현금은 위쪽 막대와 ‘경영 보고’에서 봅니다.' },
+];
+const LINES = [
+  ['findingKo', '알게 된 점', '누가 무엇을 말했나'],
+  ['scopeKo', '범위', '몇 명·어디·언제 확인했나'],
+  ['notClaimedKo', '이 기록이 말하지 않는 것', '넓혀 읽으면 안 되는 것'],
+  ['openQuestionKo', '아직 모르는 것', '다음에 확인할 것'],
+];
+
+// ── 도우미 ──
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const won = (minor) => `${minor < 0 ? '−' : ''}${Math.abs(minor).toLocaleString('ko-KR')}원`; // engine formatMoney('KRW')
+const actOf = (id) => ACTS.find((a) => a.id === id);
+const empName = (id) => EMPS.find((e) => e.id === id)?.nameKo ?? '미배정';
+const lastName = (contactId) => CONTACTS[contactId].nameKo.trim().split(/\s+/).at(-1);
+const hasFinal = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
+const topicJosa = (w) => w + (hasFinal(w) ? '은' : '는');
+const runwayKo = (day) => (day === null ? `${CAMPAIGN_DAYS}일(캠페인 끝)까지` : `${day}일까지`);
+const ICON_BOOK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C6.5 4 9.5 4 12 5.5v14C9.5 18 6.5 18 4 19.5z"/><path d="M20 5.5C17.5 4 14.5 4 12 5.5v14c2.5-1.5 5.5-1.5 8 0z"/></svg>';
+const ICON_PIN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.6-6-10.5A6 6 0 0 1 18 10.5C18 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></svg>';
+
+// ── 상태: 엔진 GameState의 필요한 부분만 흉내 낸다 ──
+function initialState() {
+  return {
+    day: 2, phase: 'AWAITING_INPUT',
+    krwCash: 9780000, unpaidObligations: 0, cultureExpense: 0,
+    employees: EMPS.map((e) => ({ id: e.id, locationCityId: CITY, employed: true, availableFromDay: 1 })),
+    tasks: [{ id: 'TASK-CT002-FWD', kind: 'FORWARDING_PREP', contractId: 'CT002', subjectKo: 'CT002 운송 주선 준비', cityId: CITY,
+      requiredWorkUnits: 2, progressWorkUnits: 0, status: 'QUEUED', assignedEmployeeId: null }],
+    bookings: [{ contractId: 'CT002', status: 'BOOKED', departureDay: 9 }],
+    culture: { reports: [], experiences: [], relationEvents: [] },
+    xpAwards: {}, log: [],
+  };
+}
+let state = initialState();
+const ui = {
+  pending: [], flash: null, m1: false,
+  localOpen: false, venueLines: new Set(),
+  bookOpen: false, bookView: 'toc', page: null, emp: null,
+  fresh: null,          // { day, items:[{actId, empId, newReport, logText, xp}] } 마지막 하루 진행 결과
+  inked: new Set(),     // 결과 줄 쓰기 효과를 이미 보여 준 보고서
+  scrollBeforeBook: 0,
+};
+let seq = 0;
+const clone = (o) => structuredClone(o);
+
+// ── 엔진 흉내: START_CULTURE_ACTIVITY 검사와 문구는 engine.ts 그대로 ──
+function runningTaskOf(s, empId) { return s.tasks.find((t) => t.status === 'RUNNING' && t.assignedEmployeeId === empId); }
+function employeeUnavailable(s, empId, cityId) {
+  const emp = s.employees.find((e) => e.id === empId);
+  const name = empName(empId);
+  if (!emp || !emp.employed) return '고용 중인 직원이 아닙니다.';
+  if (emp.availableFromDay > s.day) return `${name}은(는) ${emp.availableFromDay}일부터 업무를 맡을 수 있습니다.`;
+  if (emp.locationCityId !== cityId) return `${name}은(는) 다른 도시에 있습니다. 이 업무는 ${CITY_KO} 현지 인력이 필요합니다.`;
+  const busy = runningTaskOf(s, empId);
+  if (busy) {
+    const subject = busy.kind === 'CULTURE' ? actOf(busy.subjectId).titleKo : busy.subjectKo;
+    const label = busy.kind === 'CULTURE' ? '현지 활동' : '주선 준비';
+    return `${name}은(는) 다른 업무(${subject} ${label})를 진행 중입니다. 한 사람은 한 번에 업무 하나만 맡습니다.`;
+  }
+  return null;
+}
+function startCulture(s, actId, empId) {
+  if (ui.m1) return '이 시나리오에서는 현지 활동을 할 수 없습니다.';
+  const a = actOf(actId);
+  if (!a) return '현지 활동을 찾을 수 없습니다.';
+  const un = employeeUnavailable(s, empId, CITY);
+  if (un) return un;
+  const name = empName(empId);
+  if (s.culture.experiences.some((e) => e.employeeId === empId && e.activityId === actId)) {
+    return `${name}은(는) 이미 이 활동에 참여했습니다. 다시 해도 새로 생기는 기록이 없습니다.`;
+  }
+  const running = s.tasks.find((t) => t.kind === 'CULTURE' && t.subjectId === actId && t.status === 'RUNNING' && t.assignedEmployeeId !== empId);
+  if (running) return `같은 활동에 오늘 이미 ${empName(running.assignedEmployeeId)}이(가) 갑니다. 끝난 뒤에 보낼 수 있습니다.`;
+  const taskId = `CULTURE-${actId}-${empId}-D${s.day}`;
+  if (s.tasks.some((t) => t.id === taskId)) return '이미 생성된 업무 ID입니다.';
+  const available = s.krwCash - s.unpaidObligations;
+  if (available < a.costMinor) return `현지 활동비 자금이 부족합니다. 필요 ${won(a.costMinor)}, 사용 가능 ${won(available)}.`;
+  s.tasks.push({ id: taskId, kind: 'CULTURE', subjectId: actId, cityId: CITY, requiredWorkUnits: a.durationDays, progressWorkUnits: 0,
+    status: 'RUNNING', assignedEmployeeId: empId, startedDay: s.day, completedDay: null });
+  s.krwCash -= a.costMinor; s.cultureExpense += a.costMinor;
+  s.log.push({ day: s.day, textKo: `${name} ${a.titleKo} 시작 (${a.durationDays}일, 현지 활동비 ${won(a.costMinor)})` });
+  return null;
+}
+function planState(s0, cmds) {
+  const s = clone(s0);
+  const results = cmds.map((c) => { const r = startCulture(s, c.activityId, c.employeeId); return r ? { status: 'REJECTED', reasonKo: r } : { status: 'APPLIED' }; });
+  return { state: s, results };
+}
+/** previews.ts culturePreview와 같은 필드 */
+function culturePreview(s, actId, empId) {
+  const a = actOf(actId);
+  const probe = clone(s);
+  const reason = s.phase === 'AWAITING_INPUT' ? startCulture(probe, actId, empId) : '캠페인이 끝났습니다.';
+  const allowed = reason === null;
+  const availableBeforeMinor = s.krwCash - s.unpaidObligations;
+  return {
+    allowed, reasonKo: allowed ? null : reason,
+    cost: { currency: 'KRW', minor: a.costMinor }, durationDays: a.durationDays,
+    busyFromDay: s.day, busyUntilDay: s.day + a.durationDays - 1,
+    availableBeforeMinor, availableAfterMinor: availableBeforeMinor - a.costMinor,
+    payrollRunwayBefore: null, payrollRunwayAfter: null, // 시안 가정: 둘 다 캠페인 끝까지
+    waitingTasks: s.tasks.filter((t) => t.cityId === CITY && t.status === 'QUEUED' && t.assignedEmployeeId === null)
+      .map((task) => ({ task, reservedDepartureDay: s.bookings.find((b) => b.contractId === task.contractId && b.status === 'BOOKED')?.departureDay ?? null })),
+    otherFreeLocalEmployeeIds: s.employees.filter((e) => e.id !== empId && e.locationCityId === CITY && !runningTaskOf(s, e.id)).map((e) => e.id),
+    newRecords: {
+      companyReport: s.culture.reports.some((r) => r.activityId === actId) ? 'EXISTS' : 'NEW',
+      actorExperience: !s.culture.experiences.some((e) => e.employeeId === empId && e.activityId === actId),
+      relationContactIds: a.contactIds.filter((cid) => !s.culture.relationEvents.some((r) => r.employeeId === empId && r.contactId === cid && r.activityId === actId)),
+      firstCompletionXp: s.xpAwards[`${empId}|CULTURE-FIRST-${actId}|CULTURE_FIRST_XP`] ? 0 : XP_FIRST,
+    },
+    unchangedKo: UNCHANGED_KO,
+  };
+}
+/** culture.ts recordCultureCompletion: 보고서·직접 경험·함께한 활동·로그·첫 완료 경험치 */
+function recordCompletion(s, task) {
+  const a = actOf(task.subjectId);
+  const empId = task.assignedEmployeeId;
+  const newReport = !s.culture.reports.some((r) => r.activityId === a.id);
+  if (newReport) s.culture.reports.push({ activityId: a.id, sourceContactIds: [...a.contactIds], reporterEmployeeId: empId, day: task.completedDay, status: 'UNVERIFIED' });
+  if (!s.culture.experiences.some((e) => e.employeeId === empId && e.activityId === a.id)) s.culture.experiences.push({ employeeId: empId, activityId: a.id, verifiedDay: task.completedDay });
+  for (const cid of a.contactIds) {
+    if (!s.culture.relationEvents.some((r) => r.employeeId === empId && r.contactId === cid && r.activityId === a.id)) {
+      s.culture.relationEvents.push({ employeeId: empId, contactId: cid, activityId: a.id, day: task.completedDay, kind: 'SHARED_ACTIVITY' });
+    }
+  }
+  const contacts = a.contactIds.map(lastName);
+  const lastCode = contacts.at(-1).at(-1).charCodeAt(0);
+  const particle = lastCode >= 0xAC00 && lastCode <= 0xD7A3 && (lastCode - 0xAC00) % 28 !== 0 ? '과' : '와';
+  const logText = `${empName(empId)}: ${a.titleKo} 완료 — 회사 기록 ${newReport ? '새로 1건' : '이미 있음'} · 직접 경험 · ${contacts.join('·')}${particle} 함께한 활동`;
+  s.log.push({ day: s.day, textKo: logText });
+  const xpKey = `${empId}|CULTURE-FIRST-${a.id}|CULTURE_FIRST_XP`;
+  let xp = 0;
+  if (!s.xpAwards[xpKey]) { s.xpAwards[xpKey] = XP_FIRST; xp = XP_FIRST; }
+  return { actId: a.id, empId, newReport, logText, xp };
+}
+function cultureBook(s) {
+  return {
+    reports: s.culture.reports.map((r) => ({ ...r, reportKo: actOf(r.activityId).reportKo })),
+    employees: s.employees.filter((e) => e.employed).map((e) => ({ employeeId: e.id, experiences: s.culture.experiences.filter((x) => x.employeeId === e.id) })),
+    relations: s.employees.filter((e) => e.employed).flatMap((e) => Object.keys(CONTACTS).map((cid) => ({ employeeId: e.id, contactId: cid,
+      events: s.culture.relationEvents.filter((r) => r.employeeId === e.id && r.contactId === cid) }))),
+  };
+}
+function commandLabel(c) {
+  const a = actOf(c.activityId);
+  return `${a.titleKo} → ${empName(c.employeeId)} (${won(a.costMinor)}·${a.durationDays}일)`;
+}
+function crewStatusKo(task) { return task ? `◇ 현지 활동 중 ${task.progressWorkUnits}/${task.requiredWorkUnits}일` : '○ 대기'; }
+
+// ── 화면 ──
+let view = state;
+function renderStatus() {
+  $('#sb-day').textContent = `${Math.min(state.day, CAMPAIGN_DAYS)}일`;
+  $('#sb-phase').textContent = state.phase === 'AWAITING_INPUT' ? '의사결정 중 · 시간 정지' : '캠페인 종료';
+  $('#sb-krw').textContent = won(state.krwCash);
+  $('[data-act="end-day"]').disabled = state.phase !== 'AWAITING_INPUT';
+}
+
+function renderLocal() {
+  const el = $('#local');
+  el.hidden = ui.m1;
+  if (ui.m1) { el.innerHTML = ''; return; }
+  const venues = VENUES.map((v) => {
+    if (v.book) {
+      return `<li><button class="venue venue-book" data-act="open-book" data-step="${v.step}" data-key="${v.step}">
+        <b>${ICON_BOOK}${esc(v.titleKo)}</b><small>부산 기록장 펼치기</small></button></li>`;
+    }
+    const open = ui.venueLines.has(v.id);
+    return `<li><button class="venue" data-act="venue" data-venue="${v.id}" data-step="${v.step}" data-key="${v.step}" aria-expanded="${open}" aria-controls="vl-${v.id}">
+        <span>${esc(v.titleKo)}</span><small>${open ? '접기' : '한 줄 안내'}</small></button>
+      <p class="venue-line" id="vl-${v.id}" ${open ? '' : 'hidden'}>${esc(v.lineKo)}</p></li>`;
+  }).join('');
+  const fresh = ui.fresh && !ui.bookOpen ? ui.fresh.items.filter((i) => i.newReport) : [];
+  const news = fresh.length ? `<div class="local-news" role="note">
+      <b>새로 채워진 쪽</b> ${fresh.map((i) => `${actOf(i.actId).no}쪽 ${esc(actOf(i.actId).topicKo)} (${ui.fresh.day}일, ${esc(empName(i.empId))})`).join(', ')}
+      <br><button data-act="open-page" data-page="${fresh[0].actId}" data-key="news-open">그 쪽 펼치기</button></div>` : '';
+  el.innerHTML = `
+    <div class="local-head"><h2 id="local-h">${ICON_PIN}부산 현지 <small>장소 5곳</small></h2>
+      <button data-act="toggle-local" data-step="open-local" data-key="open-local" aria-expanded="${ui.localOpen}" aria-controls="venue-list">${ui.localOpen ? '접기' : '열기'}</button></div>
+    <p class="muted small">열어 보기만 하면 시간·돈이 들지 않습니다.</p>
+    <ul class="venues" id="venue-list" ${ui.localOpen ? '' : 'hidden'}>${venues}</ul>
+    ${news}`;
+}
+
+function renderCrew() {
+  const cards = EMPS.map((e) => {
+    const t = runningTaskOf(view, e.id);
+    const planned = t && !state.tasks.some((x) => x.id === t.id);
+    return `<div class="mini-card"><div class="nm">${esc(e.nameKo)}</div><div class="meta">${esc(e.speciesKo)} · ${CITY_KO}</div>
+      <div class="st ${t ? 'busy' : ''}">${esc(crewStatusKo(t))}${planned ? ' (오늘 할 일)' : ' — 배정 가능'}</div></div>`;
+  }).join('');
+  $('#crew').innerHTML = `<h2 id="crew-h">동료 <small>2명 고용 중 · 카드는 시안 자리표시</small></h2><div class="crew-cards">${cards}</div>`;
+}
+
+function renderResources() {
+  const rows = EMPS.map((e) => {
+    const t = runningTaskOf(view, e.id);
+    return `<li><b>${esc(e.nameKo)}</b> — ${t ? `${esc(actOf(t.subjectId).titleKo)} (${view.day}일)` : '비어 있음'}<small>${t ? '현지 활동하는 날은 다른 업무를 맡을 수 없습니다' : '배정 가능'}</small></li>`;
+  }).join('');
+  $('#resources').innerHTML = `<h2 id="res-h">자원 예약 <small>자금·선복 줄은 시안에서 생략</small></h2><h3>직원 시간 · ${view.day}일</h3><ul class="crew-time">${rows}</ul>`;
+}
+
+function queueItems(stepHere) {
+  const plan = planState(state, ui.pending).results;
+  return ui.pending.map((c, i) => `<li class="${plan[i]?.status === 'APPLIED' ? '' : 'bad'}">${esc(commandLabel(c))}${plan[i]?.status !== 'APPLIED' ? ` — ${esc(plan[i]?.reasonKo ?? '')}` : ''}<button class="link" data-act="unqueue" data-index="${i}" data-key="unqueue-${esc(c.id)}" ${stepHere && i === 0 ? 'data-step="unqueue"' : ''} aria-label="${esc(commandLabel(c))} 빼기">빼기</button></li>`).join('');
+}
+
+function renderQueue() {
+  const stepHere = !ui.bookOpen;
+  $('#queue').innerHTML = `
+    <h2 id="queue-h" tabindex="-1">오늘 할 일 <small>${state.day}일 · 하루 진행 때 이 순서로 실행</small></h2>
+    ${ui.flash ? `<p class="flash ${ui.flash.kind}">${esc(ui.flash.text)}</p>` : ''}
+    ${ui.pending.length ? '<p class="muted small">위쪽 막대의 금액은 확정 기준입니다. 여기 넣은 일은 하루 진행 뒤에 반영됩니다.</p>' : ''}
+    ${ui.pending.length ? `<ol class="pending">${queueItems(stepHere)}</ol>` : '<p class="muted">대기 중인 명령이 없습니다. 아무것도 하지 않고 하루를 보낼 수도 있습니다.</p>'}`;
+}
+
+function renderReport() {
+  const omit = '<td class="muted" title="시안에서 생략">—</td>';
+  const krwRows = [
+    ['시작 운영 자금', null], ['급여', null], ['영입 계약금', null], ['훈련비', null],
+    ...(ui.m1 ? [] : [['현지 활동비', -state.cultureExpense, 'new-row']]),
+    ['운영 손익', null], ['미지급 급여', null], ['현금', state.krwCash],
+  ].map(([k, v, cls]) => `<tr class="${cls ?? ''}"><th>${k}${cls ? '<span class="tag-new">새 행</span>' : ''}</th>${v === null ? omit : `<td>${won(v)}</td>`}</tr>`).join('');
+  const note = ui.m1
+    ? '급여는 원화로 매일 지급하며 계약금·훈련비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다.'
+    : '급여는 원화로 매일 지급하며 계약금·훈련비·현지 활동비는 한 번 내는 원화 비용입니다. USD 거래 장부와 합산하지 않습니다.';
+  $('#report').innerHTML = `<h2 id="report-h">경영 보고</h2><div class="books">
+    <table class="money"><caption>거래 장부 · USD</caption><tr><td colspan="2" class="muted small">시안에서 생략</td></tr></table>
+    <table class="money"><caption>운영 장부 · KRW</caption>${krwRows}
+      <tr><td colspan="2" class="muted small">${note} 시안: ${ui.m1 ? '' : '‘현지 활동비’와 '}현금만 값을 넣었고, 하루 급여 차감은 넣지 않았습니다.</td></tr></table></div>`;
+}
+
+function renderLog() {
+  const items = [...state.log].reverse().map((l) => `<li><span>${l.day}일</span>${esc(l.textKo)}</li>`).join('');
+  $('#log').innerHTML = `<h2 id="log-h">기록</h2><ul>${items}<li class="muted"><span>1일</span>1일 기록은 시안에서 생략</li></ul>`;
+}
+
+// ── 기록장 ──
+function recRows(report, { compact = false, ink = false } = {}) {
+  return `<ol class="rec ${compact ? 'compact' : ''}">${LINES.map(([key, label, q], i) => {
+    const not = key === 'notClaimedKo';
+    const text = report ? report[key] : null;
+    return `<li class="rec-row ${not ? 'not' : ''}" style="--i:${i}">
+      <p class="lab"><span class="lab-no" aria-hidden="true">${i + 1}</span>${label}${compact ? '' : `<small>${q}</small>`}${not && report ? `<span class="stamp ${ink ? 'ink-stamp' : ''}">✕ 넓혀 읽지 않기</span>` : ''}${compact && !text ? '<span class="empty-mark">비어 있음</span>' : ''}</p>
+      ${text ? `<p class="txt ${ink ? 'ink' : ''}">${esc(text)}</p>` : compact ? '' : '<p class="txt empty">아직 비어 있음</p>'}
+    </li>`;
+  }).join('')}</ol>`;
+}
+const needLine = (a) => `${esc(a.titleKo)} · ${won(a.costMinor)} · ${a.durationDays}일 · 부산에 있는 직원 1명`;
+const contactsFull = (a) => a.contactIds.map((c) => CONTACTS[c].nameKo).join(' · ');
+
+function miniPage(a) {
+  const report = state.culture.reports.find((r) => r.activityId === a.id);
+  const pend = ui.pending.filter((c) => c.activityId === a.id);
+  const stateKo = report ? '채움' : pend.length ? '오늘 할 일에 있음' : '빈 쪽';
+  return `<article class="mini ${report ? 'filled' : ''}" aria-labelledby="mini-h-${a.id}">
+    <p class="mini-no"><span>${a.no}쪽</span><span class="state">${stateKo}</span></p>
+    <h4 id="mini-h-${a.id}">${esc(a.topicKo)}</h4>
+    ${recRows(report ? a.reportKo : null, { compact: true })}
+    ${report ? `<p class="mini-meta">${report.day}일 · ${esc(empName(report.reporterEmployeeId))} 기록 · 출처 ${esc(report.sourceContactIds.map(lastName).join('·'))} · 확인 전</p>`
+      : `<p class="need"><b>채우려면</b>${needLine(a)}</p>`}
+    ${pend.length ? `<p class="mini-meta">오늘 할 일: ${esc(pend.map((c) => empName(c.employeeId)).join('·'))}</p>` : ''}
+    <button data-act="pick" data-page="${a.id}" data-step="act-${a.id}" data-key="act-${a.id}">${report ? `${a.no}쪽 펼치기` : `${a.no}쪽 고르기`}</button>
+  </article>`;
+}
+
+function peopleHtml() {
+  const book = cultureBook(state);
+  const exp = book.employees.map((e) => `<li><b>${esc(empName(e.employeeId))}</b>${e.experiences.length
+    ? e.experiences.map((x) => `${esc(actOf(x.activityId).titleKo)} (${x.verifiedDay}일)`).join(', ') : '<span class="muted">아직 없음</span>'}</li>`).join('');
+  const rel = book.relations.map((r) => `<li><b>${esc(empName(r.employeeId))} · ${esc(CONTACTS[r.contactId].nameKo)}</b>${r.events.length
+    ? r.events.map((ev) => `${esc(actOf(ev.activityId).titleKo)} (${ev.day}일)`).join(', ') : '<span class="muted">함께한 활동 없음</span>'}</li>`).join('');
+  return `<section class="people" aria-labelledby="people-h">
+    <h3 id="people-h">사람별 기록<small>점수가 아니라 누가 무엇을 함께했는지 적은 기록입니다.</small></h3>
+    <div class="people-grid"><div><h4>직원의 직접 경험</h4><ul>${exp}</ul></div><div><h4>인물과 함께한 활동</h4><ul>${rel}</ul></div></div>
+    <p class="muted small">거래 신뢰는 계약 기록으로만 정합니다. 현지 활동은 거래 신뢰를 바꾸지 않습니다.</p>
+  </section>`;
+}
+
+function tocHtml() {
+  return `<h3 class="sr-only" id="toc-h" tabindex="-1">기록장 목차</h3>
+    <p class="toc-intro">한 쪽이 한 가지 지식입니다. 쪽을 고르면 그 활동을 고른 것입니다. 고르기만 해서는 아무것도 바뀌지 않습니다.</p>
+    <div class="toc-pages">${ACTS.map(miniPage).join('')}</div>${peopleHtml()}`;
+}
+
+function leftPageHtml(a, fresh) {
+  const report = state.culture.reports.find((r) => r.activityId === a.id);
+  const head = `<header class="page-head"><span class="page-no">${a.no}쪽</span><h3 id="page-h" tabindex="-1">${esc(a.topicKo)}</h3>
+    <p class="page-sub">${esc(a.titleKo)} · 만날 사람: ${esc(contactsFull(a))}</p></header>`;
+  const pend = ui.pending.filter((c) => c.activityId === a.id);
+  if (!report) {
+    return `${head}
+      ${pend.length ? `<p class="ribbon">오늘 할 일에 넣음 — ${esc(pend.map((c) => empName(c.employeeId)).join('·'))} · ‘하루 진행’ 뒤 이 쪽이 채워집니다.</p>` : ''}
+      <ul class="obs" aria-label="하는 일">${a.observationsKo.map((o) => `<li>${esc(o)}</li>`).join('')}</ul>
+      ${recRows(null)}
+      <p class="need"><b>이 쪽을 채우려면</b>${needLine(a)}</p>`;
+  }
+  return `${head}${pend.length ? `<p class="ribbon">오늘 할 일: ${esc(pend.map((c) => empName(c.employeeId)).join('·'))}도 다녀옵니다. 회사 기록은 이미 있습니다.</p>` : ''}
+    <section class="rec-card" data-step="result" role="status" aria-live="polite" aria-label="${a.no}쪽 기록">${fresh ? '' : resultBody(a, report, false)}</section>`;
+  // fresh면 빈 상자를 먼저 넣고 곧 채운다(renderBook) — 화면 읽기 도구가 바뀐 내용을 읽는다.
+}
+function resultBody(a, report, ink) {
+  const items = (ui.fresh?.items ?? []).filter((i) => i.actId === a.id);
+  const latest = [...state.log].reverse().find((l) => l.textKo.includes(`: ${a.titleKo} 완료`));
+  const xp = items.filter((i) => i.xp).map((i) => `${esc(empName(i.empId))} 경험치 +${i.xp} (이 활동 첫 완료)`).join(' · ');
+  return `<p class="rec-meta"><b>${report.day}일 기록</b> · 기록한 직원 ${esc(empName(report.reporterEmployeeId))} · 출처 ${esc(report.sourceContactIds.map(lastName).join('·'))}(${report.sourceContactIds.length}명) · 아직 확인하지 않은 기록</p>
+    ${recRows(a.reportKo, { ink })}
+    <div class="rec-foot">
+      ${latest ? `<p>${esc(latest.textKo)}${xp ? ` · ${xp}` : ''}</p>` : ''}
+      <p class="unch"><b>바뀌지 않은 것</b>${esc(UNCHANGED_KO)}</p>
+    </div>`;
+}
+
+function previewHtml(a, empId) {
+  const name = empName(empId);
+  const qIdx = ui.pending.findIndex((c) => c.activityId === a.id && c.employeeId === empId);
+  const usedPending = qIdx >= 0 ? ui.pending.filter((_, i) => i !== qIdx) : ui.pending;
+  const base = qIdx >= 0 ? planState(state, usedPending).state : view;
+  const p = culturePreview(base, a.id, empId);
+  const out = [];
+  if (p.allowed) {
+    const span = p.busyFromDay === p.busyUntilDay ? `${p.busyFromDay}일 하루 동안` : `${p.busyFromDay}일부터 ${p.busyUntilDay}일까지`;
+    out.push(`<p class="pv-first"><span class="pv-tag">업무 공백</span>${esc(topicJosa(name))} ${span} 다른 업무를 맡을 수 없습니다.</p>`);
+  } else {
+    out.push(`<p class="pv-first bad"><span class="pv-tag">시작할 수 없음</span>${esc(p.reasonKo)}</p>`);
+  }
+  if (p.waitingTasks.length) {
+    const list = p.waitingTasks.map(({ task, reservedDepartureDay }) => `${task.subjectKo} ${task.requiredWorkUnits - task.progressWorkUnits}pt${reservedDepartureDay ? ` (${reservedDepartureDay}일 출항편 예약됨)` : ''}`).join(', ');
+    const others = p.otherFreeLocalEmployeeIds.map(empName).join('·') || '없음';
+    out.push(`<p class="pv-warn"><span class="pv-tag">주의</span>부산에서 기다리는 업무 ${p.waitingTasks.length}건: ${esc(list)}. 그날 쉬는 다른 부산 직원: ${esc(others)}.</p>`);
+  }
+  const over = p.busyUntilDay > CAMPAIGN_DAYS; // RF-1
+  const rows = [
+    ['활동비·기간', `${won(p.cost.minor)} · ${p.durationDays}일 · ${p.busyUntilDay}일에 끝남 ${over
+      ? `<b class="rf1-warn">⚠ 캠페인 마지막 날(${CAMPAIGN_DAYS}일)을 넘깁니다</b>` : `<span class="muted">(마지막 날 ${CAMPAIGN_DAYS}일 안)</span>`}`],
+    ['쓸 수 있는 원화', `${won(p.availableBeforeMinor)} → ${won(p.availableAfterMinor)} <span class="muted">(현금 − 미지급 급여${usedPending.length ? ', 오늘 할 일 비용 포함' : ''})</span>`],
+    ['급여 지급 가능일', `${runwayKo(p.payrollRunwayBefore)} → ${runwayKo(p.payrollRunwayAfter)} <span class="muted">· 급여는 활동비와 별도로 평소대로 나갑니다</span>`],
+  ];
+  if (p.allowed) { // RF-2: 시작이 허용될 때만
+    const nr = p.newRecords;
+    const chips = [
+      nr.companyReport === 'NEW' ? `회사 보고서 처음 (${a.no}쪽이 채워짐)` : `회사 보고서 이미 있음 (${a.no}쪽은 그대로)`,
+      nr.actorExperience ? `${esc(name)}의 직접 경험` : null,
+      ...nr.relationContactIds.map((cid) => `함께한 활동 ${esc(name)}·${esc(lastName(cid))}`),
+      nr.firstCompletionXp ? `첫 완료 경험치 +${nr.firstCompletionXp}` : null,
+    ].filter(Boolean).map((t) => `<li>${t}</li>`).join('');
+    rows.push(['새로 생길 기록', `<ul class="chips">${chips}</ul>`]);
+  }
+  rows.push(['바뀌지 않는 것', esc(p.unchangedKo)]);
+  out.push(`<dl class="pv-list">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`);
+  if (!p.allowed) out.push('<p class="muted small">새로 생길 기록은 시작할 수 있을 때만 보입니다.</p>');
+  const slot = qIdx >= 0
+    ? `<span class="pill" id="status-culture-${a.id}-${empId}" tabindex="-1">현지 활동 예정</span><p>빼려면 아래 ‘오늘 할 일’에서 ‘빼기’를 누르세요.</p>`
+    : `<button class="primary" data-act="queue" data-step="queue" data-key="queue" ${p.allowed ? '' : 'disabled'}>오늘 할 일에 넣기</button><p>넣기만 해서는 시간이 흐르지 않습니다. 활동비는 ‘하루 진행’ 때 나갑니다.</p>`;
+  out.push(`<div class="slot" data-action-slot="culture-${a.id}">${slot}</div>`);
+  return `<div class="preview" aria-labelledby="pv-h"><h4 id="pv-h" class="sr-only">미리 보기</h4>${out.join('')}</div>`;
+}
+
+function rightPageHtml(a) {
+  const report = state.culture.reports.find((r) => r.activityId === a.id);
+  const empBtns = EMPS.map((e) => {
+    const t = runningTaskOf(view, e.id);
+    const planned = t && !state.tasks.some((x) => x.id === t.id);
+    const st = t ? `${crewStatusKo(t)}${planned ? ' (오늘 할 일)' : ''}` : '○ 대기';
+    return `<button class="emp" data-act="emp" data-emp="${e.id}" data-step="emp-${e.id}" data-key="emp-${e.id}" aria-pressed="${ui.emp === e.id}">
+      <b>${esc(e.nameKo)}</b><small>${esc(e.speciesKo)} · ${esc(st)}</small></button>`;
+  }).join('');
+  return `<fieldset class="emp-pick"><legend>${report ? '다른 직원도 갈 수 있습니다' : '이 쪽을 채우러 갈 직원'} <small>부산에 있는 직원 1명 · 고르기만 해서는 아무것도 바뀌지 않습니다</small></legend>
+    <div class="emp-row">${empBtns}</div></fieldset>
+    ${ui.emp ? previewHtml(a, ui.emp) : '<p class="muted small">직원을 고르면 미리 보기가 나옵니다. 첫 줄은 그 직원의 업무 공백입니다.</p>'}`;
+}
+
+let lastLeftKey = '';
+function renderBook() {
+  const book = $('#book');
+  const main = $('#main');
+  if (!ui.bookOpen || ui.m1) {
+    // 닫으면 내용도 비운다 — 숨은 사본에 같은 data-step(빼기·결과)이 남지 않게.
+    book.hidden = true; main.inert = false; document.body.classList.remove('book-open'); lastLeftKey = '';
+    $('#book-head').innerHTML = ''; $('#book-body').innerHTML = ''; $('#book-foot').innerHTML = '';
+    return;
+  }
+  book.hidden = false; main.inert = true; document.body.classList.add('book-open');
+  const a = ui.bookView === 'page' ? actOf(ui.page) : null;
+  const tabs = a ? `<nav class="book-tabs" aria-label="기록장 쪽">${ACTS.map((x) => {
+    const filled = state.culture.reports.some((r) => r.activityId === x.id);
+    const pend = ui.pending.some((c) => c.activityId === x.id);
+    return `<button data-act="pick" data-page="${x.id}" data-step="act-${x.id}" data-key="act-${x.id}" ${x.id === a.id ? 'aria-current="page"' : ''}>${x.no}쪽 ${esc(x.titleKo)}<small>${filled ? '채움' : pend ? '오늘 할 일에 있음' : '빈 쪽'}</small></button>`;
+  }).join('')}</nav>` : '';
+  $('#book-head').innerHTML = `<h2 id="book-h" tabindex="-1">${ICON_BOOK}부산 기록장 <small>문화생활·현지 탐방 · 열어 보기만 해서는 시간이 흐르지 않습니다</small></h2>
+    ${tabs}
+    <div class="book-tools"><button data-act="toc" data-step="record-book" data-key="record-book" ${ui.bookView === 'toc' ? 'aria-current="page"' : ''}>목차·사람별 기록</button>
+    <button data-act="close-book" data-key="close-book">닫기</button></div>`;
+  const body = $('#book-body');
+  if (!a) {
+    body.innerHTML = tocHtml(); lastLeftKey = 'toc';
+  } else {
+    const report = state.culture.reports.find((r) => r.activityId === a.id);
+    const fresh = !!(report && ui.fresh?.items.some((i) => i.actId === a.id && i.newReport) && !ui.inked.has(a.id));
+    const pendKey = ui.pending.filter((c) => c.activityId === a.id).map((c) => c.employeeId).join(',');
+    const leftKey = `${a.id}|${report ? report.day : '-'}|${pendKey}|${state.log.length}`;
+    if (!$('#page-left', body)) { body.innerHTML = '<div class="spread"><article class="page left" id="page-left" aria-labelledby="page-h"></article><section class="page right" id="page-right" aria-label="이 쪽 채우기"></section></div>'; lastLeftKey = ''; }
+    if (leftKey !== lastLeftKey) {
+      $('#page-left').innerHTML = leftPageHtml(a, fresh);
+      lastLeftKey = leftKey;
+      if (fresh) {
+        ui.inked.add(a.id);
+        const card = $('#page-left .rec-card');
+        setTimeout(() => { card.innerHTML = resultBody(a, report, true); }, 120);
+      }
+    }
+    $('#page-right').innerHTML = rightPageHtml(a);
+  }
+  $('#book-foot').innerHTML = ui.pending.length ? `<div class="book-queue" aria-labelledby="bq-h"><h3 id="bq-h">오늘 할 일 <small>${state.day}일</small></h3>
+    <ol>${queueItems(true)}</ol><span class="hint">위쪽 ‘하루 진행 ▶’을 누르면 실행됩니다.</span></div>` : '';
+}
+
+function renderToast() {
+  const t = $('#toast');
+  t.className = `flash-toast flash ${ui.flash?.kind ?? 'info'}`;
+  t.textContent = ui.flash ? ui.flash.text : '';
+  t.hidden = !ui.flash;
+  const h = ui.flash ? Math.ceil(window.innerHeight - t.getBoundingClientRect().top) + 8 : 0;
+  document.documentElement.style.setProperty('--toast-h', `${h}px`);
+}
+
+function placeSheet() {
+  const bar = $('.statusbar').getBoundingClientRect();
+  document.documentElement.style.setProperty('--topbar-h', `${bar.height}px`);
+  document.documentElement.style.setProperty('--sheet-top', `${Math.max(0, Math.round(bar.bottom)) + 6}px`);
+}
+
+function render(focusSel) {
+  const active = document.activeElement;
+  const key = active?.dataset?.key ?? null;
+  view = planState(state, ui.pending).state;
+  renderStatus(); renderLocal(); renderCrew(); renderResources(); renderQueue(); renderReport(); renderLog(); renderBook(); renderToast(); placeSheet();
+  const target = (focusSel && document.querySelector(focusSel)) || (key && document.querySelector(`[data-key="${key}"]`));
+  if (target && target !== document.activeElement && !target.closest('[hidden]')) target.focus({ preventScroll: false });
+}
+
+// ── 동작 ──
+function openBook(view, page) {
+  if (ui.m1) return;
+  if (!ui.bookOpen) ui.scrollBeforeBook = window.scrollY;
+  ui.bookOpen = true; ui.bookView = view; ui.page = page ?? null; ui.emp = null;
+  render(view === 'page' ? '#page-h' : '#book-h');
+}
+function closeBook() {
+  ui.bookOpen = false;
+  render();
+  window.scrollTo(0, ui.scrollBeforeBook);
+  placeSheet();
+  ($('[data-key="venue-culture"]') ?? $('[data-key="open-local"]'))?.focus();
+}
+function queueCulture() {
+  const a = actOf(ui.page);
+  const cmd = { id: `CULTURE-CMD-${++seq}`, type: 'START_CULTURE_ACTIVITY', activityId: a.id, employeeId: ui.emp };
+  const result = planState(state, [...ui.pending, cmd]).results.at(-1);
+  if (result.status !== 'APPLIED') { ui.flash = { kind: 'warn', text: result.reasonKo }; render(); return; }
+  ui.pending.push(cmd);
+  ui.flash = { kind: 'info', text: '오늘 할 일에 넣었습니다. ‘하루 진행’을 누르면 실행됩니다. 그 전에는 시간이 흐르지 않습니다.' };
+  render(`#status-culture-${a.id}-${ui.emp}`);
+}
+function unqueue(i) {
+  const c = ui.pending[i];
+  ui.pending.splice(i, 1);
+  ui.flash = null;
+  const back = ui.bookOpen && ui.bookView === 'page' && c && c.activityId === ui.page && c.employeeId === ui.emp ? '[data-key="queue"]' : ui.bookOpen ? '#book-h' : '#queue-h';
+  render(back);
+}
+function endDay() {
+  if (state.phase !== 'AWAITING_INPUT') return;
+  const planned = planState(state, ui.pending);
+  const s = planned.state;
+  const rejected = planned.results.filter((r) => r.status === 'REJECTED');
+  const items = [];
+  for (const t of s.tasks) {
+    if (t.kind !== 'CULTURE' || t.status !== 'RUNNING') continue;
+    t.progressWorkUnits += 1;
+    if (t.progressWorkUnits >= t.requiredWorkUnits) { t.status = 'DONE'; t.completedDay = s.day; items.push(recordCompletion(s, t)); }
+  }
+  const finished = s.day;
+  s.day += 1;
+  if (s.day > CAMPAIGN_DAYS) s.phase = 'ENDED';
+  state = s; ui.pending = [];
+  ui.fresh = items.length ? { day: finished, items } : null;
+  ui.flash = rejected.length ? { kind: 'warn', text: `실행하지 못한 명령: ${rejected.map((r) => r.reasonKo).join(' / ')}` } : null;
+  if (items.length && ui.bookOpen) {
+    const first = items.find((i) => i.newReport) ?? items[0];
+    ui.bookView = 'page'; ui.page = first.actId; ui.emp = null;
+    // 새 쪽이 없으면(이미 있는 쪽에 다른 직원이 다녀옴) 알림 막대로 알린다. 새 쪽은 그 쪽의 결과 상자가 알린다.
+    if (!items.some((i) => i.newReport)) ui.flash = { kind: 'info', text: `하루가 지났습니다. ${items.map((i) => i.logText).join(' / ')}` };
+  } else if (items.length) {
+    const pages = items.filter((i) => i.newReport).map((i) => `${actOf(i.actId).no}쪽`);
+    ui.flash = { kind: 'info', text: pages.length ? `하루가 지났습니다. 부산 기록장 ${pages.join('·')}이 채워졌습니다. ‘부산 현지’에서 펼쳐 볼 수 있습니다.` : `하루가 지났습니다. ${items.map((i) => i.logText).join(' / ')}` };
+  }
+  render();
+}
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const d = b.dataset;
+  switch (d.act) {
+    case 'toggle-local': ui.localOpen = !ui.localOpen; return render();
+    case 'venue': ui.venueLines.has(d.venue) ? ui.venueLines.delete(d.venue) : ui.venueLines.add(d.venue); return render();
+    case 'open-book': return openBook('toc');
+    case 'open-page': ui.flash = null; return openBook('page', d.page);
+    case 'toc': ui.bookView = 'toc'; ui.page = null; ui.emp = null; return render('#toc-h');
+    case 'pick': ui.bookView = 'page'; ui.page = d.page; ui.emp = null; return render('#page-h');
+    case 'emp': ui.emp = d.emp; return render();
+    case 'queue': return queueCulture();
+    case 'unqueue': return unqueue(Number(d.index));
+    case 'end-day': return endDay();
+    case 'close-book': return closeBook();
+    case 'toggle-notes': {
+      const n = $('#mock-notes'); n.hidden = !n.hidden; b.setAttribute('aria-expanded', String(!n.hidden)); return;
+    }
+    case 'toggle-m1':
+      ui.m1 = !ui.m1; b.setAttribute('aria-pressed', String(ui.m1));
+      if (ui.m1) { ui.pending = []; ui.bookOpen = false; ui.localOpen = false; ui.flash = null; }
+      return render();
+    case 'noop': ui.flash = { kind: 'info', text: '시안에서는 이 단추가 동작하지 않습니다.' }; return render();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && ui.bookOpen) { e.preventDefault(); closeBook(); }
+});
+window.addEventListener('scroll', placeSheet, { passive: true });
+window.addEventListener('resize', () => { placeSheet(); renderToast(); });
+render();
+})();
+</script>
+</body>
+</html>

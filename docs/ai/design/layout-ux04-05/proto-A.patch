@@ -1,0 +1,211 @@
+diff --git a/src/ui/growth.ts b/src/ui/growth.ts
+index 9c86688..5979987 100644
+--- a/src/ui/growth.ts
++++ b/src/ui/growth.ts
+@@ -53,7 +53,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
+     ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
+     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
+     <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
+-    ${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}
++    <div data-action-slot="train-${esc(def.id)}">${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}</div>
+     ${training ? trainingQueued
+       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
+       : ''
+diff --git a/src/ui/main.ts b/src/ui/main.ts
+index 312635c..7fc01b7 100644
+--- a/src/ui/main.ts
++++ b/src/ui/main.ts
+@@ -190,6 +190,12 @@ function endDay() {
+     }
+   }
+   const reading = heads.map((head) => ({ id: head.id, top: head.getBoundingClientRect().top })).sort((a, b) => a.top - b.top);
++  // 시안 A·B: 마지막 조작이 오른쪽 칸이면 그 칸에서 띠에 걸친 첫 후보를 기준으로 삼는다. 주 열은 그만큼 움직인다.
++  const sideReading = config.culture && lastColumn === 'side' && sideBesideMain()
++    ? Array.from(app.querySelectorAll<HTMLElement>(SIDE_ANCHORS)).map((el) => ({ el, r: el.getBoundingClientRect() }))
++      .filter(({ r }) => r.height > 0 && r.bottom > barBottom + 1 && r.top < bandBottom)
++      .sort((a, b) => a.r.top - b.r.top).map(({ el, r }) => ({ key: sideKey(el), top: r.top }))
++    : [];
+   ui.growthNotices = growthMessages(state, committed.state, config);
+   ui.growthNoticesDay = state.day;
+   ui.growthNoticesFresh = true;
+@@ -201,11 +207,45 @@ function endDay() {
+     : null);
+   ui.cultureResultFresh = ui.flash?.action === 'culture-result';
+   render();
+-  const remaining = reading.map((head) => ({ ...head, element: document.getElementById(head.id) })).find((head) => head.element);
+-  if (remaining) { const dy = remaining.element!.getBoundingClientRect().top - remaining.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
++  if (sideReading.length) {
++    const all = Array.from(app.querySelectorAll<HTMLElement>(SIDE_ANCHORS));
++    const hit = sideReading.map((s) => ({ ...s, element: all.find((el) => sideKey(el) === s.key) })).find((s) => s.element);
++    if (hit) { const dy = hit.element!.getBoundingClientRect().top - hit.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
++  } else {
++    const remaining = reading.map((head) => ({ ...head, element: document.getElementById(head.id) })).find((head) => head.element);
++    if (remaining) { const dy = remaining.element!.getBoundingClientRect().top - remaining.top; if (Math.abs(dy) >= 1) window.scrollBy(0, dy); }
++  }
+   ignoreClicksUntil = Date.now() + 500;
+ }
+ 
++
++/** 오른쪽 칸의 읽기 기준 후보. 다시 그린 뒤에도 같은 열쇠로 찾는다. */
++const SIDE_PANELS = '.crew, .resources, .queue';
++const SIDE_ANCHORS = '.crew h2, .crew h3, .crew h4, .crew article.card, .crew tbody tr, .resources h2, .resources h3, .resources li, .queue h2, .queue li, .queue .growth-notices';
++function sideKey(el: HTMLElement): string {
++  if (el.id) return `#${el.id}`;
++  const panel = el.closest(SIDE_PANELS)?.classList[1] ?? '';
++  return `${panel}|${el.tagName}|${el.dataset.emp ?? (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 24)}`;
++}
++
++/** 시안 A·B에는 따로 굴러가는 창이 없다. */
++function paneEl(): HTMLElement | null { return null; }
++
++/** 펼친 칸의 실행 단추(훈련·고용)를 보이는 띠 안으로 최소 거리만 가져온다. 칸 제목(일반 훈련·면담)은 막대(창 위 끝) 아래에 남긴다. */
++function revealBelow(target: HTMLElement | null, head: HTMLElement | null) {
++  if (!target) return;
++  const pane = paneEl();
++  const inPane = !!pane && pane.contains(target);
++  let top = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
++  // 누른 뒤 생길 아래쪽 알림 자리(72px)를 미리 비워 둔다(부산 현지 미리 보기와 같은 규칙).
++  let bottom = Math.min(window.innerHeight - 72, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
++  if (inPane) { const box = pane!.getBoundingClientRect(); top = Math.max(top, box.top); bottom = Math.min(bottom, box.bottom); }
++  let dy = target.getBoundingClientRect().bottom + 8 - bottom;
++  if (dy < 1) return;
++  if (head) dy = Math.min(dy, head.getBoundingClientRect().top - top - 8);
++  if (dy >= 1) (inPane ? pane! : window).scrollBy(0, dy);
++}
++
+ // ── 화면 조각 ──
+ 
+ function stageOf(c: Contract): number {
+@@ -270,7 +310,7 @@ function topbar(): string {
+     ${committedRule() ? `<div class="stat"><span>사용 가능 (예약 제외)</span><b class="${f.available < 0 ? 'neg' : ''}">${usd(f.available)}</b></div>` : ''}
+     <div class="stat"><span>운영 현금 (KRW)</span><b>${krw(r.payroll.cash)}</b></div>
+     <div class="stat"><span>다음 수금</span><b>${nextReceipt ? `${nextReceipt.dueDay}일 ${usd(nextReceipt.amountMinor)}` : '없음'}</b></div>
+-    <div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
++    ${config.culture ? `<button class="queue-chip" id="queue-chip" data-action="queue-jump" aria-label="오늘 할 일 ${ui.pending.length}건 보기">오늘 할 일 <b>${ui.pending.length}</b>건</button>` : ''}<div class="day-action"><small class="amount-basis">금액은 확정 기준</small><button class="primary" data-action="end-day" ${state.phase !== 'AWAITING_INPUT' ? 'disabled' : ''}>하루 진행 ▶</button></div>
+   </div>
+   </header>`;
+ }
+@@ -649,6 +689,15 @@ function reportPanel(): string {
+   </section>`;
+ }
+ 
++/** 시안 공통: 카드로 골랐으면 그 카드 바로 아래, 운영표 줄로 골랐으면 운영표 바로 아래(기존 자리)에 상세를 둔다. */
++let detailUnder: 'card' | 'roster' = 'card';
++/** 시안 공통: 고른 카드 바로 아래에 성장·훈련 상세를 둔다(카드 칸 전체 폭). M2만. */
++function inlineDetail(id: string): string {
++  if (detailUnder !== 'card' || ui.selectedCard !== id || !employedDefs(view, config).some((e) => e.id === id)) return '';
++  const html = employeeDetail(view, config, config.employees.find((e) => e.id === id)!, ui.detailId === id, ui.pending.some((p) => p.type === 'START_TRAINING' && p.employeeId === id));
++  return html ? `<div class="card-detail">${html}</div>` : '';
++}
++
+ function crewPanel(): string {
+   const shown = crewEntries(view, config, ui.crewFilter);
+   const filterBtn = (f: typeof ui.crewFilter, label: string) =>
+@@ -659,12 +708,12 @@ function crewPanel(): string {
+   <aside class="panel crew" aria-labelledby="crew-h">
+     <h2 id="crew-h" tabindex="-1">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
+     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무·교육 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
+-    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
++    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id) + (config.culture ? inlineDetail(entry.def.id) : '')).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
+       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
+       <tbody>${rows}</tbody>
+     </table>
+-    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
++    ${(!config.culture || detailUnder === 'roster' || !shown.some((entry)=>entry.def.id===ui.selectedCard)) && ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
+     ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending, queuedStatus)}
+     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
+   </aside>`;
+@@ -871,6 +920,24 @@ function showCulturePreview(employeeId: string) {
+ 
+ // ── 이벤트 ──
+ 
++/** 시안 A·B: 마지막으로 누르거나 굴리거나 초점을 둔 열. 하루 진행 뒤 읽던 자리를 이 열에서 고른다(M2만). */
++let lastColumn: 'main' | 'side' | null = null;
++for (const type of ['pointerdown', 'wheel', 'touchstart', 'focusin']) {
++  app.addEventListener(type, (ev) => {
++    const el = ev.target as HTMLElement | null;
++    if (!el?.closest) return;
++    if (el.closest(SIDE_PANELS)) lastColumn = 'side';
++    else if (el.closest('.maincol, .trade')) lastColumn = 'main';
++  }, { capture: true, passive: true });
++}
++
++/** 오른쪽 칸이 주 열 옆에 있는가(세 열). 한 열에서는 창 하나라 주 열 기준을 그대로 쓴다. */
++function sideBesideMain(): boolean {
++  const s = app.querySelector<HTMLElement>('.queue')?.getBoundingClientRect();
++  const m = app.querySelector<HTMLElement>('.trade')?.getBoundingClientRect();
++  return !!s && !!m && s.left >= m.right - 1;
++}
++
+ app.addEventListener('click', (ev) => {
+   const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
+   if (!el || (el as HTMLButtonElement).disabled || Date.now() < ignoreClicksUntil) return;
+@@ -905,18 +972,29 @@ app.addEventListener('click', (ev) => {
+         return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
+       case 'detail':
+         ui.detailId = ui.detailId === d.emp ? null : d.emp!;
+-        return render();
++        render();
++        if (ui.detailId) revealBelow(app.querySelector<HTMLElement>(`[data-action="train"][data-emp="${ui.detailId}"]`) ?? document.getElementById(`status-train-${ui.detailId}`), document.querySelector<HTMLElement>(`#growth-${ui.detailId} .training h4`) ?? document.getElementById(`growth-h-${ui.detailId}`));
++        return;
+       case 'scout':
+         return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
+       case 'recruit-quest':
+         return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
+       case 'interview':
+         ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
+-        return render();
++        render();
++        if (ui.interviewId) revealBelow(app.querySelector<HTMLElement>(`[data-action="hire"][data-candidate="${ui.interviewId}"]`) ?? document.getElementById(`status-hire-${ui.interviewId}`), document.getElementById(`interview-h-${ui.interviewId}`));
++        return;
+       case 'hire':
+         return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
+       case 'end-day':
+         return endDay();
++      case 'queue-jump': {
++        const head = document.getElementById('queue-h');
++        head?.scrollIntoView({ block: 'start' });
++        head?.focus({ preventScroll: true });
++        ignoreClicksUntil = Date.now() + 500;
++        return;
++      }
+       case 'accept':
+         return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell! });
+       case 'accept-fwd':
+@@ -937,6 +1015,7 @@ app.addEventListener('click', (ev) => {
+         mapMode = d.mode === 'world' ? 'world' : 'route';
+         return render();
+       case 'select-card':
++        detailUnder = el.tagName === 'TR' ? 'roster' : 'card';
+         ui.selectedCard = d.emp ?? null;
+         render();
+         showGrowthControl();
+@@ -988,6 +1067,7 @@ app.addEventListener('keydown', (ev) => {
+   const el = ev.target as HTMLElement;
+   if (el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
+     ev.preventDefault();
++    detailUnder = el.tagName === 'TR' ? 'roster' : 'card';
+     ui.selectedCard = el.dataset.emp ?? null;
+     render();
+     showGrowthControl();
+diff --git a/src/ui/style.css b/src/ui/style.css
+index dc7b49a..d7bf3ed 100644
+--- a/src/ui/style.css
++++ b/src/ui/style.css
+@@ -510,3 +510,15 @@ main.layout { padding-bottom: 5.5rem; }
+ .flash-toast:has([data-action="culture-result"]) { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
+ .flash-toast button { pointer-events: auto; min-height: 44px; flex-shrink: 0; }
+ @media (max-width: 640px) { .local-venues > div { grid-template-columns: 1fr; gap: .15rem; } }
++
++/* 배치 시안 공통(S1c): 고른 동료 카드 바로 아래에 성장·훈련 상세를 둔다. */
++.crew-cards > .card-detail { grid-column: 1 / -1; min-width: 0; }
++.card-detail .growth-detail { margin-top: 0; }
++/* 훈련 단추를 감싼 칸(F1) 안의 예정 표시도 단추와 같은 높이를 지킨다. */
++.training > [data-action-slot] > .pill { display: inline-flex; align-items: center; min-height: 34px; }
++@media (any-pointer: coarse) { .training > [data-action-slot] > .pill { min-height: 44px; } }
++
++/* 시안 A: 상태 막대의 ‘오늘 할 일 N건’. 누르면 그 칸으로 간다. 하루 진행 바로 왼쪽. */
++.queue-chip { margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; padding: .3rem .7rem; font-size: .85rem; white-space: nowrap; border-color: var(--sky-deep); color: var(--sky-deep); background: #f6fbff; }
++.queue-chip b { font-size: 1rem; color: var(--navy); }
++.queue-chip + .day-action { margin-left: 0; }

@@ -1,0 +1,12 @@
+queue-chip base rc=1 37.397286323s
+queue-chip proto rc=0 45.769213513s
+card-detail base rc=1 44.851989099s
+card-detail proto rc=0 46.164673423s
+card-detail-low base rc=0 29.733116900s
+card-detail-low proto rc=0 29.846374402s
+interview-hire base rc=1 73.257840955s
+interview-hire proto rc=0 75.283510429s
+side-anchor base rc=1 90.532199353s
+LANE base DONE
+side-anchor proto rc=0 89.596503598s
+LANE proto DONE

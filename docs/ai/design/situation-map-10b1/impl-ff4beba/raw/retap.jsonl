@@ -1,0 +1,1 @@
+{"pt":{"x":312.64622497558594,"y":503.48500061035156},"log":[{"t":"tap1","active":"situation-selection-h","sel":"이 근처에 여러 곳이 있습니다","hit":null},{"elementAtPoint":"image.map-base pixel-art"},{"t":"tap2","active":"SECTION","sel":"이 근처에 여러 곳이 있습니다","hit":null},{"t":"mouse3","active":"SECTION","sel":"이 근처에 여러 곳이 있습니다","hit":null},{"afterEscape":{"open":false,"focus":"situation"}}]}

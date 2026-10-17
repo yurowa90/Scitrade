@@ -1,0 +1,11 @@
+mq 0
+k1b l1366 0
+k1b ipadminiL 0
+k1b cb1366t 0
+k1b t1000 0
+k1b ipadAirL 0
+LANE cb1366t ipadAirL DONE
+k1b ipadmini6L 0
+LANE ipadminiL ipadmini6L DONE
+k1b l1920 0
+LANE l1366 t1000 l1920 DONE
