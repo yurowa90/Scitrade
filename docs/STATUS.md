@@ -768,7 +768,7 @@ M2a 남은 위험:
 - 판정표 ‘측정 전 고정 기록’ 재료(병합 커밋 기준): `data/market_rules.json` sha256 `a9a3eb45f395222613b6fca9893146863a99c6644fb00fa9cbc1bbc82c48b742`, `data/goods.json` sha256 `517b8df0e2e2edbbf24db0ab7ca1cb5bd6ac3b7a38a62a6ddb3f49688f875e1a`. 위험 프로필 = 설계 6절 JSON + 김 행(tariff CN·VN 500, claims LOW 500, collections 화장품 신규 B 둘·김 C 둘), 세션 A 대조 일치.
 - 세션 A 설계자 검수: 결함 0(자료값·프로필 대조, 변형 5·6·10·11 재현, (나)·(다) R3 20판 identity·예외 0. 그 20판에서 클레임 0건이나 생성기 견적 전체로 화장품 27/220·김 14/220 손상이라 경로는 살아 있음).
 - 허브 검수: Codex 쪽 major 0. 허브 결함 1건을 고쳤다 — 승인 커밋 `440aefc`가 기록 스크립트 오류로 `HUB-DECISIONS-2026-10-16.md`를 11행으로 덮어써 H1~H18-4가 지워졌고, 병합 때 `695b29a` 판을 되살리고 H18-5·H18-6을 끝에 붙였다.
-- 후속(경미): `check_experiments`가 실험 ID가 없으면 조용히 건너뜀, `위험 변환`의 `toBeDefined`는 예외 검출용, `김 없는 시나리오 구동`의 (가) 자기 비교, 판매처 반례를 배열 위치로 고름, 새 JSON 항목 앞 `,` 단독 줄. 0066 결과 표 ⑨에 H18-6(시드 짝 차이는 진단만)을 적는다.
+- 후속(경미): `check_experiments`가 실험 ID가 없으면 조용히 건너뜀, `위험 변환`의 `toBeDefined`는 예외 검출용, `김 없는 시나리오 구동`의 (가) 자기 비교, 판매처 반례를 배열 위치로 고름, 새 JSON 항목 앞 `,` 단독 줄. 0066 결과 표 ⑨에 H18-6(시드 짝 차이는 진단만)을 적는다. (H18-6 관련 문구는 H19-1로 정정: D는 같은 변형 안 같은 시드 짝 판정이다.)
 
 **TASK-0064 반영 (2026-10-17, Astra, 허브·세션 A 검수):** 개발 브랜치 병합 `d749e9b`(Codex `f07cf7b`, BASE 지시서 승인 `579ded7`). 경로 3의 셋째 위험이다. 인도 때 화물 손상 클레임(`SALES_ALLOWANCE`, 판매 견적 키, 작은·큰 층)과 지연·부분 수금(거래처 신용등급, 결제일부터 날마다 순수 함수로 재계산, `OVERDUE` 전이)을 rules-3 R3 설정에서만 넣었다. 읽기 함수 `receivableSchedule`, `quotePreview.riskGrades`, `contractRiskReport` 6·8단계(`claim`·`collection`)를 채웠다. 옛 규칙 판본은 바이트가 같다.
 - 지시서 경로: 세션 A 초안 3c → 허브 시제품 사전 확인 F1~F22·세션 A D1~D6·허브 결정 H17(개정 3d `5bee326`) → 독립 재확인 G1~G23(3e `e73aa5d`) → 좁힌 검증 V1~V9(3f 승인 `579ded7`). 설계 DESIGN.md 개정 3j.
