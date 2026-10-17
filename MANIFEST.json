@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 242211,
-      "sha256": "12e223f5dfd9137853b0920a40b0330110bc370d40f6ea5ccdf206ff0739690e"
+      "size_bytes": 243155,
+      "sha256": "39228eed5df8178e00dfb0c0151108d1e6e07c469b958a68c7d98e4c379315df"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 113938,
-      "sha256": "f603b9e9227ae0386345e6aee1870de6bc4ff5cb5e6ea9c354d831f4548d1d6a"
+      "size_bytes": 114035,
+      "sha256": "de2cd7179199063a11532ebb3cffa5d48c0803fa4557531e8975ead1a963e22a"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1697,13 +1697,18 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 64691,
-      "sha256": "227c7272535bae9fdba87eb460fea880ed5c8e86f8aeebf9b969f8fda0c1b049"
+      "size_bytes": 70558,
+      "sha256": "281181aca2b4218814a790416fce9a063d6c499cea54cbf360da9ccd80861436"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0065-HUB-2026-10-17.md",
       "size_bytes": 30411,
       "sha256": "8a279d62daf5153751b0abf8b095be50593a3b3a7543f596db5d1b72349a422c"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0066-HUB-2026-10-17.md",
+      "size_bytes": 24523,
+      "sha256": "217f77372103402a2131b3758b50a757b80a9bd1c4d89a6b4b1a770b2617d4d4"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
