@@ -127,13 +127,48 @@ export function dutyFor(config: ScenarioConfig, seed: number, goodId: string, de
   return applyBasisPoints(taxable, knownRate(p, row, tariffEvents(config, seed), knownThroughDay, tariffDay));
 }
 
+export function claimFor(config: ScenarioConfig, seed: number, sellOfferId: string, goodId: string):
+  null | { tier: 'MINOR' | 'MAJOR'; rateBp: number } {
+  const risk = config.operations?.risk;
+  if (!risk?.layers.includes('CLAIM')) return null;
+  const p = risk.profile.claims, row = p.byGood.find((r) => r.goodId === goodId);
+  if (!row) throw new Error(`클레임 표에 품목이 없습니다: ${goodId}`);
+  const prefix = `CLAIM:${sellOfferId}`;
+  if (uniformInt(seed, `${prefix}:hit`, 0, 9999) >= row.pClaimBp) return null;
+  const tier = uniformInt(seed, `${prefix}:tier`, 0, 9999) < p.minor.weightBp ? 'MINOR' : 'MAJOR';
+  const range = tier === 'MINOR' ? p.minor : p.major;
+  return { tier, rateBp: uniformInt(seed, `${prefix}:rate`, range.minBp, range.maxBp) };
+}
+
+export function collectionPlan(config: ScenarioConfig, seed: number, sellOfferId: string, counterpartyId: string):
+  { mode: 'ON_TIME' | 'LATE' | 'PARTIAL'; days: number } {
+  const risk = config.operations?.risk;
+  if (!risk?.layers.includes('COLLECTION')) return { mode: 'ON_TIME', days: 0 };
+  const p = risk.profile.collections, row = p.byCounterparty.find((r) => r.counterpartyId === counterpartyId);
+  if (!row) throw new Error(`수금 표에 거래처가 없습니다: ${counterpartyId}`);
+  const grade = p.grades.find((r) => r.grade === row.grade);
+  if (!grade) throw new Error(`수금 표에 신용등급이 없습니다: ${row.grade}`);
+  const prefix = `COLLECT:${sellOfferId}`, v = uniformInt(seed, `${prefix}:mode`, 0, 9999);
+  if (v < grade.pOnTimeBp) return { mode: 'ON_TIME', days: 0 };
+  return { mode: v < grade.pOnTimeBp + grade.pLateBp ? 'LATE' : 'PARTIAL',
+    days: uniformInt(seed, `${prefix}:days`, p.lateMinDays, p.lateMaxDays) };
+}
+
+/** 수금 ID의 원장 현금 줄만 읽는다. 청구서에는 받은 금액을 따로 저장하지 않는다. */
+export function receivedForInvoice(s: GameState, invoiceId: string): number {
+  const id = `RECEIPT-RCPT-${invoiceId}`;
+  return s.ledger.entries.filter((e) => e.id === id || e.id.startsWith(`${id}-`))
+    .flatMap((e) => e.lines).filter((l) => l.account === 'CASH').reduce((sum, l) => sum + l.amount, 0);
+}
+
 /** 측정용 설정 변환. 원화 매입 단가를 만드는 자리는 이 함수 하나다. */
-export function withRiskLevel(config: ScenarioConfig, level: 'R0' | 'R1' | 'R2', profile: RiskProfile): ScenarioConfig {
+export function withRiskLevel(config: ScenarioConfig, level: 'R0' | 'R1' | 'R2' | 'R3', profile: RiskProfile): ScenarioConfig {
   if (level === 'R0') return config;
   if (!config.operations) throw new Error('위험 단계는 운영 설정이 필요합니다');
   const c = structuredClone(config);
   c.rules.rulesVersion = 'M2a-rules-3';
-  c.operations!.risk = { profile: structuredClone(profile), layers: level === 'R2' ? ['FX', 'TARIFF', 'SURCHARGE'] : ['FX'] };
+  c.operations!.risk = { profile: structuredClone(profile), layers: level === 'R3'
+    ? ['FX', 'TARIFF', 'SURCHARGE', 'CLAIM', 'COLLECTION'] : level === 'R2' ? ['FX', 'TARIFF', 'SURCHARGE'] : ['FX'] };
   for (const row of c.operations!.market.rows) {
     if (row.side === 'BUY') row.basePriceMinor = usdToKrwMinor(row.basePriceMinor, profile.fx.startKrwPerUsd);
   }

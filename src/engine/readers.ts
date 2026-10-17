@@ -19,6 +19,7 @@ function previewId(s: GameState): string {
 }
 export type QuoteOfferIds = { buyOfferId: string; sellOfferId: string } | { offerId: string };
 export interface OperationsQuotePreview extends QuotePreview {
+  riskGrades?: { damage: string; credit: string } | null;
   allowed: boolean; reasonKo: string | null;
   quantity: number; maxQuantity: number; quantityStep: number; prepWorkUnits: number;
   volumeLiters: number; massGrams: number; storageAfterLiters: number; storageCapacityLiters: number;
@@ -83,7 +84,16 @@ export function quotePreview(s: GameState, config: ScenarioConfig, offerIds: Quo
         missesSailing: readyAfter === null || (!!booking && booking.departureDay < readyAfter) });
     }
   }
-  return { ...quote, allowed, reasonKo: allowed ? null : result.reasonKo, quantity: q,
+  const risk = config.operations?.risk;
+  let riskGrades: OperationsQuotePreview['riskGrades'] = null;
+  if (risk && trade && buy && sell) {
+    const damage = risk.profile.claims.byGood.find((r) => r.goodId === buy.goodId);
+    const credit = risk.profile.collections.byCounterparty.find((r) => r.counterpartyId === sell.counterpartyId);
+    if (!damage) throw new Error(`클레임 표에 품목이 없습니다: ${buy.goodId}`);
+    if (!credit) throw new Error(`수금 표에 거래처가 없습니다: ${sell.counterpartyId}`);
+    riskGrades = { damage: damage.grade, credit: credit.grade };
+  }
+  return { ...quote, ...(risk ? { riskGrades } : {}), allowed, reasonKo: allowed ? null : result.reasonKo, quantity: q,
     maxQuantity: Math.min(buy?.maxQuantity ?? 0, sell?.maxQuantity ?? 0), quantityStep: buy?.quantityStep ?? 0,
     prepWorkUnits: prep, ...space, storageAfterLiters: storageUsedLiters(s, config) + space.volumeLiters,
     storageCapacityLiters: storageCapacityLiters(s, config), counterpartySpreadPct: { buy: spread(buy, 'BUY'), sell: spread(sell, 'SELL') },
