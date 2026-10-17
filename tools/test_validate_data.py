@@ -1118,6 +1118,11 @@ class MarketRulesTest(unittest.TestCase):
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])
 
+    def experiment_errors(self, documents, tables):
+        self.errors(documents, tables)
+        validator.check_experiments(documents, tables)
+        return list(validator.ERRORS)
+
     def experiment_fixtures(self):
         d, t = self.fixtures()
         scenarios = [t['scenarios'][sid] for sid in validator.EXPERIMENT_SCENARIO_IDS]
@@ -1132,18 +1137,18 @@ class MarketRulesTest(unittest.TestCase):
     def test_experiment_inheritance(self):
         d, t, scenarios, _, _, _ = self.experiment_fixtures()
         scenarios[0]['operations']['facility']['storage_m3'] += 1
-        self.assertTrue(any('실험 상속 동일성' in e for e in self.errors(d, t)))
+        self.assertTrue(any('실험 상속 동일성' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_sellers_separate(self):
         d, t, _, rules, old, focus = self.experiment_fixtures()
         extra = next(g for g in rules[1]['trade']['goods'] if g['good_id'] != focus)
         extra['sell_counterparties'][-1]['counterparty_id'] = old['trade']['goods'][0]['sell_counterparties'][-1]['counterparty_id']
-        self.assertTrue(any('실험 판매 거래처가 옛 거래처와 겹침' in e for e in self.errors(d, t)))
+        self.assertTrue(any('실험 판매 거래처가 옛 거래처와 겹침' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_common_copy(self):
         d, t, _, rules, _, _ = self.experiment_fixtures()
         rules[1]['regional_pct'][0] += 1
-        self.assertTrue(any('실험 복사 동일성: 공통 규칙' in e for e in self.errors(d, t)))
+        self.assertTrue(any('실험 복사 동일성: 공통 규칙' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_cosmetics_copy(self):
         for field in ('base_lot', 'rows'):
@@ -1153,19 +1158,19 @@ class MarketRulesTest(unittest.TestCase):
                     next(r for r in rules[0]['rows'] if r['good_id'] == focus)['base_price']['amount'] += 1
                 else:
                     next(g for g in rules[0]['trade']['goods'] if g['good_id'] == focus)[field] += 1
-                self.assertTrue(any('실험 복사 동일성: 화장품' in e for e in self.errors(d, t)))
+                self.assertTrue(any('실험 복사 동일성: 화장품' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_static_offer_copy(self):
         d, t, scenarios, _, _, _ = self.experiment_fixtures()
         sell = next(t['market_offers'][oid] for oid in scenarios[0]['offer_ids']
                     if t['market_offers'][oid]['kind'] == 'customer')
         sell['unit_price']['amount'] += 1
-        self.assertTrue(any('실험 복사 동일성: 정적 판매 견적' in e for e in self.errors(d, t)))
+        self.assertTrue(any('실험 복사 동일성: 정적 판매 견적' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_missing_row_uses_existing_check(self):
         d, t, _, rules, _, _ = self.experiment_fixtures()
         rules[1]['rows'].pop()
-        self.assertTrue(any('시세표 행 집합이 거래 품목·도시와 다름' in e for e in self.errors(d, t)))
+        self.assertTrue(any('시세표 행 집합이 거래 품목·도시와 다름' in e for e in self.experiment_errors(d, t)))
 
     def test_experiment_legacy_data_still_passes(self):
         d, t, scenarios, rules, old, focus = self.experiment_fixtures()
@@ -1189,7 +1194,7 @@ class MarketRulesTest(unittest.TestCase):
             p['tariff']['base'] = [r for r in p['tariff']['base'] if r['good_id'] not in added_goods]
             p['claims']['by_good'] = [r for r in p['claims']['by_good'] if r['good_id'] not in added_goods]
             p['collections']['by_counterparty'] = [r for r in p['collections']['by_counterparty'] if r['counterparty_id'] not in added_parties]
-        self.assertEqual(self.errors(d, t), [])
+        self.assertEqual(self.experiment_errors(d, t), [])
 
     def test_risk_counterexamples(self):
         cases = [

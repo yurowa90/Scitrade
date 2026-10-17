@@ -895,7 +895,6 @@ def check_experiments(documents, tables):
 def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
-    check_experiments(documents, tables)
     names = {p['id'] for p in market['counterparties']}
     party_counts = {}
     for party in market['counterparties']:
@@ -1291,6 +1290,7 @@ def main():
     check_m2a(tables)
     validate_cancellation(tables['scenarios'], tables['routes'])
     check_market_rules(documents, tables)
+    check_experiments(documents, tables)
 
     acceptance = read('tests/acceptance_cases.json')
     cases = acceptance['cases']
