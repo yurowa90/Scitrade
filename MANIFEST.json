@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 240404,
-      "sha256": "39a8e03c07f29a5e795cf5606052ad0fd276651fe7510a08f10271bea3efdea7"
+      "size_bytes": 241266,
+      "sha256": "615a392dbef7cf5561095628e979563e399f095e7d2287d0040ca8ae1f99cd96"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 63314,
-      "sha256": "6bcf1f718600ad34d89a624378e83cbb9e86c067cc3fce40d5f243190a5c520e"
+      "size_bytes": 1376,
+      "sha256": "46c669b9d487784f5a59ebc349ed0c0305da8eb2a81db6dd6b9069bae9e7248d"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0065-HUB-2026-10-17.md",
@@ -2497,8 +2497,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 24500,
-      "sha256": "2f58f26ca6f41216bb8611560a1d1783a36b3ae817e1af99b6eb5de728ce1a6c"
+      "size_bytes": 25113,
+      "sha256": "a6ca5aba2d0c5deb0ca884891c161818b4171d9b08a53a01714fcd68425913a5"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2869,6 +2869,16 @@
       "path": "docs/ai/tasks/TASK-0064-risk-claims-collections.md",
       "size_bytes": 203576,
       "sha256": "cac6c0dad7b5c592bb56f032ca2325b266bc0fd428ff7ca550484af0c996cae6"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
+      "size_bytes": 38910,
+      "sha256": "c9714a7c4ab44d530d61993d0cce663c30aa33f855343fdef34fb4be995f287c"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
+      "size_bytes": 18900,
+      "sha256": "ef4863933859eccbd9b64528b5c3dfa8916cbdeca0a0d22955f045b3100cc68f"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
