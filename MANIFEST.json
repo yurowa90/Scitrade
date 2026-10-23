@@ -1742,8 +1742,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
-      "size_bytes": 80125,
-      "sha256": "735ac695c2df165f074f8b43351c1d761843d0ab700114ad1a678edf96f24a28"
+      "size_bytes": 80399,
+      "sha256": "a1525c91a70cd5c49cc8315d9e25e88bca1c713de29967bd91c843cf96ef877d"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2512,8 +2512,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25246,
-      "sha256": "8d4203b3f8879542e21b9c05e8954ef97a46f38d261ce1e235e01b297f440bf0"
+      "size_bytes": 25297,
+      "sha256": "dd734b2fd0c8fec09c29e665f849c20609fda7207098695f2f20d12ce775a959"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -2897,8 +2897,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
-      "size_bytes": 54604,
-      "sha256": "f6e97e66cc1695d577ba82aaab57b2a8d750f3a1e30bfb122fc68c809dd6e3ec"
+      "size_bytes": 54784,
+      "sha256": "1b04468742ec645d752e836e95db94b02f309f24d715b6119e54cd85f9542d99"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
