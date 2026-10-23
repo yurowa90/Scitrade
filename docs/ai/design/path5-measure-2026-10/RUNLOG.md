@@ -191,3 +191,11 @@ G0 통과.
 - 손잡이: 위험 프로필 `claims.by_good[].p_claim_bp`를 모든 품목에 +200 올렸다. 화장품 900 → 1100, 의류 500 → 700, 조미김 500 → 700이다. 바꾼 곳은 `data/market_rules.json` 세 줄뿐이다.
 - 같은 커밋에서 확인한 것: validate 통과(MANIFEST 재생성), 골든 종료 0, `npx vitest run` 55파일 1,510개 통과.
 - 새 `data/market_rules.json` sha256: `fb3ee07c6cc7d1ffd1b0a9078a59b9bbc06b16a9d135c90e7cced959360122bd`
+
+## 3회차(측정 커밋 `3d36846`, 마지막 회)
+
+### G0
+
+측정 커밋 `3d36846f112229ecf07ac5b6167b4fbf06bbc74a`(별도 작업 트리), `data/market_rules.json` sha256 `fb3ee07c…22bd` = 허브 통보값, 골든 종료 0, validate 통과. 통과.
+
+- 순서: 단계 1~9(`--round 3`) → J1·종료 코드 확인(G3) → 표본 밖(시드 1021~1040, `--round 3`, 같은 커밋). 허브 답에 따라 중간 승인 없이 이어 간다.
