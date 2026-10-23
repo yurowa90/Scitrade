@@ -1756,6 +1756,11 @@
       "sha256": "048021fda18d15b52503ff37aa7e2717ea0a71ba096642931b546f52dd05df8a"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/RUNLOG.md",
+      "size_bytes": 1090,
+      "sha256": "588f0b6238f350c9944ff3c4e500b1b24afc728df8b4ccc505d3e8d18c88da4c"
+    },
+    {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
       "size_bytes": 80399,
       "sha256": "a1525c91a70cd5c49cc8315d9e25e88bca1c713de29967bd91c843cf96ef877d"
