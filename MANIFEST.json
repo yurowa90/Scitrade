@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 70558,
-      "sha256": "281181aca2b4218814a790416fce9a063d6c499cea54cbf360da9ccd80861436"
+      "size_bytes": 72392,
+      "sha256": "a4b1bd0387153fc50353eac804e9bec3808eb22ca6e0ab0c4d046c716cd7f243"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -1729,6 +1729,11 @@
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW3-HUB-2026-10-16.md",
       "size_bytes": 82618,
       "sha256": "c0294f855d77ae54e23ab09607c53dbe1bac0ebc983ed2de31c9051c7f069931"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-0066-HUB-2026-10-23.md",
+      "size_bytes": 10826,
+      "sha256": "7bb3c00737906f0b15014e6ad928025052b67c6aa0dfdbebac49b22234e74e3e"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/REVIEW-HUB-2026-10-16.md",
@@ -2894,6 +2899,11 @@
       "path": "docs/ai/tasks/TASK-0065-experiment-scenarios.md",
       "size_bytes": 38910,
       "sha256": "c9714a7c4ab44d530d61993d0cce663c30aa33f855343fdef34fb4be995f287c"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0066-R1-runner-diag-tests.md",
+      "size_bytes": 6883,
+      "sha256": "1ca2d7a61106e7fc8603c38912f813a8529f4a8c54f5aa04e530e0167edd2a7b"
     },
     {
       "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
