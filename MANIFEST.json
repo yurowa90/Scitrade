@@ -1756,6 +1756,16 @@
       "sha256": "048021fda18d15b52503ff37aa7e2717ea0a71ba096642931b546f52dd05df8a"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/REPORT-APPENDIX.md",
+      "size_bytes": 490832,
+      "sha256": "ca026d4c920b672aadd0d8ae9888e5a730a72928dfcb61d91ac1e44f501943b9"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/REPORT.md",
+      "size_bytes": 14276,
+      "sha256": "23536abb3c7f4a1ec6c2ebd512700844a05a3171fc53c652234ffcd6621b161d"
+    },
+    {
       "path": "docs/ai/design/path5-measure-2026-10/ROUND-0.md",
       "size_bytes": 11062,
       "sha256": "d7192e482bc541ed7d1c60304d15260bed5fb7a2bfa1001f676edebba01c493e"
@@ -1777,8 +1787,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/RUNLOG.md",
-      "size_bytes": 43633,
-      "sha256": "34966fbd62fa9965e6ac44708d281ab67e6a276d7e787c62474700c56eeec679"
+      "size_bytes": 51152,
+      "sha256": "7fe0ecf967cc79e2837c69a24d1394e3406f816cc075bd2018f2d95e4cce2f09"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
