@@ -1176,18 +1176,18 @@
           {
             "good_id": "COSMETICS",
             "grade": "MID",
-            "p_claim_bp": 900
+            "p_claim_bp": 1100
           },
           {
             "good_id": "APPAREL",
             "grade": "LOW",
-            "p_claim_bp": 500
+            "p_claim_bp": 700
           }
           ,
           {
             "good_id": "SEASONED_LAVER",
             "grade": "LOW",
-            "p_claim_bp": 500
+            "p_claim_bp": 700
           }
         ],
         "basis": "fictional_damage_grade",
