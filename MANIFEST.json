@@ -241,6 +241,11 @@
       "sha256": "3b685d8c682bce8c4ce1fd9dfc38f66a0282d7d55c161e8e89dec1290d48fa0e"
     },
     {
+      "path": "docs/ai/TEXT_LANE.md",
+      "size_bytes": 1653,
+      "sha256": "3613885e69f67255bd20a29a9f780e477be24f2a2680188da6c9dd31c9927a18"
+    },
+    {
       "path": "docs/ai/WORKFLOW.md",
       "size_bytes": 16094,
       "sha256": "390b5de93ad4c0ec925ef2638a59bb45fd8f626e50ed0a590895235c7b1c1c02"
@@ -2909,6 +2914,11 @@
       "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
       "size_bytes": 54784,
       "sha256": "1b04468742ec645d752e836e95db94b02f309f24d715b6119e54cd85f9542d99"
+    },
+    {
+      "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
+      "size_bytes": 3431,
+      "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
     },
     {
       "path": "docs/ai/tasks/results/.gitkeep",
