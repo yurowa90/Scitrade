@@ -2,7 +2,7 @@
 import type { ScenarioConfig } from '../types';
 export type Investment = 'none' | 'S' | 'E' | 'SE' | 'SE22';
 export interface Variant { acceptance: string; react: boolean; investment: Investment; hires: { pt: number; day: number }[]; early: boolean }
-export const ACCEPTANCE_IDS = ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK', 'ON_TIME_FIRST', 'ASSET_LIGHT', 'SEEDED_RANDOM'];
+export const ACCEPTANCE_IDS = ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK', 'ON_TIME_FIRST', 'ASSET_LIGHT', 'SEEDED_RANDOM', 'MARGIN_BUFFER', 'FOCUS'];
 export function variantName(v: Variant): string {
   return v.acceptance + (v.react ? '~fx:react' : '') + (v.investment !== 'none' ? `~inv:${v.investment}` : '')
     + (v.hires.length ? `~hire:${v.hires.map((h) => `${h.pt}pt@${h.day}`).join('+')}` : '') + (v.early ? '~scout:early' : '');

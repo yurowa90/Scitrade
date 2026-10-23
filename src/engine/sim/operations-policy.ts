@@ -1,14 +1,41 @@
+import policyConstants from './policy-constants.json';
 import { listSailings, routeBetween } from '../catalog';
 import { isAvailableFromToday } from '../employees';
 import { planState } from '../engine';
 import { offerDef, openTradePairs, prepWorkUnitsFor } from '../market';
 import { dailyKrwDue, handlingOrder, lateDeliveryReduction, projectPrepCompletion, rentDueMinor, usdLotKrw } from '../operations';
-import { preview } from '../reports';
+import { preview, type QuotePreview } from '../reports';
+import { krwToUsdMinor } from '../risk';
+import type { Currency } from '../money';
 import { fundsPosition, runningTaskOf, spaceShortfall } from '../reservations';
 import { drawUniform, type RngState } from '../rng';
 import type { EngineCommand, GameState, ScenarioConfig } from '../types';
 import { candidateFor, type Variant } from './variants';
 import type { PolicyDecision, ProjectionBooking } from './policies';
+
+// 고정 품목은 실행기 전용 정책 상수다. 시나리오 품목 배열에서 고르지 않는다.
+export const FOCUS_GOOD_ID = policyConstants.focusGoodId;
+export function decisionContribution(p: QuotePreview, sale: number, purchaseCurrency: Currency): number {
+  return sale - p.freight - p.duty - (purchaseCurrency === 'KRW'
+    ? krwToUsdMinor(p.purchase, p.referenceEstimate!.rateKrwPerUsd) : p.purchase);
+}
+export const marginBufferAccepts = (contribution: number, sale: number): boolean => 10n * BigInt(contribution) >= BigInt(sale);
+export function directTradeCandidates(state: GameState, config: ScenarioConfig, day: number) {
+  const candidates: { buyOfferId: string; sellOfferId: string; quantity: number; purchaseCurrency: Currency;
+    sale: number; contribution: number; preview: QuotePreview }[] = [];
+  for (const pair of openTradePairs(state, config)) {
+    const buy = offerDef(state, config, pair.buyOfferId)!, sell = offerDef(state, config, pair.sellOfferId)!;
+    for (let quantity = Math.min(buy.maxQuantity, sell.maxQuantity); quantity >= buy.quantityStep; quantity -= buy.quantityStep) {
+      const sale = sell.unitPriceMinor * quantity;
+      const p = preview(config, 'DIRECT_TRADE', buy.cityId, sell.cityId, day,
+        { purchase: buy.unitPriceMinor * quantity, sale }, sell.deliveryDeadlineDay!, sell.paymentDueDay!,
+        { goodId: buy.goodId, purchaseCurrency: buy.currency });
+      if (p) candidates.push({ ...pair, quantity, purchaseCurrency: buy.currency, sale,
+        contribution: decisionContribution(p, sale, buy.currency), preview: p });
+    }
+  }
+  return candidates;
+}
 
 export const rejectionCounts = () => ({ funds: 0, storage: 0, handling: 0, sailing: 0, staff: 0, onTime: 0 });
 export function decideOperations(id: string, v: Variant, state: GameState, config: ScenarioConfig, initialRng: RngState): PolicyDecision {
@@ -70,7 +97,7 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
     }
     expense += (wantsExpand ? ops.facility.expansion.setupFeeMinor : 0)
       + hireToday.reduce((sum, h) => sum + h.candidate!.salaryPerDayMinor * (config.recruitment!.signingFeeWageDays + end - state.day), 0);
-    const lots = Math.min(Math.ceil(Math.max(0, expense - fundsPosition(current, config, 'KRW').available) / usdLotKrw(config)),
+    const lots = Math.min(Math.ceil(Math.max(0, expense - fundsPosition(current, config, 'KRW').available) / usdLotKrw(config, current)),
       Math.max(0, Math.floor(fundsPosition(current, config, 'USD').available / ops.fx.lotUsdMinor)));
     if (lots) add({ id: nextId(), type: 'EXCHANGE_CURRENCY', direction: 'USD_TO_KRW', usdAmountMinor: lots * ops.fx.lotUsdMinor });
   }
@@ -109,14 +136,14 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
     }
   }
   type Acceptance = Extract<EngineCommand, { type: 'ACCEPT_TRADE' | 'ACCEPT_FORWARDING' }>;
-  const candidates: { command: Acceptance; offerId: string; sale: number; contribution: number; deadline: number; routeId: string; quantity: number }[] = [];
-  if (v.acceptance !== 'ASSET_LIGHT') for (const pair of openTradePairs(current, config)) {
-    const buy = offerDef(current, config, pair.buyOfferId)!, sell = offerDef(current, config, pair.sellOfferId)!;
-    for (let q = Math.min(buy.maxQuantity, sell.maxQuantity); q >= buy.quantityStep; q -= buy.quantityStep) {
-      const p = preview(config, 'DIRECT_TRADE', buy.cityId, sell.cityId, state.day, { purchase: buy.unitPriceMinor * q, sale: sell.unitPriceMinor * q }, sell.deliveryDeadlineDay!, sell.paymentDueDay!);
-      if (p) candidates.push({ command: { id: '', type: 'ACCEPT_TRADE', ...pair, quantity: q }, offerId: buy.id, quantity: q, sale: sell.unitPriceMinor * q,
-        contribution: sell.unitPriceMinor * q - p.purchase - p.freight - p.duty, deadline: p.deliveryDeadlineDay, routeId: p.routeId });
-    }
+  const candidates: { command: Acceptance; offerId: string; sale: number; contribution: number; deadline: number; routeId: string; quantity: number;
+    direct?: ReturnType<typeof directTradeCandidates>[number] }[] = [];
+  if (v.acceptance !== 'ASSET_LIGHT') for (const c of directTradeCandidates(current, config, state.day)) {
+    if (v.acceptance === 'MARGIN_BUFFER' && !marginBufferAccepts(c.contribution, c.sale)) continue;
+    if (v.acceptance === 'FOCUS' && offerDef(current, config, c.buyOfferId)!.goodId !== FOCUS_GOOD_ID) continue;
+    candidates.push({ command: { id: '', type: 'ACCEPT_TRADE', buyOfferId: c.buyOfferId, sellOfferId: c.sellOfferId, quantity: c.quantity },
+      offerId: c.buyOfferId, quantity: c.quantity, sale: c.sale, contribution: c.contribution,
+      deadline: c.preview.deliveryDeadlineDay, routeId: c.preview.routeId, direct: c });
   }
   for (const o of current.offers.filter((o) => o.status === 'OPEN').map((o) => offerDef(current, config, o.id)!)) {
     if (o.kind !== 'forwarding' || o.validUntilDay < state.day) continue;
@@ -128,6 +155,19 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
   for (const c of candidates) {
     if (c.contribution <= 0 || !current.offers.some((o) => o.id === c.offerId && o.status === 'OPEN')) continue;
     if (v.acceptance === 'SEEDED_RANDOM') { const d = drawUniform(rng, 'sim.policy.SEEDED_RANDOM'); rng = d.rng; if (d.value >= 0.5) continue; }
+    let exchangeUsd = 0;
+    if (v.acceptance !== 'NO_FX' && c.direct?.purchaseCurrency === 'KRW'
+      && offerDef(current, config, c.direct.sellOfferId)!.currency !== 'KRW') {
+      let expense = 0;
+      for (let day = state.day; day <= Math.min(config.campaignDays, state.day + (v.react ? 0 : 6)); day++) expense += dailyKrwDue(current, config, day);
+      const krwShort = c.direct.preview.purchase - (fundsPosition(current, config, 'KRW').available - expense);
+      if (krwShort > 0) {
+        exchangeUsd = Math.ceil(krwShort / usdLotKrw(config, current)) * ops.fx.lotUsdMinor;
+        const usdCap = fundsPosition(current, config, 'USD').available
+          - (c.direct.preview.cashNeedByCurrency?.find((x) => x.currency === 'USD')?.amountMinor ?? 0);
+        if (exchangeUsd > usdCap) { rejections.funds++; continue; }
+      }
+    }
     const offer = offerDef(current, config, c.offerId)!;
     const prep = prepWorkUnitsFor(config, offer, c.quantity);
     let reason: keyof typeof rejections = 'onTime', accepted = false;
@@ -138,11 +178,14 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
       if (spaceShortfall(current, config, s, offer.goodId, c.quantity)) { reason = 'sailing'; continue; }
       const employees = available(prep);
       for (const employee of employees.length ? employees : [undefined]) {
-        const cmd: Acceptance = { ...c.command, id: nextId(), plan: { ...(employee ? { employeeId: employee.id } : {}), sailingId: s.id } };
-        const p = trial(cmd), result = p.results[0]!;
+        const ex: EngineCommand | undefined = exchangeUsd ? { id: nextId(), type: 'EXCHANGE_CURRENCY', direction: 'USD_TO_KRW', usdAmountMinor: exchangeUsd } : undefined;
+        const cmd: Acceptance = { ...c.command, id: ex ? `SIM-${id}-D${state.day}-${commands.length + 2}` : nextId(), plan: { ...(employee ? { employeeId: employee.id } : {}), sailingId: s.id } };
+        const p = ex ? planState(current, config, [ex, cmd]) : trial(cmd), result = p.results[ex ? 1 : 0]!;
+        if (ex && p.results[0]!.status !== 'APPLIED') { reason = 'funds'; continue; }
         if (result.status !== 'APPLIED') { reason = result.reasonKo.includes('보관') ? 'storage' : result.reasonKo.includes('직원') ? 'staff' : 'funds'; continue; }
         if (prep > 0 && !projectionSafe(p.state)) { reason = 'handling'; continue; }
         recordProjections(p.state);
+        if (ex) commands.push(ex);
         commands.push(cmd); current = p.state; accepted = true; break;
       }
       if (accepted) break;

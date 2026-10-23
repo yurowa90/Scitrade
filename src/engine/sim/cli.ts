@@ -1,6 +1,9 @@
-import { d03Tables, mergeD03, runD03 } from './d03';
+import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS } from '../../content/scenario';
+import type { RiskLevel } from './risk-metrics';
+import { riskCompareTables } from './risk-tables';
+import { d03Tables, mergeD03, runD03, requestedRisk, workerOptions } from './d03';
 import type { LateMode } from './variants';
-export { mergeD03, runD03 };
+export { mergeD03, runD03, requestedRisk, workerOptions };
 import { compareOutputs, formatCompare, summarizeOutput } from './compare';
 import { runSuite, serializeSimOutput, SIM_FORMAT, SIM_SEEDS, type SimOutput } from './sim';
 
@@ -10,11 +13,13 @@ export interface SimIo {
   out(text: string): void;
   err(text: string): void;
   now(): number;
+  marketRulesSha256?(): string;
 }
 const USAGE = `사용법:
   sim run [--scenarios A,B] [--policies X,Y] [--seeds N] [--out PATH]
-  sim d03 [--seed-base N] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
+  sim d03 [--risk R0|R1|R2|R3] [--scenarios A,B] [--round 0~3] [--seed-base N] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
   sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
+  sim risk-compare A B
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
@@ -42,7 +47,7 @@ export function d03Options(args: readonly string[]) {
   const options = new Map<string, string>();
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i]!, value = args[i + 1];
-    if (!['--policies', '--seed-base', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
+    if (!['--risk', '--scenarios', '--round', '--policies', '--seed-base', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
     options.set(key, value);
   }
   const count = integer(options.get('--seeds') ?? '20', 1, 20, '시드 수');
@@ -53,7 +58,16 @@ export function d03Options(args: readonly string[]) {
   const to = integer(options.get('--seed-to') ?? String(count), from, count, '시드 끝 번호');
   const late = options.get('--late') ?? 'base';
   if (!['base', 'cap30', 'flat200'].includes(late)) throw new Error(`알 수 없는 감액: ${late}`);
-  return { ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: seeds.slice(from - 1, to), late: late as LateMode,
+  const risk = options.get('--risk');
+  if (risk && !['R0', 'R1', 'R2', 'R3'].includes(risk)) throw new Error('알 수 없는 위험 층');
+  if (!risk && options.has('--round')) throw new Error('--round는 --risk가 필요합니다.');
+  const scenarioIds = options.get('--scenarios')?.split(',');
+  if (scenarioIds) for (const id of scenarioIds) {
+    if (!([...OPERATIONS_SCENARIO_IDS, ...EXPERIMENT_SCENARIO_IDS] as string[]).includes(id)) throw new Error(`알 수 없는 시나리오: ${id}`);
+    if (!risk && (EXPERIMENT_SCENARIO_IDS as readonly string[]).includes(id)) throw new Error('실험 시나리오는 --risk가 필요합니다.');
+  }
+  return { ...(risk ? { risk: risk as RiskLevel, tuningRound: integer(options.get('--round') ?? '0', 0, 3, '조정 회차') } : {}),
+    ...(scenarioIds ? { scenarioIds } : {}), ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: seeds.slice(from - 1, to), late: late as LateMode,
     workers: integer(options.get('--workers') ?? '1', 1, 32, '워커 수'), out: options.get('--out'), tablesFrom: options.get('--tables-from')?.split(',') };
 }
 export function writeD03(output: SimOutput, io: SimIo, out?: string) {
@@ -67,8 +81,9 @@ export function simMain(argv: readonly string[], io: SimIo): number {
     const [action, ...args] = argv;
     if ((action === 'help' || action === '--help') && !args.length) { io.out(USAGE); return 0; }
     if (action === 'd03') {
-      const options = d03Options(args), start = io.now();
-      const output = options.tablesFrom ? mergeD03(options.tablesFrom.map((path) => readOutput(path, io)), options.late) : runD03(options);
+      const parsed = d03Options(args), start = io.now();
+      const options = { ...parsed, ...(parsed.risk ? { marketRulesSha256: io.marketRulesSha256?.() } : {}) };
+      const output = options.tablesFrom ? mergeD03(options.tablesFrom.map((path) => readOutput(path, io)), options.late, requestedRisk(options)) : runD03(options);
       writeD03(output, io, options.out);
       io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
       return 0;
@@ -94,6 +109,10 @@ export function simMain(argv: readonly string[], io: SimIo): number {
       if (path) io.writeText(path, text); else io.out(text);
       io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
       return 0;
+    }
+    if (action === 'risk-compare') {
+      if (args.length !== 2 || args.some((a) => a.startsWith('--'))) throw new Error('위험 출력 파일 두 개가 필요합니다.');
+      io.out(riskCompareTables(readOutput(args[0]!, io), readOutput(args[1]!, io))); return 0;
     }
     if (action === 'compare') {
       if (!(args.length === 2 || (args.length === 4 && args[2] === '--limit')) || args.slice(0, 2).some((a) => a.startsWith('--'))) {
