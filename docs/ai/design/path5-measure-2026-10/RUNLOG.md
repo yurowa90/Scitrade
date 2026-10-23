@@ -76,3 +76,21 @@ G0 통과.
 - 새 `data/market_rules.json` sha256: `075dda9c2d43c7e2a5d96b901814053a9b28214c0de81fe3ac43abbed0549395`
 - 프로필 대조 스크립트는 이제 `DIFF 0`이 아니다. 0회차 고정 기록과 비교하는 도구이고, 조정된 프로필에서는 차이가 나는 것이 맞다. 1회차의 G0는 sha256만 이 값과 대조한다.
 - 측정 커밋은 허브가 이 커밋을 dev에 병합한 병합 커밋이다(허브 답 7-2).
+
+## 1회차(측정 커밋 `4143322`)
+
+### G0
+
+측정 커밋 `4143322ca73e72c82cc5355e4f6775245084fecd`(별도 작업 트리), `data/market_rules.json` sha256 `075dda9c…9395` = 허브 통보값, 골든 종료 0, validate 통과. 통과.
+
+### 단계
+
+| 단계 | 명령 | 시각(소요) | 종료 | 출력 sha256 |
+|---|---|---|---|---|
+| 1 | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --out GA-R0-base.json` | 10-23 22:19:51~22:40:35 (1244s) | 0 | json `f5fc01612e616deaec340796ca6f4275f22efb137d0c697e43ef54d325294d00` · md `1e55a5272c82fafb4404edef422d878e0cc9ddfb40415fc6b10e30fac5cdd8f7` |
+| 2 | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies MAX_CONTRIBUTION,MARGIN_BUFFER,FOCUS --out GA-R0-new2.json` | 10-23 22:40:35~22:40:57 (22s) | 0 | json `f3340079afca71be6371e628c8f7f4d0ed0c31a363ad1c2fbb2254628135be56` · md `0f9a258cdbe952afec693899230fdcfee8fedbcf5acb6bdf494239db9d24ea14` |
+| 4 | `sim d03 --risk R1 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GA-R1-red.json` | 10-23 22:40:57~22:41:43 (46s) | 0 | json `c98474f081877a7328b1622ab2d3913d1382c54ac684069cda4a48371ad1a8fa` · md `62e7aa1b80cb2e857e971d3dae0ec33a8cae332dbbfe5646b22c51ea16a1712c` |
+| 9 | `sim risk-compare GA-R0-new2.json GA-R1-red.json` | 10-23 22:41:43~22:41:44 (1s) | 0 | json `-` · md `ab7bc8afaac78433909c7994d5fb6dd7def1f1d1d63e4e96765fec9045b2c6db` |
+
+- R0 결정성 확인: `GA-R0-base`(2,340회)와 `GA-R0-new2`(60회)의 `runs`가 0회차와 바이트까지 같다. 다른 것은 `meta.risk`(회차·sha256)뿐이다. 환율 손잡이는 R0에 닿지 않으므로 예상한 결과다.
+- G2((iii)) 통과: 227 → 337.
