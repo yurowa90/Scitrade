@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN-v2.md",
-      "size_bytes": 16805,
-      "sha256": "2657f578cbef33a4079516df0d76d039279805d6f499611904dbca34fa38c1a5"
+      "size_bytes": 16975,
+      "sha256": "35a6f55ea372d9ae8b28456f6c4a557bd2064a9f4b2561cef757a8c79df0e078"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 11609,
-      "sha256": "f0bc9fe523550a4d173352e606df081f590f67e5136952ed96097262bded7109"
+      "size_bytes": 13433,
+      "sha256": "0f061175d5309b6e6fef32d2196f99060b1565bfc3393203e37b6e27076a3ff2"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
