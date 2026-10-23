@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 245184,
-      "sha256": "22171139b2c390caa1c07383c6dd6b73302d38b9dd6691dd43552f0a5ca538bf"
+      "size_bytes": 246532,
+      "sha256": "aa0177f471a1afdc45d5ddd298c5260933130f98b44c0c02de9a527feccd4629"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1749,6 +1749,11 @@
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_vs_design.py",
       "size_bytes": 3065,
       "sha256": "349357990cca743d2ea3baf39520c6d90d4b515d93644560288e8d1b4b9c7056"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/DIAG-U3.md",
+      "size_bytes": 7609,
+      "sha256": "fe49033d57921926ef2cb874c92777c685fb199ac7aafd0680e032d0a43f64a2"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/PLAN.md",
