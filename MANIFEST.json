@@ -1701,6 +1701,11 @@
       "sha256": "281181aca2b4218814a790416fce9a063d6c499cea54cbf360da9ccd80861436"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
+      "size_bytes": 17068,
+      "sha256": "3211599407f1a84809368aec586a6977e80007691063eea84ecfbf8cf5e6ee0b"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0065-HUB-2026-10-17.md",
       "size_bytes": 30411,
       "sha256": "8a279d62daf5153751b0abf8b095be50593a3b3a7543f596db5d1b72349a422c"
@@ -1802,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
-      "size_bytes": 34302,
-      "sha256": "bc165da491411c6484d3587ad57ee0ffeb62b072c3b6d631a2f4fa24d3916772"
+      "size_bytes": 48991,
+      "sha256": "156cf6189bfd8da86a921c03e7b3361b21bf7a9d1abce4da3e42e6a3f8667113"
     },
     {
       "path": "docs/ai/design/research/VENUE-NAME-CHECK.md",
