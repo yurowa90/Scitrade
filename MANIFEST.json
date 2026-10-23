@@ -1751,6 +1751,11 @@
       "sha256": "349357990cca743d2ea3baf39520c6d90d4b515d93644560288e8d1b4b9c7056"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/DIAG-U3.md",
+      "size_bytes": 7609,
+      "sha256": "fe49033d57921926ef2cb874c92777c685fb199ac7aafd0680e032d0a43f64a2"
+    },
+    {
       "path": "docs/ai/design/path5-measure-2026-10/PLAN.md",
       "size_bytes": 16134,
       "sha256": "048021fda18d15b52503ff37aa7e2717ea0a71ba096642931b546f52dd05df8a"
