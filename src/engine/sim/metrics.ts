@@ -40,6 +40,7 @@ export interface TimingMetrics {
   completedDays: number[];
 }
 export interface SimMetrics {
+  risk?: import('./risk-metrics').RiskMetrics;
   operations?: OperationsMetrics;
   closedDays: number;
   currencies: Record<string, CurrencyMetrics>;

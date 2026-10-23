@@ -1,3 +1,4 @@
+import { riskMetrics, type RiskLevel, type RiskMeta } from './risk-metrics';
 import { createOperationsCollector } from './operations-metrics';
 import { loadScenario, SCENARIO_IDS } from '../../content/scenario';
 import { commitDay, createGame, openDay } from '../engine';
@@ -18,11 +19,11 @@ export interface SimRun {
 }
 export interface SimOutput {
   meta: { tool: 'scitrade-sim'; format: number; engineVersion: string; dataVersion: string;
-    scenarioIds: string[]; policyIds: string[]; seeds: number[]; lateMode?: import('./variants').LateMode };
+    scenarioIds: string[]; policyIds: string[]; seeds: number[]; lateMode?: import('./variants').LateMode; risk?: RiskMeta };
   runs: SimRun[];
 }
 
-export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number, observe?: (state: GameState, commands: import('../types').EngineCommand[]) => void): { state: GameState; run: SimRun } {
+export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number, observe?: (state: GameState, commands: import('../types').EngineCommand[]) => void, risk?: RiskLevel): { state: GameState; run: SimRun } {
   const config = { ...baseConfig, seed };
   let day = 1;
   try {
@@ -60,6 +61,7 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
     }
     const metrics = collector.finish(state, config);
     const ops = operations?.finish(state);
+    if (risk) metrics.risk = riskMetrics(state, config, metrics, risk);
     return { state, run: { scenarioId: config.id, policyId: policy.id, seed, commands: counts, metrics: { ...metrics,
       ...(ops ? { operations: { ...ops, staffUtilizationBasisPoints: metrics.staff.availableEmployeeDays
         ? Math.floor((metrics.staff.availableEmployeeDays - metrics.staff.idleEmployeeDays) * 10000 / metrics.staff.availableEmployeeDays) : 0 } } : {}) } } };
