@@ -76,3 +76,59 @@ G0 통과.
 - 새 `data/market_rules.json` sha256: `075dda9c2d43c7e2a5d96b901814053a9b28214c0de81fe3ac43abbed0549395`
 - 프로필 대조 스크립트는 이제 `DIFF 0`이 아니다. 0회차 고정 기록과 비교하는 도구이고, 조정된 프로필에서는 차이가 나는 것이 맞다. 1회차의 G0는 sha256만 이 값과 대조한다.
 - 측정 커밋은 허브가 이 커밋을 dev에 병합한 병합 커밋이다(허브 답 7-2).
+
+## 1회차(측정 커밋 `4143322`)
+
+### G0
+
+측정 커밋 `4143322ca73e72c82cc5355e4f6775245084fecd`(별도 작업 트리), `data/market_rules.json` sha256 `075dda9c…9395` = 허브 통보값, 골든 종료 0, validate 통과. 통과.
+
+### 단계
+
+| 단계 | 명령 | 시각(소요) | 종료 | 출력 sha256 |
+|---|---|---|---|---|
+| 1 | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --out GA-R0-base.json` | 10-23 22:19:51~22:40:35 (1244s) | 0 | json `f5fc01612e616deaec340796ca6f4275f22efb137d0c697e43ef54d325294d00` · md `1e55a5272c82fafb4404edef422d878e0cc9ddfb40415fc6b10e30fac5cdd8f7` |
+| 2 | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies MAX_CONTRIBUTION,MARGIN_BUFFER,FOCUS --out GA-R0-new2.json` | 10-23 22:40:35~22:40:57 (22s) | 0 | json `f3340079afca71be6371e628c8f7f4d0ed0c31a363ad1c2fbb2254628135be56` · md `0f9a258cdbe952afec693899230fdcfee8fedbcf5acb6bdf494239db9d24ea14` |
+| 4 | `sim d03 --risk R1 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GA-R1-red.json` | 10-23 22:40:57~22:41:43 (46s) | 0 | json `c98474f081877a7328b1622ab2d3913d1382c54ac684069cda4a48371ad1a8fa` · md `62e7aa1b80cb2e857e971d3dae0ec33a8cae332dbbfe5646b22c51ea16a1712c` |
+| 9 | `sim risk-compare GA-R0-new2.json GA-R1-red.json` | 10-23 22:41:43~22:41:44 (1s) | 0 | json `-` · md `ab7bc8afaac78433909c7994d5fb6dd7def1f1d1d63e4e96765fec9045b2c6db` |
+
+- R0 결정성 확인: `GA-R0-base`(2,340회)와 `GA-R0-new2`(60회)의 `runs`가 0회차와 바이트까지 같다. 다른 것은 `meta.risk`(회차·sha256)뿐이다. 환율 손잡이는 R0에 닿지 않으므로 예상한 결과다.
+- G2((iii)) 통과: 227 → 337.
+| 6a-base | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --out GN-R0-base.json` | 10-23 22:41:44~22:58:16 (992s) | 0 | json `aa3f168125c4ea36081896f2d894e4e71bc1c0e6a0c6fd56de22c61468491135` · md `dee337762e26dc3f90292dca174ca2e310829431e9f98b3eedb728787db7a01d` |
+| 6a-new | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --policies MARGIN_BUFFER,FOCUS --out GN-R0-new.json` | 10-23 22:58:17~22:58:31 (14s) | 0 | json `b8c05c50c31f47a425ec1e6126e432f19afd7674af74f120a7d26a0dcd8afab1` · md `abdfb58aa42e7d9fdda341e196a6e9c2dc2dfd7614d5bc638f2ca0023b1d8e08` |
+| 6a-full | `sim d03 --risk R0 --round 1 --tables-from GN-R0-base.json,GN-R0-new.json --out GN-R0-full.json` | 10-23 22:58:31~22:58:35 (4s) | 0 | json `63c7309e973da67a68e9aa4561e90e437e53b591d7472d89070acaa121361d9d` · md `b914575b139dc4ff056476a759413288e0b507c9ccd9645736616d047346dac6` |
+| 6b-base | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --out GD-R0-base.json` | 10-23 22:58:35~23:21:26 (1371s) | 0 | json `e0755827248c895dfd7b250ac5cec9577f9c4731260d131bd25542e3eea6b5b5` · md `578a71aae8c8bbfa8ac98741a173c0c86c5fa2576d9384d1eb04b262b2816e56` |
+| 6b-new | `sim d03 --risk R0 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --policies MARGIN_BUFFER,FOCUS --out GD-R0-new.json` | 10-23 23:21:26~23:21:42 (16s) | 0 | json `d099ca7bcd7869c751ebc66ce948d758c57081fb1657bc770d326435d18869b1` · md `a2239d650ce89e21a4b1841c237644a168e6ce2cd47d002c9d0e2b06473142cc` |
+| 6b-full | `sim d03 --risk R0 --round 1 --tables-from GD-R0-base.json,GD-R0-new.json --out GD-R0-full.json` | 10-23 23:21:42~23:21:47 (5s) | 0 | json `a2ce37fa70b33f26d1394df6d81149fc3a52877e6b7ab9d2f9679aa5bf03b21f` · md `7a3a59ef918c719229fadf22f4b3bca15db459a68932f6e0c744045c9325aed2` |
+| 7a-base | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --out GA-R3-base.json` | 10-23 23:21:47~23:43:10 (1283s) | 0 | json `6a4e1a11c636fdeef0efec1ae17dad648f3ccd9a316978ea4511f6828ed8188c` · md `83c46719643e513c92e70d9fd86960cb1344a8db69320ebefa4378952823bc5d` |
+| 7a-new | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies MARGIN_BUFFER,FOCUS --out GA-R3-new.json` | 10-23 23:43:10~23:43:31 (21s) | 0 | json `6856d01150d3ccadd0da1753c44f208014624f2f66290f9a1def44ad7d6b4933` · md `913265192355b3604a3c70d01615d48c181e3f440d677a3a88f814c62fb210ba` |
+| 7a-full | `sim d03 --risk R3 --round 1 --tables-from GA-R3-base.json,GA-R3-new.json --out GA-R3-full.json` | 10-23 23:43:31~23:43:36 (5s) | 0 | json `2290031a65927293dc142a16efe40e5c23b4a5c9a3964f89f69b40f1cfda5f54` · md `386763adc5ca4d6b04d22462a7adac69f8006be54f11704855d04f6c3cfe3e39` |
+| 7b-base | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --out GN-R3-base.json` | 10-23 23:43:37~00:02:15 (1118s) | 0 | json `97845a5269c296e34598597ef5d8c984155d97a0cd0e4446192bd89acdc57e83` · md `3945cd5d03f9562dcd383d3781148f4329086f9411ed6533d124ad9b6a920eab` |
+| 7b-new | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --policies MARGIN_BUFFER,FOCUS --out GN-R3-new.json` | 10-24 00:02:15~00:02:34 (19s) | 0 | json `1f6544a877fdcfc7e95ac8a86876e06273668ba84b02de1a0d3e6746498fc9aa` · md `473e8393e71954bf0fd743fba09da1c12a7af5549ab3f37f1a46c0ce32a0582e` |
+| 7b-full | `sim d03 --risk R3 --round 1 --tables-from GN-R3-base.json,GN-R3-new.json --out GN-R3-full.json` | 10-24 00:02:34~00:02:39 (5s) | 0 | json `5e7de01d17adac14446eb76749b5859b44f5731e0df4bbd32fbc51f032c772f2` · md `91dfefd7a69861b9eaceaccdaa44913fddf7e68a476146519f96d7d6a40d1990` |
+| 7c-base | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --out GD-R3-base.json` | 10-24 00:02:39~00:22:33 (1194s) | 0 | json `648740f573cf5bc96ce5b25a9f01f656ea075504f0853ee88f148e86e3ead09f` · md `2f624154d240feaeb6755f01597eee80e3fec59a02344f79a169d686d05d0601` |
+| 7c-new | `sim d03 --risk R3 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --policies MARGIN_BUFFER,FOCUS --out GD-R3-new.json` | 10-24 00:22:33~00:22:51 (18s) | 0 | json `9d357639763233e74e67a63137e0a1877636afc2d8c7a2c6e681abb3321656fd` · md `7233e80d91ff467dded444457acd3b5dc891b627e053d5243d560072cad924c1` |
+| 7c-full | `sim d03 --risk R3 --round 1 --tables-from GD-R3-base.json,GD-R3-new.json --out GD-R3-full.json` | 10-24 00:22:51~00:22:56 (5s) | 0 | json `19705086fa7365373b44fc4dd1d803ec410e452193270bb077da5722513cb08d` · md `6ca65176a7b66aaaaae42a0afc308ec8b5e6ecd2ced7e6081247d3b23b627c4c` |
+| 8a | `sim d03 --risk R1 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GN-R1-red.json` | 10-24 00:22:56~00:23:32 (36s) | 0 | json `5312e983f56bf78fb03448a2a1aceaea8417a859f96f4d0749a56bb08a4fbf75` · md `19b7b7b755f2ed20ae6b808fd3c91558626399e7df469195d3784e49cece6a13` |
+| 8b | `sim d03 --risk R1 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GD-R1-red.json` | 10-24 00:23:32~00:24:16 (44s) | 0 | json `723c5ca61295e70c36345f60f3d9e0a93cd2feaa612a1ab760afeb3ced7203fa` · md `e6a50ee7ac6e2c886136900271d0ded47a37f096fcb288f420c7fd768c114b1c` |
+| 8c | `sim d03 --risk R2 --scenarios SCENARIO_M2_OPERATIONS --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GA-R2-red.json` | 10-24 00:24:16~00:25:03 (47s) | 0 | json `fba639a2bec8e84dcd34a130c963e0cc7929da8b42ef256886478a915281fdc9` · md `ef7cd1572c371c72914dcce326faadf34bd7d0f29acfc9aecba63802686b7061` |
+| 8d | `sim d03 --risk R2 --scenarios SCENARIO_M2_OPS_COSMETICS --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GN-R2-red.json` | 10-24 00:25:03~00:25:41 (38s) | 0 | json `d37a3c332be572a8f76045b315b10fbd736860abf183b1bf91ae100f0314c836` · md `d90a9db3149ee2b4b22bcaebdbb50662574485fb891ca586a42be3f60917a851` |
+| 8e | `sim d03 --risk R2 --scenarios SCENARIO_M2_OPS_COS_LAVER --round 1 --seed-base 1001 --workers 4 --policies IDLE,NO_FX,MAX_CONTRIBUTION,LATE_OK,MARGIN_BUFFER,FOCUS --out GD-R2-red.json` | 10-24 00:25:41~00:26:24 (43s) | 0 | json `6b33e57b1c62f135dfa84dbe52580530b60c4539b45c742dfc53e6f12ba3c4db` · md `bb4f6fb6f11ce3129d9bbf85696be50ceb79449056bc560cdaf4d003627a451d` |
+| 9 | `sim risk-compare GA-R1-red.json GA-R2-red.json` | 10-24 00:26:24~00:26:25 (1s) | 0 | json `-` · md `4f8cce94f1ec70dd6ccc06fe652388fa9117a9d38fd0e6ce1d7b6f08a17d23e5` |
+| 9 | `sim risk-compare GA-R2-red.json GA-R3-full.json` | 10-24 00:26:25~00:26:27 (2s) | 0 | json `-` · md `1a45f1a720b27cb403ec2018e997b6e1b2ffb44de53fb8e9992b341795189e92` |
+| 9 | `sim risk-compare GN-R0-full.json GN-R1-red.json` | 10-24 00:26:27~00:26:29 (2s) | 0 | json `-` · md `df7b5b69b8f97232528879dffadc8a7f83d8183e26b8cfe076fa44c9502faa10` |
+| 9 | `sim risk-compare GN-R1-red.json GN-R2-red.json` | 10-24 00:26:29~00:26:30 (1s) | 0 | json `-` · md `b66eca0b47b76955d9d874868d793bf4054d531f5fb2c13e368433c2075ef8ac` |
+| 9 | `sim risk-compare GN-R2-red.json GN-R3-full.json` | 10-24 00:26:30~00:26:32 (2s) | 0 | json `-` · md `e4784dda84ce012b1e6fef9adf618346cb9fe393d1910f506014801b63aae008` |
+| 9 | `sim risk-compare GD-R0-full.json GD-R1-red.json` | 10-24 00:26:32~00:26:35 (3s) | 0 | json `-` · md `0056b562a41185ee2cfa909a96a32e17b41842b16a3ffc20bf1392b5634d4015` |
+| 9 | `sim risk-compare GD-R1-red.json GD-R2-red.json` | 10-24 00:26:35~00:26:35 (0s) | 0 | json `-` · md `0a18e2b67a5642ac6b9247d59f03a4cd7374daf7cddee976cb3817ee1cdeaa3f` |
+| 9 | `sim risk-compare GD-R2-red.json GD-R3-full.json` | 10-24 00:26:35~00:26:37 (2s) | 0 | json `-` · md `fbc739b495ed850a02b629531d4f5f52da425df00e3bf21f55c53d01d2bb2fe6` |
+
+- R0 결정성: (나)·(다) R0 전체 출력의 `runs`도 0회차와 같다.
+
+1회차 단계 1~9 끝. 판단은 `ROUND-1.md`.
+
+## 2회차 자료 고침(허브 승인 2026-10-23, ROUND-1 3절)
+
+- 손잡이: 위험 프로필 `collections.grades[]`의 `p_late_bp`를 +500 올렸고, 같은 만큼 `p_on_time_bp`에서 뺐다. A 8500/1000 → 8000/1500, B 7000/2000 → 6500/2500, C 5500/3000 → 5000/3500이다. `p_partial_bp`는 그대로 두었다. 바꾼 곳은 `data/market_rules.json` 여섯 줄뿐이다.
+- 같은 커밋에서 확인한 것: validate 통과(MANIFEST 재생성), 골든 종료 0, `npx vitest run` 55파일 1,510개 통과.
+- 새 `data/market_rules.json` sha256: `d596f81e1dd5886636c4a1f62e1173a96d862e346885bf373dde247e7f8b8d6a`
