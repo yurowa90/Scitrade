@@ -98,7 +98,7 @@
     {
       "path": "data/market_rules.json",
       "size_bytes": 34620,
-      "sha256": "075dda9c2d43c7e2a5d96b901814053a9b28214c0de81fe3ac43abbed0549395"
+      "sha256": "d596f81e1dd5886636c4a1f62e1173a96d862e346885bf373dde247e7f8b8d6a"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1767,8 +1767,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/RUNLOG.md",
-      "size_bytes": 21967,
-      "sha256": "591e237deac9166ffc0ca1a6e4c3b8710e545741d9b5f9ab7f60b2b91170ec09"
+      "size_bytes": 22590,
+      "sha256": "c23c79e14d3cd00190b8712a22141de5aa8217ed0af4a1b37b5cb4031ab721b9"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",

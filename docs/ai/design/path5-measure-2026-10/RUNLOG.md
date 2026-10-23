@@ -126,3 +126,9 @@ G0 통과.
 - R0 결정성: (나)·(다) R0 전체 출력의 `runs`도 0회차와 같다.
 
 1회차 단계 1~9 끝. 판단은 `ROUND-1.md`.
+
+## 2회차 자료 고침(허브 승인 2026-10-23, ROUND-1 3절)
+
+- 손잡이: 위험 프로필 `collections.grades[]`의 `p_late_bp`를 +500 올렸고, 같은 만큼 `p_on_time_bp`에서 뺐다. A 8500/1000 → 8000/1500, B 7000/2000 → 6500/2500, C 5500/3000 → 5000/3500이다. `p_partial_bp`는 그대로 두었다. 바꾼 곳은 `data/market_rules.json` 여섯 줄뿐이다.
+- 같은 커밋에서 확인한 것: validate 통과(MANIFEST 재생성), 골든 종료 0, `npx vitest run` 55파일 1,510개 통과.
+- 새 `data/market_rules.json` sha256: `d596f81e1dd5886636c4a1f62e1173a96d862e346885bf373dde247e7f8b8d6a`

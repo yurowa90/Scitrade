@@ -1245,20 +1245,20 @@
         "grades": [
           {
             "grade": "A",
-            "p_on_time_bp": 8500,
-            "p_late_bp": 1000,
+            "p_on_time_bp": 8000,
+            "p_late_bp": 1500,
             "p_partial_bp": 500
           },
           {
             "grade": "B",
-            "p_on_time_bp": 7000,
-            "p_late_bp": 2000,
+            "p_on_time_bp": 6500,
+            "p_late_bp": 2500,
             "p_partial_bp": 1000
           },
           {
             "grade": "C",
-            "p_on_time_bp": 5500,
-            "p_late_bp": 3000,
+            "p_on_time_bp": 5000,
+            "p_late_bp": 3500,
             "p_partial_bp": 1500
           }
         ],
