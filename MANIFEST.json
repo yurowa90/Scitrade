@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 244032,
-      "sha256": "738203bf0020021f6baa2ef99a56822ba6558c77c435a116deed950226c027a2"
+      "size_bytes": 245184,
+      "sha256": "22171139b2c390caa1c07383c6dd6b73302d38b9dd6691dd43552f0a5ca538bf"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1762,8 +1762,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/REPORT.md",
-      "size_bytes": 14276,
-      "sha256": "23536abb3c7f4a1ec6c2ebd512700844a05a3171fc53c652234ffcd6621b161d"
+      "size_bytes": 14643,
+      "sha256": "dab52bf36cc0e814601261e9d834c543f4a4a34c6837e3b50121e960db4d9357"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/ROUND-0.md",
