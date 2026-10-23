@@ -1809,3 +1809,8 @@ Codex(Astra)가 TASK-0004와 재작업 R1·R2로 구현했다. 아래는 Claude�
 - 세션 A 초안 1(`claude/m2a5-engine` `18a9334`)을 사전 확인했다(네 관점 → 중복 합침 → 문서·코드 두 렌즈 반박 검증, Opus 5.5·중간 추론). 확인 18(major 7)·다툼 3·기각 3. 보고서 `docs/ai/design/path3-price-risk-2026-10/PRECHECK-0066-HUB-2026-10-17.md`.
 - 세션 A의 H18-6 정정 요청은 옳다. 허브가 판정표 3.1 D 행·2절 ‘공통 난수’를 원문 대조했다. H18-6은 세션 A 메모의 오기를 옮긴 허브 결정 오류였고 H19-1로 정정했다. 범위는 세션 A 안보다 넓혀 (가)도 D를 판정한다(H19-2).
 - 결정 H19-1~H19-10을 `HUB-DECISIONS-2026-10-16.md`에 덧붙였다(덧붙이기 모드, 앞 내용 보존 확인). 초안 1은 승인하지 않고 초안 2를 받는다.
+
+## 2026-10-23 TASK-0066(+R1) 병합과 문구 담당 줄 (허브)
+
+- TASK-0066 개정 3a 승인(`31ae39d`) 전에 판정표 측정 전 고정 기록을 채웠다(`6d3bd1f`). Codex 결과 `effc928`의 허브 심층 검수 major 0·세션 A M1~M3 minor를 R1(`efc8c56`)로 고친 뒤 병합했다(`a70e47c`). 허브 결정 H20-1~4.
+- 사용자 지시(2026-10-23): 게임 문구·대사는 사용자 Mac의 Antigravity CLI(`agy`, Gemini 4 Argon·추론 보통)로, API 키가 아니라 사용자의 구글 AI 울트라 구독 로그인으로 쓴다. 이 구독은 브라우저 로그인만 되므로 클라우드 허브가 아니라 사용자 Mac의 세션 T가 실행하고, 결과는 `claude/text-lane` 브랜치로 올려 허브가 검수·병합한다(`docs/ai/TEXT_LANE.md`). 확인된 실행 꼴: `agy -p … --model gemini-4-argon-medium --print-timeout … < /dev/null`.
