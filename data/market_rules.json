@@ -1113,7 +1113,7 @@
       "basis": "fictional_game_values_not_calibrated",
       "fx": {
         "start_krw_per_usd": 1300,
-        "step_bp": 250,
+        "step_bp": 275,
         "min_krw_per_usd": 1170,
         "max_krw_per_usd": 1430
       },

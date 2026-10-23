@@ -98,7 +98,7 @@
     {
       "path": "data/market_rules.json",
       "size_bytes": 34620,
-      "sha256": "a9a3eb45f395222613b6fca9893146863a99c6644fb00fa9cbc1bbc82c48b742"
+      "sha256": "075dda9c2d43c7e2a5d96b901814053a9b28214c0de81fe3ac43abbed0549395"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1754,6 +1754,16 @@
       "path": "docs/ai/design/path5-measure-2026-10/PLAN.md",
       "size_bytes": 16134,
       "sha256": "048021fda18d15b52503ff37aa7e2717ea0a71ba096642931b546f52dd05df8a"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/ROUND-0.md",
+      "size_bytes": 11062,
+      "sha256": "d7192e482bc541ed7d1c60304d15260bed5fb7a2bfa1001f676edebba01c493e"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/RUNLOG.md",
+      "size_bytes": 11952,
+      "sha256": "2e771cfe3619620eb6fc7c74680deefe66e7b17b5a9347da7e7647fea5d2c974"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
