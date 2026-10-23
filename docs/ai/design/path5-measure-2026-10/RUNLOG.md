@@ -65,3 +65,14 @@ G0 통과.
 | 9 | `sim risk-compare GD-R2-red.json GD-R3-full.json` | 10-23 22:08 | 0 | md `56fdfc0cfa319dcdd41e90a8278164b137100a62d339d13b7d65849556569ad8` |
 
 0회차 단계 1~9 끝. 판단은 `ROUND-0.md`.
+
+## 1회차 자료 고침(허브 승인 2026-10-23, ROUND-0 3절)
+
+- 손잡이: 위험 프로필 `RISK_PROFILE_DEFAULT`의 `fx.step_bp`를 250에서 275로 올렸다(판정표 5.2, 한 단위 25, 범위 150~275의 끝). 바꾼 곳은 `data/market_rules.json` 한 줄뿐이다.
+- 같은 커밋에서 확인한 것
+  - `validate_data.py` 통과(MANIFEST 재생성 뒤)
+  - 골든 검사기 종료 0(rules-2 105회, rules-1 400회 일치)
+  - `npx vitest run` 55파일, 1,510개 통과
+- 새 `data/market_rules.json` sha256: `075dda9c2d43c7e2a5d96b901814053a9b28214c0de81fe3ac43abbed0549395`
+- 프로필 대조 스크립트는 이제 `DIFF 0`이 아니다. 0회차 고정 기록과 비교하는 도구이고, 조정된 프로필에서는 차이가 나는 것이 맞다. 1회차의 G0는 sha256만 이 값과 대조한다.
+- 측정 커밋은 허브가 이 커밋을 dev에 병합한 병합 커밋이다(허브 답 7-2).
