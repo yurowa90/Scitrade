@@ -2896,6 +2896,11 @@
       "sha256": "c9714a7c4ab44d530d61993d0cce663c30aa33f855343fdef34fb4be995f287c"
     },
     {
+      "path": "docs/ai/tasks/TASK-0066-R1-runner-diag-tests.md",
+      "size_bytes": 6883,
+      "sha256": "1ca2d7a61106e7fc8603c38912f813a8529f4a8c54f5aa04e530e0167edd2a7b"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0066-runner-risk-d03.md",
       "size_bytes": 54784,
       "sha256": "1b04468742ec645d752e836e95db94b02f309f24d715b6119e54cd85f9542d99"
@@ -3232,8 +3237,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0066.md",
-      "size_bytes": 18248,
-      "sha256": "bdc2ddda7c55172e6ce7f375766fd8f68be822e76b3b6e812b796287691f5a78"
+      "size_bytes": 33930,
+      "sha256": "1ca385a871421de931f252628cb0dcb881abe718ebd1805b5b3cb05b4a4e8a07"
     },
     {
       "path": "docs/art/ASSET_BACKLOG.md",

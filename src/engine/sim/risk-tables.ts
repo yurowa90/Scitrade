@@ -93,8 +93,9 @@ export function diversity(base: SimRun[], focus: SimRun[], value: (r: SimRun) =>
   }
   return { expandWins, focusWins, pairs, pass: pairs ? 20n * BigInt(expandWins) >= 3n * BigInt(pairs) && 20n * BigInt(focusWins) >= 3n * BigInt(pairs) : null };
 }
-export function diagnostics(runs: SimRun[], base: SimRun[]) {
-  const cs = base.flatMap(directContracts), onTime = base.flatMap((r) => r.metrics.risk!.contracts).filter((c) => c.onTime), negative = cs.filter((c) => c.components.fx < 0);
+export function diagnostics(runs: SimRun[], base: SimRun[], seeds: readonly number[]) {
+  const cs = base.flatMap(directContracts), onTime = cs.filter((c) => c.onTime), negative = cs.filter((c) => c.components.fx < 0);
+  const uniqueSeeds = [...new Set(seeds)];
   const causes: Record<string, number> = {};
   for (const c of cs.filter((c) => c.realized < 0)) {
     const worst = (['fx', 'tariff', 'surcharge', 'claim', 'collection', 'late', 'cancel'] as const)
@@ -103,7 +104,7 @@ export function diagnostics(runs: SimRun[], base: SimRun[]) {
   }
   return { tariff: { affected: onTime.filter((c) => c.components.tariff !== 0).length, total: onTime.length }, causes,
     fx: { affected: negative.length, total: cs.length, median: median(cs.map((c) => c.components.fx)) },
-    bounds: { affected: runs.filter((r) => r.metrics.risk!.referenceRateBounds).length, total: runs.length } };
+    bounds: { affected: uniqueSeeds.filter((seed) => runs.some((r) => r.seed === seed && r.metrics.risk!.referenceRateBounds)).length, total: uniqueSeeds.length } };
 }
 export function missingRuns(output: SimOutput, scenarioId: string, ids: readonly string[]): string[] {
   return ids.flatMap((id) => output.meta.seeds.filter((seed) => !output.runs.some((r) => r.scenarioId === scenarioId && r.policyId === id && r.seed === seed))
@@ -115,7 +116,7 @@ export function riskTables(output: SimOutput): string {
   for (const scenarioId of output.meta.scenarioIds) {
     const single = isSingleGoodVariant(loadScenario(scenarioId as Parameters<typeof loadScenario>[0]));
     const runs = output.runs.filter((r) => r.scenarioId === scenarioId), get = (id: string) => runs.filter((r) => r.policyId === id);
-    const base = get('MAX_CONTRIBUTION'), a = lossStats(base), mb = marginComparison(base, get('MARGIN_BUFFER')), j7 = newJ7(base), d = diversity(base, get('FOCUS'), value), diag = diagnostics(runs, base);
+    const base = get('MAX_CONTRIBUTION'), a = lossStats(base), mb = marginComparison(base, get('MARGIN_BUFFER')), j7 = newJ7(base), d = diversity(base, get('FOCUS'), value), diag = diagnostics(runs, base, output.meta.seeds);
     lines.push(`### ${scenarioId}`, '', '| 판정 | 결과 | 근거 |', '|---|---|---|');
     const row = (id: JudgmentId, pass: boolean | null, evidence: string, ids = ['MAX_CONTRIBUTION']) => lines.push(judgmentRow(id, level, single, pass, evidence, missingRuns(output, scenarioId, ids)));
     row('J7(새 정의)', j7.pass, `중앙 ${num(j7.percent)}%, 남은 시드 ${j7.n}, 분모 ≤ 0 제외 ${j7.excluded}`);

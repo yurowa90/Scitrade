@@ -95,6 +95,7 @@ export function mergeD03(outputs: SimOutput[], late: LateMode, risk?: RiskMeta):
 export function d03Tables(output: SimOutput): string {
   const mode = output.meta.lateMode ?? 'base', risk = output.meta.risk;
   const value = comparisonValue(risk?.level), analysis = risk && risk.level !== 'R0';
+  const comparisonUnit = analysis ? '분석값' : 'USD';
   const dollars = (minor: number, sign = false) => Number.isNaN(minor) ? risk ? '—' : '미측정' : `${sign && minor >= 0 ? '+' : ''}${Math.round(minor / 100).toLocaleString('en-US')}`;
   const display = (c: Cell) => c.n ? `${dollars(c.median, true)} (${c.gains})${c.arrow ? ` ${c.arrow}` : ''}` : risk ? '—' : '미측정';
   const lines = [`# D03 엔진 재측정 (${mode})`, '', `시드 ${output.meta.seeds.join(', ')} · 실행 ${output.runs.length}회. 금액은 USD 정수 표시, 원화는 별도다.`,
@@ -108,12 +109,12 @@ export function d03Tables(output: SimOutput): string {
     const stats = (id: string, base = baselineId(id)) => cell(get(id), get(base), value);
     const single = isSingleGoodVariant(loadScenario(scenarioId as Parameters<typeof loadScenario>[0]));
     const baseline = get('MAX_CONTRIBUTION'), n = baseline.length;
-    lines.push(`## ${scenarioId}`, '', '## ① 기준 표', '', '| 정책 | 기준 대비 USD | USD 순자산 중앙 | 실패 | 끝 KRW 현금 중앙 | 끝 KRW 미지급 중앙 |', '|---|---:|---:|---:|---:|---:|');
+    lines.push(`## ${scenarioId}`, '', '## ① 기준 표', '', `| 정책 | 기준 대비 ${comparisonUnit} | USD 순자산 중앙 | 실패 | 끝 KRW 현금 중앙 | 끝 KRW 미지급 중앙 |`, '|---|---:|---:|---:|---:|---:|');
     for (const id of ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK', 'MAX_CONTRIBUTION~fx:react'].filter((id) => ids.includes(id))) {
       const rs = get(id); lines.push(`| ${id} | ${display(stats(id, 'MAX_CONTRIBUTION'))} | ${dollars(median(rs.map(value)))} | ${rs.filter((r) => r.metrics.operations!.outcome === 'FAILED').length}/${rs.length} | ${median(rs.map((r) => r.metrics.currencies.KRW!.cash)).toLocaleString('en-US')} | ${median(rs.map(unpaid)).toLocaleString('en-US')} |`);
     }
     if (mode === 'base') {
-      lines.push('', '## ② 투자만', '', '| 정책 | 투자 없음 대비 USD |', '|---|---:|');
+      lines.push('', '## ② 투자만', '', `| 정책 | 투자 없음 대비 ${comparisonUnit} |`, '|---|---:|');
       for (const id of ids.filter((id) => { const v = parseVariant(id)!; return v.investment !== 'none' && !v.hires.length; })) lines.push(`| ${id} | ${display(stats(id))} |`);
     }
     const hires = ids.filter((id) => { const v = parseVariant(id)!; return v.hires.length === 1 && !v.early; });
@@ -189,7 +190,7 @@ export function d03Tables(output: SimOutput): string {
     judge('J4', n && nofx.length ? shape && nofxFailed >= 0.75 * nofx.length && net >= J4_NET_MIN_MINOR && net <= J4_NET_MAX_MINOR : null, `기준 ${n}시드, 최대 묶음 ${Math.max(0, ...baseline.map((r) => r.metrics.operations!.maxBatchOffers))}견적, 준비 ${Math.min(...baseline.map((r) => r.metrics.operations!.forwardingPrepMin))}~${Math.max(0, ...baseline.map((r) => r.metrics.operations!.forwardingPrepMax))}pt; NO_FX 실패 ${nofxFailed}/${nofx.length}; USD 중앙 ${dollars(net)}; 상한 ${dollars(J4_NET_MAX_MINOR)}까지 여유 ${Number.isNaN(net) ? '미측정' : ((J4_NET_MAX_MINOR - net) / J4_NET_MAX_MINOR * 100).toFixed(1) + '%'}`);
     } else {
       judge('J4a~c', n && nofx.length ? shape && 4 * nofxFailed >= 3 * nofx.length : null,
-        `기준 ${n}시드, 최대 묶음 ${Math.max(0, ...baseline.map((r) => r.metrics.operations!.maxBatchOffers))}견적; NO_FX 실패 ${nofxFailed}/${nofx.length}`);
+        `기준 ${n}시드, 최대 묶음 ${Math.max(0, ...baseline.map((r) => r.metrics.operations!.maxBatchOffers))}견적, 준비 ${Math.min(...baseline.map((r) => r.metrics.operations!.forwardingPrepMin))}~${Math.max(0, ...baseline.map((r) => r.metrics.operations!.forwardingPrepMax))}pt; NO_FX 실패 ${nofxFailed}/${nofx.length}`);
       const band = risk.level === 'R0' ? J4_BANDS.R0 : J4_BANDS.risk;
       judge('J4d', Number.isFinite(net) ? net >= band[0] && net <= band[1] : null,
         `${analysis ? '분석값' : 'USD'} 중앙 ${dollars(net)}, 띠 ${dollars(band[0])}~${dollars(band[1])}`);

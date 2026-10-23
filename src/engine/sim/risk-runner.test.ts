@@ -111,6 +111,21 @@ describe('위험 판정 경계와 입력', () => {
     expect(row(riskTables(o), 'L0')).toContain('통과'); expect(row(riskTables(o), 'L0')).toContain('LATE_OK 손실 20');
     setLosses(baseRuns(o)[0]!, 1, 1); expect(row(riskTables(o), 'L0')).toContain('실패');
   });
+  it('J7 새 정의와 옛 정의는 홀수 11개의 가운데 비율 하나를 쓴다', () => {
+    const rs = baseRuns(fixture('R3', ['MAX_CONTRIBUTION'], 11));
+    const put = (r: SimRun, a: number, b: number) => {
+      r.metrics.risk!.contracts = [contract(a), contract(b - a, { kind: 'FORWARDING' })];
+      Object.assign(r.metrics.operations!.currencies.USD!.business,
+        { directTrade: a, handlingForwarding: b - a, standardForwarding: 0 });
+    };
+    rs.forEach((r, i) => put(r, i < 5 ? 1 : 9, 10));
+    put(rs[5]!, 1, 4);
+    expect(newJ7(rs)).toMatchObject({ n: 11, pass: true, percent: 25 });
+    expect(oldJ7Passes(rs)).toBe(true);
+    put(rs[5]!, 24, 100);
+    expect(newJ7(rs)).toMatchObject({ n: 11, pass: false, percent: 24 });
+    expect(oldJ7Passes(rs)).toBe(false);
+  });
   it('L3 문턱을 이항 분포로 재계산하고 대상 0·동점·건수 경계를 확인한다', () => {
     const choose = (n: number, k: number) => { let c = 1; for (let i = 1; i <= k; i++) c = c * (n - i + 1) / i; return c; };
     for (let m = 10; m <= 20; m++) {
@@ -126,6 +141,14 @@ describe('위험 판정 경계와 입력', () => {
     expect(marginComparison(a, b)).toMatchObject({ volume: true, pass: true });
     setLosses(b[0]!, 0, 1); expect(marginComparison(a, b).volume).toBe(false);
     setLosses(b[0]!, 0, 2); setLosses(a[0]!, 1, 4); expect(marginComparison(a, b).volume).toBe(false);
+    for (const [m, threshold] of [[20, 15], [13, 10]] as const) {
+      for (const wins of [threshold, threshold - 1]) {
+        const base = a.slice(0, m), margin = b.slice(0, m);
+        base.forEach((r) => setLosses(r, 1, 2));
+        margin.forEach((r, i) => setLosses(r, i < wins ? 0 : 2, 2));
+        expect(marginComparison(base, margin)).toMatchObject({ m, wins, sign: wins === threshold });
+      }
+    }
   });
   it('D는 같은 변형·시드 짝만 비교하고 단일 품목이면 모든 층에서 해당 없음이다', () => {
     for (const level of ['R0', 'R1', 'R2', 'R3'] as const) for (const scenario of [...OPERATIONS_SCENARIO_IDS, ...EXPERIMENT_SCENARIO_IDS]) {
@@ -139,8 +162,18 @@ describe('위험 판정 경계와 입력', () => {
       expect(row(riskTables(o), 'D')).toContain(single ? '해당 없음' : ['R1', 'R2'].includes(level) ? '진단' : '통과');
     }
     const multi = fixture('R0', ['MAX_CONTRIBUTION', 'FOCUS'], 20, [OPERATIONS_SCENARIO_IDS[0], EXPERIMENT_SCENARIO_IDS[1]]);
-    multi.runs.filter((r) => r.scenarioId === EXPERIMENT_SCENARIO_IDS[1]).forEach((r) => { r.metrics.currencies.USD!.netAssets *= 2; });
-    expect(riskTables(multi).split('\n').filter((l) => l.startsWith('| D |')).every((l) => l.includes('실패'))).toBe(true);
+    const a = multi.runs.filter((r) => r.scenarioId === OPERATIONS_SCENARIO_IDS[0]);
+    const c = multi.runs.filter((r) => r.scenarioId === EXPERIMENT_SCENARIO_IDS[1]);
+    a.filter((r) => r.policyId === 'FOCUS').forEach((r, i) => { r.metrics.currencies.USD!.netAssets += i < 3 ? 1 : -1; });
+    // (다)는 두 정책이 동점이다. 섞으면 (가)의 FOCUS 3승이 3/40으로 희석된다.
+    c.forEach((r) => { r.metrics.currencies.USD!.netAssets *= 2; });
+    const value = comparisonValue('R0'), focus = multi.runs.filter((r) => r.policyId === 'FOCUS').reverse();
+    expect(diversity(baseRuns({ ...multi, runs: a }), focus, value)).toMatchObject({ pairs: 20, expandWins: 17, focusWins: 3, pass: true });
+    expect(diversity(baseRuns(multi), focus, value)).toMatchObject({ pairs: 40, pass: false });
+    expect(diversity(baseRuns({ ...multi, runs: c }), a.filter((r) => r.policyId === 'FOCUS'), value)).toMatchObject({ pairs: 0, pass: null });
+    const sections = riskTables(multi);
+    expect(row(sections.split(`### ${OPERATIONS_SCENARIO_IDS[0]}`)[1]!, 'D')).toContain('통과');
+    expect(row(sections.split(`### ${EXPERIMENT_SCENARIO_IDS[1]}`)[1]!, 'D')).toContain('실패');
     const cross = riskTables(multi).split('### 변형 사이 차이')[1]!;
     expect(cross).toContain('변형 사이: 생성기 묶음이 다름(H19-1)'); expect(cross).not.toMatch(/통과|실패|판정/);
   });
@@ -178,6 +211,7 @@ describe('위험 판정 경계와 입력', () => {
       expect(row(text, 'LATE_OK')).toContain(risk ? '+14,000' : '-11,000');
       expect(text).toContain(risk ? '같은 시드의 분석값 차이' : '같은 시드의 USD 순자산 차이');
       expect(text).toContain(risk ? '| 기준 대비 분석값 | 분석값 중앙 |' : '| 기준 대비 USD | USD 순자산 중앙 |');
+      expect(text).toContain(risk ? '| 투자 없음 대비 분석값 |' : '| 투자 없음 대비 USD |');
       expect(cell(b, a, comparisonValue(level)).median).toBe(risk ? 1400000 : -1100000);
       expect(row(text, 'J3')).toContain(risk ? 'LATE_OK' : 'MAX_CONTRIBUTION');
       expect(text).toContain(`| ${risk ? 'LATE_OK' : 'MAX_CONTRIBUTION'} | 20 |`);
@@ -199,12 +233,22 @@ describe('위험 판정 경계와 입력', () => {
       expect(row(text, 'J4d')).toContain(level === 'R0' ? '10,600~21,200' : '10,692~21,385');
     }
   });
+  it('J4a~c 근거에 기준 회사의 준비 최소·최대 pt를 적는다', () => {
+    const o = fixture('R1', ['MAX_CONTRIBUTION', 'NO_FX'], 2), rs = baseRuns(o);
+    Object.assign(rs[0]!.metrics.operations!, { forwardingPrepMin: 4, forwardingPrepMax: 7 });
+    Object.assign(rs[1]!.metrics.operations!, { forwardingPrepMin: 3, forwardingPrepMax: 11 });
+    expect(row(d03Tables(o), 'J4a~c')).toContain('준비 3~11pt');
+  });
   it('진단 T·C·F·B는 기준 회사와 실행을 구분한다', () => {
     const o = fixture('R3', ['MAX_CONTRIBUTION','FOCUS'], 2);
-    const cs = [contract(-2),contract(2,{onTime:false})]; cs[0]!.components.tariff = -3; cs[1]!.components.fx = -4;
+    const cs = [contract(-2),contract(2,{onTime:false}),contract(1,{kind:'FORWARDING'})]; cs[0]!.components.tariff = -3; cs[1]!.components.fx = -4;
     baseRuns(o).forEach((r) => { r.metrics.risk!.contracts = structuredClone(cs); });
     o.runs[0]!.metrics.risk!.referenceRateBounds = true;
-    expect(diagnostics(o.runs, baseRuns(o))).toEqual({ tariff: {affected:2,total:2}, causes:{tariff:2}, fx:{affected:2,total:4,median:-2}, bounds:{affected:1,total:4} });
+    // 같은 시드의 두 정책 모두 참이어도 B는 한 번만 센다.
+    o.runs[2]!.metrics.risk!.referenceRateBounds = true;
+    expect(cs.some((c) => c.kind === 'FORWARDING' && c.onTime)).toBe(true);
+    expect(diagnostics(o.runs, baseRuns(o), o.meta.seeds)).toEqual({ tariff: {affected:2,total:2}, causes:{tariff:2}, fx:{affected:2,total:4,median:-2}, bounds:{affected:1,total:2} });
+    expect(row(riskTables(o), '진단 B')).toContain('진단 | 1/2');
     for (const level of ['R0','R1','R2','R3'] as const) {
       o.meta.risk!.level = level; const text = riskTables(o);
       expect(row(text,'진단 T')).toContain(['R2','R3'].includes(level) ? '진단 | 2/2' : '해당 없음');
@@ -215,6 +259,16 @@ describe('위험 판정 경계와 입력', () => {
 });
 
 describe('위험 정책과 엔진 연결', () => {
+  it('진단 B는 R3의 실패일과 관계없이 같은 시드의 두 정책에서 같다', () => {
+    const pairs = riskSeeds(2001, 20).map((seed) => ({
+      base: simulation('R3', 'MAX_CONTRIBUTION', seed), nofx: simulation('R3', 'NO_FX', seed),
+    }));
+    expect(pairs.some(({ base }) => base.run.metrics.risk!.referenceRateBounds)).toBe(true);
+    expect(pairs.some(({ base, nofx }) => (base.state.operations!.failure?.day ?? cfg('R3', base.run.seed).campaignDays)
+      !== (nofx.state.operations!.failure?.day ?? cfg('R3', nofx.run.seed).campaignDays))).toBe(true);
+    for (const { base, nofx } of pairs) expect(nofx.run.metrics.risk!.referenceRateBounds, `시드 ${base.run.seed}`)
+      .toBe(base.run.metrics.risk!.referenceRateBounds);
+  }, 300000);
   it('rules-2 출력에는 위험 필드가 없고 위험 실행은 결정적이다', () => {
     const seeds = riskSeeds(2001, 1), plain = runD03({seeds, policyIds:['IDLE']});
     expect(plain.meta).not.toHaveProperty('risk'); expect(plain.runs[0]!.metrics).not.toHaveProperty('risk');
@@ -263,8 +317,7 @@ describe('위험 정책과 엔진 연결', () => {
       simulate(config, policyById('MAX_CONTRIBUTION')!, seed, (s, commands) => {
         const accepts = commands.filter((c) => c.type === 'ACCEPT_TRADE');
         if (accepts.length < 2 || !accepts.some((a) => offerDef(s,config,a.buyOfferId)!.currency === 'KRW')) return;
-        found = true; expect(accepts.length).toBeGreaterThanOrEqual(2);
-        expect(accepts.some((a)=>offerDef(s,config,a.buyOfferId)!.currency==='KRW')).toBe(true);
+        found = true;
         const candidates = directTradeCandidates(s, config, s.day).sort((a,b) => a.buyOfferId === b.buyOfferId ? b.quantity - a.quantity : b.contribution - a.contribution);
         const positions = accepts.map((a) => candidates.findIndex((c) => c.buyOfferId === a.buyOfferId && c.sellOfferId === a.sellOfferId && c.quantity === a.quantity));
         expect(positions.every((p) => p >= 0)).toBe(true); expect(positions).toEqual([...positions].sort((a,b) => a-b));
@@ -431,26 +484,50 @@ describe('위험 경로 경계와 비교 도구',()=>{
   it('미래 누설은 전체 sim의 import와 다시 내보내기에서 막는다',async()=>{
     const {fs}=await nodeIo();
     const allowed=new Set(['krwToUsdMinor','usdToKrwMinor','rowCurrency','divHalfAway','withRiskLevel']);
-    const walk=(dir:string):void=>{for(const name of fs.readdirSync(dir)) {
-      const path=`${dir}/${name}`;
-      if(!name.includes('.')) {walk(path);continue;}
-      if(!/\.(?:ts|mjs)$/.test(name) || ['risk-metrics.ts','risk-tables.ts'].includes(name)) continue;
-      const source=fs.readFileSync(path,'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,'');
-      const declarations=source.matchAll(/(?:^|\n)\s*(import|export)\s+([^;]+?)\s+from\s+['"]([^'"]+)['"]/g);
+    // 확장자와 상대 경로 표기가 달라도 같은 파일로 판정한다.
+    const resolveModule=(file:string,module:string)=>new URL(module, `file:///${file}`).pathname.replace(/\.(?:ts|js|mjs)$/, '');
+    const riskModule=resolveModule('src/engine/sim/operations-policy.ts','../risk');
+    const policyFiles=new Set(['operations-policy.ts','policies.ts','variants.ts'].map((name)=>`/src/engine/sim/${name}`));
+    const reports=new Set(['risk-metrics','risk-tables'].map((name)=>`/src/engine/sim/${name}`));
+    const violations=(file:string,raw:string):string[]=>{
+      const source=raw.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,''), errors:string[]=[];
+      const isPolicy=policyFiles.has(`/${file}`), isReport=reports.has(`/${file.replace(/\.ts$/, '')}`);
+      const declarations=source.matchAll(/(?:^|[;\n])\s*(import|export)\s+([^;]+?)\s+from\s+['"]([^'"]+)['"]/g);
       for(const [,kind,binding,module] of declarations) {
-        expect(binding,path).not.toMatch(/\*\s+as\s/);
-        if(['operations-policy.ts','policies.ts','variants.ts'].includes(name)) expect(module).not.toMatch(/risk-metrics|risk-tables/);
-        if(module!=='../risk') continue;
-        expect(kind,path).toBe('import');
+        const target=resolveModule(file,module!);
+        if(isPolicy && reports.has(target)) errors.push('정책에서 보고서 접근');
+        if(target!==riskModule) continue;
+        if(kind==='export') {errors.push('위험 모듈 다시 내보내기');continue;}
+        if(isReport) continue;
         if(binding!.startsWith('type ')) continue;
-        expect(binding,path).toMatch(/^\{[\s\S]*\}$/);
+        if(!/^\{[\s\S]*\}$/.test(binding!)) {errors.push('위험 모듈 namespace·기본 import');continue;}
         for(const e of binding!.replace(/[{}]/g,'').split(',').map((s)=>s.trim()).filter(Boolean)) {
           if(e.startsWith('type '))continue;
           const imported=e.split(/\s+as\s+/)[0]!;
-          expect(allowed.has(imported) || name==='risk-runner.test.ts' && ['claimFor','collectionPlan'].includes(imported),`${name}: ${imported}`).toBe(true);
+          if(!allowed.has(imported) && !(file==='src/engine/sim/risk-runner.test.ts' && ['claimFor','collectionPlan'].includes(imported))) errors.push(`허용 밖 import: ${imported}`);
         }
       }
-      expect(source,path).not.toMatch(/import\s*\(\s*['"]\.\.\/risk['"]/);
+      for(const [,module] of source.matchAll(/\bimport\s*\(\s*['"`]([^'"`]+)['"`]/g)) {
+        const target=resolveModule(file,module!);
+        if(target===riskModule && !isReport || isPolicy && reports.has(target)) errors.push('위험 모듈·보고서 동적 import');
+      }
+      return errors;
+    };
+    // 검사기 자체에도 양성·음성 대조를 둔다. 문자열은 검사 대상 코드와 구분한다.
+    const file='src/engine/sim/operations-policy.ts';
+    for(const module of ['../risk','../risk.ts','../risk.js','../sim/../risk.ts']) {
+      expect(violations(file,`im${'port'} { tariffEvents as events } from '${module}';`)).toContain('허용 밖 import: tariffEvents');
+      expect(violations(file,`const risk = im${'port'}('${module}');`)).toContain('위험 모듈·보고서 동적 import');
+      expect(violations(file,`ex${'port'} { tariffEvents } from '${module}';`)).toContain('위험 모듈 다시 내보내기');
+      expect(violations('src/engine/sim/risk-metrics.ts',`ex${'port'} * from '${module}';`)).toContain('위험 모듈 다시 내보내기');
+      expect(violations(file,`im${'port'} { krwToUsdMinor as convert } from '${module}';`)).toEqual([]);
+    }
+    expect(violations('src/engine/sim/nested/helper.ts',`im${'port'} { tariffEvents } from '../../risk.js';`)).toContain('허용 밖 import: tariffEvents');
+    const walk=(dir:string):void=>{for(const name of fs.readdirSync(dir)) {
+      const path=`${dir}/${name}`;
+      if(!name.includes('.')) {walk(path);continue;}
+      if(!/\.(?:ts|mjs)$/.test(name)) continue;
+      expect(violations(path,fs.readFileSync(path,'utf8')),path).toEqual([]);
     }};
     walk('src/engine/sim');
   });

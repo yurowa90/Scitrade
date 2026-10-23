@@ -44,9 +44,8 @@ export function riskMetrics(state: GameState, config: ScenarioConfig, metrics: S
       realized: r.realized, openFixedRateKrw: r.openFixedRateKrw, components: r.components, evaluationDay: r.evaluationDay };
   });
   const ops = cfg.operations!, fx = ops.risk?.profile.fx;
-  const end = state.operations?.failure?.day ?? cfg.campaignDays;
   let referenceRateBounds = false;
-  if (fx) for (let day = ops.market.publish.firstDay; day <= Math.min(end, ops.market.publish.lastDay); day += ops.market.publish.intervalDays) {
+  if (fx) for (let day = ops.market.publish.firstDay; day <= ops.market.publish.lastDay; day += ops.market.publish.intervalDays) {
     const rate = referenceRate(cfg, state.rng.seed, day);
     if (rate === fx.minKrwPerUsd || rate === fx.maxKrwPerUsd) referenceRateBounds = true;
   }
