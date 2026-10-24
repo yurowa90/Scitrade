@@ -89,6 +89,9 @@ describe('TASK-0068a 실행기 v2', () => {
   sim d03 --risk-v2 R0P|R1|R2|R3|R4 --seed-base N [--profile ID] [--round 0~3] [--scenarios A] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
   sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
   sim risk-compare A B
+  sim v2-tables FILE
+  sim risk-compare-v2 A B
+  sim v2-report R0P R1 R2 R3 R4 [--r0 FILE]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
