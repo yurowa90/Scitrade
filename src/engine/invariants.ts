@@ -1,4 +1,4 @@
-import { divHalfAway, receivedForInvoice } from './risk';
+import { carryAccrued, divHalfAway, receivedForInvoice } from './risk';
 import { offerDef } from './market';
 import { operationsProblems } from './operations-invariants';
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
@@ -8,7 +8,7 @@ import { findSailing, routeOf } from './catalog';
 import { completionReward } from './growth';
 import { isEmployed } from './employees';
 import { balance, contractAmount } from './ledger';
-import type { Currency } from './money';
+import { applyBasisPoints, type Currency } from './money';
 import { sailingLoad } from './reservations';
 import type { GameState, ScenarioConfig } from './types';
 
@@ -112,7 +112,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
 
     const receivable = balance(s.ledger, c, 'ACCOUNTS_RECEIVABLE');
     const openInvoices = s.invoices
-      .filter((i) => i.currency === c && i.status !== 'PAID')
+      .filter((i) => i.currency === c && i.status !== 'PAID' && i.status !== 'WRITTEN_OFF')
       .reduce((acc, i) => acc + i.amountMinor - receivedForInvoice(s, i.id), 0);
     if (receivable !== openInvoices) problems.push(`${c} 매출채권(${receivable})과 미수 청구서 합계(${openInvoices})가 다릅니다`);
 
@@ -121,6 +121,47 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
       .filter((o) => o.currency === c && o.paidDay === null)
       .reduce((acc, o) => acc + o.amountMinor, 0);
     if (payable !== openObligations) problems.push(`${c} 미지급금(${payable})과 미지급 의무 합계(${openObligations})가 다릅니다`);
+  }
+
+  // 새 종결·비용 값은 판본 4에만 허용한다. 이전 저장에는 새 값을 섞지 않는다.
+  if (config.rules.rulesVersion !== 'M2a-rules-4') {
+    if (s.invoices.some((i) => i.status === 'WRITTEN_OFF') || s.ledger.entries.some((e) =>
+      e.lines.some((l) => l.account === 'BAD_DEBT' || l.account === 'RECEIVABLE_CARRY'))) {
+      problems.push('대손·지연 이자는 규칙 4에서만 쓸 수 있습니다');
+    }
+  }
+  for (const inv of s.invoices) {
+    const carries = s.ledger.entries.filter((e) => e.id.startsWith(`CARRY-${inv.id}-`));
+    const carrySum = carries.flatMap((e) => e.lines).filter((l) => l.account === 'RECEIVABLE_CARRY')
+      .reduce((sum, l) => sum + l.amount, 0);
+    if (carries.length && carrySum !== divHalfAway(carryAccrued(s, config, inv.id, Math.max(...carries.map((e) => e.day))), 10000)) {
+      problems.push(`${inv.id}: 지연 이자 합계가 마지막 분개일 누적 이자와 다릅니다`);
+    }
+    if (inv.status !== 'WRITTEN_OFF') continue;
+    const confirmationDay = inv.dueDay + (config.operations?.risk?.profile.collections.lateMaxDays ?? 0);
+    if (confirmationDay > config.campaignDays) problems.push(`${inv.id}: 확정일이 캠페인 끝을 넘는 청구서는 대손 종결할 수 없습니다`);
+    const prefix = `RECEIPT-RCPT-${inv.id}`;
+    const receipts = s.ledger.entries.filter((e) => e.id === prefix || e.id.startsWith(`${prefix}-`));
+    const recoveries = receipts.filter((e) => e.id === `${prefix}-R`);
+    const badDebts = s.ledger.entries.filter((e) => e.id === `BADDEBT-${inv.id}`);
+    const sum = (entries: typeof receipts, account: 'CASH' | 'BAD_DEBT') => entries.flatMap((e) => e.lines)
+      .filter((l) => l.account === account).reduce((n, l) => n + l.amount, 0);
+    const remaining = inv.amountMinor - sum(receipts.filter((e) => e.id !== `${prefix}-R` && e.day < confirmationDay), 'CASH');
+    const recovery = applyBasisPoints(remaining, config.operations?.risk?.credit?.recoveryBp ?? 0);
+    if (recoveries.length !== (recovery > 0 ? 1 : 0) || badDebts.length !== 1
+      || sum(recoveries, 'CASH') !== recovery || sum(recoveries, 'CASH') + sum(badDebts, 'BAD_DEBT') !== remaining) {
+      problems.push(`${inv.id}: 대손 회수·손실 분개 수와 합계가 확정 직전 잔액과 다릅니다`);
+    }
+    if ([...recoveries, ...badDebts].some((e) => e.day !== confirmationDay)) {
+      problems.push(`${inv.id}: 대손 회수·손실 분개일이 확정일과 다릅니다`);
+    }
+    if ([...receipts, ...carries].some((e) => e.day > confirmationDay)) {
+      problems.push(`${inv.id}: 대손 확정 뒤 수금·이자 분개가 있습니다`);
+    }
+    const contract = s.contracts.find((c) => c.id === inv.contractId);
+    if (contract?.status !== 'COMPLETED' || contract.completedDay !== confirmationDay) {
+      problems.push(`${inv.id}: 대손 종결 계약의 상태·완료일이 다릅니다`);
+    }
   }
 
   for (const lot of s.cargoLots) {

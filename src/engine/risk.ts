@@ -2,7 +2,7 @@
 import { cityName, dutyEstimate, goodOf } from './catalog';
 import { applyBasisPoints, type Currency } from './money';
 import { drawUniform } from './rng';
-import type { CreditProfile, GameState, MarketSide, RiskProfile, ScenarioConfig } from './types';
+import type { CreditProfile, CreditTermId, GameState, MarketSide, RiskProfile, ScenarioConfig } from './types';
 
 export function drawAt(seed: number, stream: string, index: number): number {
   return drawUniform({ seed, cursors: { [stream]: index } }, stream).value;
@@ -154,6 +154,38 @@ export function collectionPlan(config: ScenarioConfig, seed: number, sellOfferId
     days: uniformInt(seed, `${prefix}:days`, p.lateMinDays, p.lateMaxDays) };
 }
 
+/** 대손 추첨은 수금 방식·지연 일수와 독립된 흐름을 쓴다. */
+export function defaultFor(config: ScenarioConfig, seed: number, sellOfferId: string, customerId: string,
+  termId: CreditTermId): boolean {
+  const risk = config.operations?.risk;
+  if (!risk?.layers.includes('DEFAULT')) return false;
+  const grade = risk.profile.collections.byCounterparty.find((r) => r.counterpartyId === customerId)?.grade;
+  const base = risk.credit?.pDefaultBpByGrade.find((r) => r.grade === grade);
+  const term = risk.credit?.terms.find((t) => t.id === termId);
+  if (!base || !term) throw new Error(`대손 설정에 거래처·외상 조건이 없습니다: ${customerId}, ${termId}`);
+  const probability = divHalfAway(base.pDefaultBp * term.factorPct, 100);
+  return uniformInt(seed, `COLLECT:${sellOfferId}:default`, 0, 9999) < probability;
+}
+
+/** 분개일 전날까지의 마감 잔액 × bp 합. 반올림은 누적 합계에 한 번만 한다. */
+export function carryAccrued(s: GameState, config: ScenarioConfig, invoiceId: string, day: number): number {
+  const risk = config.operations?.risk;
+  if (!risk?.layers.includes('CARRY')) return 0;
+  const inv = s.invoices.find((i) => i.id === invoiceId);
+  if (!inv || s.contracts.find((c) => c.id === inv.contractId)?.kind !== 'DIRECT_TRADE') return 0;
+  const prefix = `RECEIPT-RCPT-${invoiceId}`;
+  const receipts = s.ledger.entries.filter((e) => e.id === prefix || e.id.startsWith(`${prefix}-`));
+  const writtenOffDay = s.ledger.entries.find((e) => e.id === `BADDEBT-${invoiceId}`)?.day;
+  let accrued = 0;
+  for (let d = inv.dueDay + 1; d < day; d++) {
+    if (inv.status === 'WRITTEN_OFF' && writtenOffDay !== undefined && d >= writtenOffDay) break;
+    const received = receipts.filter((e) => e.day <= d).flatMap((e) => e.lines)
+      .filter((l) => l.account === 'CASH').reduce((sum, l) => sum + l.amount, 0);
+    accrued += (inv.amountMinor - received) * risk.credit!.carryBpPerDay;
+  }
+  return accrued;
+}
+
 /** 수금 ID의 원장 현금 줄만 읽는다. 청구서에는 받은 금액을 따로 저장하지 않는다. */
 export function receivedForInvoice(s: GameState, invoiceId: string): number {
   const id = `RECEIPT-RCPT-${invoiceId}`;
@@ -188,12 +220,13 @@ export function withRiskLevel(config: ScenarioConfig, level: 'R0' | 'R1' | 'R2' 
 export const isRiskRules = (v: string): boolean => v === 'M2a-rules-3' || v === 'M2a-rules-4';
 
 /** 판본 4도 같은 원화 변환을 쓰되, 외상 설정과 층은 별도로 고정한다. */
-export function withRiskLevelV2(config: ScenarioConfig, level: 'R0P' | 'R1' | 'R2' | 'R3',
+export function withRiskLevelV2(config: ScenarioConfig, level: 'R0P' | 'R1' | 'R2' | 'R3' | 'R4',
   profile: RiskProfile, credit: CreditProfile): ScenarioConfig {
   if (profile.id !== credit.profileId) throw new Error('위험 프로필과 외상 프로필 ID가 다릅니다');
-  const c = withRiskLevel(config, level === 'R0P' ? 'R1' : level, profile);
+  const c = withRiskLevel(config, level === 'R0P' ? 'R1' : level === 'R4' ? 'R3' : level, profile);
   c.rules.rulesVersion = 'M2a-rules-4';
   c.operations!.risk!.credit = structuredClone(credit);
   if (level === 'R0P') c.operations!.risk!.layers = [];
+  if (level === 'R4') c.operations!.risk!.layers.push('DEFAULT', 'CARRY');
   return c;
 }

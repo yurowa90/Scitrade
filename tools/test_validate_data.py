@@ -1020,6 +1020,22 @@ class DataDrivenMainTest(unittest.TestCase):
         good.update(hs_mapping_status='VERIFIED', hs_code='3304.99', hs_edition='HS2022')
         return good
 
+    def test_recovery_carry_failure_output(self):
+        profile = next(p for p in self.documents['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+        profile['collections']['recovery_bp'] = 0
+        original_read = Path.read_text
+
+        def read_copy(path, *args, **kwargs):
+            if path == validator.ROOT / 'data' / 'market_rules.json':
+                return json.dumps(self.documents['market_rules'], ensure_ascii=False)
+            return original_read(path, *args, **kwargs)
+        output = io.StringIO()
+        validator.ERRORS.clear()
+        with mock.patch.object(Path, 'read_text', read_copy), contextlib.redirect_stdout(output):
+            result = validator.main()
+        self.assertEqual(result, 1)
+        self.assertIn('FAIL risk_profiles: RISK_PROFILE_V2: recovery_bp: 확정일까지의 최대 누적 이자 이상이어야 함', output.getvalue().splitlines())
+
     def test_verified_hs(self):
         self.verified_good()
         self.assertEqual(self.run_main(), (0, []))
@@ -1150,6 +1166,26 @@ class MarketRulesTest(unittest.TestCase):
         d, t = self.fixtures()
         d['market_rules']['risk_profiles'][0]['collections']['grades'][0]['p_default_bp'] = 200
         self.assertTrue(any('외상 칸은 모두 함께' in e for e in self.errors(d, t)))
+
+    def test_recovery_covers_confirmation_carry(self):
+        d, t = self.fixtures()
+        p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+        message = 'risk_profiles: RISK_PROFILE_V2: recovery_bp: 확정일까지의 최대 누적 이자 이상이어야 함'
+        self.assertNotIn(message, self.errors(d, t))
+        p['collections']['recovery_bp'] = 0
+        self.assertIn(message, self.errors(d, t))
+        # 등호는 허용한다. 해시 검사는 거치지 않고 신용 자료의 고유 실패만 본다.
+        p['collections']['recovery_bp'] = p['collections']['carry_bp_per_day'] * p['collections']['late_max_days']
+        self.assertNotIn(message, self.errors(d, t))
+
+    def test_credit_profile_requires_each_collection_grade(self):
+        d, t = self.fixtures()
+        p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+        for row in p['collections']['by_counterparty']:
+            if row['grade'] == 'B':
+                row['grade'] = 'A'
+        p['collections']['grades'] = [g for g in p['collections']['grades'] if g['grade'] != 'B']
+        self.assertTrue(any('collections.grades: A·B·C 각 한 행 필요' in e for e in self.errors(d, t)))
 
     def test_credit_limit_boundary_cos_laver(self):
         # 최댓값은 (다) M2A5_PYEONGTAEK_COS_LAVER의 상하이 김 1로트에서 나온다.
