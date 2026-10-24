@@ -1,6 +1,7 @@
 import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS, loadCreditProfile } from '../../content/scenario';
 import type { RiskLevel, RiskLevelV2 } from './risk-metrics';
 import { riskCompareTables } from './risk-tables';
+import { d03TablesV2, riskCompareTablesV2, v2Report } from './risk-tables-v2';
 import { d03Tables, mergeD03, runD03, requestedRisk, workerOptions } from './d03';
 import { parseVariant, type LateMode } from './variants';
 export { mergeD03, runD03, requestedRisk, workerOptions };
@@ -21,6 +22,9 @@ export const USAGE = `사용법:
   sim d03 --risk-v2 R0P|R1|R2|R3|R4 --seed-base N [--profile ID] [--round 0~3] [--scenarios A] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
   sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
   sim risk-compare A B
+  sim v2-tables FILE
+  sim risk-compare-v2 A B
+  sim v2-report R0P R1 R2 R3 R4 [--r0 FILE]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
@@ -132,6 +136,28 @@ export function simMain(argv: readonly string[], io: SimIo): number {
       if (path) io.writeText(path, text); else io.out(text);
       io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
       return 0;
+    }
+    if (action === 'v2-tables' || action === 'risk-compare-v2') {
+      const count = action === 'v2-tables' ? 1 : 2;
+      if (args.length !== count || args.some((a) => a.startsWith('--'))) throw new Error(`v2 출력 파일 ${count}개가 필요합니다.`);
+      const inputs = args.map((p) => readOutput(p, io));
+      io.out(action === 'v2-tables' ? d03TablesV2(inputs[0]!) : riskCompareTablesV2(inputs[0]!, inputs[1]!)); return 0;
+    }
+    if (action === 'v2-report') {
+      const paths: string[] = [];
+      let r0Path: string | undefined;
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i]!;
+        if (arg === '--r0') {
+          if (r0Path !== undefined) throw new Error('--r0은 한 번만 받습니다.');
+          const value = args[++i];
+          if (!value || value.startsWith('--')) throw new Error('--r0 값이 필요합니다.');
+          r0Path = value;
+        } else if (arg.startsWith('--')) throw new Error(`알 수 없는 인수: ${arg}`);
+        else paths.push(arg);
+      }
+      if (paths.length !== 5) throw new Error('다섯 단계 출력 파일이 필요합니다.');
+      io.out(v2Report(paths.map((p) => readOutput(p, io)), r0Path ? readOutput(r0Path, io) : undefined, r0Path)); return 0;
     }
     if (action === 'risk-compare') {
       if (args.length !== 2 || args.some((a) => a.startsWith('--'))) throw new Error('위험 출력 파일 두 개가 필요합니다.');
