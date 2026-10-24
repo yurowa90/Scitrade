@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 115671,
-      "sha256": "b5a3926ba26e863b31768d968ce8abcb1b18422aefb13b7bf599ed7c039d05e7"
+      "size_bytes": 116803,
+      "sha256": "92c70469edcbdf605b7e4dd18d128701c18312993c241e97a92f407a21a5b840"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -2647,8 +2647,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25546,
-      "sha256": "2eddfe2d5c75870c6d631f9fbb10b7543245d501af4c4f5bcdd8ac7f6def98bf"
+      "size_bytes": 25570,
+      "sha256": "53c2701a93e549ea493e622f676343c5892aa190bba0b88632b964d215b7ef5d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
