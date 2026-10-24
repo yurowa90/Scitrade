@@ -1,6 +1,6 @@
 # TASK-0067b 경로 3 v2 엔진 ②: 대손·회수·지연 이자·`WRITTEN_OFF`·위험 분해, `withRiskLevelV2`의 R4
 
-- 지위: **개정 1(세션 A, 2026-10-24). 허브 사전 확인 전이다.** 초안(`c433544`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0067b-HUB-2026-10-24.md`(확인 19, 기각 0)에서 수정 E1~E13을 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
+- 지위: **승인(허브, 2026-10-24, 개정 1 c6280f4).** 초안(`c433544`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0067b-HUB-2026-10-24.md`(확인 19, 기각 0)에서 수정 E1~E13을 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
 - 선행

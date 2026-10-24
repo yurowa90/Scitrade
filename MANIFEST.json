@@ -2647,8 +2647,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25943,
-      "sha256": "9322ce1399adf73113f9673323f30443cd166eb6425e97dbd6ce3a8fe6b0d681"
+      "size_bytes": 26227,
+      "sha256": "fedeee56ddef8b6e0d85b6b9785388e9f83add84a62c2349d402ac7c0041ab1f"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3062,8 +3062,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0067b-rules4-default-carry.md",
-      "size_bytes": 26829,
-      "sha256": "3433e6b0c310d890b2315e05e6285a050c755076a8ed00e23cdf8c69ea9f46f9"
+      "size_bytes": 26811,
+      "sha256": "951bbfd902acda8ff787d83f39808dafb442f591f8e33c7638395fb4fee3eb98"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
