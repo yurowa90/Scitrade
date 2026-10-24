@@ -98,7 +98,7 @@
     {
       "path": "data/market_rules.json",
       "size_bytes": 39283,
-      "sha256": "24c8c520b238f7cb8b47ef448d945d118b87bf3b73068749f66c917e15837aba"
+      "sha256": "e01c589cfcb755d0150ce0c70167dbd87ea3bda414e8b2bdbb58c402b2a1bfaa"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1879,6 +1879,11 @@
       "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-0.md",
       "size_bytes": 3103,
       "sha256": "162f4707b8d308cd66007d4c7ca9762ffc882c25b8c7fd1e533de6001cc17531"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-1.md",
+      "size_bytes": 1219,
+      "sha256": "13cc331474825266a81493c38433fd756d224a283ba2b3940e9a1c866ddbc501"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
