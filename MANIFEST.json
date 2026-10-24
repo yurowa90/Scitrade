@@ -3071,6 +3071,11 @@
       "sha256": "951bbfd902acda8ff787d83f39808dafb442f591f8e33c7638395fb4fee3eb98"
     },
     {
+      "path": "docs/ai/tasks/TASK-0068-runner-v2.md",
+      "size_bytes": 22117,
+      "sha256": "ea6cd7d50753c6a97bfd333f57d8a7c0f8f8bbad1817c00bb4c440788ba965bb"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
