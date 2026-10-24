@@ -7,7 +7,8 @@
 판본 1 프로필(RISK_PROFILE_DEFAULT)이 판본 1 최종과 같은지도 확인한다.
 risk_profiles 밖의 최상위 키(rule_sets 등)가 판본 1과 같은지도 본다. 판매 마진 k = 0(TASK-0065 값)의 근거다.
 
-쓰는 법: python3 check_profile_v2.py <판본 1 market_rules.json> <지금 market_rules.json>
+쓰는 법: python3 check_profile_v2.py <판본 1 market_rules.json> <지금 market_rules.json> [k]
+k는 그 회차의 판매 마진 손잡이(H31, 기본 0)다. TASK-0069 뒤 RISK_PROFILE_V2에 sale_margin_k 칸이 있다.
 차이가 없으면 'DIFF 0'과 정규화한 JSON의 sha256을 내고 0으로 끝난다. 차이가 있으면 1.
 """
 import copy, hashlib, json, sys
@@ -23,7 +24,8 @@ def canon(x):
 def dump(x):
     return json.dumps(canon(x), ensure_ascii=False, sort_keys=True, separators=(',', ':'))
 
-def main(v1_path, now_path):
+def main(v1_path, now_path, k_arg='0'):
+    margin_k = int(k_arg)
     v1_all = json.load(open(v1_path, encoding='utf-8'))
     now_all = json.load(open(now_path, encoding='utf-8'))
     v1 = {p['id']: p for p in v1_all['risk_profiles']}
@@ -41,6 +43,7 @@ def main(v1_path, now_path):
     exp = copy.deepcopy(v1['RISK_PROFILE_DEFAULT'])
     exp['id'] = 'RISK_PROFILE_V2'
     exp['status'] = 'V2_START_2026-10-24'
+    exp['sale_margin_k'] = margin_k           # H31 손잡이 칸(TASK-0069)
     col = exp['collections']
     # 판정표 v2 5.2 시작값: 대손 기본 확률
     for g, bp in (('A', 200), ('B', 500), ('C', 1200)):

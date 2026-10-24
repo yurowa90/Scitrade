@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 122168,
-      "sha256": "0f872fbb32a3dafcaef2f15a036cd6beb1f8bc21d40cd1e8808270d79025d465"
+      "size_bytes": 123033,
+      "sha256": "de0ad5ddfe1388ef9cc40ef854071d1992b0cad34b241b23288a32212b179a43"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1822,8 +1822,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_v2.py",
-      "size_bytes": 4636,
-      "sha256": "64070c7659b0ed60813b7ad7964606f8c30650159c289ec6c196e5b53aafe97f"
+      "size_bytes": 4878,
+      "sha256": "01f578e6aa9cfed468c7532558f7a5a578e93de2e55bb53f2e996b8ccd209b85"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_vs_design.py",
@@ -1957,8 +1957,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 17839,
-      "sha256": "9e4ec2e07ced1a7bcb6b909a6e1ccde8c8ca16fd290f68d3463a08aa8320aae8"
+      "size_bytes": 18485,
+      "sha256": "38573021e24cf18231ed8fe3a7c90947c2d9755c6f993d27023a4dd31b000aac"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2727,8 +2727,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27290,
-      "sha256": "fdc70fedc305614a1bf00f1c3dd5627aadbbb2451472a324d43531dcfb242193"
+      "size_bytes": 27296,
+      "sha256": "f973cc3a7385f4e4057fb5b6096abace43c895641e071d6307ab5cd1a8753317"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
