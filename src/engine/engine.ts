@@ -1,4 +1,4 @@
-import { claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
+import { divHalfAway, isRiskRules, claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
@@ -29,6 +29,7 @@ import {
   type CommandResult,
   type CommitPlan,
   type Contract,
+  type CreditTermId,
   type GameState,
   type Notice,
   type OfferDef,
@@ -200,7 +201,7 @@ function applyCommand(s: GameState, config: ScenarioConfig, cmd: EngineCommand):
       rejection = startTraining(s, config, cmd.employeeId);
       break;
     case 'ACCEPT_TRADE':
-      rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId, cmd.quantity));
+      rejection = withPlan(s, config, cmd.plan, (t) => acceptTrade(t, config, cmd.buyOfferId, cmd.sellOfferId, cmd.quantity, cmd.creditTermId));
       break;
     case 'ACCEPT_FORWARDING':
       rejection = withPlan(s, config, cmd.plan, (t) => acceptForwarding(t, config, cmd.offerId));
@@ -291,7 +292,59 @@ function nextContractIds(s: GameState) {
   return { contractId: `CT${pad(n)}`, lotId: `LOT${pad(n)}`, taskId: `TASK${pad(n)}` };
 }
 
-function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string, requestedQuantity?: number): string | null {
+export interface CreditTermCheck {
+  allowed: boolean; reasonKo: string | null; saleAmountMinor: number; paymentDueDay: number;
+  grade: string; limitMinor: number; exposureMinor: number;
+  dateRule: boolean; limitBlocked: ('D15' | 'D30')[];
+}
+
+/** 인수와 공개 선택지가 공유하는 순수 판정. 자금·수량 검사는 인수 경로가 이어서 한다. */
+export function creditTermCheck(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string,
+  quantity: number, termId?: CreditTermId): CreditTermCheck {
+  const buy = offerDef(s, config, buyOfferId), sell = offerDef(s, config, sellOfferId);
+  const due = config.terms.paymentDueDay ?? sell?.paymentDueDay ?? config.campaignDays;
+  const result: CreditTermCheck = { allowed: true, reasonKo: null, saleAmountMinor: (sell?.unitPriceMinor ?? 0) * quantity,
+    paymentDueDay: due, grade: '', limitMinor: 0, exposureMinor: 0, dateRule: false, limitBlocked: [] };
+  const reject = (reasonKo: string): CreditTermCheck => ({ ...result, allowed: false, reasonKo });
+  if (!buy || !sell || buy.kind !== 'supplier' || sell.kind !== 'customer') return reject('이 시나리오에 없는 견적입니다.');
+  if (config.rules.rulesVersion !== 'M2a-rules-4') {
+    return termId === undefined ? result : reject('외상 조건은 이 규칙에서 쓸 수 없습니다');
+  }
+  const risk = config.operations?.risk, credit = risk?.credit;
+  if (!credit || credit.profileId !== risk.profile.id) throw new Error('외상 설정이 없거나 위험 프로필과 다릅니다');
+  const grade = risk.profile.collections.byCounterparty.find((r) => r.counterpartyId === sell.counterpartyId)?.grade;
+  const limit = credit.limits.find((r) => r.grade === grade);
+  if (!grade || !limit) throw new Error(`외상 등급·한도가 없습니다: ${sell.counterpartyId}`);
+  result.grade = grade; result.limitMinor = limit.limitMinor;
+  result.exposureMinor = s.contracts.filter((c) => c.kind === 'DIRECT_TRADE' && c.customerId === sell.counterpartyId
+    && c.creditTermId !== undefined && c.creditTermId !== 'BASE'
+    && (c.status === 'ACTIVE' || c.status === 'IN_PROGRESS')
+    && (c.invoiceId === null || s.invoices.some((i) => i.id === c.invoiceId && (i.status === 'OUTSTANDING' || i.status === 'OVERDUE'))))
+    .reduce((sum, c) => sum + c.saleAmountMinor, 0);
+  const amount = (t: typeof credit.terms[number]) => {
+    const n = sell.unitPriceMinor * quantity * (10000 + t.premiumBp);
+    // 잘못된 수량은 기존 인수 검사에서 사유와 함께 거절한다.
+    return Number.isSafeInteger(n) ? divHalfAway(n, 10000) : n / 10000;
+  };
+  const fitsDate = (t: typeof credit.terms[number]) => due + t.days + risk.profile.collections.lateMaxDays <= config.campaignDays;
+  const fitsLimit = (t: typeof credit.terms[number]) => result.exposureMinor + amount(t) <= limit.limitMinor;
+  for (const id of ['D15', 'D30'] as const) {
+    const t = credit.terms.find((t) => t.id === id);
+    if (!t) throw new Error(`외상 조건이 없습니다: ${id}`);
+    if (fitsDate(t)) {
+      result.dateRule = true;
+      if (!fitsLimit(t)) result.limitBlocked.push(id);
+    }
+  }
+  const term = credit.terms.find((t) => t.id === (termId ?? 'BASE'));
+  if (!term) return reject('알 수 없는 외상 조건입니다');
+  result.saleAmountMinor = amount(term); result.paymentDueDay = due + term.days;
+  if (term.id !== 'BASE' && !fitsDate(term)) return reject('외상 기간이 캠페인 안에 끝나지 않습니다');
+  if (term.id !== 'BASE' && !fitsLimit(term)) return reject('외상 한도 초과');
+  return result;
+}
+
+function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string, requestedQuantity?: number, creditTermId?: CreditTermId): string | null {
   const buy = offerDef(s, config, buyOfferId);
   const sell = offerDef(s, config, sellOfferId);
   if (!buy || !sell || buy.kind !== 'supplier' || sell.kind !== 'customer') return '이 시나리오에 없는 견적입니다.';
@@ -300,13 +353,15 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     if (closed) return closed;
   }
   const quantity = requestedQuantity ?? buy.quantity;
+  const credit = creditTermCheck(s, config, buyOfferId, sellOfferId, quantity, creditTermId);
+  if (!credit.allowed) return credit.reasonKo;
   if (config.operations) {
     if (buy.goodId !== sell.goodId || buy.publishDay !== sell.publishDay) return '같은 묶음·같은 상품의 매입·판매만 묶을 수 있습니다.';
     if (!Number.isSafeInteger(quantity) || quantity < buy.quantityStep || quantity > Math.min(buy.maxQuantity, sell.maxQuantity) || quantity % buy.quantityStep !== 0) {
       return `수량은 ${buy.quantityStep}${unitKo(goodOf(config, buy.goodId))} 단위로 ${buy.quantityStep} ~ ${Math.min(buy.maxQuantity, sell.maxQuantity)}${unitKo(goodOf(config, buy.goodId))}까지 고를 수 있습니다.`;
     }
   } else if (buy.goodId !== sell.goodId || buy.quantity !== sell.quantity || quantity !== buy.quantity) return '같은 상품·같은 수량의 매입·판매만 묶을 수 있습니다 (분할 거래는 이후 단계).';
-  if (buy.currency !== sell.currency && config.rules.rulesVersion !== 'M2a-rules-3') return '매입과 판매의 통화가 다릅니다.';
+  if (buy.currency !== sell.currency && !isRiskRules(config.rules.rulesVersion)) return '매입과 판매의 통화가 다릅니다.';
   const route = routeBetween(config, buy.cityId, sell.cityId);
   if (!route) return '두 항구를 잇는 노선이 없습니다.';
 
@@ -352,12 +407,16 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
     goodId: buy.goodId,
     quantity: quantity,
     purchaseAmountMinor: purchase,
-    saleAmountMinor: sell.unitPriceMinor * quantity,
+    saleAmountMinor: credit.saleAmountMinor,
+    ...(config.rules.rulesVersion === 'M2a-rules-4' ? {
+      creditTermId: creditTermId ?? 'BASE',
+      creditEligible: { dateRule: credit.dateRule, limitBlocked: credit.limitBlocked },
+    } : {}),
     currency: sell.currency,
     originCityId: buy.cityId,
     destinationCityId: sell.cityId,
     deliveryDeadlineDay: config.terms.deliveryDeadlineDay ?? sell.deliveryDeadlineDay ?? config.campaignDays,
-    paymentDueDay: config.terms.paymentDueDay ?? sell.paymentDueDay ?? config.campaignDays,
+    paymentDueDay: credit.paymentDueDay,
     acceptedDay: s.day,
     ownerEmployeeId: null,
     cargoLotId: lotId,

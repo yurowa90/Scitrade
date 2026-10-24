@@ -892,6 +892,93 @@ def check_experiments(documents, tables):
               'OFFER_SELL_02_NEW: 실험 복사 동일성: 정적 판매 견적이 다름')
 
 
+def credit_limit_sales(rule, premium_bp=800):
+    """DESIGN-v2 2.1: 단계마다 정수 halfUp으로 손잡이 상한의 1로트 판매액을 낸다."""
+    from fractions import Fraction
+    def half_up(n, d=1):
+        v = Fraction(n, d)
+        return (2 * v.numerator + v.denominator) // (2 * v.denominator)
+    # 판정표 v2 5.2 판매 마진 k=+3, 가산은 손잡이 상한과 실제 조건 중 큰 값.
+    margin_k = 3
+    buys = {r['good_id']: Fraction(str(r['base_price']['amount'])) * 100
+            for r in rule['rows'] if r['side'] == 'BUY'}
+    lots = {g['good_id']: g['base_lot'] for g in rule['trade']['goods']}
+    values = []
+    for row in rule['rows']:
+        if row['side'] != 'SELL':
+            continue
+        if row['good_id'] not in buys or row['good_id'] not in lots:
+            check(False, f"{rule['id']}: 한도 단위 계산에 매입가·기본 로트가 필요함")
+            continue
+        base = Fraction(str(row['base_price']['amount'])) * 100 + buys[row['good_id']] * Fraction(5 * margin_k, 100)
+        price = half_up(base * rule['index']['max_bp'] * (100 + rule['regional_pct'][1]), 1000000)
+        unit = half_up(price * (100 + rule['counterparty_pct'][1]), 100)
+        amount = half_up(unit * lots[row['good_id']] * (10000 + premium_bp), 10000)
+        values.append((row['good_id'], row['city_id'], amount))
+    return values
+
+
+def check_credit_profile(p, rules):
+    """선택 외상 칸은 한 묶음으로 검사한다. 기존 프로필은 바꾸지 않는다."""
+    from fractions import Fraction
+    prefix = f"risk_profiles: {p['id']}: "
+    col = p['collections']
+    present = [k in p for k in ('credit_terms', 'credit_limit_unit_minor', 'credit_limits')]
+    present += [k in col for k in ('carry_bp_per_day', 'recovery_bp')]
+    defaults = ['p_default_bp' in g for g in col['grades']]
+    check((all(present) and all(defaults)) or (not any(present) and not any(defaults)),
+          prefix + '외상 칸은 모두 함께 있어야 함')
+    if not all(present) or not all(defaults):
+        return
+    def integer(v, low, high):
+        return type(v) is int and low <= v <= high
+    for g in col['grades']:
+        check(integer(g['p_default_bp'], 0, 10000), prefix + 'p_default_bp: 정수 범위 오류')
+    check(integer(col['carry_bp_per_day'], 0, 100), prefix + 'carry_bp_per_day: 정수 범위 오류')
+    check(integer(col['recovery_bp'], 0, 10000), prefix + 'recovery_bp: 정수 범위 오류')
+    terms = p['credit_terms']
+    check(len(terms) == 3 and {t['id'] for t in terms} == {'BASE', 'D15', 'D30'},
+          prefix + 'credit_terms: BASE·D15·D30 각 한 행 필요')
+    valid_terms = True
+    for t in terms:
+        valid = (all(type(t[k]) is int for k in ('days', 'factor_pct', 'premium_bp'))
+                 and ((t['days'], t['factor_pct'], t['premium_bp']) == (0, 100, 0) if t['id'] == 'BASE'
+                      else t['days'] > 0 and t['factor_pct'] >= 100 and 0 <= t['premium_bp'] <= 10000))
+        check(valid, prefix + 'credit_terms: 조건 값 오류')
+        valid_terms = valid_terms and valid
+    by_party = {r['counterparty_id']: r['grade'] for r in col['by_counterparty']}
+    for rule in rules:
+        for good in rule['trade']['goods']:
+            parties = [r['counterparty_id'] for r in good['sell_counterparties']]
+            check(all(party in by_party for party in parties), prefix + '외상 등급: 판매 거래처 누락')
+            check(len({by_party[party] for party in parties if party in by_party}) >= 2,
+                  prefix + f"외상 등급: {rule['id']}·{good['good_id']} 품목마다 등급 둘 이상 필요")
+    grades = {g['grade']: g['p_default_bp'] for g in col['grades']}
+    if valid_terms and all(integer(v, 0, 10000) for v in grades.values()) and integer(col['recovery_bp'], 0, 10000):
+        for t in terms:
+            if t['id'] == 'BASE':
+                continue
+            rho, pi, f = Fraction(col['recovery_bp'], 10000), Fraction(t['premium_bp'], 10000), Fraction(t['factor_pct'], 100)
+            costs = {g: (1 - rho) * Fraction(grades.get(g, 0), 10000) * (f * (1 + pi) - 1) for g in ('A', 'B', 'C')}
+            check(costs['A'] < pi and costs['B'] < pi and pi < costs['C'],
+                  prefix + f"비대칭 제약: {t['id']} A·B 유리/C 불리 조건 위반")
+    unit = p['credit_limit_unit_minor']
+    premium_bp = max([800] + [t['premium_bp'] for t in terms
+                              if t['id'] != 'BASE' and type(t['premium_bp']) is int])
+    maximum = max((v for rule in rules for _, _, v in credit_limit_sales(rule, premium_bp)), default=0)
+    check(integer(unit, maximum, float('inf')), prefix + f'한도 단위: 손잡이 최대 1로트 판매액 {maximum} 미만')
+    limits = p['credit_limits']
+    check(len(limits) == 3 and {r['grade'] for r in limits} == {'A', 'B', 'C'},
+          prefix + 'credit_limits: A·B·C 각 한 행 필요')
+    by_grade = {r['grade']: r['lots'] for r in limits}
+    check(all(integer(r['lots'], 1, float('inf')) for r in limits)
+          and by_grade.get('A', 0) >= by_grade.get('B', 0) >= by_grade.get('C', 0),
+          prefix + 'credit_limits: lots는 양의 정수·A ≥ B ≥ C 필요')
+    for r in limits:
+        check(type(r['limit_minor']) is int and r['limit_minor'] == unit * r['lots'],
+              prefix + 'credit_limits: limit_minor = credit_limit_unit_minor × lots 불일치')
+
+
 def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
@@ -981,6 +1068,7 @@ def check_market_rules(documents, tables):
     profile_ids = [p['id'] for p in profiles]
     check(len(profile_ids) == len(set(profile_ids)), 'risk_profiles: 프로필 ID 중복')
     for p in profiles:
+        check_credit_profile(p, [r for r in market['rule_sets'] if r['id'] in active_rules])
         prefix = f"risk_profiles: {p['id']}: "
         def integer(value, low, high, field):
             check(type(value) is int and low <= value <= high, prefix + field + ': 정수 범위 오류')

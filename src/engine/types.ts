@@ -11,7 +11,7 @@ export const ENGINE_VERSION = '0.2.0';
  * 엔진이 아는 경제 규칙 판본. 판본은 시나리오가 정하고(data/scenarios.json의 engine_rules) 저장 파일에 남는다.
  * 규칙이 바뀌면 새 판본을 더하고, 다른 판본의 저장은 조용히 이어 쓰지 않는다.
  */
-export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1', 'M2a-rules-2', 'M2a-rules-3'] as const;
+export const SUPPORTED_RULES_VERSIONS = ['M1-rules-1', 'M2a-rules-1', 'M2a-rules-2', 'M2a-rules-3', 'M2a-rules-4'] as const;
 export type RulesVersion = (typeof SUPPORTED_RULES_VERSIONS)[number];
 
 // ── 정적 시나리오 설정 (data/*.json에서 만들어지며 상태에 저장하지 않는다) ──
@@ -227,6 +227,8 @@ export interface Contract {
   purchaseAmountMinor: number;
   /** 고객에게 청구할 계약 금액: 직접 무역은 상품 판매대금, 운송 주선은 서비스 대금. */
   saleAmountMinor: number;
+  creditTermId?: CreditTermId;
+  creditEligible?: { dateRule: boolean; limitBlocked: ('D15' | 'D30')[] };
   currency: Currency;
   originCityId: string;
   destinationCityId: string;
@@ -509,7 +511,7 @@ export type Command =
   | { id: string; type: 'SCOUT_SITE'; venueId: string; employeeId: string }
   | { id: string; type: 'START_RECRUIT_QUEST'; candidateId: string; employeeId: string }
   | { id: string; type: 'HIRE_CANDIDATE'; candidateId: string }
-  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; quantity?: number; plan?: CommitPlan }
+  | { id: string; type: 'ACCEPT_TRADE'; buyOfferId: string; sellOfferId: string; quantity?: number; creditTermId?: CreditTermId; plan?: CommitPlan }
   | { id: string; type: 'ACCEPT_FORWARDING'; offerId: string; plan?: CommitPlan }
   | { id: string; type: 'ASSIGN_TASK'; taskId: string; employeeId: string }
   | { id: string; type: 'BOOK_SAILING'; contractId: string; sailingId: string }
@@ -526,7 +528,7 @@ export interface CommandResult {
 export type ServiceClass = 'STANDARD' | 'HANDLING';
 export type MarketSide = 'BUY' | 'SELL';
 export type ExchangeDirection = 'USD_TO_KRW' | 'KRW_TO_USD';
-export type RiskLayer = 'FX' | 'TARIFF' | 'SURCHARGE' | 'CLAIM' | 'COLLECTION';
+export type RiskLayer = 'FX' | 'TARIFF' | 'SURCHARGE' | 'CLAIM' | 'COLLECTION' | 'DEFAULT' | 'CARRY';
 /** 설정 전용 위험 프로필. 상태·저장에는 넣지 않는다. */
 export interface RiskProfile {
   id: string; dataBasis: string; status: string; basis: string;
@@ -540,8 +542,19 @@ export interface RiskProfile {
     grades: { grade: string; pOnTimeBp: number; pLateBp: number; pPartialBp: number }[];
     partialBp: number; lateMinDays: number; lateMaxDays: number };
 }
+export type CreditTermId = 'BASE' | 'D15' | 'D30';
+/** 외상 설정은 엔진 전용이다. 읽기 함수는 공개 금액·날짜·등급만 골라 낸다. */
+export interface CreditProfile {
+  profileId: string;
+  terms: { id: CreditTermId; days: number; factorPct: number; premiumBp: number }[];
+  limitUnitMinor: number;
+  limits: { grade: string; lots: number; limitMinor: number }[];
+  pDefaultBpByGrade: { grade: string; pDefaultBp: number }[];
+  carryBpPerDay: number;
+  recoveryBp: number;
+}
 export interface OperationsConfig {
-  risk?: { profile: RiskProfile; layers: RiskLayer[] };
+  risk?: { profile: RiskProfile; layers: RiskLayer[]; credit?: CreditProfile };
   market: {
     publish: { firstDay: number; intervalDays: number; lastDay: number; validDays: number };
     rng: { streamPrefix: string; streamDigits: number };

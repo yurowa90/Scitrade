@@ -1,4 +1,4 @@
-import { receivedForInvoice, referenceRate } from './risk';
+import { isRiskRules, receivedForInvoice, referenceRate } from './risk';
 import { offerDef } from './market';
 // 저장 복원과 마감이 함께 쓰는 운영 규칙 검사. 경제 값은 수정하지 않는다.
 import { storageUsedLiters, storageCapacityLiters, handlingCapacityPt, fixedCostsDue } from './operations';
@@ -76,7 +76,7 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
     if (contract.kind !== 'DIRECT_TRADE') continue;
     const buy = offerDef(s, config, contract.buyOfferId!), sell = offerDef(s, config, contract.sellOfferId!);
     if (buy && sell && (buy.currency !== sell.currency || buy.currency !== contract.currency)
-      && !(config.rules.rulesVersion === 'M2a-rules-3' && buy.currency === 'KRW' && sell.currency === 'USD' && contract.currency === 'USD')) {
+      && !(isRiskRules(config.rules.rulesVersion) && buy.currency === 'KRW' && sell.currency === 'USD' && contract.currency === 'USD')) {
       problems.push('혼합 통화 계약은 매입 KRW·판매 USD·계약 USD여야 합니다');
     }
   }
@@ -84,7 +84,7 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
     const usd = s.ledger.entries.filter((e) => e.id === `${fx.id}-USD` && e.currency === 'USD');
     const krw = s.ledger.entries.filter((e) => e.id === `${fx.id}-KRW` && e.currency === 'KRW');
     const transfer = (entries: typeof usd) => entries.flatMap((e) => e.lines).filter((l) => l.account === 'CURRENCY_TRANSFER').reduce((sum, l) => sum + l.amount, 0);
-    if (usd.length !== 1 || krw.length !== 1 || transfer(usd) * (config.rules.rulesVersion === 'M2a-rules-3' ? referenceRate(config, s.rng.seed, fx.day) : c.fx.baseKrwPerUsd) / MINOR_PER_MAJOR.USD !== -transfer(krw)) problems.push('환전 분개 짝 또는 통화 간 이체가 다릅니다');
+    if (usd.length !== 1 || krw.length !== 1 || transfer(usd) * (isRiskRules(config.rules.rulesVersion) ? referenceRate(config, s.rng.seed, fx.day) : c.fx.baseKrwPerUsd) / MINOR_PER_MAJOR.USD !== -transfer(krw)) problems.push('환전 분개 짝 또는 통화 간 이체가 다릅니다');
   }
   for (const currency of new Set(s.ledger.entries.map((e) => e.currency))) {
     const b = summarize(s.ledger, currency);
