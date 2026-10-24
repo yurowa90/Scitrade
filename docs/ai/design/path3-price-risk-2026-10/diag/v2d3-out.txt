@@ -1,0 +1,48 @@
+lotmax {('COSMETICS', 'HAI'): (318400, 337504), ('COSMETICS', 'SHA'): (326450, 346037), ('SEASONED_LAVER', 'HAI'): (315400, 334324), ('SEASONED_LAVER', 'SHA'): (327600, 347256)}
+L* 347256 unit 350000
+new limits {'A': 1050000, 'B': 700000, 'C': 350000}
+contracts 425, seeds 40, target(date-only nonBASE) 219 = 0.515, D30 date 0.351
+ grade A 75 0.176 date-eligible 38
+ grade B 282 0.664 date-eligible 147
+ grade C 68 0.160 date-eligible 34
+BASE truncation factor (eff due+15<=90) 0.741
+lots by grade [(('A', 1), 41), (('A', 2), 11), (('A', 3), 23), (('B', 1), 162), (('B', 2), 53), (('B', 3), 67), (('C', 1), 41), (('C', 2), 9), (('C', 3), 18)]
+
+== limit none: TG nonBASE 219/425 = 0.515 (D30 0.351); target blocked by limit 0
+   grade A: target 38, TG nonBASE 38  D15 14 D30 24
+   grade B: target 147, TG nonBASE 147  D15 41 D30 106
+   grade C: target 34, TG nonBASE 34  D15 15 D30 19
+   L3 ① expected: TG 0.1176 CA 0.1036 ratio 0.881
+   divergent default events per seed 0.079; deterministic other-loss differences 0; C contracts differing 34
+   CA-TG expected analysis gain per seed USD mean 102 sd 216
+   L3 ② sign test power 0.000; mean nonzero seeds 3.1
+   J9: TG R0p 0.0000 R1 0.0000 rise 0.00pp ; base R0p 0.0000 R1 0.0024
+   fx |component| / sale: base 0.0111 TG 0.0200
+
+== limit old: TG nonBASE 89/425 = 0.209 (D30 0.160); target blocked by limit 130
+   grade A: target 38, TG nonBASE 27  D15 11 D30 16
+   grade B: target 147, TG nonBASE 61  D15 9 D30 52
+   grade C: target 34, TG nonBASE 1  D15 1 D30 0
+   L3 ① expected: TG 0.0916 CA 0.0913 ratio 0.997
+   divergent default events per seed 0.002; deterministic other-loss differences 0; C contracts differing 1
+   CA-TG expected analysis gain per seed USD mean -1 sd 8
+   L3 ② sign test power 0.000; mean nonzero seeds 0.1
+   J9: TG R0p 0.0000 R1 0.0024 rise 0.24pp ; base R0p 0.0000 R1 0.0024
+   fx |component| / sale: base 0.0111 TG 0.0134
+
+== limit new: TG nonBASE 122/425 = 0.287 (D30 0.216); target blocked by limit 97
+   grade A: target 38, TG nonBASE 32  D15 11 D30 21
+   grade B: target 147, TG nonBASE 77  D15 13 D30 64
+   grade C: target 34, TG nonBASE 13  D15 6 D30 7
+   L3 ① expected: TG 0.0959 CA 0.0907 ratio 0.946
+   divergent default events per seed 0.030; deterministic other-loss differences 0; C contracts differing 13
+   CA-TG expected analysis gain per seed USD mean 21 sd 54
+   L3 ② sign test power 0.000; mean nonzero seeds 1.2
+   J9: TG R0p 0.0000 R1 0.0024 rise 0.24pp ; base R0p 0.0000 R1 0.0024
+   fx |component| / sale: base 0.0111 TG 0.0142
+
+L1 expected 0.0614; R3 loss share 0.0212; claim-neg share 0.0965
+L1 sd approx 0.0116; P(L1<5%) normal approx 0.164
+J9 alt per-seed |fx| share TG>base 32, < 8, mean diff 0.309pp
+date seeds with >=1 C nonBASE under TG 24
+new seeds with >=1 C nonBASE under TG 13

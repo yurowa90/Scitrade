@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN-v2.md",
-      "size_bytes": 20051,
-      "sha256": "06381f88eba2b217fa57945065fe5f7d3c390dbd5b5074be88e6494bc0afd3b6"
+      "size_bytes": 30533,
+      "sha256": "50dbcc84028a780226b5df83dfcb030e5dacb6941a0a2899c3d498716525398c"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
@@ -1761,6 +1761,61 @@
       "sha256": "1e42a80cc4dfdfe1f83f21481fa6832cfccbfb6864cd57af88439450f5e2a468"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/m1.json",
+      "size_bytes": 16703,
+      "sha256": "fb5266f173937be6a282e0481a9f471fea70307447faf5156ff1465be0df9a19"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/m4.json",
+      "size_bytes": 146219,
+      "sha256": "654a16cadbd897781b4f31b223447f6b6e47dcacbb52e49f1f0a0fc889dce3bb"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/m5.json",
+      "size_bytes": 18651,
+      "sha256": "9798455a2175b6c0b2886d62aa7178ab5351886112441ae1ae57b831c98b2762"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/run.mjs",
+      "size_bytes": 317,
+      "sha256": "c979747c90e1be163db2d590c3175e40f19f44229cb9d7c777618c51df17c35f"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-out.txt",
+      "size_bytes": 2802,
+      "sha256": "9a2f908f3635fe92797362dc6b25297bf6128a332b40d7d95eabe1719cdb75e9"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-sens-out.txt",
+      "size_bytes": 2139,
+      "sha256": "103f448774ebe2d55e74980f4c45d1a7283b465f5ec632a57d400f21994ffd82"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-sens.py",
+      "size_bytes": 876,
+      "sha256": "1c94eb62213241a0ff63435e00c2ea33af2f0dbd54f3c5bb064048c298f77667"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3.py",
+      "size_bytes": 8578,
+      "sha256": "0d305cb1888437f6b971c7c4cb3946f48efd4552cbc8cb11f6ba3dc4daf6d0e7"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/zzdiag3.ts",
+      "size_bytes": 1073,
+      "sha256": "787eced3ee0e474c7c31c892d1e1da2ee59c5709be18944a38fe5e178dfda7aa"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/zzdiag4.ts",
+      "size_bytes": 1313,
+      "sha256": "cdfe682f570385128b770584ffc32f2ec5573b70970167c5fbdfa6823fe755b4"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/diag/zzdiag5.ts",
+      "size_bytes": 499,
+      "sha256": "1b18238f53fde73a42c9c1bcc8a002bea54f499bab2e1f434181a1a671d682e3"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_vs_design.py",
       "size_bytes": 3065,
       "sha256": "349357990cca743d2ea3baf39520c6d90d4b515d93644560288e8d1b4b9c7056"
@@ -1817,8 +1872,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 14526,
-      "sha256": "041d63606408470c002ac6fc19a7f86f26ee214b7ae3e7d1191c4fe187fb54bf"
+      "size_bytes": 17633,
+      "sha256": "b99abd3140278297caaf15143c602903318f477b9011ffdb72e3fbf7081cbd6d"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",

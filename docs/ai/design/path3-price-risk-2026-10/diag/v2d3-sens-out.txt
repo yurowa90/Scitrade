@@ -1,0 +1,36 @@
+--- p_C 1200, C limit 1 lot
+   grade C: target 34, TG nonBASE 13  D15 6 D30 7
+   L3 ① expected: TG 0.0959 CA 0.0907 ratio 0.946
+   divergent default events per seed 0.030; deterministic other-loss differences 0; C contracts differing 13
+   CA-TG expected analysis gain per seed USD mean 21 sd 54
+   L3 ② sign test power 0.000; mean nonzero seeds 1.2
+--- p_C 1200, C limit 2 lot
+   grade C: target 34, TG nonBASE 22  D15 8 D30 14
+   L3 ① expected: TG 0.1000 CA 0.0907 ratio 0.907
+   divergent default events per seed 0.054; deterministic other-loss differences 0; C contracts differing 22
+   CA-TG expected analysis gain per seed USD mean 50 sd 100
+   L3 ② sign test power 0.000; mean nonzero seeds 2.1
+--- p_C 2400, C limit 1 lot
+   grade C: target 34, TG nonBASE 13  D15 6 D30 7
+   L3 ① expected: TG 0.1186 CA 0.1082 ratio 0.912
+   divergent default events per seed 0.060; deterministic other-loss differences 0; C contracts differing 13
+   CA-TG expected analysis gain per seed USD mean 82 sd 136
+   L3 ② sign test power 0.000; mean nonzero seeds 2.4
+--- p_C 2400, C limit 2 lot
+   grade C: target 34, TG nonBASE 22  D15 8 D30 14
+   L3 ① expected: TG 0.1268 CA 0.1082 ratio 0.853
+   divergent default events per seed 0.108; deterministic other-loss differences 0; C contracts differing 22
+   CA-TG expected analysis gain per seed USD mean 209 sd 271
+   L3 ② sign test power 0.002; mean nonzero seeds 4.2
+--- p_C 1600, C limit 3 lot
+   grade C: target 34, TG nonBASE 30  D15 12 D30 18
+   L3 ① expected: TG 0.1133 CA 0.0965 ratio 0.852
+   divergent default events per seed 0.096; deterministic other-loss differences 0; C contracts differing 30
+   CA-TG expected analysis gain per seed USD mean 166 sd 212
+   L3 ② sign test power 0.003; mean nonzero seeds 3.7
+--- p_C 2400, C limit 99 lot
+   grade C: target 34, TG nonBASE 34  D15 15 D30 19
+   L3 ① expected: TG 0.1361 CA 0.1082 ratio 0.795
+   divergent default events per seed 0.159; deterministic other-loss differences 0; C contracts differing 34
+   CA-TG expected analysis gain per seed USD mean 389 sd 523
+   L3 ② sign test power 0.041; mean nonzero seeds 5.9
