@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 90149,
-      "sha256": "d119d071809128771398bab94e6aadf96a8205adba98ec9a220c53b5ecd1515a"
+      "size_bytes": 91031,
+      "sha256": "45faef44849a14008cbfd1f82a6c16649e94e11f68e19794a50a62d3d369a041"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3077,8 +3077,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0068a-runner-v2-core.md",
-      "size_bytes": 28875,
-      "sha256": "23740ceef430c7d5b64b44f1b776c141d5b8ad9a4a295278dfca1e349df9e417"
+      "size_bytes": 29824,
+      "sha256": "aa3b4e2396b3e4ff10050379d207b714fbff669c541b6f533bd40ca136d85f0f"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -3479,6 +3479,11 @@
       "path": "docs/ai/tasks/results/TASK-0067b.md",
       "size_bytes": 29520,
       "sha256": "dd1d0c199b15d13ccb346bb81cfc9320181ddbff58cec89bfcb0c5a27e5bfd2b"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0068a-STOP1.md",
+      "size_bytes": 7705,
+      "sha256": "760cdbe89d035b02aa8334ec22be05f67be45604305200e6fedfc22b1371c57f"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",

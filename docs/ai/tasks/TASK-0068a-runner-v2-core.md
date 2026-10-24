@@ -1,6 +1,6 @@
 # TASK-0068a 경로 5 실행기 v2 ①: 골격·정책·칸(rules-4 위험 단계 실행, 40시드, 외상 정책, 진단 재료)
 
-- 지위: **승인(허브, 2026-10-24, 개정 1 3a03b9d).** 초안(`6985cbe`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0068a-HUB-2026-10-24.md`(확인 16, major 2, 기각 3)에서 수정 E1~E12를 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
+- 지위: **승인(허브, 2026-10-24, 개정 1 3a03b9d + 허브 개정 2).** 개정 2는 1회 실행의 멈춤 보고(`docs/ai/tasks/results/TASK-0068a-STOP1.md`)에 따라 허브가 두 곳을 고쳤다: 9절 `risk-tables.ts` 허용 범위, 1절 4의 첫 화면 비교 방법. 초안(`6985cbe`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0068a-HUB-2026-10-24.md`(확인 16, major 2, 기각 3)에서 수정 E1~E12를 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
   - TASK-0068 개정 1(`15e3551`)을 허브가 나누기로 정했다(H27 끝). 이 지시서는 그 앞쪽(실행 결과를 바꾸는 계층)이다. 뒤쪽 0068b(표·보고·비교)는 이 지시서 병합 뒤에 쓴다.
   - 0068 개정 1에 반영한 허브 결정 H27과 사전 검수 `PRECHECK-0068-HUB-2026-10-24.md` E1~E16 가운데 이 지시서 몫은 끝의 처리표에 있다.
 - codex_model: `gpt-6-astra`
@@ -31,7 +31,7 @@
    - 기존 `src/engine/sim/risk-runner.test.ts`·`seed-base.test.ts`가 **고치지 않은 채** 통과한다.
 2. **기존 시험 파일은 고치지 않는다.** 새 시험은 새 파일 `src/engine/sim/risk-runner-v2.test.ts`에 둔다.
 3. **v1 출력에 키를 더하지 않는다.** `RiskMeta`·`RiskContract`·`RiskMetrics`·`metrics.operations`의 새 칸은 v2 실행(rules-4)에서만 둔다(값이 `undefined`인 키도 두지 않는다).
-4. **실행기 코드는 첫 화면 묶음에 들어가지 않는다.** 작업 전·끝에 `npm run --silent build && node tools/check_bundle_size.mjs dist`의 첫 화면 gzip 바이트를 적는다. 바뀌면 멈추고 보고한다(0067b 병합본 132,576 B).
+4. **실행기 코드는 첫 화면 묶음에 들어가지 않는다.** 작업 전·끝에 첫 화면 gzip 바이트를 적는다. 바뀌면 멈추고 보고한다. **비교는 빌드 표시가 같은 조건에서 한다(허브 개정 2):** 빌드 표시(`vite.config.ts`의 커밋 해시·`+수정`)가 크기에 섞이지 않도록, 작업 전은 `git archive HEAD`를 풀어 둔 폴더, 작업 끝은 작업 트리를 `.git`·`node_modules` 없이 복사한 폴더에서 각각 `node_modules`를 심볼릭 링크하고 `npm run --silent build && node tools/check_bundle_size.mjs dist`를 돌린다. 두 폴더 모두 git이 없어 빌드 표시가 `dev`로 같다. 참고로 깨끗한 작업 트리에서 직접 빌드한 값은 132,576~132,580 B다(빌드 표시가 커밋마다 달라 몇 바이트 오간다).
 5. **위험 모듈 import 규칙**(`risk-runner.test.ts:486-532`가 지킨다)
    - `../risk`의 함수는 보고서 파일 `risk-metrics.ts`·`risk-tables.ts`에서만 자유롭게 가져온다. 그 밖의 `src/engine/sim/**` 파일(새 시험 포함)은 허용 목록(`krwToUsdMinor`, `usdToKrwMinor`, `rowCurrency`, `divHalfAway`, `withRiskLevel`)만 가져온다.
    - 그래서 `withRiskLevelV2`·`referenceRate`·`defaultFor`가 필요한 곳은 `risk-metrics.ts`의 감싼 함수를 쓴다(2.1·3.2).
@@ -212,7 +212,7 @@
 
 ## 9. 고칠 수 있는 파일
 
-- `src/engine/sim/cli.ts`, `d03.ts`, `risk-metrics.ts`, `risk-tables.ts`(`compareRisk` 첫머리의 `rules` 거절만), `operations-policy.ts`, `operations-metrics.ts`, `policies.ts`(`PolicyDecision`의 선택 칸만), `variants.ts`, `sim.ts`(단계 형 넓히기 + `decide()` 결과에서 `rejectionUnits`를 꺼내 `observeClosed`의 다섯째 선택 인수로 넘기기, E1)
+- `src/engine/sim/cli.ts`, `d03.ts`, `risk-metrics.ts`, `risk-tables.ts`(`compareRisk` 첫머리의 `rules` 거절, 그리고 `riskTables` 입구에서 v2 메타를 거절하고 v1 메타 형으로 좁히는 처리만. 표 계산·판정 기준·문구는 바꾸지 않는다. 허브 개정 2), `operations-policy.ts`, `operations-metrics.ts`, `policies.ts`(`PolicyDecision`의 선택 칸만), `variants.ts`, `sim.ts`(단계 형 넓히기 + `decide()` 결과에서 `rejectionUnits`를 꺼내 `observeClosed`의 다섯째 선택 인수로 넘기기, E1)
 - 새 파일 `src/engine/sim/risk-runner-v2.test.ts`
 - `MANIFEST.json`(생성만), `docs/ai/tasks/results/TASK-0068a.md`
 - 그 밖(`run.mjs`, 엔진 `src/engine/*.ts`, `src/content/**`, `data/**`, `schemas/**`, `src/ui/**`, 골든 파일·도구, 기존 시험 파일)은 고치지 않는다. 필요하면 멈추고 보고한다.
