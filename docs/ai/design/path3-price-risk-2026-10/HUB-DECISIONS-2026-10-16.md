@@ -956,3 +956,16 @@ TASK-0065 초안 2(세션 A, `claude/m2a5-engine` `9254845`)의 허브 사전 �
 
 ### H28-2. 끝난 때 미결 수금 (검수 metrics-5)
 - `-1`만 받은 분할 수금과 끝까지 수금이 없는 연체 청구서를 진단 U에 따로 센다(`pendingPartialReceipts`, `pendingOverdue`). 기존 `lateReceipts`·`partialReceipts`의 정의는 그대로 두고 네 칸이 겹치지 않게 한다. TASK-0068a-R1에서 넣는다.
+
+## H29. TASK-0068b 사전 검수 뒤 결정 (2026-10-24, 허브)
+
+근거: `docs/ai/tasks/results/PRECHECK-0068b-HUB-2026-10-24.md`(확인 16건, major 2).
+
+### H29-1. 진단 C의 원인 목록 (정오표)
+- 판정표 v2 3.1은 진단 T·C·F·B를 ‘판본 1 그대로’로 두었다. 그런데 판본 1의 원인 목록에는 v2의 주된 손실 원인인 대손(default)과 지연 이자(carry)가 없다. 그대로 쓰면 확정 대손 계약의 원인이 틀리게 적힌다.
+- **진단 C는 v2 성분 아홉 개(fx, tariff, surcharge, claim, collection, default, carry, late, cancel) 가운데 가장 큰 음수 성분을 센다.** T·F·B는 판본 1 그대로다. 진단이라 판정 결과는 바뀌지 않는다. 판정표 v2 본문은 고치지 않고 이 결정을 정오표로 둔다.
+
+### H29-2. 세션 A 확인 요청
+- (1) v2 표를 `writeD03` 대신 새 명령 `v2-tables`로 낸다: 승인한다. 0068a 시험이 v2 표준 출력을 한 줄로 고정하고 있고, v1 출력 경로를 건드리지 않는 쪽이 안전하다.
+- (2) 기존 시험 파일 `risk-runner-v2.test.ts` 시험 1의 USAGE 문자열만 고치는 예외: 승인한다. diff 범위를 완료 조건으로 묶는다.
+- (3) `pendingOverdue`가 미확정 대손을 포함한다: 맞다(대손 분기가 수금 전에 끝난다). 차감 열 ‘미결 지연(대손 아님)’을 따로 낸다.
