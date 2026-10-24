@@ -1702,8 +1702,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 77089,
-      "sha256": "683b4ae8072fd6d6daf42376d84d985f9b841930413e1a3459adb563c2160f54"
+      "size_bytes": 80590,
+      "sha256": "fc001eb3836128ff8caf117cb18314688ee9c2658acaae4782d4a3a304ba15b2"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -1719,6 +1719,11 @@
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-0066-HUB-2026-10-17.md",
       "size_bytes": 24523,
       "sha256": "217f77372103402a2131b3758b50a757b80a9bd1c4d89a6b4b1a770b2617d4d4"
+    },
+    {
+      "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-V2-D2-HUB-2026-10-24.md",
+      "size_bytes": 13598,
+      "sha256": "eed3447c62f72cd0aa6a5b876cbdfb152357a54cf2c530ca2485af3f37dfe33b"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-V2-HUB-2026-10-24.md",
