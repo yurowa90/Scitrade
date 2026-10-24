@@ -4,12 +4,13 @@ import { isAvailableFromToday } from '../employees';
 import { planState } from '../engine';
 import { offerDef, openTradePairs, prepWorkUnitsFor } from '../market';
 import { dailyKrwDue, handlingOrder, lateDeliveryReduction, projectPrepCompletion, rentDueMinor, usdLotKrw } from '../operations';
+import { creditTermOptions } from '../readers';
 import { preview, type QuotePreview } from '../reports';
 import { krwToUsdMinor } from '../risk';
 import type { Currency } from '../money';
 import { fundsPosition, runningTaskOf, spaceShortfall } from '../reservations';
 import { drawUniform, type RngState } from '../rng';
-import type { EngineCommand, GameState, ScenarioConfig } from '../types';
+import type { CreditTermId, EngineCommand, GameState, ScenarioConfig } from '../types';
 import { candidateFor, type Variant } from './variants';
 import type { PolicyDecision, ProjectionBooking } from './policies';
 
@@ -37,11 +38,38 @@ export function directTradeCandidates(state: GameState, config: ScenarioConfig, 
   return candidates;
 }
 
+export type DirectCandidate = ReturnType<typeof directTradeCandidates>[number];
+export function termCandidate(state: GameState, config: ScenarioConfig, c: DirectCandidate, acceptance: string, day: number):
+  { creditTermId: CreditTermId | undefined; sale: number; contribution: number; preview: QuotePreview } {
+  if (acceptance !== 'TERM_GREEDY' && acceptance !== 'CREDIT_AWARE') {
+    return { creditTermId: undefined, sale: c.sale, contribution: c.contribution, preview: c.preview };
+  }
+  const options = creditTermOptions(state, config, c.buyOfferId, c.sellOfferId, c.quantity);
+  const order: CreditTermId[] = acceptance === 'CREDIT_AWARE' && options[0]?.grade === 'C' ? ['BASE'] : ['D30', 'D15', 'BASE'];
+  const term = order.map((id) => options.find((t) => t.termId === id)).find((t) => t?.allowed);
+  if (!term) throw new Error('고를 수 있는 외상 조건이 없습니다.');
+  const buy = offerDef(state, config, c.buyOfferId)!, sell = offerDef(state, config, c.sellOfferId)!;
+  const sale = term.saleAmountMinor;
+  const p = preview(config, 'DIRECT_TRADE', buy.cityId, sell.cityId, day,
+    { purchase: c.preview.purchase, sale }, sell.deliveryDeadlineDay!, term.paymentDueDay,
+    { goodId: buy.goodId, purchaseCurrency: c.purchaseCurrency })!;
+  return { creditTermId: term.termId, sale, contribution: decisionContribution(p, sale, c.purchaseCurrency), preview: p };
+}
+
 export const rejectionCounts = () => ({ funds: 0, storage: 0, handling: 0, sailing: 0, staff: 0, onTime: 0 });
+export const rejectionUnits = () => ({ candidate: { ...rejectionCounts(), credit: 0 }, pair: 0, quote: 0, skippedNotOpen: 0 });
+export type RejectionUnits = ReturnType<typeof rejectionUnits>;
 export function decideOperations(id: string, v: Variant, state: GameState, config: ScenarioConfig, initialRng: RngState): PolicyDecision {
   const commands: EngineCommand[] = [], rejections = rejectionCounts(), projectionBookings: ProjectionBooking[] = [];
+  const units = config.rules.rulesVersion === 'M2a-rules-4' ? rejectionUnits() : undefined;
+  const attemptedPairs = new Set<string>(), acceptedPairs = new Set<string>();
+  const attemptedQuotes = new Set<string>(), acceptedQuotes = new Set<string>();
+  const reject = (reason: keyof RejectionUnits['candidate']) => {
+    if (reason !== 'credit') rejections[reason]++;
+    if (units) units.candidate[reason]++;
+  };
   let current = state, rng = initialRng;
-  if (v.acceptance === 'IDLE') return { commands, rng, rejections, projectionBookings };
+  if (v.acceptance === 'IDLE') return { commands, rng, rejections, projectionBookings, ...(units ? { rejectionUnits: units } : {}) };
   const nextId = () => `SIM-${id}-D${state.day}-${commands.length + 1}`;
   const trial = (cmd: EngineCommand) => planState(current, config, [cmd]);
   const add = (cmd: EngineCommand) => {
@@ -141,8 +169,9 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
   if (v.acceptance !== 'ASSET_LIGHT') for (const c of directTradeCandidates(current, config, state.day)) {
     if (v.acceptance === 'MARGIN_BUFFER' && !marginBufferAccepts(c.contribution, c.sale)) continue;
     if (v.acceptance === 'FOCUS' && offerDef(current, config, c.buyOfferId)!.goodId !== FOCUS_GOOD_ID) continue;
+    const term = termCandidate(current, config, c, v.acceptance, state.day);
     candidates.push({ command: { id: '', type: 'ACCEPT_TRADE', buyOfferId: c.buyOfferId, sellOfferId: c.sellOfferId, quantity: c.quantity },
-      offerId: c.buyOfferId, quantity: c.quantity, sale: c.sale, contribution: c.contribution,
+      offerId: c.buyOfferId, quantity: c.quantity, sale: term.sale, contribution: term.contribution,
       deadline: c.preview.deliveryDeadlineDay, routeId: c.preview.routeId, direct: c });
   }
   for (const o of current.offers.filter((o) => o.status === 'OPEN').map((o) => offerDef(current, config, o.id)!)) {
@@ -153,8 +182,18 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
   }
   candidates.sort((a, b) => (v.acceptance === 'ON_TIME_FIRST' ? a.deadline - b.deadline : 0) || (a.offerId === b.offerId ? b.quantity - a.quantity : b.contribution - a.contribution));
   for (const c of candidates) {
-    if (c.contribution <= 0 || !current.offers.some((o) => o.id === c.offerId && o.status === 'OPEN')) continue;
+    if (c.contribution <= 0) continue;
+    if (!current.offers.some((o) => o.id === c.offerId && o.status === 'OPEN')) {
+      if (units) units.skippedNotOpen++;
+      continue;
+    }
     if (v.acceptance === 'SEEDED_RANDOM') { const d = drawUniform(rng, 'sim.policy.SEEDED_RANDOM'); rng = d.rng; if (d.value >= 0.5) continue; }
+    const pairKey = c.direct ? JSON.stringify([c.direct.buyOfferId, c.direct.sellOfferId]) : undefined;
+    if (units && pairKey) { attemptedPairs.add(pairKey); attemptedQuotes.add(c.offerId); }
+    // 앞선 수락이 같은 거래처의 노출액을 바꾸므로 최신 상태에서 다시 고른다.
+    const term = c.direct ? termCandidate(current, config, c.direct, v.acceptance, state.day) : undefined;
+    if (term && term.contribution <= 0) { reject('credit'); continue; }
+    const sale = term?.sale ?? c.sale, contribution = term?.contribution ?? c.contribution;
     let exchangeUsd = 0;
     if (v.acceptance !== 'NO_FX' && c.direct?.purchaseCurrency === 'KRW'
       && offerDef(current, config, c.direct.sellOfferId)!.currency !== 'KRW') {
@@ -165,7 +204,7 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
         exchangeUsd = Math.ceil(krwShort / usdLotKrw(config, current)) * ops.fx.lotUsdMinor;
         const usdCap = fundsPosition(current, config, 'USD').available
           - (c.direct.preview.cashNeedByCurrency?.find((x) => x.currency === 'USD')?.amountMinor ?? 0);
-        if (exchangeUsd > usdCap) { rejections.funds++; continue; }
+        if (exchangeUsd > usdCap) { reject('funds'); continue; }
       }
     }
     const offer = offerDef(current, config, c.offerId)!;
@@ -174,12 +213,12 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
     for (const s of listSailings(config, c.routeId, state.day + 1)) {
       const daysLate = s.scheduledArrivalDay + config.terms.customsDays - c.deadline;
       if (!late && daysLate > 0) continue;
-      if (c.contribution - lateDeliveryReduction(config, c.sale, daysLate) <= 0) continue;
+      if (contribution - lateDeliveryReduction(config, sale, daysLate) <= 0) continue;
       if (spaceShortfall(current, config, s, offer.goodId, c.quantity)) { reason = 'sailing'; continue; }
       const employees = available(prep);
       for (const employee of employees.length ? employees : [undefined]) {
         const ex: EngineCommand | undefined = exchangeUsd ? { id: nextId(), type: 'EXCHANGE_CURRENCY', direction: 'USD_TO_KRW', usdAmountMinor: exchangeUsd } : undefined;
-        const cmd: Acceptance = { ...c.command, id: ex ? `SIM-${id}-D${state.day}-${commands.length + 2}` : nextId(), plan: { ...(employee ? { employeeId: employee.id } : {}), sailingId: s.id } };
+        const cmd: Acceptance = { ...c.command, ...(term?.creditTermId ? { creditTermId: term.creditTermId } : {}), id: ex ? `SIM-${id}-D${state.day}-${commands.length + 2}` : nextId(), plan: { ...(employee ? { employeeId: employee.id } : {}), sailingId: s.id } };
         const p = ex ? planState(current, config, [ex, cmd]) : trial(cmd), result = p.results[ex ? 1 : 0]!;
         if (ex && p.results[0]!.status !== 'APPLIED') { reason = 'funds'; continue; }
         if (result.status !== 'APPLIED') { reason = result.reasonKo.includes('보관') ? 'storage' : result.reasonKo.includes('직원') ? 'staff' : 'funds'; continue; }
@@ -190,7 +229,12 @@ export function decideOperations(id: string, v: Variant, state: GameState, confi
       }
       if (accepted) break;
     }
-    if (!accepted) rejections[reason]++;
+    if (!accepted) reject(reason);
+    else if (units && pairKey) { acceptedPairs.add(pairKey); acceptedQuotes.add(c.offerId); }
   }
-  return { commands, rng, rejections, projectionBookings };
+  if (units) {
+    units.pair = [...attemptedPairs].filter((key) => !acceptedPairs.has(key)).length;
+    units.quote = [...attemptedQuotes].filter((key) => !acceptedQuotes.has(key)).length;
+  }
+  return { commands, rng, rejections, projectionBookings, ...(units ? { rejectionUnits: units } : {}) };
 }
