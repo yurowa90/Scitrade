@@ -117,9 +117,9 @@ export function pairedValuesV2(base: SimRun[], other: SimRun[]) {
 }
 export const LIQUIDITY_NOTE = '사전 기대는 유동성 효과(외상 정책이 첫날 D30으로 현금이 묶여 뒤 거래를 놓침)를 뺀 값이다(H28-1).';
 const EXPECTATIONS = {
-  '진단 J8': `중앙 35/40, 띠 8~32 안 확률 0.14(DESIGN-v2 2.4). 유동성 효과를 뺀 값(H28-1). ${LIQUIDITY_NOTE}`,
-  '진단 L4': `중앙 36/40(DESIGN-v2 2.4). 유동성 효과를 뺀 값(H28-1). ${LIQUIDITY_NOTE}`,
-  '진단 V': `평균 +21 USD/시드(표준편차 54), 동점 약 27, TG 우세 약 11.8, CA 우세 약 1.2(판정표 v2 3.5, DESIGN-v2 2.4). 유동성 효과를 뺀 값(H28-1). ${LIQUIDITY_NOTE}`,
+  '진단 J8': `중앙 35/40, 띠 8~32 안 확률 0.14(DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
+  '진단 L4': `중앙 36/40(DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
+  '진단 V': `평균 +21 USD/시드(표준편차 54), 동점 약 27, TG 우세 약 11.8, CA 우세 약 1.2(판정표 v2 3.5, DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
 };
 const CREDIT_KEYS = ['defaultsConfirmed', 'badDebtMinor', 'defaultsUnconfirmed', 'unconfirmedMinor', 'carryMinor', 'limitBlocked', 'lateReceipts', 'partialReceipts', 'pendingPartialReceipts', 'pendingOverdue', 'dateEligible', 'dateLimitEligible'] as const;
 export function creditTotalsV2(runs: SimRun[]) {
@@ -150,7 +150,7 @@ const rejectionSummary = (id: string, runs: SimRun[]) => {
 };
 function creditSummary(output: SimOutput) {
   const tg = creditTotalsV2(getRuns(output, 'TERM_GREEDY')), base = creditTotalsV2(getRuns(output)), n = getRuns(output).length;
-  return `25% 관문 값(보고만): TERM_GREEDY 날짜+한도 ${num(tg.dateLimitPercent)}%, 사전 대리값 31.5%(DESIGN-v2 2.2, R3 대리값); 기준 회사 시드당 대손 확정 ${num(n ? base.defaultsConfirmed / n : NaN)}, 합 ${num(n ? (base.defaultsConfirmed + base.defaultsUnconfirmed) / n : NaN)}`;
+  return `25% 관문 값(보고만): TERM_GREEDY 날짜+한도 ${num(tg.dateLimitPercent)}%, 사전 대리값 31.5%(DESIGN-v2 2.2, R3 대리값); 기준 회사 시드당 대손 확정 ${num(n ? base.defaultsConfirmed / n : NaN)}, 합 ${num(n ? (base.defaultsConfirmed + base.defaultsUnconfirmed) / n : NaN)}; 확정 0.44, 합 0.59. 출처: 세션 A 계산, DESIGN-v2 2.0의 \`diag/m4.json\`(R3, 시드 1001~1040, 기준 회사 425계약)에 V2 등급 확률을 넣어 Σ p_등급 × 1[실효 결제일 + 15 ≤ 90] ÷ 40(확정), 같은 식에서 절단을 뺀 값(합). J1 일회 점검(시드 2001~2010)에서 확정 8건(기대 약 4.4).`;
 }
 function diagnosticTables(output: SimOutput): string[] {
   const ids = [...new Set(output.runs.map((r) => r.policyId))].sort();
@@ -161,7 +161,6 @@ function diagnosticTables(output: SimOutput): string[] {
   }
   lines.push('', '금액은 청구서 통화 USD 센트 정수이며 환산하지 않는다. 미확정 대손은 수금 없이 OVERDUE로 남아 pendingOverdue에 포함되므로, 끝난 때 미결 지연(대손 아님)은 pendingOverdue − defaultsUnconfirmed다. 네 수금 칸은 서로 겹치지 않는다.',
     creditSummary(output),
-    '확정 0.44, 합 0.59. 출처: 세션 A 계산, DESIGN-v2 2.0의 `diag/m4.json`(R3, 시드 1001~1040, 기준 회사 425계약)에 V2 등급 확률을 넣어 Σ p_등급 × 1[실효 결제일 + 15 ≤ 90] ÷ 40(확정), 같은 식에서 절단을 뺀 값(합). J1 일회 점검(시드 2001~2010)에서 확정 8건(기대 약 4.4).',
     'v1 대비 지연·부분 수금 건수는 내지 않는다(H27-2 (b)).',
     'v2 R3는 판본 1 R3와 같은 층이 아니다. 값을 직접 견주지 않는다(판정표 v2 2절).',
     '', '### 진단 거절 정책별', '', `| 정책 | ${REJECTION_KEYS.join(' | ')} | 후보 합 | 짝 | 견적 | OPEN 아님 건너뜀 |`, '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');

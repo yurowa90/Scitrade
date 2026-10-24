@@ -220,30 +220,34 @@ describe('TASK-0068b 표·보고·비교', () => {
   });
   it('4 진단 J8·L4·V 부호·사분위·직접 무역 수·유동성 주석', () => {
     const o = output('R3', 5), tg = get(o, 'TERM_GREEDY'), ca = get(o, 'CREDIT_AWARE');
-    const tv = [0, 200, -200, 400, 0], cv = [-400, 0, -200, 600, 800];
+    const tv = [0, 200, -200, 400, 0], cv = [-400, 100, -200, 600, 800];
     tg.forEach((r, i) => { r.metrics.risk!.analysisValueMinor = 1200000 + tv[i]!; contracts(r, [contract(), contract()]); });
     ca.forEach((r, i) => { r.metrics.risk!.analysisValueMinor = 1200000 + cv[i]!; });
     expect(pairedValuesV2(get(o), tg)).toMatchObject({ positive: 2, negative: 1, ties: 2 });
-    expect(pairedValuesV2(get(o), ca)).toMatchObject({ positive: 2, negative: 2, ties: 1 });
-    expect(pairedValuesV2(tg, ca)).toEqual({ positive: 2, negative: 2, ties: 1, median: 0, q1: -300, q3: 500 });
+    expect(pairedValuesV2(get(o), ca)).toMatchObject({ positive: 3, negative: 2, ties: 0 });
+    expect(pairedValuesV2(tg, ca)).toEqual({ positive: 2, negative: 2, ties: 1, median: 0, q1: -250, q3: 500 });
     const text = d03TablesV2(o);
+    expect(row(text, '진단 J8')).toContain('TERM_GREEDY > 기준 2, 같음 2, 작음 1');
+    expect(row(text, '진단 L4')).toContain('CREDIT_AWARE > 기준 3, 같음 0, 작음 2');
     expect(row(text, '진단 J8')).toContain('TERM_GREEDY 직접 무역 합 10, 중앙 2.00; MAX_CONTRIBUTION 직접 무역 합 5, 중앙 1.00');
-    expect(row(text, '진단 V')).toContain('중앙 0.00 USD, 사분위 -3.00 / 5.00 USD; 동점 1, 양수 2, 음수 2');
+    expect(row(text, '진단 V')).toContain('중앙 0.00 USD, 사분위 -2.50 / 5.00 USD; 동점 1, 양수 2, 음수 2');
     for (const key of ['진단 J8', '진단 L4', '진단 V']) {
-      expect(row(text, key)).toContain('유동성 효과를 뺀 값(H28-1)'); expect(row(text, key)).toContain(LIQUIDITY_NOTE);
+      expect(row(text, key)).toContain(LIQUIDITY_NOTE);
+      expect(row(text, key).match(/H28-1/g)).toHaveLength(1);
     }
   });
   it('4 진단 C 대손·이자·동률 원인과 진단 M 원시값만', () => {
-    const o = output('R4', 3), base = get(o), mb = get(o, 'MARGIN_BUFFER');
+    const o = output('R4', 4), base = get(o), mb = get(o, 'MARGIN_BUFFER');
     const bad = contract(-100, -20); bad.components.default = -200;
     contracts(base[0]!, [bad, contract(100)]); contracts(mb[0]!, [contract(100)]);
     contracts(base[1]!, [contract(100)]); contracts(mb[1]!, [contract(-1), contract(100)]);
     contracts(base[2]!, [contract(-1)]); contracts(mb[2]!, [contract(-1)]);
+    contracts(base[3]!, [contract(-2), contract(-3), contract(100)]); contracts(mb[3]!, [contract(-4), contract(100), contract(200)]);
     expect(causesV2([base[0]!])).toEqual({ default: 1 });
     expect(row(d03TablesV2(o), '진단 C')).toContain('"default":1');
-    const raw = marginRawV2(base, mb); expect(raw).toMatchObject({ m: 2, wins: 1, a: { loss: 2, total: 4 }, b: { loss: 2, total: 4 } });
+    const raw = marginRawV2(base, mb); expect(raw).toMatchObject({ m: 3, wins: 2, a: { loss: 4, total: 7 }, b: { loss: 3, total: 7 } });
     const m = row(d03TablesV2(o), '진단 M');
-    expect(m).toContain('MARGIN_BUFFER 손실 2/4, 기준 손실 2/4; 낮은 시드 1/2, MARGIN_BUFFER 직접 무역 계약 4건');
+    expect(m).toContain('MARGIN_BUFFER 손실 3/7, 기준 손실 4/7; 낮은 시드 2/3, MARGIN_BUFFER 직접 무역 계약 7건');
     expect(m).not.toMatch(/통과|실패|충족|문턱/);
     bad.components.default = 0; bad.components.carry = -200; expect(causesV2([base[0]!])).toEqual({ carry: 1 });
     bad.components.carry = -20; expect(causesV2([base[0]!])).toEqual({ fx: 1 });
@@ -301,6 +305,20 @@ describe('TASK-0068b 표·보고·비교', () => {
       contracts(get(b)[0]!, Array.from({ length: total }, (_, i) => contract(i ? 1 : -1)));
       expect(compareRiskV2(a, b).rate).toBe(total === 100);
     }
+    // ①만 참: 손실 1/101 → 3/101(+약 1.98%p), 늘어남 1 = 줄어듦 1.
+    // ②만 참: 손실 1/600 → 2/600(+약 0.17%p), 늘어남 2 > 줄어듦 1.
+    const mixed = [
+      { totals: [100, 1], before: [0, 1], after: [3, 0], rate: true, count: false, increase: 1 },
+      { totals: [200, 200, 200], before: [0, 0, 1], after: [1, 1, 0], rate: false, count: true, increase: 2 },
+    ];
+    for (const fixture of mixed) {
+      const a = output('R3', fixture.totals.length), b = output('R4', fixture.totals.length);
+      get(a).forEach((r, i) => contracts(r, Array.from({ length: fixture.totals[i]! }, (_, j) => contract(j < fixture.before[i]! ? -1 : 1))));
+      get(b).forEach((r, i) => contracts(r, Array.from({ length: fixture.totals[i]! }, (_, j) => contract(j < fixture.after[i]! ? -1 : 1))));
+      expect(compareRiskV2(a, b)).toMatchObject({ rate: fixture.rate, count: fixture.count, pass: false,
+        increase: fixture.increase, decrease: 1 });
+      expect(row(riskCompareTablesV2(a, b), 'L2')).toContain('| 실패 |');
+    }
   });
   it('7 보고 단계 중복·누락·순서·메타·R0 선택과 필터', () => {
     const os = five(), text = v2Report(os);
@@ -310,6 +328,10 @@ describe('TASK-0068b 표·보고·비교', () => {
     const wrong = five(); wrong[2]!.meta.risk!.profileId = '다름'; expect(() => v2Report(wrong)).toThrow('profileId');
     const six = (t: string) => t.split('| 키 | R0 |')[1]!.split('R0 열은')[0]!;
     expect(six(text).match(/기록 없음/g)).toHaveLength(20);
+    expect(row(six(text), 'J4d')).toBe('| J4d | 기록 없음 | 진단 | 진단 | 진단 | 진단 | 통과 |');
+    const failed = five();
+    get(failed[2]!)[0]!.metrics.operations!.unpaidAtEnd = [{ currency: 'KRW', amountMinor: 1 }];
+    expect(row(six(v2Report(failed)), 'J1')).toBe('| J1 | 기록 없음 | 통과 | 통과 | 실패 | 통과 | 통과 |');
     const mixed = r0(); mixed.meta.scenarioIds.push('SCENARIO_M2_OPERATIONS');
     const alien = run(); alien.scenarioId = 'SCENARIO_M2_OPERATIONS'; alien.metrics.operations!.outcome = 'FAILED'; mixed.runs.push(alien);
     const report = v2Report(os, mixed, 'r0.json'), table = six(report);
@@ -343,7 +365,11 @@ describe('TASK-0068b 표·보고·비교', () => {
     const text = d03TablesV2(o), u = text.split('### 진단 U 정책별')[1]!;
     expect(row(u, 'TERM_GREEDY')).toContain('| 3 | 203 | 2 | 407 | 15 | 2 | 2/3/5 | 2 | 4 | 2 | 3 | 8 | 4 | 10 | 1 | 80.00% | 40.00% |');
     expect(row(text, '진단 U')).toContain('TERM_GREEDY 날짜+한도 40.00%');
-    for (const s of ['31.5%', '확정 0.44, 합 0.59', 'USD 센트', 'v1 대비 지연·부분 수금 건수는 내지 않는다(H27-2 (b)).', '값을 직접 견주지 않는다(판정표 v2 2절).']) expect(text).toContain(s);
+    expect(row(text, '진단 U')).toContain('31.5%');
+    expect(row(text, '진단 U')).toContain('확정 0.44, 합 0.59');
+    // ⑨ 진단 U 행 한 번 + 정책별 표 아래 요약 한 번 = 두 번.
+    expect(text.match(/확정 0\.44, 합 0\.59/g)).toHaveLength(2);
+    for (const s of ['USD 센트', 'v1 대비 지연·부분 수금 건수는 내지 않는다(H27-2 (b)).', '값을 직접 견주지 않는다(판정표 v2 2절).']) expect(text).toContain(s);
     tg[0]!.metrics.risk!.credit!.pendingOverdue = 0; expect(d03TablesV2(o)).toContain('-2 ⚠ 정의 확인');
   });
   it('9 진단 거절 합과 skippedNotOpen 분모 분리', () => {
