@@ -1,4 +1,4 @@
-import { divHalfAway, isRiskRules, claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
+import { carryAccrued, defaultFor, divHalfAway, isRiskRules, claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
 // 하루 단위 경제 엔진 (M1 거래 한 건 + M2a 복수 계약·운송 주선·자원 예약).
@@ -1200,20 +1200,29 @@ function processDeliveries(s: GameState, config: ScenarioConfig) {
 
 function processCollections(s: GameState, config: ScenarioConfig) {
   for (const inv of s.invoices) {
-    if (inv.status === 'PAID' || inv.dueDay > s.day) continue;
+    if (inv.status === 'PAID' || inv.status === 'WRITTEN_OFF' || inv.dueDay > s.day) continue;
     const contract = contractOf(s, inv.contractId);
+    if (contract.kind === 'DIRECT_TRADE' && defaultFor(config, s.rng.seed, contract.sellOfferId!, contract.customerId, contract.creditTermId ?? 'BASE')) {
+      if (s.day === inv.dueDay + config.operations!.risk!.profile.collections.lateMaxDays) {
+        writeOffInvoice(s, config, inv.id);
+      } else {
+        inv.status = 'OVERDUE';
+        if (s.day === inv.dueDay) log(s, `${inv.contractId} 결제일에 대금이 들어오지 않음(남은 ${formatMoney(inv.currency, inv.amountMinor - receivedForInvoice(s, inv.id))})`);
+      }
+      continue;
+    }
     if (contract.kind !== 'DIRECT_TRADE' || !config.operations?.risk?.layers.includes('COLLECTION')) {
-      applyReceipt(s, `RCPT-${inv.id}`, inv.id);
+      if (applyReceipt(s, `RCPT-${inv.id}`, inv.id)) postCarry(s, config, inv.id);
       continue;
     }
     const plan = collectionPlan(config, s.rng.seed, contract.sellOfferId!, contract.customerId);
     const before = receivedForInvoice(s, inv.id);
     if (plan.mode === 'ON_TIME' || (plan.mode === 'LATE' && s.day >= inv.dueDay + plan.days)) {
-      applyReceipt(s, `RCPT-${inv.id}`, inv.id);
+      if (applyReceipt(s, `RCPT-${inv.id}`, inv.id)) postCarry(s, config, inv.id);
     } else if (plan.mode === 'PARTIAL') {
       const first = applyBasisPoints(inv.amountMinor, config.operations.risk.profile.collections.partialBp);
-      applyPartialReceipt(s, `RCPT-${inv.id}-1`, inv.id, first);
-      if (s.day >= inv.dueDay + plan.days) applyPartialReceipt(s, `RCPT-${inv.id}-2`, inv.id, inv.amountMinor - first);
+      if (applyPartialReceipt(s, `RCPT-${inv.id}-1`, inv.id, first)) postCarry(s, config, inv.id);
+      if (s.day >= inv.dueDay + plan.days && applyPartialReceipt(s, `RCPT-${inv.id}-2`, inv.id, inv.amountMinor - first)) postCarry(s, config, inv.id);
     }
     const received = receivedForInvoice(s, inv.id), remaining = inv.amountMinor - received;
     if (remaining > 0) inv.status = 'OVERDUE';
@@ -1223,10 +1232,45 @@ function processCollections(s: GameState, config: ScenarioConfig) {
   }
 }
 
+/** 수금 뒤에도 PAID 상태를 거르지 않고 마지막 이자를 적는다. */
+function postCarry(s: GameState, config: ScenarioConfig, invoiceId: string) {
+  const inv = s.invoices.find((i) => i.id === invoiceId)!;
+  const entries = s.ledger.entries.filter((e) => e.id.startsWith(`CARRY-${invoiceId}-`));
+  const posted = entries.flatMap((e) => e.lines).filter((l) => l.account === 'RECEIVABLE_CARRY')
+    .reduce((sum, l) => sum + l.amount, 0);
+  const amount = divHalfAway(carryAccrued(s, config, invoiceId, s.day), 10000) - posted;
+  if (amount === 0) return;
+  postOrThrow(s, { id: `CARRY-${invoiceId}-${entries.length + 1}`, currency: inv.currency, contractId: inv.contractId,
+    reason: '결제일 뒤 지연 이자 (채권 보유 비용 → 현금 지급)',
+    lines: [{ account: 'RECEIVABLE_CARRY', amount }, { account: 'CASH', amount: -amount }] });
+}
+
+function writeOffInvoice(s: GameState, config: ScenarioConfig, invoiceId: string) {
+  const inv = s.invoices.find((i) => i.id === invoiceId)!;
+  const remaining = inv.amountMinor - receivedForInvoice(s, invoiceId);
+  const recovery = applyBasisPoints(remaining, config.operations!.risk!.credit!.recoveryBp);
+  const loss = remaining - recovery, receiptId = `RCPT-${invoiceId}-R`;
+  if (recovery > 0) {
+    postOrThrow(s, { id: `RECEIPT-${receiptId}`, currency: inv.currency, contractId: inv.contractId,
+      reason: '회수 불능 대금 일부 회수 (매출채권 → 현금)',
+      lines: [{ account: 'CASH', amount: recovery }, { account: 'ACCOUNTS_RECEIVABLE', amount: -recovery }] });
+    inv.receiptIds.push(receiptId);
+  }
+  postCarry(s, config, invoiceId);
+  postOrThrow(s, { id: `BADDEBT-${invoiceId}`, currency: inv.currency, contractId: inv.contractId,
+    reason: '회수 불능 대금 대손 처리 (대손 비용 → 매출채권 차감)',
+    lines: [{ account: 'BAD_DEBT', amount: loss }, { account: 'ACCOUNTS_RECEIVABLE', amount: -loss }] });
+  inv.status = 'WRITTEN_OFF';
+  const contract = contractOf(s, inv.contractId);
+  contract.status = 'COMPLETED';
+  contract.completedDay = s.day;
+  log(s, `${inv.contractId} 대금 회수 불능 확정: ${formatMoney(inv.currency, recovery)} 회수, ${formatMoney(inv.currency, loss)} 대손 처리`);
+}
+
 /** 부분 수금은 금액을 받아 분개하고 마지막 수금에서만 계약을 종결한다. */
 function applyPartialReceipt(s: GameState, receiptId: string, invoiceId: string, amount: number): boolean {
   const inv = s.invoices.find((i) => i.id === invoiceId);
-  if (!inv || inv.status === 'PAID' || inv.receiptIds.includes(receiptId)) return false;
+  if (!inv || inv.status === 'PAID' || inv.status === 'WRITTEN_OFF' || inv.receiptIds.includes(receiptId)) return false;
   if (amount === 0 || !post(s.ledger, {
     id: `RECEIPT-${receiptId}`, day: s.day, currency: inv.currency, contractId: inv.contractId,
     reason: '외상대금 부분 수금 (매출채권 → 현금)',
@@ -1252,7 +1296,7 @@ function applyPartialReceipt(s: GameState, receiptId: string, invoiceId: string,
  */
 export function applyReceipt(s: GameState, receiptId: string, invoiceId: string): boolean {
   const inv = s.invoices.find((i) => i.id === invoiceId);
-  if (!inv || inv.status === 'PAID' || inv.receiptIds.includes(receiptId)) return false;
+  if (!inv || inv.status === 'PAID' || inv.status === 'WRITTEN_OFF' || inv.receiptIds.includes(receiptId)) return false;
   const posted = inv.amountMinor === 0 || post(s.ledger, {
     id: `RECEIPT-${receiptId}`,
     day: s.day,

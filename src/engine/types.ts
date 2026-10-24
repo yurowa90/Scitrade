@@ -200,7 +200,7 @@ export type CargoStatus =
   | 'HELD_UNALLOCATED'
   | 'RETURNED_TO_OWNER';
 export type ContractKind = 'DIRECT_TRADE' | 'FORWARDING';
-export type InvoiceStatus = 'OUTSTANDING' | 'OVERDUE' | 'PAID';
+export type InvoiceStatus = 'OUTSTANDING' | 'OVERDUE' | 'PAID' | 'WRITTEN_OFF';
 export type TaskStatus = 'QUEUED' | 'RUNNING' | 'DONE' | 'ABORTED';
 export type BookingStatus = 'BOOKED' | 'DEPARTED' | 'CANCELLED';
 

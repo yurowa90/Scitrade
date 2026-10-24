@@ -928,6 +928,9 @@ def check_credit_profile(p, rules):
     defaults = ['p_default_bp' in g for g in col['grades']]
     check((all(present) and all(defaults)) or (not any(present) and not any(defaults)),
           prefix + '외상 칸은 모두 함께 있어야 함')
+    if any(present) or any(defaults):
+        check(len(col['grades']) == 3 and {g['grade'] for g in col['grades']} == {'A', 'B', 'C'},
+              prefix + 'collections.grades: A·B·C 각 한 행 필요')
     if not all(present) or not all(defaults):
         return
     def integer(v, low, high):

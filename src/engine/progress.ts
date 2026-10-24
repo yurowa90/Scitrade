@@ -45,6 +45,9 @@ export interface ContractProgress {
 
 export function contractProgress(s: GameState, config: ScenarioConfig, c: Contract): ContractProgress {
   if (c.status === 'CANCELLED') return { nextKo: '취소된 계약', blockers: [] };
+  if (c.status === 'COMPLETED' && s.invoices.some((i) => i.id === c.invoiceId && i.status === 'WRITTEN_OFF')) {
+    return { nextKo: `${c.completedDay}일 대금 회수 불능 · 대손 종결`, blockers: [] };
+  }
   if (c.status === 'COMPLETED') return { nextKo: c.invoiceId === null && c.priceReductionMinor === c.saleAmountMinor
     ? `${c.completedDay}일 인도 완료 · 전액 감액으로 종결` : `${c.completedDay}일 수금 완료 · 종결`, blockers: [] };
   const blockers: Blocker[] = [];
@@ -57,7 +60,7 @@ export function contractProgress(s: GameState, config: ScenarioConfig, c: Contra
 
   if (c.deliveredDay !== null) {
     const inv = s.invoices.find((i) => i.id === c.invoiceId);
-    if (inv && inv.status !== 'PAID') {
+    if (inv && inv.status !== 'PAID' && inv.status !== 'WRITTEN_OFF') {
       if (s.day >= inv.dueDay) {
         blockers.push({ code: 'AWAITING_PAYMENT', severity: 'info', messageKo: `인도는 끝났고 오늘 하루 진행 때 ${money(inv.amountMinor)}를 받습니다.` });
         return { nextKo: '오늘 수금 예정 — 하루 진행 때 받습니다', blockers };

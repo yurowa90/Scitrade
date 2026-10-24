@@ -1,4 +1,4 @@
-import { isRiskRules, receivedForInvoice, dutyFor, referenceRate, rowCurrency, usdToKrwMinor } from './risk';
+import { carryAccrued, divHalfAway, isRiskRules, receivedForInvoice, dutyFor, referenceRate, rowCurrency, usdToKrwMinor } from './risk';
 import { offerDef } from './market';
 import { fixedCostsDue, lateDeliveryReduction, unpaidByCurrency } from './operations';
 import type { OperationsState } from './types';
@@ -32,7 +32,7 @@ export function contractReport(s: GameState, contract: Contract, currency = cont
     netRevenue,
     directCost,
     cancellationExpense,
-    contribution: netRevenue - directCost - cancellationExpense,
+    contribution: netRevenue - directCost - cancellationExpense - amount('RECEIVABLE_CARRY') - amount('BAD_DEBT'),
   };
 }
 
@@ -397,7 +397,7 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
     ended: s.phase === 'ENDED', campaignDays: config.campaignDays,
     lastClosedDay: s.closedDays.reduce((last, day) => Math.max(last, day), 0), byCurrency,
     onTime: onTimeDeliveryRate(s), contracts,
-    openInvoices: s.invoices.filter((i) => i.status !== 'PAID').map((i) => ({
+    openInvoices: s.invoices.filter((i) => i.status !== 'PAID' && i.status !== 'WRITTEN_OFF').map((i) => ({
       invoiceId: i.id, contractId: i.contractId, currency: i.currency, amountMinor: i.amountMinor - receivedForInvoice(s, i.id), dueDay: i.dueDay,
     })).sort((a, b) => a.dueDay - b.dueDay || compareText(a.invoiceId, b.invoiceId)),
     unpaidObligations: s.obligations.filter((o) => o.paidDay === null).map((o) => ({
@@ -408,7 +408,7 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
 
 /** 약정된 청구 결제일과 원장의 실제 수금만 보여 준다. */
 export function receivableSchedule(s: GameState, _config: ScenarioConfig) {
-  return s.invoices.filter((i) => i.status !== 'PAID').map((i) => ({
+  return s.invoices.filter((i) => i.status !== 'PAID' && i.status !== 'WRITTEN_OFF').map((i) => ({
     invoiceId: i.id, contractId: i.contractId, currency: i.currency, dueDay: i.dueDay,
     outstandingMinor: i.amountMinor - receivedForInvoice(s, i.id), overdueDays: Math.max(0, s.day - i.dueDay),
   })).sort((a, b) => a.dueDay - b.dueDay || compareText(a.invoiceId, b.invoiceId));
@@ -468,14 +468,22 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
   const pendingDuty = !cancelled && c.kind === 'DIRECT_TRADE' && !arrived
     ? dutyFor(config, s.rng.seed, c.goodId, c.destinationCityId, tariffDay, evaluationDay,
       c.purchaseAmountMinor, buyCurrency, c.acceptedDay) : null;
+  const v2 = config.rules.rulesVersion === 'M2a-rules-4';
+  const writtenOff = v2 && invoice?.status === 'WRITTEN_OFF';
+  const carryEntries = v2 ? entries.filter((e) => e.id.startsWith('CARRY-')) : [];
+  const postedCarry = carryEntries.flatMap((e) => e.lines).filter((l) => l.account === 'RECEIVABLE_CARRY')
+    .reduce((sum, l) => sum + l.amount, 0);
+  const lastClosedDay = s.closedDays.reduce((last, day) => Math.max(last, day), 0);
+  const pendingCarry = v2 && invoice ? divHalfAway(carryAccrued(s, cfg, invoice.id, Math.min(evaluationDay, lastClosedDay) + 1), 10000) - postedCarry : 0;
   const remaining: RiskFlow[] = [];
   if (!cancelled) {
-    const outstanding = invoice ? invoice.amountMinor - receipts : c.status === 'COMPLETED' ? 0 : sale;
+    const outstanding = writtenOff ? 0 : invoice ? invoice.amountMinor - receipts : c.status === 'COMPLETED' ? 0 : sale;
     if (outstanding) remaining.push(flow(outstanding, evaluationDay, false));
     if (!shipment && !booking) remaining.push(flow(-p.freight, evaluationDay));
     if (pendingDuty) remaining.push(flow(-pendingDuty, evaluationDay));
   }
   for (const o of obligations.filter((o) => o.paidDay === null)) remaining.push(flow(-o.amountMinor, evaluationDay, true, o.currency));
+  if (pendingCarry) remaining.push(flow(-pendingCarry, evaluationDay));
   const realized = value([...cashFlows, ...remaining]);
   const open = remaining.some((f) => f.amount !== 0);
   // 실현값과 별도로, 기대 흐름의 순차 대체를 계산한다. 단계 차이로 실현값을 만들지 않는다.
@@ -523,15 +531,35 @@ export function contractRiskReport(s: GameState, config: ScenarioConfig, contrac
   for (const o of obligations) if (o.paidDay === null && adjustments.has(o.id)) cancelFlows.push(flow(-o.amountMinor, evaluationDay, true, o.currency));
   const afterCancel = value(cancelFlows);
   const collectionFlows = !cancelled && invoice ? cancelFlows.filter((_, i) => i !== 3) : [...cancelFlows];
+  const recoveryId = invoice ? `RECEIPT-RCPT-${invoice.id}-R` : '';
+  const confirmationDay = writtenOff ? entries.find((e) => e.id === `BADDEBT-${invoice!.id}`)!.day : evaluationDay;
+  let uncollected: RiskFlow | undefined;
   if (!cancelled && invoice) {
-    for (const e of entries.filter((e) => e.id.startsWith('RECEIPT-'))) {
-      for (const l of e.lines) if (l.account === 'CASH') collectionFlows.push(flow(l.amount, e.day, false, e.currency));
+    let normalReceipts = 0;
+    for (const e of entries.filter((e) => e.id.startsWith('RECEIPT-') && (!writtenOff || e.id !== recoveryId))) {
+      for (const l of e.lines) if (l.account === 'CASH') {
+        collectionFlows.push(flow(l.amount, e.day, false, e.currency));
+        normalReceipts += l.amount;
+      }
     }
-    const outstanding = invoice.amountMinor - receipts;
-    if (outstanding) collectionFlows.push(flow(outstanding, evaluationDay, false, invoice.currency));
+    const outstanding = invoice.amountMinor - normalReceipts;
+    if (outstanding) {
+      uncollected = flow(outstanding, confirmationDay, false, invoice.currency);
+      collectionFlows.push(uncollected);
+    }
   }
+  // 판본 4: 미회수액을 확정일의 회수액으로 바꾼 뒤, 실제·미기재 이자 비용을 더한다.
+  const defaultFlows = writtenOff ? collectionFlows.filter((f) => f !== uncollected) : [...collectionFlows];
+  if (writtenOff) for (const e of entries.filter((e) => e.id === recoveryId)) {
+    for (const l of e.lines) if (l.account === 'CASH') defaultFlows.push(flow(l.amount, e.day, false, e.currency));
+  }
+  const carryFlows = [...defaultFlows];
+  for (const e of carryEntries) for (const l of e.lines) if (l.account === 'CASH') carryFlows.push(flow(l.amount, e.day, true, e.currency));
+  if (pendingCarry) carryFlows.push(flow(-pendingCarry, evaluationDay));
   const components = { schedule: 0, fx: afterFx - expected, tariff: afterTariff - afterFx, surcharge: afterSurcharge - afterTariff,
-    late: afterLate - afterSurcharge, claim: afterClaim - afterLate, cancel: afterCancel - afterClaim, collection: value(collectionFlows) - afterCancel, open_valuation: 0, residual: 0 };
+    late: afterLate - afterSurcharge, claim: afterClaim - afterLate, cancel: afterCancel - afterClaim, collection: value(collectionFlows) - afterCancel,
+    ...(v2 ? { default: value(defaultFlows) - value(collectionFlows), carry: value(carryFlows) - value(defaultFlows) } : {}),
+    open_valuation: 0, residual: 0 };
   components.residual = realized - expected - Object.values(components).reduce((sum, n) => sum + n, 0);
   return { contractId, kind: c.kind, evaluationDay, expected, realized, open,
     openFixedRateKrw: value(cashFlows) + value(remaining, config.operations.fx.baseKrwPerUsd), components };

@@ -17,6 +17,8 @@ export type Account =
   | 'COST_OF_GOODS_SOLD'
   | 'FORWARDING_REVENUE'
   | 'FORWARDING_COST'
+  | 'RECEIVABLE_CARRY'
+  | 'BAD_DEBT'
   | 'CANCELLATION_EXPENSE'
   | 'WAGE_EXPENSE'
   | 'RECRUITMENT_EXPENSE'
@@ -44,6 +46,8 @@ export const ACCOUNT_KIND: Record<Account, AccountKind> = {
   COST_OF_GOODS_SOLD: 'expense',
   FORWARDING_REVENUE: 'income',
   FORWARDING_COST: 'expense',
+  RECEIVABLE_CARRY: 'expense',
+  BAD_DEBT: 'expense',
   CANCELLATION_EXPENSE: 'expense',
   WAGE_EXPENSE: 'expense',
   RECRUITMENT_EXPENSE: 'expense',
@@ -207,7 +211,7 @@ export function summarize(ledger: Ledger, currency: Currency): BookSummary {
     spaceContractExpense,
     fxSpreadExpense,
     currencyTransferNet,
-    profit: revenue + b('SALES_ALLOWANCE') - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense - rentExpense - facilitySetupExpense - spaceContractExpense - fxSpreadExpense,
+    profit: revenue + b('SALES_ALLOWANCE') - costOfGoodsSold + forwardingRevenue - forwardingCost - cancellationExpense - wageExpense - recruitmentExpense - trainingExpense - cultureExpense - rentExpense - facilitySetupExpense - spaceContractExpense - fxSpreadExpense - b('RECEIVABLE_CARRY') - b('BAD_DEBT'),
     openingEquity: b('OPENING_EQUITY'),
   };
 }

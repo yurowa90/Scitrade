@@ -1151,6 +1151,15 @@ class MarketRulesTest(unittest.TestCase):
         d['market_rules']['risk_profiles'][0]['collections']['grades'][0]['p_default_bp'] = 200
         self.assertTrue(any('외상 칸은 모두 함께' in e for e in self.errors(d, t)))
 
+    def test_credit_profile_requires_each_collection_grade(self):
+        d, t = self.fixtures()
+        p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+        for row in p['collections']['by_counterparty']:
+            if row['grade'] == 'B':
+                row['grade'] = 'A'
+        p['collections']['grades'] = [g for g in p['collections']['grades'] if g['grade'] != 'B']
+        self.assertTrue(any('collections.grades: A·B·C 각 한 행 필요' in e for e in self.errors(d, t)))
+
     def test_credit_limit_boundary_cos_laver(self):
         # 최댓값은 (다) M2A5_PYEONGTAEK_COS_LAVER의 상하이 김 1로트에서 나온다.
         message = 'risk_profiles: RISK_PROFILE_V2: 한도 단위: 손잡이 최대 1로트 판매액 393768 미만'
