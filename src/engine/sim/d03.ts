@@ -1,11 +1,11 @@
 import { withRiskLevel } from '../risk';
-import type { RiskLevel, RiskMeta } from './risk-metrics';
+import { simConfigV2, type RiskLevel, type RiskLevelV2, type RiskMeta } from './risk-metrics';
 import { comparisonValue, isSingleGoodVariant, J4_BANDS, judgmentRow, missingRuns, riskTables, oldJ7Passes, type JudgmentId } from './risk-tables';
-import { loadScenario, OPERATIONS_SCENARIO_IDS, EXPERIMENT_SCENARIO_IDS, riskProfiles } from '../../content/scenario';
+import { loadScenario, OPERATIONS_SCENARIO_IDS, EXPERIMENT_SCENARIO_IDS, riskProfiles, loadCreditProfile } from '../../content/scenario';
 import { ENGINE_VERSION } from '../types';
 import { policyById } from './policies';
 import { simulate, SIM_FORMAT, SIM_SEEDS, type SimOutput, type SimRun } from './sim';
-import { d03PolicyIds, parseVariant, variantName, withLateMode, type Investment, type LateMode } from './variants';
+import { d03PolicyIds, d03PolicyIdsV2, parseVariant, variantName, withLateMode, type Investment, type LateMode } from './variants';
 
 // 모형 판정 4의 개연성 점검. 상한은 Q14(2026-10-13)에서 시작 분석값의 1.8배 → 2.0배로 다시 정함.
 const J4_NET_MIN_MINOR = 1060000;
@@ -37,36 +37,44 @@ export function baselineId(id: string): string {
   return variantName(v.early ? { ...v, early: false } : v.hires.length ? { ...v, hires: [] } : { ...v, investment: 'none' });
 }
 export interface D03Options { seeds?: readonly number[]; policyIds?: readonly string[]; late?: LateMode; scenarioIds?: readonly string[];
-  risk?: RiskLevel; tuningRound?: number; marketRulesSha256?: string }
+  risk?: RiskLevel | RiskLevelV2; riskV2?: boolean; profileId?: string; tuningRound?: number; marketRulesSha256?: string }
 export function requestedRisk(options: D03Options): RiskMeta | undefined {
   if (!options.risk) {
     if (options.tuningRound !== undefined) throw new Error('--round는 --risk가 필요합니다.');
     return undefined;
   }
-  if (!['R0', 'R1', 'R2', 'R3'].includes(options.risk)) throw new Error('알 수 없는 위험 층');
+  if (!(options.riskV2 ? ['R0P', 'R1', 'R2', 'R3', 'R4'] : ['R0', 'R1', 'R2', 'R3']).includes(options.risk)) throw new Error('알 수 없는 위험 층');
   const tuningRound = options.tuningRound ?? 0;
   if (!Number.isInteger(tuningRound) || tuningRound < 0 || tuningRound > 3) throw new Error('조정 회차는 0~3입니다.');
   const profiles = riskProfiles().filter((p) => p.id === 'RISK_PROFILE_DEFAULT');
   if (!profiles.length) throw new Error('공유 위험 프로필은 하나여야 합니다.');
   if (!options.marketRulesSha256 || !/^[a-f0-9]{64}$/.test(options.marketRulesSha256)) throw new Error('자료 sha256이 필요합니다.');
-  return { level: options.risk, profileId: profiles[0]!.id, tuningRound, marketRulesSha256: options.marketRulesSha256 };
+  if (options.riskV2) {
+    const profileId = options.profileId ?? 'RISK_PROFILE_V2';
+    loadCreditProfile(profileId);
+    return { rules: 'M2a-rules-4', level: options.risk as RiskLevelV2, profileId, tuningRound, marketRulesSha256: options.marketRulesSha256 };
+  }
+  return { level: options.risk as RiskLevel, profileId: profiles[0]!.id, tuningRound, marketRulesSha256: options.marketRulesSha256 };
 }
 export function workerOptions(options: D03Options, i: number, count: number): D03Options {
   return { ...options, seeds: (options.seeds ?? SIM_SEEDS).filter((_, j) => j % count === i) };
 }
 export function runD03(options: D03Options = {}): SimOutput {
-  const seeds = [...(options.seeds ?? SIM_SEEDS)], policyIds = [...(options.policyIds ?? d03PolicyIds(options.late))];
+  const seeds = [...(options.seeds ?? SIM_SEEDS)], policyIds = [...(options.policyIds ?? (options.riskV2 ? d03PolicyIdsV2(options.risk as RiskLevelV2) : d03PolicyIds(options.late)))];
   if (!seeds.length || new Set(seeds).size !== seeds.length || new Set(policyIds).size !== policyIds.length) throw new Error('빈 시드 또는 중복 실행 키입니다.');
   const runs: SimRun[] = [];
-  const risk = requestedRisk(options), scenarioIds = [...(options.scenarioIds ?? OPERATIONS_SCENARIO_IDS)];
+  const risk = requestedRisk(options), scenarioIds = [...(options.scenarioIds ?? (options.riskV2 ? ['SCENARIO_M2_OPS_COS_LAVER'] : OPERATIONS_SCENARIO_IDS))];
   if (!scenarioIds.length || new Set(scenarioIds).size !== scenarioIds.length) throw new Error('빈 목록 또는 중복 시나리오입니다.');
   const configs = scenarioIds.map((id) => {
     if (!([...OPERATIONS_SCENARIO_IDS, ...EXPERIMENT_SCENARIO_IDS] as string[]).includes(id)) throw new Error(`알 수 없는 시나리오: ${id}`);
     if (!risk && (EXPERIMENT_SCENARIO_IDS as readonly string[]).includes(id)) throw new Error('실험 시나리오는 --risk가 필요합니다.');
+    if (options.riskV2 && id !== 'SCENARIO_M2_OPS_COS_LAVER') throw new Error('v2는 (다) 시나리오만 실행합니다.');
     const config = withLateMode(loadScenario(id as Parameters<typeof loadScenario>[0]), options.late ?? 'base');
-    return risk ? withRiskLevel(config, risk.level, riskProfiles()[0]!) : config;
+    return risk?.rules ? simConfigV2(config, risk.level, risk.profileId)
+      : risk ? withRiskLevel(config, risk.level, riskProfiles()[0]!) : config;
   });
   for (const config of configs) for (const id of policyIds) {
+    if (!options.riskV2 && ['TERM_GREEDY', 'CREDIT_AWARE'].includes(parseVariant(id)?.acceptance ?? '')) throw new Error('외상 정책은 --risk-v2가 필요합니다.');
     const policy = policyById(id);
     if (!policy) throw new Error(`알 수 없는 정책: ${id}`);
     for (const seed of seeds) runs.push(simulate(config, policy, seed, undefined, risk?.level).run);
@@ -94,6 +102,7 @@ export function mergeD03(outputs: SimOutput[], late: LateMode, risk?: RiskMeta):
 }
 export function d03Tables(output: SimOutput): string {
   const mode = output.meta.lateMode ?? 'base', risk = output.meta.risk;
+  if (risk?.rules !== undefined) throw new Error('v1 표는 rules 메타가 있는 출력을 받지 않습니다.');
   const value = comparisonValue(risk?.level), analysis = risk && risk.level !== 'R0';
   const comparisonUnit = analysis ? '분석값' : 'USD';
   const dollars = (minor: number, sign = false) => Number.isNaN(minor) ? risk ? '—' : '미측정' : `${sign && minor >= 0 ? '+' : ''}${Math.round(minor / 100).toLocaleString('en-US')}`;

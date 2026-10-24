@@ -111,7 +111,9 @@ export function missingRuns(output: SimOutput, scenarioId: string, ids: readonly
     .map((seed) => `${scenarioId}/${id}/${seed}`));
 }
 export function riskTables(output: SimOutput): string {
-  const level = output.meta.risk!.level, value = comparisonValue(level);
+  const risk = output.meta.risk!;
+  if (risk.rules !== undefined) throw new Error('v1 표는 rules 메타가 있는 출력을 받지 않습니다.');
+  const level = risk.level, value = comparisonValue(level);
   const lines = ['', '## ⑨ 위험 판정', ''];
   for (const scenarioId of output.meta.scenarioIds) {
     const single = isSingleGoodVariant(loadScenario(scenarioId as Parameters<typeof loadScenario>[0]));
@@ -143,6 +145,7 @@ export function riskTables(output: SimOutput): string {
 }
 
 export function compareRisk(a: SimOutput, b: SimOutput) {
+  if (a.meta.risk?.rules !== undefined || b.meta.risk?.rules !== undefined) throw new Error('v1 risk-compare는 rules 메타가 있는 출력을 받지 않습니다.');
   const ar = a.meta.risk, br = b.meta.risk;
   if (!ar || !br) throw new Error('risk 메타가 필요합니다.');
   if (!['R0', 'R1', 'R2'].includes(ar.level) || ['R0', 'R1', 'R2', 'R3'].indexOf(br.level) !== ['R0', 'R1', 'R2', 'R3'].indexOf(ar.level) + 1) throw new Error('바로 다음 위험 층만 비교합니다.');

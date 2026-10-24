@@ -1,8 +1,8 @@
-import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS } from '../../content/scenario';
-import type { RiskLevel } from './risk-metrics';
+import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS, loadCreditProfile } from '../../content/scenario';
+import type { RiskLevel, RiskLevelV2 } from './risk-metrics';
 import { riskCompareTables } from './risk-tables';
 import { d03Tables, mergeD03, runD03, requestedRisk, workerOptions } from './d03';
-import type { LateMode } from './variants';
+import { parseVariant, type LateMode } from './variants';
 export { mergeD03, runD03, requestedRisk, workerOptions };
 import { compareOutputs, formatCompare, summarizeOutput } from './compare';
 import { runSuite, serializeSimOutput, SIM_FORMAT, SIM_SEEDS, type SimOutput } from './sim';
@@ -15,16 +15,17 @@ export interface SimIo {
   now(): number;
   marketRulesSha256?(): string;
 }
-const USAGE = `사용법:
+export const USAGE = `사용법:
   sim run [--scenarios A,B] [--policies X,Y] [--seeds N] [--out PATH]
   sim d03 [--risk R0|R1|R2|R3] [--scenarios A,B] [--round 0~3] [--seed-base N] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
+  sim d03 --risk-v2 R0P|R1|R2|R3|R4 --seed-base N [--profile ID] [--round 0~3] [--scenarios A] [--seeds N] [--seed-from N] [--seed-to N] [--late base|cap30|flat200] [--workers N] [--out PATH]
   sim d03 --tables-from a.json,b.json [--late base|cap30|flat200]
   sim risk-compare A B
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
-시드 수 N은 선택한 시드 목록의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
-D03의 --seed-base N은 시드 목록을 N~N+19로 바꿉니다. 분할 번호는 이 목록에 적용됩니다.
+run의 시드 수 N은 기본 목록의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
+D03의 --seed-base N은 시드 목록을 N~N+(시드 수−1)로 바꿉니다(시드 수 기본 20, 최대 40). --seed-base 없이 시드 수는 20 이하입니다. 분할 번호는 이 목록에 적용됩니다.
 `;
 function integer(value: string, min: number, max: number, label: string): number {
   const n = Number(value);
@@ -47,30 +48,48 @@ export function d03Options(args: readonly string[]) {
   const options = new Map<string, string>();
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i]!, value = args[i + 1];
-    if (!['--risk', '--scenarios', '--round', '--policies', '--seed-base', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
+    if (!['--risk', '--risk-v2', '--profile', '--scenarios', '--round', '--policies', '--seed-base', '--seeds', '--seed-from', '--seed-to', '--late', '--workers', '--out', '--tables-from'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 D03 인수: ${key}`);
     options.set(key, value);
   }
-  const count = integer(options.get('--seeds') ?? '20', 1, 20, '시드 수');
-  const seedBase = options.has('--seed-base') ? integer(options.get('--seed-base')!, 0, Number.MAX_SAFE_INTEGER - 19, '시드 기준값') : undefined;
-  const seeds = seedBase === undefined ? SIM_SEEDS : Array.from({ length: 20 }, (_, i) => seedBase + i);
+  const count = integer(options.get('--seeds') ?? '20', 1, 40, '시드 수');
+  const seedBase = options.has('--seed-base') ? integer(options.get('--seed-base')!, 0, Number.MAX_SAFE_INTEGER - (count - 1), '시드 기준값') : undefined;
+  if (seedBase === undefined && count > 20) throw new Error('--seed-base 없이 시드 수는 20 이하입니다.');
+  const seeds = seedBase === undefined ? SIM_SEEDS : Array.from({ length: count }, (_, i) => seedBase + i);
   // 분할 범위는 선택한 시드 목록의 1부터 시작하는 번호다.
   const from = integer(options.get('--seed-from') ?? '1', 1, count, '시드 시작 번호');
   const to = integer(options.get('--seed-to') ?? String(count), from, count, '시드 끝 번호');
   const late = options.get('--late') ?? 'base';
   if (!['base', 'cap30', 'flat200'].includes(late)) throw new Error(`알 수 없는 감액: ${late}`);
-  const risk = options.get('--risk');
-  if (risk && !['R0', 'R1', 'R2', 'R3'].includes(risk)) throw new Error('알 수 없는 위험 층');
+  const riskV2 = options.has('--risk-v2');
+  if (riskV2 && options.has('--risk')) throw new Error('--risk와 --risk-v2는 함께 쓸 수 없습니다.');
+  if (!riskV2 && options.has('--profile')) throw new Error('--profile은 --risk-v2가 필요합니다.');
+  if (riskV2 && seedBase === undefined) throw new Error('--risk-v2는 --seed-base가 필요합니다.');
+  const profileId = riskV2 ? options.get('--profile') ?? 'RISK_PROFILE_V2' : undefined;
+  if (profileId) loadCreditProfile(profileId);
+  const risk = options.get(riskV2 ? '--risk-v2' : '--risk');
+  if (risk && !(riskV2 ? ['R0P', 'R1', 'R2', 'R3', 'R4'] : ['R0', 'R1', 'R2', 'R3']).includes(risk)) throw new Error('알 수 없는 위험 층');
+  const policyIds = options.get('--policies')?.split(',');
+  if (!riskV2 && policyIds?.some((id) => ['TERM_GREEDY', 'CREDIT_AWARE'].includes(parseVariant(id)?.acceptance ?? ''))) throw new Error('외상 정책은 --risk-v2가 필요합니다.');
   if (!risk && options.has('--round')) throw new Error('--round는 --risk가 필요합니다.');
-  const scenarioIds = options.get('--scenarios')?.split(',');
+  const scenarioIds = options.get('--scenarios')?.split(',') ?? (riskV2 ? ['SCENARIO_M2_OPS_COS_LAVER'] : undefined);
   if (scenarioIds) for (const id of scenarioIds) {
+    if (riskV2 && id !== 'SCENARIO_M2_OPS_COS_LAVER') throw new Error('v2는 (다) 시나리오만 실행합니다.');
     if (!([...OPERATIONS_SCENARIO_IDS, ...EXPERIMENT_SCENARIO_IDS] as string[]).includes(id)) throw new Error(`알 수 없는 시나리오: ${id}`);
     if (!risk && (EXPERIMENT_SCENARIO_IDS as readonly string[]).includes(id)) throw new Error('실험 시나리오는 --risk가 필요합니다.');
   }
-  return { ...(risk ? { risk: risk as RiskLevel, tuningRound: integer(options.get('--round') ?? '0', 0, 3, '조정 회차') } : {}),
-    ...(scenarioIds ? { scenarioIds } : {}), ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: seeds.slice(from - 1, to), late: late as LateMode,
+  return { ...(risk ? { risk: risk as RiskLevel | RiskLevelV2, tuningRound: integer(options.get('--round') ?? '0', 0, 3, '조정 회차') } : {}),
+    ...(riskV2 ? { riskV2: true, profileId } : {}), ...(scenarioIds ? { scenarioIds } : {}), ...(options.has('--policies') ? { policyIds: options.get('--policies')!.split(',') } : {}), seeds: seeds.slice(from - 1, to), late: late as LateMode,
     workers: integer(options.get('--workers') ?? '1', 1, 32, '워커 수'), out: options.get('--out'), tablesFrom: options.get('--tables-from')?.split(',') };
 }
 export function writeD03(output: SimOutput, io: SimIo, out?: string) {
+  if (output.meta.risk?.rules) {
+    const { level, profileId } = output.meta.risk;
+    // 직렬화 직전에도 외상 프로필 ID가 유효한지 확인한다.
+    if (loadCreditProfile(profileId).profileId !== profileId) throw new Error('요청과 다른 위험 프로필입니다.');
+    if (out) io.writeText(out, serializeSimOutput(output));
+    io.out(`v2 실행 ${output.runs.length}회 · 단계 ${level} · 프로필 ${profileId} · 시드 ${output.meta.seeds[0]}~${output.meta.seeds.at(-1)} (표는 TASK-0068b)\n`);
+    return;
+  }
   if (out) io.writeText(out, serializeSimOutput(output));
   io.out(d03Tables(output));
 }
@@ -83,7 +102,10 @@ export function simMain(argv: readonly string[], io: SimIo): number {
     if (action === 'd03') {
       const parsed = d03Options(args), start = io.now();
       const options = { ...parsed, ...(parsed.risk ? { marketRulesSha256: io.marketRulesSha256?.() } : {}) };
-      const output = options.tablesFrom ? mergeD03(options.tablesFrom.map((path) => readOutput(path, io)), options.late, requestedRisk(options)) : runD03(options);
+      const inputs = options.tablesFrom?.map((path) => readOutput(path, io));
+      if (inputs?.some((o) => o.meta.risk?.rules !== undefined)) throw new Error('v1 --tables-from은 rules 메타가 있는 출력을 받지 않습니다.');
+      const output = inputs ? mergeD03(inputs, options.late, requestedRisk(options)) : runD03(options);
+      if (options.riskV2 && output.meta.risk?.profileId !== options.profileId) throw new Error('요청과 다른 위험 프로필입니다.');
       writeD03(output, io, options.out);
       io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
       return 0;
@@ -97,6 +119,7 @@ export function simMain(argv: readonly string[], io: SimIo): number {
         if (options.has(key)) throw new Error(`중복 인수: ${key}`);
         options.set(key, value);
       }
+      if (options.get('--policies')?.split(',').some((id) => ['TERM_GREEDY', 'CREDIT_AWARE'].includes(parseVariant(id)?.acceptance ?? ''))) throw new Error('외상 정책은 --risk-v2가 필요합니다.');
       const count = integer(options.get('--seeds') ?? String(SIM_SEEDS.length), 1, SIM_SEEDS.length, '시드 수');
       const start = io.now();
       const output = runSuite({

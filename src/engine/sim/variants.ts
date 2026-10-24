@@ -2,7 +2,7 @@
 import type { ScenarioConfig } from '../types';
 export type Investment = 'none' | 'S' | 'E' | 'SE' | 'SE22';
 export interface Variant { acceptance: string; react: boolean; investment: Investment; hires: { pt: number; day: number }[]; early: boolean }
-export const ACCEPTANCE_IDS = ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK', 'ON_TIME_FIRST', 'ASSET_LIGHT', 'SEEDED_RANDOM', 'MARGIN_BUFFER', 'FOCUS'];
+export const ACCEPTANCE_IDS = ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK', 'ON_TIME_FIRST', 'ASSET_LIGHT', 'SEEDED_RANDOM', 'MARGIN_BUFFER', 'FOCUS', 'TERM_GREEDY', 'CREDIT_AWARE'];
 export function variantName(v: Variant): string {
   return v.acceptance + (v.react ? '~fx:react' : '') + (v.investment !== 'none' ? `~inv:${v.investment}` : '')
     + (v.hires.length ? `~hire:${v.hires.map((h) => `${h.pt}pt@${h.day}`).join('+')}` : '') + (v.early ? '~scout:early' : '');
@@ -37,4 +37,13 @@ export function d03PolicyIds(mode: LateMode = 'base'): string[] {
     for (const [pt, investment] of [[2, 'SE'], [3, 'SE'], [2, 'none']] as const) ids.push(variantName({ acceptance: 'MAX_CONTRIBUTION', investment, hires: [{ pt, day: 30 }], early: true, react: false }));
   }
   return [...new Set(ids)];
+}
+
+export function bundleKindV2(level: 'R0P' | 'R1' | 'R2' | 'R3' | 'R4'): 'full' | 'reduced' {
+  return level === 'R0P' || level === 'R4' ? 'full' : 'reduced';
+}
+export function d03PolicyIdsV2(level: Parameters<typeof bundleKindV2>[0]): string[] {
+  const base = bundleKindV2(level) === 'full' ? d03PolicyIds('base').filter((id) => id !== 'FOCUS')
+    : ['IDLE', 'NO_FX', 'MAX_CONTRIBUTION', 'LATE_OK'];
+  return [...base, 'MARGIN_BUFFER', 'TERM_GREEDY', 'CREDIT_AWARE'];
 }
