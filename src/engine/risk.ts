@@ -226,6 +226,17 @@ export function withRiskLevelV2(config: ScenarioConfig, level: 'R0P' | 'R1' | 'R
   const c = withRiskLevel(config, level === 'R0P' ? 'R1' : level === 'R4' ? 'R3' : level, profile);
   c.rules.rulesVersion = 'M2a-rules-4';
   c.operations!.risk!.credit = structuredClone(credit);
+  delete c.operations!.risk!.credit.saleMarginK;
+  const k = credit.saleMarginK ?? 0;
+  for (const row of c.operations!.market.rows) {
+    if (row.side !== 'SELL') continue;
+    // 입력의 BUY는 USD 센트다. 변환된 사본의 원화 BUY를 쓰지 않는다.
+    const buys = config.operations!.market.rows.filter((r) => r.side === 'BUY' && r.goodId === row.goodId);
+    if (buys.length !== 1) throw new Error(`판매 마진 계산에는 품목별 BUY 행이 하나 필요합니다: ${row.goodId}`);
+    const sell = divHalfAway(row.basePriceMinor * 100 + buys[0]!.basePriceMinor * 5 * k, 100);
+    if (sell < 1) throw new Error(`판매 마진 적용 후 SELL은 1센트 이상이어야 합니다: ${row.goodId}`);
+    row.basePriceMinor = sell;
+  }
   if (level === 'R0P') c.operations!.risk!.layers = [];
   if (level === 'R4') c.operations!.risk!.layers.push('DEFAULT', 'CARRY');
   return c;

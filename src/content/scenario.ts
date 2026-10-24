@@ -570,8 +570,13 @@ export function loadCreditProfile(id: string): import('../engine/types').CreditP
     || p.collections.grades.some((g) => g.p_default_bp === undefined)) {
     throw new Error(`외상 프로필의 필수 칸이 없습니다: ${id}`);
   }
+  const k = p.sale_margin_k;
+  if (k !== undefined && (!Number.isInteger(k) || k < -2 || k > 3)) {
+    throw new Error(`판매 마진 k는 -2~3 정수여야 합니다: ${id}`);
+  }
   return {
     profileId: id,
+    ...(k === undefined || k === 0 ? {} : { saleMarginK: k }),
     terms: p.credit_terms.map((t) => {
       if (t.id !== 'BASE' && t.id !== 'D15' && t.id !== 'D30') throw new Error(`알 수 없는 외상 조건: ${t.id}`);
       return { id: t.id, days: t.days, factorPct: t.factor_pct, premiumBp: t.premium_bp };

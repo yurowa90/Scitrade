@@ -765,6 +765,11 @@
             },
             "additionalProperties": false
           },
+          "sale_margin_k": {
+            "type": "integer",
+            "minimum": -2,
+            "maximum": 3
+          },
           "credit_terms": {
             "type": "array",
             "items": {

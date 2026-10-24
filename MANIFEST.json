@@ -97,8 +97,8 @@
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 39257,
-      "sha256": "e4fa3308878696c08d169e289d3df588e925a77b77d7cfc9c7c17e97906cf4ca"
+      "size_bytes": 39283,
+      "sha256": "24c8c520b238f7cb8b47ef448d945d118b87bf3b73068749f66c917e15837aba"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 122168,
-      "sha256": "0f872fbb32a3dafcaef2f15a036cd6beb1f8bc21d40cd1e8808270d79025d465"
+      "size_bytes": 123033,
+      "sha256": "de0ad5ddfe1388ef9cc40ef854071d1992b0cad34b241b23288a32212b179a43"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 95856,
-      "sha256": "0ecfeaaf09ac76313f96664b0170d04503dbea17a9cd55ff138f7579aaf45991"
+      "size_bytes": 99529,
+      "sha256": "b3e6438606df6fb48e7a2ef4ad18c22ab967c3fba9de3f92a50c02f7d65318ac"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -1822,8 +1822,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_v2.py",
-      "size_bytes": 4636,
-      "sha256": "64070c7659b0ed60813b7ad7964606f8c30650159c289ec6c196e5b53aafe97f"
+      "size_bytes": 4878,
+      "sha256": "01f578e6aa9cfed468c7532558f7a5a578e93de2e55bb53f2e996b8ccd209b85"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_vs_design.py",
@@ -1881,9 +1881,14 @@
       "sha256": "162f4707b8d308cd66007d4c7ca9762ffc882c25b8c7fd1e533de6001cc17531"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-1.md",
+      "size_bytes": 3240,
+      "sha256": "c0bc237ebbe1ff9592fcf10322d4ad9e66186d2fbf8376345746dc0985efb4e5"
+    },
+    {
       "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
-      "size_bytes": 5719,
-      "sha256": "47d98f8cd151dbc41e6d18101d0db0a8f4ecb9e9724f1d07662a7177723cf4ea"
+      "size_bytes": 6004,
+      "sha256": "845fafa13082d70df2df84dc423e80a4d6f4904f6da029dc34d54fc9600de842"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R0P-R1.md",
@@ -1951,14 +1956,79 @@
       "sha256": "9af56019f0e9d7635bf2d997eab42c663df072fb74f42abd319374cc9edf26bd"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R0P-R1.md",
+      "size_bytes": 1666,
+      "sha256": "5bd0ed7c973047d349740fb571fbb8b994dd535aa2fdd152d425bf14911f6962"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R1-R2.md",
+      "size_bytes": 1444,
+      "sha256": "d7304af0cac4c66495f5c3bfd85ba2c1d835817101c50262c6559c6001f8dbf7"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R2-R3.md",
+      "size_bytes": 1364,
+      "sha256": "ab289bc36cdc497921fc5f52de93eb8fd994c94a77424c14388b66b476e8a36c"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R3-R4.md",
+      "size_bytes": 1366,
+      "sha256": "488e65411b816ee090a12d7788905364ce2d9eb58bc379264ab252f3f6b0b37f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/RUNLOG.tsv",
+      "size_bytes": 5819,
+      "sha256": "a2e4084a41fb1b8684407948900225e1e078966b32d7afbb68a4802b0087919f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/SHA256SUMS",
+      "size_bytes": 1270,
+      "sha256": "6509da76a64cb2605f1a74c1dd5252e018b72adcd7abd1ec26d13df7b971e33f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-REPORT.md",
+      "size_bytes": 16844,
+      "sha256": "2cc8d7857e255ef49c562fc5559ba717056455a3910d530181ba528ac5467d19"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R0P.md",
+      "size_bytes": 50986,
+      "sha256": "3428e24758fb92c27a1ec3f4fb2187dccffa33087fb8658686ec9b0c207695b7"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R1.md",
+      "size_bytes": 9807,
+      "sha256": "c9abb40ef7b3e18aaa953be3b58ab297d74b3d726c320648c252b6a8d9df2b24"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R2.md",
+      "size_bytes": 9787,
+      "sha256": "59b8d386c0606e7ddf790e3f8083fa80a843e3017243caaf5f5e23d0e97e3131"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R3.md",
+      "size_bytes": 9828,
+      "sha256": "a232001e2560244931447d0a5f643a04e0f7e2233a499a7169334921a26186be"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R4.md",
+      "size_bytes": 55318,
+      "sha256": "1962f9217955778fc3a366a7bed30ef1055645eab63c936bfdadc97e55d69927"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/run.sh",
+      "size_bytes": 1403,
+      "sha256": "37736ba3e3107cfe6b35cc1b236f05c9f3e29c45510d23bcc66a830d9279a428"
+    },
+    {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
       "size_bytes": 80399,
       "sha256": "a1525c91a70cd5c49cc8315d9e25e88bca1c713de29967bd91c843cf96ef877d"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 17839,
-      "sha256": "9e4ec2e07ced1a7bcb6b909a6e1ccde8c8ca16fd290f68d3463a08aa8320aae8"
+      "size_bytes": 18485,
+      "sha256": "38573021e24cf18231ed8fe3a7c90947c2d9755c6f993d27023a4dd31b000aac"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2727,8 +2797,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27099,
-      "sha256": "72aee38f63c0f2df029555f9b20d18b996d7cde0b95a7dcf1b1e8172b0aed334"
+      "size_bytes": 27296,
+      "sha256": "f973cc3a7385f4e4057fb5b6096abace43c895641e071d6307ab5cd1a8753317"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3176,6 +3246,11 @@
       "sha256": "cf1c389f26369eb0ac6a29184fe19a03fe30ccdd62adbf886140caf7309fc66e"
     },
     {
+      "path": "docs/ai/tasks/TASK-0069-v2-sale-margin-k.md",
+      "size_bytes": 12455,
+      "sha256": "5f63ca63c81cdd42f1de63472e9c4b061e1a6f81d26af76be7efe5b7dc690aad"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
@@ -3229,6 +3304,11 @@
       "path": "docs/ai/tasks/results/PRECHECK-0068b-HUB-2026-10-24.md",
       "size_bytes": 11522,
       "sha256": "a21ac385d8e9efe646a27c69e5a78c44fecbd7ffb7d5c58d448fb3e7c98d50a8"
+    },
+    {
+      "path": "docs/ai/tasks/results/PRECHECK-0069-HUB-2026-10-24.md",
+      "size_bytes": 13090,
+      "sha256": "dcf8d1ec6b95dc373d65da815442fccd237b8f414c3cb86e51b9d92b146e82c0"
     },
     {
       "path": "docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md",
@@ -3606,6 +3686,11 @@
       "sha256": "a8e3989ba2eb5bcfda2bad804346d02a4f724242728a86bc0d64c63400d9b350"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0069.md",
+      "size_bytes": 14373,
+      "sha256": "a6c2509ef8977117edce384d53d37c95e6b2dd9f16269c2ca9535e451252bbba"
+    },
+    {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
       "size_bytes": 46699,
       "sha256": "e5bd4711aa45509d513612c0813c6afa364d5a9719f8d67819ddfb3ca5698d85"
@@ -3817,8 +3902,8 @@
     },
     {
       "path": "schemas/market_rules.schema.json",
-      "size_bytes": 23349,
-      "sha256": "28a40219a77bbbd0569cfe108e8023993d4411d4ed762707c35c70fc85bf177d"
+      "size_bytes": 23474,
+      "sha256": "af3caa98600b882ddc46a4eef89dd9b0caa9043f4df9ca9c8971a00a54f7d964"
     },
     {
       "path": "schemas/observed_fx_sample.schema.json",
@@ -4132,13 +4217,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 95847,
-      "sha256": "cee0de4c96eec21f24ff55b3ffecdfc1d7ffbfb7a3e6602cfec929e6a7b873ac"
+      "size_bytes": 96905,
+      "sha256": "5bbf29ac4e0286850b7d506bbe7e6e9d05133373fedad52ee9e06b913e79b1b8"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 93184,
-      "sha256": "7321b92a69158400086bb2013b920eaa161b461b0a66456b7e5d9cf2595e3f5b"
+      "size_bytes": 93390,
+      "sha256": "43ea7b2fe5aa9a92b09b0d2ab176dad5b64bb097e5c1867f21404dd3d3e8563a"
     }
   ]
 }

@@ -1121,6 +1121,27 @@ class DataDrivenMainTest(unittest.TestCase):
 
 
 class MarketRulesTest(unittest.TestCase):
+    def test_sale_margin_k_range(self):
+        message = 'risk_profiles: RISK_PROFILE_V2: sale_margin_k: -2~3 정수여야 함'
+        for value in (4, 2.5, '1', -3, True):
+            with self.subTest(value=value):
+                d, t = self.fixtures()
+                p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+                p['sale_margin_k'] = value
+                # MANIFEST와 스키마를 거치지 않고 범위 검사의 고유 실패를 확인한다.
+                self.assertEqual(self.errors(d, t), [message])
+
+    def test_sale_margin_k_optional(self):
+        for value in (None, -2, 0, 1, 3):
+            with self.subTest(value=value):
+                d, t = self.fixtures()
+                p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+                if value is None:
+                    p.pop('sale_margin_k', None)
+                else:
+                    p['sale_margin_k'] = value
+                self.assertEqual(self.errors(d, t), [])
+
     def fixtures(self):
         documents = {p.stem: json.loads(p.read_text()) for p in (validator.ROOT / 'data').glob('*.json')}
         tables = {name: {i['id']: i for i in doc['items']} for name, doc in documents.items() if 'items' in doc}

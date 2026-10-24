@@ -922,6 +922,9 @@ def check_credit_profile(p, rules):
     """선택 외상 칸은 한 묶음으로 검사한다. 기존 프로필은 바꾸지 않는다."""
     from fractions import Fraction
     prefix = f"risk_profiles: {p['id']}: "
+    if p['id'] == 'RISK_PROFILE_V2' and 'sale_margin_k' in p:
+        check(type(p['sale_margin_k']) is int and -2 <= p['sale_margin_k'] <= 3,
+              prefix + 'sale_margin_k: -2~3 정수여야 함')
     col = p['collections']
     present = [k in p for k in ('credit_terms', 'credit_limit_unit_minor', 'credit_limits')]
     present += [k in col for k in ('carry_bp_per_day', 'recovery_bp')]
