@@ -5,14 +5,21 @@ halfUp = lambda n, d: (n + d // 2) // d
 GRADE = {'CUSTOMER_HAI_COSMETICS_NEW': 'A', 'CUSTOMER_SHA_COSMETICS_NEW': 'B', 'CUSTOMER_HAI_LAVER': 'C', 'CUSTOMER_SHA_LAVER': 'B'}
 P = {'A': 200, 'B': 500, 'C': 1200}; F = {'BASE': 100, 'D15': 150, 'D30': 200}; PREM = {'BASE': 0, 'D15': 300, 'D30': 600}; TERM = {'BASE': 0, 'D15': 15, 'D30': 30}
 RHO = 0.30
-# 1. 1로트 최대 판매액(센트): 지수 상한 11500bp, 지역 +4, 거래처 +3, 가산 D30 600bp
+# 1. 1로트 최대 판매액(센트), H24-2: 손잡이 범위의 최댓값
+#    판매 마진 k 최대(+3: SELL = SELL0 + BUY × 0.15), 지수 상한 11500bp, 지역 +4, 거래처 +3, 가산 D30 최대 800bp
+BUY = {'COSMETICS': 4000, 'SEASONED_LAVER': 2000}
 rows = {('COSMETICS', 'HAI'): (5170, 50), ('COSMETICS', 'SHA'): (5300, 50), ('SEASONED_LAVER', 'HAI'): (2560, 100), ('SEASONED_LAVER', 'SHA'): (2660, 100)}
+K_MAX, PREM_MAX = 3, 800
 lotmax = {}
-for k, (base, lot) in rows.items():
-    row = halfUp(base * 11500 * 104, 1000000); unit = halfUp(row * 103, 100); s = unit * lot
-    lotmax[k] = (s, halfUp(s * 10600, 10000))
-print('lotmax', lotmax)
-Lstar = max(v[1] for v in lotmax.values()); Lunit = -(-Lstar // 10000) * 10000
+for (g, city), (base, lot) in rows.items():
+    out = []
+    for k, prem in ((0, 600), (K_MAX, PREM_MAX)):
+        sell = base + BUY[g] * 5 * k // 100
+        row = halfUp(sell * 11500 * 104, 1000000); unit = halfUp(row * 103, 100); s0 = unit * lot
+        out += [s0, halfUp(s0 * (10000 + prem), 10000)]
+    lotmax[(g, city)] = tuple(out)
+print('lotmax (k0 lot, k0+600, kmax lot, kmax+800)', lotmax)
+Lstar = max(v[3] for v in lotmax.values()); Lunit = -(-Lstar // 10000) * 10000
 print('L*', Lstar, 'unit', Lunit)
 LIM_OLD = {'A': 800000, 'B': 500000, 'C': 250000}
 LIM_NEW = {'A': 3 * Lunit, 'B': 2 * Lunit, 'C': 1 * Lunit}
@@ -80,7 +87,8 @@ for label, lim in (('none', None), ('old', LIM_OLD), ('new', LIM_NEW)):
     for c in C:
         a, b = tg[id(c)], ca[id(c)]
         if a == b: continue
-        pa, pb = P[c['g']] * F[a] / 1e6, P[c['g']] * F[b] / 1e6
+        # 확정 규칙(H24-3): 실효 결제일 + 기간 + 15 ≤ 90일 때만 대손이 확정된다(74·118행과 같다)
+        pa = P[c['g']] * F[a] / 1e6 * (c['eff'] + TERM[a] + 15 <= 90); pb = P[c['g']] * F[b] / 1e6 * (c['eff'] + TERM[b] + 15 <= 90)
         div[c['seed']].append((pa - pb, other_loss(c, a), other_loss(c, b)))
         dfx, prem = fx_extra(c, a)
         sk = c['sale'] * rate(c['seed'], c['eff']) / 100
@@ -133,3 +141,30 @@ print(f'J9 alt per-seed |fx| share TG>base {pos}, < {neg}, mean diff {100*sum(di
 for label, lim in (('date', None), ('new', LIM_NEW)):
     t = choose(C, lim, 'TG')
     print(label, 'seeds with >=1 C nonBASE under TG', len({c['seed'] for c in C if c['g']=='C' and t[id(c)]!='BASE'}))
+# J8·L4·진단 V 사전 분포(H24-1): 같은 계약 집합, 공통 난수, 분석값 차이 = 가산 + 환율 차이 − 대손 차이
+def pol_delta(t, c, u):
+    """BASE 대비 그 정책 계약의 분석값 차이(원). u는 그 계약의 공통 대손 난수."""
+    sk = c['sale'] * rate(c['seed'], c['eff']) / 100
+    pb = P[c['g']] / 1e4 * (c['eff'] + 15 <= 90)
+    dbase = -0.7 * sk if u < pb else 0
+    if t == 'BASE': return dbase
+    dfx, prem = fx_extra(c, t)
+    pt = P[c['g']] * F[t] / 1e6 * (c['eff'] + TERM[t] + 15 <= 90)
+    return prem + dfx - (0.7 * (sk + prem + dfx) if u < pt else 0)
+tg = choose(C, LIM_NEW, 'TG'); ca = choose(C, LIM_NEW, 'CA')
+random.seed(11); j8 = []; l4 = []; vpos = []; vneg = []; vtie = []
+for it in range(4000):
+    w8 = w4 = vp = vn = vt = 0
+    for s in seeds:
+        cs = [c for c in C if c['seed'] == s]
+        us = [random.random() for _ in cs]
+        b = sum(pol_delta('BASE', c, u) for c, u in zip(cs, us))
+        t = sum(pol_delta(tg[id(c)], c, u) for c, u in zip(cs, us))
+        a = sum(pol_delta(ca[id(c)], c, u) for c, u in zip(cs, us))
+        w8 += t > b; w4 += a > b
+        vp += a > t; vn += a < t; vt += a == t
+    j8.append(w8); l4.append(w4); vpos.append(vp); vneg.append(vn); vtie.append(vt)
+med = lambda xs: sorted(xs)[len(xs) // 2]
+print(f'J8 TG>base seeds median {med(j8)}, P(8..32) {sum(8 <= x <= 32 for x in j8)/len(j8):.3f}')
+print(f'L4 CA>base seeds median {med(l4)}, P(>=26) {sum(x >= 26 for x in l4)/len(l4):.3f}')
+print(f'V CA>TG seeds mean {sum(vpos)/len(vpos):.1f}, CA<TG {sum(vneg)/len(vneg):.1f}, tie {sum(vtie)/len(vtie):.1f}')

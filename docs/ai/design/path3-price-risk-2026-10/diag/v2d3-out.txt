@@ -1,6 +1,6 @@
-lotmax {('COSMETICS', 'HAI'): (318400, 337504), ('COSMETICS', 'SHA'): (326450, 346037), ('SEASONED_LAVER', 'HAI'): (315400, 334324), ('SEASONED_LAVER', 'SHA'): (327600, 347256)}
-L* 347256 unit 350000
-new limits {'A': 1050000, 'B': 700000, 'C': 350000}
+lotmax (k0 lot, k0+600, kmax lot, kmax+800) {('COSMETICS', 'HAI'): (318400, 337504, 355400, 383832), ('COSMETICS', 'SHA'): (326450, 346037, 363400, 392472), ('SEASONED_LAVER', 'HAI'): (315400, 334324, 352400, 380592), ('SEASONED_LAVER', 'SHA'): (327600, 347256, 364600, 393768)}
+L* 393768 unit 400000
+new limits {'A': 1200000, 'B': 800000, 'C': 400000}
 contracts 425, seeds 40, target(date-only nonBASE) 219 = 0.515, D30 date 0.351
  grade A 75 0.176 date-eligible 38
  grade B 282 0.664 date-eligible 147
@@ -30,19 +30,22 @@ lots by grade [(('A', 1), 41), (('A', 2), 11), (('A', 3), 23), (('B', 1), 162), 
    J9: TG R0p 0.0000 R1 0.0024 rise 0.24pp ; base R0p 0.0000 R1 0.0024
    fx |component| / sale: base 0.0111 TG 0.0134
 
-== limit new: TG nonBASE 122/425 = 0.287 (D30 0.216); target blocked by limit 97
-   grade A: target 38, TG nonBASE 32  D15 11 D30 21
-   grade B: target 147, TG nonBASE 77  D15 13 D30 64
+== limit new: TG nonBASE 134/425 = 0.315 (D30 0.224); target blocked by limit 85
+   grade A: target 38, TG nonBASE 35  D15 12 D30 23
+   grade B: target 147, TG nonBASE 86  D15 21 D30 65
    grade C: target 34, TG nonBASE 13  D15 6 D30 7
-   L3 ① expected: TG 0.0959 CA 0.0907 ratio 0.946
+   L3 ① expected: TG 0.0972 CA 0.0920 ratio 0.946
    divergent default events per seed 0.030; deterministic other-loss differences 0; C contracts differing 13
    CA-TG expected analysis gain per seed USD mean 21 sd 54
    L3 ② sign test power 0.000; mean nonzero seeds 1.2
    J9: TG R0p 0.0000 R1 0.0024 rise 0.24pp ; base R0p 0.0000 R1 0.0024
-   fx |component| / sale: base 0.0111 TG 0.0142
+   fx |component| / sale: base 0.0111 TG 0.0152
 
 L1 expected 0.0614; R3 loss share 0.0212; claim-neg share 0.0965
 L1 sd approx 0.0116; P(L1<5%) normal approx 0.164
-J9 alt per-seed |fx| share TG>base 32, < 8, mean diff 0.309pp
+J9 alt per-seed |fx| share TG>base 33, < 7, mean diff 0.408pp
 date seeds with >=1 C nonBASE under TG 24
 new seeds with >=1 C nonBASE under TG 13
+J8 TG>base seeds median 35, P(8..32) 0.141
+L4 CA>base seeds median 36, P(>=26) 1.000
+V CA>TG seeds mean 1.2, CA<TG 11.8, tie 27.0

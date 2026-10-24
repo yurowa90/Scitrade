@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN-v2.md",
-      "size_bytes": 30533,
-      "sha256": "50dbcc84028a780226b5df83dfcb030e5dacb6941a0a2899c3d498716525398c"
+      "size_bytes": 33396,
+      "sha256": "b48df56270a070b80b7bbea8893f6286a6a7e3dd5ec4a5be4e048ea3f7c8b0c9"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
@@ -1787,13 +1787,13 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-out.txt",
-      "size_bytes": 2802,
-      "sha256": "9a2f908f3635fe92797362dc6b25297bf6128a332b40d7d95eabe1719cdb75e9"
+      "size_bytes": 3033,
+      "sha256": "942e70cfd030a96cc36b2655537e23f8c7f5005167b1058e7f69efea25acc0ed"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-sens-out.txt",
       "size_bytes": 2139,
-      "sha256": "103f448774ebe2d55e74980f4c45d1a7283b465f5ec632a57d400f21994ffd82"
+      "sha256": "870e890cb7579c011c76e333ae36a213bc4a8e6425fe9eea3b4e93a25b4d0126"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3-sens.py",
@@ -1802,8 +1802,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/diag/v2d3.py",
-      "size_bytes": 8578,
-      "sha256": "0d305cb1888437f6b971c7c4cb3946f48efd4552cbc8cb11f6ba3dc4daf6d0e7"
+      "size_bytes": 10768,
+      "sha256": "7b830ea577550f64e7f794905ed652b801576f0da2702c9a742d6fe7d4cb1e17"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/diag/zzdiag3.ts",
@@ -1877,8 +1877,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 17633,
-      "sha256": "b99abd3140278297caaf15143c602903318f477b9011ffdb72e3fbf7081cbd6d"
+      "size_bytes": 16529,
+      "sha256": "70b189a43b9a5746c856d2746162167a67b0c6c99e2734809377c960249ce531"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
