@@ -1821,6 +1821,11 @@
       "sha256": "1b18238f53fde73a42c9c1bcc8a002bea54f499bab2e1f434181a1a671d682e3"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_v2.py",
+      "size_bytes": 4636,
+      "sha256": "64070c7659b0ed60813b7ad7964606f8c30650159c289ec6c196e5b53aafe97f"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/tools/check_profile_vs_design.py",
       "size_bytes": 3065,
       "sha256": "349357990cca743d2ea3baf39520c6d90d4b515d93644560288e8d1b4b9c7056"
@@ -1871,14 +1876,89 @@
       "sha256": "7fe0ecf967cc79e2837c69a24d1394e3406f816cc075bd2018f2d95e4cce2f09"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-0.md",
+      "size_bytes": 3103,
+      "sha256": "162f4707b8d308cd66007d4c7ca9762ffc882c25b8c7fd1e533de6001cc17531"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
+      "size_bytes": 5719,
+      "sha256": "47d98f8cd151dbc41e6d18101d0db0a8f4ecb9e9724f1d07662a7177723cf4ea"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R0P-R1.md",
+      "size_bytes": 1666,
+      "sha256": "df495f748dc909aeb4918497779ea4d3e23942db9cafeec4585aa7e9224d06b6"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R1-R2.md",
+      "size_bytes": 1444,
+      "sha256": "2e093513d8f7d30ccc4bdf3bdf9431f06f29bc5176f805889010de3c10bc6fab"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R2-R3.md",
+      "size_bytes": 1364,
+      "sha256": "49c08d6316c34ac94ff2c1a298af6a1a51ab9951ebdb1570bacf68cb6be5066e"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R3-R4.md",
+      "size_bytes": 1366,
+      "sha256": "c4c34386144c27345f3cfd67c08d511a13df4b3212a86c839c0fc5811df9f669"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/RUNLOG.tsv",
+      "size_bytes": 5819,
+      "sha256": "5b0fa85247a834fe1e0c90cbdcf6258a4854d52d2f1409d1cafe520c07f6809d"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/SHA256SUMS",
+      "size_bytes": 1270,
+      "sha256": "8d8bcabf04ae658570b2fbd0bd0c0e96c914c1788e4721a16fedcce6d92ad11f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-REPORT.md",
+      "size_bytes": 16863,
+      "sha256": "9ce1cb189a03d28d348731f1c0aae45a13060ac41a3f347adde762b3e642cd9b"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-TABLES-R0P.md",
+      "size_bytes": 50529,
+      "sha256": "c59395e0dbc950a75a39e8485b7aef7b58944cfeb68d51df1f3b8eab2b202f3f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-TABLES-R1.md",
+      "size_bytes": 9803,
+      "sha256": "8a1a605a2d02d68a2d2277f98a97ae8bf301cadc504d651f0e98dc1c3d8afd67"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-TABLES-R2.md",
+      "size_bytes": 9805,
+      "sha256": "3977480bc4dee5a3c882044530b45b9a7cc49a29b604b93891759c216e807079"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-TABLES-R3.md",
+      "size_bytes": 9822,
+      "sha256": "707d827ce7d7d07df43a1d53f0c1f23c0235e09c8666ed4c7027da6a430ab576"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/V2-TABLES-R4.md",
+      "size_bytes": 55045,
+      "sha256": "e614fe7cd556f058578fcf43a43b37087a069378a04f5488516227c984cc6120"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round0/run.sh",
+      "size_bytes": 1403,
+      "sha256": "9af56019f0e9d7635bf2d997eab42c663df072fb74f42abd319374cc9edf26bd"
+    },
+    {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
       "size_bytes": 80399,
       "sha256": "a1525c91a70cd5c49cc8315d9e25e88bca1c713de29967bd91c843cf96ef877d"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 16573,
-      "sha256": "481899fab5115c390b93e2722b907157042d7c4a33e95523d02084d3eec2961e"
+      "size_bytes": 17839,
+      "sha256": "9e4ec2e07ced1a7bcb6b909a6e1ccde8c8ca16fd290f68d3463a08aa8320aae8"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
