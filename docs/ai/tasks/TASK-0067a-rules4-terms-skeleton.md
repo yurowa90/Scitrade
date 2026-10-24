@@ -1,6 +1,6 @@
 # TASK-0067a 경로 3 v2 엔진 ①: rules-4 판본·위험 술어·`RISK_PROFILE_V2` 자료·외상 조건 선택(대손·이자 없음)
 
-- 지위: **초안(세션 A, 2026-10-24). 허브 사전 확인 전이다.**
+- 지위: **개정 1(세션 A, 2026-10-24). 허브 사전 확인 전이다.** 초안(`f49ba35`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0067a-HUB-2026-10-24.md`(확인 12, 기각 0)에서 편집 E1~E13을 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
   - TASK-0067 초안(`7539e7e`·`f28b15c`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0067-HUB-2026-10-24.md`(확인 23, 중대 5)에서 승인되지 않았다. 허브 결정 H26(개발 브랜치 `576b0d4`)에 따라 0067a(이 지시서)와 0067b(대손·이자, 0067a 병합 뒤)로 나눈다. 이음매는 `processCollections`다.
   - 반영한 검수 항목: D1·D2·D5(a~c)·D6·D12·D13·D14·D16(날짜·한도 경계)·D17·D18·D19·D20·D22, H26-3 (a)(b)(c). 끝의 처리표에 있다.
 - codex_model: `gpt-6-astra`
@@ -58,6 +58,7 @@
 ## 3. 위험 단계 변환 `withRiskLevelV2`
 
 - 새 함수 `withRiskLevelV2(config, level: 'R0P' | 'R1' | 'R2' | 'R3', profile: RiskProfile, credit: CreditProfile)`를 `risk.ts`에 둔다. `withRiskLevel`(rules-3)은 고치지 않는다.
+- `profile.id !== credit.profileId`이면 예외를 낸다(E11).
 - 하는 일은 `withRiskLevel`의 R1~R3 변환과 같다(구조 복제, 쓰지 않는 품목 행 걸러 내기, BUY 행·공급 오퍼를 시작 환율 원화로). 다른 점:
   - `rules.rulesVersion = 'M2a-rules-4'`
   - 층: `R0P` `[]`, `R1` `['FX']`, `R2` `['FX', 'TARIFF', 'SURCHARGE']`, `R3` `['FX', 'TARIFF', 'SURCHARGE', 'CLAIM', 'COLLECTION']`
@@ -105,7 +106,7 @@
 
 ### 4.2 `tools/validate_data.py` 검사(이 칸들이 있는 프로필에만)
 
-1. **함께 있음**: 4.1의 새 칸 일곱은 모두 있거나 모두 없다. 모두 있으면 `collections.grades`의 모든 행에 `p_default_bp`(0~10000 정수)가 있다.
+1. **함께 있음**(E8): `credit_terms`·`credit_limit_unit_minor`·`credit_limits`·`collections.carry_bp_per_day`·`collections.recovery_bp` 다섯은 모두 있거나 모두 없다. 모두 있으면 `collections.grades`의 모든 행에 `p_default_bp`(0~10000 정수)가 있고, 없으면 어느 행에도 없다.
 2. `credit_terms`: ID `BASE`·`D15`·`D30` 정확히 셋. `BASE`는 `days 0`·`factor_pct 100`·`premium_bp 0`. 나머지는 `days > 0`, `factor_pct ≥ 100`, `0 ≤ premium_bp ≤ 10000`.
 3. **품목마다 등급 둘 이상**: `active_rules`(지금 검사의 방식) 가운데 이 프로필의 등급이 걸리는 rule_set마다, 각 품목의 판매 거래처 등급 집합 크기 ≥ 2. 거래처가 `by_counterparty`에 없으면 오류.
    - 지금 자료로 (가)는 의류 A·B·화장품 C·B, (나)는 화장품 A·B, (다)는 화장품 A·B·조미김 B·C다(V2 기준).
@@ -139,7 +140,7 @@
   }
   ```
 
-- 등급은 `loadRiskProfile(id).collections.byCounterparty`(V2 원문)에서 읽는다. 한도는 등급의 `limitMinor`를 쓴다.
+- `creditTermCheck`의 등급은 `config.operations.risk.profile.collections.byCounterparty`에서 읽는다. 엔진은 `src/content`를 부르지 않는다(E11). 한도는 그 등급의 `credit.limits[].limitMinor`를 쓴다.
 - `riskProfiles()`는 고치지 않는다(V2도 돌려준다).
 
 ### 4.4 `src/engine/sim/d03.ts` 최소 수정(D1)
@@ -147,13 +148,17 @@
 - `requestedRisk`(d03.ts:49-50)의 `profiles.length !== 1` 검사를 `RISK_PROFILE_DEFAULT`를 ID로 고르는 것으로 바꾼다. 없으면 같은 문장의 예외를 낸다.
 - `meta.profileId`는 그대로 `'RISK_PROFILE_DEFAULT'`다. d03.ts:67(`riskProfiles()[0]`)은 V2가 배열 끝이라 그대로 DEFAULT를 고른다. 이 줄은 고치지 않는다.
 - 이 파일에서 다른 줄은 바꾸지 않는다. 전체 프로필 ID 선택은 0068 몫이다.
-- d03 출력이 같아야 한다: 작업 전·후 `node src/engine/sim/run.mjs d03 --risk R1 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-from 2001 --seed-to 2003 --workers 4 --out /tmp/TASK-0067a-d03-{before,after}.json`(필요한 `--` 인수는 지금 CLI를 따른다)을 `cmp`로 비교한다. 같지 않으면 멈춘다.
+- d03 출력이 같아야 한다(E1·E2)
+  - 명령(작업 전·후): `node src/engine/sim/run.mjs d03 --risk R1 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seed-from 1 --seed-to 3 --workers 4 --out /tmp/TASK-0067a-d03-{before,after}.json`. `--seed-from`·`--seed-to`는 번호다. 시드 기준값 없이 기본 시드(1001~)로 돌리지 않는다.
+  - 비교: 전·후 파일에서 `meta.risk.marketRulesSha256`를 지운 뒤 비교한다(예: `jq -S 'del(.meta.risk.marketRulesSha256)'` 결과를 `cmp`). 이 키는 `data/market_rules.json`의 sha256이라(run.mjs:12·19, d03.ts:52) V2를 붙이면 늘 다르다. 같지 않으면 멈춘다.
+  - 이 키의 값은 따로 적는다. 전 값은 BASE 자료의 sha256, 후 값은 V2를 더한 `data/market_rules.json`의 sha256과 같아야 한다.
 
 ## 5. 외상 조건 선택
 
 ### 5.1 판정 함수 하나(H26-3 (b))
 
 - 순수 함수 `creditTermCheck(s, config, buyOfferId, sellOfferId, quantity, termId)`를 `engine.ts` 또는 새 모듈에 둔다. `acceptTrade`와 `creditTermOptions`가 **이 함수만** 쓴다.
+- 호출 순서(E12): `acceptTrade`는 오퍼 확인(`offerDef`·`offerOpen`) 바로 뒤, 수량·자금 검사보다 먼저 `creditTermCheck`를 부르고, 거절이면 그 `reasonKo`를 그대로 돌려준다.
 - 돌려주는 값: `{ allowed: boolean; reasonKo: string | null; saleAmountMinor: number; paymentDueDay: number; grade: string; limitMinor: number; exposureMinor: number; dateRule: boolean; limitBlocked: ('D15' | 'D30')[] }`
 
 ### 5.2 규칙
@@ -193,7 +198,7 @@
 
 1. **변환·술어**
    - `withRiskLevelV2` 네 단계의 층·판본, R0P 원화 매입(`rowCurrency(config, 'BUY') === 'KRW'`)·고정 환율, `credit`이 설정에 들어감.
-   - **동치 시험(D13)**: 같은 시나리오·시드에서 rules-3 R3 설정과 rules-4 R3 설정(credit만 더함, 정책은 조건을 쓰지 않는 `MAX_CONTRIBUTION`)의 실행에서 `reports.ts:104`의 미리보기, `operations.ts:183`의 환전 사유, `operations.ts:266`의 필요액, R0P에서의 `operations.ts:154·235` 결과가 rules-3 값과 같다(직접 부르는 단위 고정물로).
+   - **동치 시험(D13, E11)**: ‘V2 profile + V2 credit의 rules-4 R3’ 설정과 ‘DEFAULT의 rules-3 R3’ 설정을 비교한다. 비교 대상은 등급과 무관한 단위 고정물로 한정한다: `reports.ts:104`의 미리보기, `operations.ts:154`·`:183`의 환전 사유·금액, `:235`, `:266`의 필요액. 같은 상태·같은 입력에서 두 결과가 같다.
    - 시나리오별 V2 등급 표: (가)(나)(다)의 판매 거래처 등급. (나)에서 하이퐁 화장품이 A임을 단언(H26-3 (c)).
 2. **로더**: `loadRiskProfile('RISK_PROFILE_DEFAULT')`와 `loadRiskProfile('RISK_PROFILE_V2')`의 키 집합이 같다. `Object.hasOwn(profile, 'credit') === false`, `grades[]`에 `pDefaultBp` 키 없음(D19). `loadCreditProfile('RISK_PROFILE_V2')` 값이 원문과 같고, DEFAULT에는 예외.
 3. **조건 선택**
@@ -201,11 +206,17 @@
    - rules-4 기본 BASE. 판매액·결제일·`creditEligible`(날짜 불가, 한도 막힘이 섞인 경우).
    - 날짜 경계: `오퍼 결제일 + days + 15`가 정확히 90이면 허용, 91이면 거절.
    - 한도 경계: 노출액 + 판매액이 정확히 한도면 허용, 1센트 넘으면 거절.
-4. **노출액**: 취소된 비BASE 계약, 완료된 계약, `PAID` 청구서, BASE 계약이 빠짐. 인도 전 계약이 들어감. 판매액 0으로 완료된 계약이 빠짐. (`WRITTEN_OFF` 단언은 0067b.)
+4. **노출액**: 취소된 비BASE 계약, 완료된 계약, `PAID` 청구서, BASE 계약이 빠짐. 인도 전 계약이 들어감. 판매액 0으로 완료된 계약이 빠짐. 손으로 만든 고정물(계약은 `IN_PROGRESS`, 청구서는 `PAID`)에서도 빠짐(E13). (`WRITTEN_OFF` 단언은 0067b.)
 5. **일치 시험(H26-3 (b))**: 여러 상태에서 `creditTermOptions`의 `allowed`가 거짓이면 같은 조건의 `ACCEPT_TRADE`도 거절되고 사유 문장이 같다. 참이면 수락된 계약의 `saleAmountMinor`·`paymentDueDay`가 읽기 값과 같다.
-6. **저장**: rules-4 마지막 상태(새 칸 포함) 저장 왕복 바이트 같음. rules-1~3 계약에 키 없음. 새 빌드에서 rules-4 저장을 rules-3 설정으로 불러오면 **`save.ts:107`**(기대 판본 불일치)에서 거절된다(D22).
-   - 근거 3(옛 빌드 거절)은 vitest로 증명하지 않는다. 별도로 BASE 워크트리(`git worktree add <밖> <BASE>`)의 `deserializeSave`가 rules-4 저장을 `save.ts:106`(모르는 판본)에서 거절함을 일회 실행으로 확인해 결과 보고에 적는다.
+6. **저장**: rules-4 마지막 상태(새 칸 포함) 저장 왕복 바이트 같음. rules-1~3 계약에 키 없음. 새 빌드에서 rules-4 저장을 rules-3 설정으로 불러오면 **`save.ts:107`의 조건**에서 거절된다(D22, E9).
+   - 두 거절은 같은 107행 조건에서 나며, 조건과 문장으로 가른다. 옛 빌드는 `known`이 거짓이라 거절된다. 새 빌드는 `known`이 참이고 기대 판본이 달라 거절되며, 문장에 ‘이 시나리오의 규칙은 M2a-rules-3이며’가 들어간다. 새 빌드 시험은 이 문장을 단언한다.
+   - 근거 3(옛 빌드 거절)은 vitest로 증명하지 않는다. 별도로 BASE 워크트리(`git worktree add <밖> <BASE>`)의 `deserializeSave`가 rules-4 저장을 `known`이 거짓인 경로로 거절함을 일회 실행으로 확인해 결과 보고에 문장과 함께 적는다.
 7. **미래 누설(차분, D17)**: `p_default_bp`와 `factor_pct`만 다른 두 V2 사본으로 같은 상태를 만들면 `creditTermOptions`와 `quotePreview` 결과가 `toEqual`로 같다.
+8. **불변식(E6)**: 아래 상태마다 위반 문장이 나옴을 단언한다.
+   - rules-3 계약에 `creditTermId`를 넣은 상태
+   - rules-4 계약의 `paymentDueDay`를 +1 한 상태
+   - rules-4 계약의 `saleAmountMinor`를 +1 한 상태
+   - 그리고 rules-4 R0P·R1에서 환전(`EXCHANGE_CURRENCY`)을 한 뒤 불변식이 깨끗함(`operations-invariants.ts:87`).
 
 ## 8. 변형 시험(임시로 고치고 되돌림)
 
@@ -219,18 +230,23 @@
 | 6 | 날짜 규칙의 `≤`를 `<`로 | 새 시험 3 실패(D16) |
 | 7 | 한도의 `≤`를 `<`로 | 새 시험 3 실패(D16) |
 | 8 | `creditTermOptions`가 `pDefaultBp`를 결과에 넣음 | 새 시험 7 실패(D17) |
-| 9 | 검증기 비대칭 제약의 C 쪽 부등호를 뒤집음 | `validate_data` 실패(지금 자료로) |
-| 10 | 검증기 한도 단위 상수 k를 +3에서 +4로 | `validate_data` 실패 |
-| 11 | 자료의 `credit_limits` B `limit_minor`를 800001로 | `validate_data` 실패 |
-| 12 | d03.ts의 DEFAULT 선택을 `riskProfiles().at(-1)`로 | d03 cmp 다름 또는 `risk-runner.test.ts` 실패 |
+| 9 | 검증기 비대칭 제약의 C 쪽 부등호를 뒤집음 | `validate_data`에 비대칭 제약 문장의 FAIL 줄이 나오고, `hash mismatch` 말고 다른 FAIL은 없다(E5, 검증기 파일을 고치면 MANIFEST 해시가 어긋난다) |
+| 10 | 검증기 한도 단위 상수 k를 +3에서 +4로 | 한도 단위 문장의 FAIL 줄, `hash mismatch` 말고 다른 FAIL 없음(E5) |
+| 11 | 자료의 `credit_limits` B `limit_minor`를 800001로 | `limit_minor` 일치 문장의 FAIL 줄, `hash mismatch` 말고 다른 FAIL 없음(E5) |
+| 12 | d03.ts의 DEFAULT 선택을 `riskProfiles().at(-1)`로 | `risk-runner.test.ts` 실패(552행 `profileId`)(E4) |
+| 13 | 6절 새 불변식 검사를 지움 | 새 시험 8 실패(E7) |
+| 14 | 노출액의 청구서 상태 조건을 지움 | 새 시험 4(`IN_PROGRESS` + `PAID` 고정물) 실패(E13) |
 
 - 모두 되돌린 뒤 1절 1의 세 검사가 같고, `git status --porcelain`에 변형 흔적이 없음을 보인다.
 
 ## 9. 완료 조건
 
-1. 1절 1의 세 검사가 작업 전·후 모두 같다(로더 지문 포함). d03 cmp(4.4)가 같다.
-2. 기존 시험 파일 변경 없음: `git diff --name-status <BASE> -- 'src/**/*.test.ts' tools/test_validate_data.py`에 새 시험 파일 추가(`A`)와 `tools/test_validate_data.py`의 더하기만 있고, `git status --porcelain`에 다른 흔적이 없다(D20).
-3. 새 시험과 변형 12개가 기대대로다. 근거 3 일회 확인 결과를 적는다.
+1. 1절 1의 세 검사가 작업 전·후 모두 같다(로더 지문 포함). d03 출력이 4.4(E1) 정의로 같고, `marketRulesSha256` 값은 4.4대로다(E3).
+2. 기존 시험 파일 변경 없음(E10)
+   - `git diff --name-status <BASE> -- 'src/**/*.test.ts' 'tools/*.test.mjs' tests/golden`은 빈 출력이다.
+   - `git diff --numstat <BASE> -- tools/test_validate_data.py`의 삭제 수가 0이다.
+   - `git status --porcelain --untracked-files=all`의 `??` 줄은 새 시험 파일과 결과 보고뿐이다.
+3. 새 시험과 변형 14개가 기대대로다. 근거 3 일회 확인 결과를 적는다.
 4. `python3 tools/build_package.py --manifest-only`, `python3 tools/validate_data.py` 통과.
 5. `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check <BASE>`가 `검사 18종, 실패 0종 (모드: 확인)`이다.
 6. 결과 보고 `docs/ai/tasks/results/TASK-0067a.md`.
@@ -280,3 +296,21 @@
 | H26-3 (b) | 5.1 `creditTermCheck`, 시험 5 |
 | H26-3 (c) | 4.1 주의, 시험 1 등급 표, 4.2-5 모든 활성 rule_set |
 | D3·D4·D7~D11·D15·D21 | 0067b |
+
+## 개정 1 처리표(`PRECHECK-0067a-HUB-2026-10-24.md` 4절)
+
+| 편집 | 반영 자리 |
+|---|---|
+| E1 | 4.4 비교(`marketRulesSha256` 지우고 비교, 값 따로 확인) |
+| E2 | 4.4 명령(`--seed-base 2001 --seed-from 1 --seed-to 3`), 기본 시드 금지 |
+| E3 | 9절 1 |
+| E4 | 8절 변형 12 |
+| E5 | 8절 변형 9~11 |
+| E6 | 7절 시험 8 |
+| E7 | 8절 변형 13 |
+| E8 | 4.2-1 |
+| E9 | 7절 시험 6 |
+| E10 | 9절 2 |
+| E11 | 3절 ID 짝 검사, 4.3 등급 출처, 7절 시험 1 동치 조합 |
+| E12 | 5.1 호출 순서 |
+| E13 | 7절 시험 4, 8절 변형 14 |
