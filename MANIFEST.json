@@ -3376,6 +3376,11 @@
       "sha256": "cedc1978f77e9d319b7607c10a50c666b6245d9d677989c37d79f286814a8623"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0062b.md",
+      "size_bytes": 26645,
+      "sha256": "f4d951c62a6a0608d307c1f298d695ad4c5a2af9dff352996471219a4cc15949"
+    },
+    {
       "path": "docs/ai/tasks/results/TASK-0063.md",
       "size_bytes": 38685,
       "sha256": "ab7eef6db9fe82623275bff581a84f6171c5fd1e745ec49dcbe5282d892a9aea"
@@ -3691,6 +3696,11 @@
       "sha256": "2fa8f23fb54173e5066afb366f007a38d95e93b07c701ba57f67cc1bbac4f6eb"
     },
     {
+      "path": "tests/golden/rules3-risk.tsv",
+      "size_bytes": 26315,
+      "sha256": "57fd645a5c5d9f79aac197ca1bc0eacde9dddde96880cfe5b5ac919b43eb88c2"
+    },
+    {
       "path": "tools/ai/agy_task.sh",
       "size_bytes": 4485,
       "sha256": "9164c850b7b666f4809f0b33e641e22544eb0c35ab21b4553137bf95862e4bae"
@@ -3702,8 +3712,8 @@
     },
     {
       "path": "tools/ai/review_checks.sh",
-      "size_bytes": 3109,
-      "sha256": "ecec1efa0cd04c96e640df188e590c91c9afb8852470feee00f91cc8d54406c6"
+      "size_bytes": 3199,
+      "sha256": "d09b4230554a49a874343213897980c7f2a9598720f948738e1bd634ee34dc05"
     },
     {
       "path": "tools/art/check_pixel_asset.py",
@@ -3871,6 +3881,16 @@
       "sha256": "606c16975844461fe290eb881d2112e3905f241a7b377047e2463cb255e11f98"
     },
     {
+      "path": "tools/check_rules3_golden.mjs",
+      "size_bytes": 11390,
+      "sha256": "9d847735ab1e1ccf68026e641d813af2d99d51603f8633aa53d47f7d861e7a30"
+    },
+    {
+      "path": "tools/check_rules3_golden.test.mjs",
+      "size_bytes": 7608,
+      "sha256": "51b73a782aa36d6aab8497deb2698081bb47d6824de4d2d22f4e71ccdfd01856"
+    },
+    {
       "path": "tools/deploy/prepare_static.sh",
       "size_bytes": 3268,
       "sha256": "fcd503a7a893454f8c5a2744789c4f7da2c393367a5f88b57714529b035f6bb8"
@@ -3889,6 +3909,16 @@
       "path": "tools/rules2_golden_lib.mjs",
       "size_bytes": 3641,
       "sha256": "d1c90f1d4daaa1bdd764a835bab5b1c8cd4263464df3d073f0b732debcedc46d"
+    },
+    {
+      "path": "tools/rules3_golden_entry.ts",
+      "size_bytes": 1103,
+      "sha256": "a58330e539f172d934db2c7bcbdf463372f8307a3877090025e9cb5aafe7127b"
+    },
+    {
+      "path": "tools/rules3_golden_lib.mjs",
+      "size_bytes": 3315,
+      "sha256": "0b3f1d1418703aaec72bb3ea59b3ed7cadbb979f5067102c9ab4f113cf6ba84f"
     },
     {
       "path": "tools/test_check_fact_mixing.py",
