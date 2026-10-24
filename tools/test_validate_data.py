@@ -1115,6 +1115,32 @@ class MarketRulesTest(unittest.TestCase):
         validator.check_market_rules(documents, tables)
         return list(validator.ERRORS)
 
+    def test_credit_profile_rejections(self):
+        cases = [
+            ('함께', lambda p: p.pop('credit_terms'), '외상 칸은 모두 함께'),
+            ('대손 누락', lambda p: p['collections']['grades'][0].pop('p_default_bp'), '외상 칸은 모두 함께'),
+            ('조건', lambda p: p['credit_terms'][0].update(days=1), 'credit_terms: 조건 값 오류'),
+            ('등급', lambda p: [r.update(grade='B') for r in p['collections']['by_counterparty']], '품목마다 등급 둘 이상'),
+            ('비대칭', lambda p: p['collections']['grades'][2].update(p_default_bp=0), '비대칭 제약'),
+            ('한도 단위', lambda p: p.update(credit_limit_unit_minor=390000), '한도 단위'),
+            ('한도 일치', lambda p: p['credit_limits'][1].update(limit_minor=800001), 'limit_minor ='),
+            ('배수', lambda p: p['credit_limits'][0].update(lots=1), 'lots는 양의 정수'),
+            ('이자', lambda p: p['collections'].update(carry_bp_per_day=101), 'carry_bp_per_day'),
+            ('회수', lambda p: p['collections'].update(recovery_bp=10001), 'recovery_bp'),
+            ('대손 범위', lambda p: p['collections']['grades'][0].update(p_default_bp=-1), 'p_default_bp: 정수 범위'),
+            ('조건 중복', lambda p: p['credit_terms'][1].update(id='BASE'), 'BASE·D15·D30 각 한 행'),
+            ('한도 중복', lambda p: p['credit_limits'][1].update(grade='A'), 'A·B·C 각 한 행'),
+        ]
+        for name, mutate, message in cases:
+            with self.subTest(name=name):
+                d, t = self.fixtures()
+                p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+                mutate(p)
+                self.assertTrue(any(message in e for e in self.errors(d, t)))
+        d, t = self.fixtures()
+        d['market_rules']['risk_profiles'][0]['collections']['grades'][0]['p_default_bp'] = 200
+        self.assertTrue(any('외상 칸은 모두 함께' in e for e in self.errors(d, t)))
+
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])
 

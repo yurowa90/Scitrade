@@ -1,4 +1,4 @@
-import { receivedForInvoice } from './risk';
+import { divHalfAway, receivedForInvoice } from './risk';
 import { offerDef } from './market';
 import { operationsProblems } from './operations-invariants';
 // 매일 마감 전에 검사하는 불변 조건. 실패는 게임 규칙 위반이 아니라 엔진 결함이다.
@@ -38,6 +38,23 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
     }
   }
   for (const contract of s.contracts) {
+    // 외상 조건은 판본 4 직접 무역에만 저장한다. 수락 때의 노출액은 다시 판정하지 않는다.
+    if (config.rules.rulesVersion !== 'M2a-rules-4') {
+      if (Object.hasOwn(contract, 'creditTermId') || Object.hasOwn(contract, 'creditEligible')) {
+        problems.push(`${contract.id}: 이 규칙에는 외상 조건 키가 없어야 합니다`);
+      }
+    } else if (contract.kind === 'DIRECT_TRADE') {
+      const term = config.operations?.risk?.credit?.terms.find((t) => t.id === contract.creditTermId);
+      const sell = offerDef(s, config, contract.sellOfferId!);
+      if (!term || !contract.creditEligible) problems.push(`${contract.id}: 외상 조건과 선택 가능 기록이 필요합니다`);
+      if (term && sell) {
+        const due = config.terms.paymentDueDay ?? sell.paymentDueDay ?? config.campaignDays;
+        if (contract.paymentDueDay !== due + term.days) problems.push(`${contract.id}: 외상 결제일이 조건과 다릅니다`);
+        if (contract.saleAmountMinor !== divHalfAway(sell.unitPriceMinor * contract.quantity * (10000 + term.premiumBp), 10000)) {
+          problems.push(`${contract.id}: 외상 판매액이 조건과 다릅니다`);
+        }
+      }
+    }
     if (!taskIds.has(contract.prepTaskId)) problems.push(`${contract.id}: 준비 업무 ${contract.prepTaskId}가 없습니다`);
     if (contract.ownerEmployeeId !== null && !employeeIds.has(contract.ownerEmployeeId)) {
       problems.push(`${contract.id}: 계약 담당자 ${contract.ownerEmployeeId} 직원이 없습니다`);

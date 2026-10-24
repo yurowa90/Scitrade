@@ -729,6 +729,11 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 10000
+                    },
+                    "p_default_bp": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
                     }
                   },
                   "additionalProperties": false
@@ -746,9 +751,87 @@
               "late_max_days": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "carry_bp_per_day": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "recovery_bp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
               }
             },
             "additionalProperties": false
+          },
+          "credit_terms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "days",
+                "factor_pct",
+                "premium_bp"
+              ],
+              "properties": {
+                "id": {
+                  "enum": [
+                    "BASE",
+                    "D15",
+                    "D30"
+                  ]
+                },
+                "days": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "factor_pct": {
+                  "type": "integer",
+                  "minimum": 100
+                },
+                "premium_bp": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "credit_limit_unit_minor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "credit_limits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "grade",
+                "lots",
+                "limit_minor"
+              ],
+              "properties": {
+                "grade": {
+                  "enum": [
+                    "A",
+                    "B",
+                    "C"
+                  ]
+                },
+                "lots": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "limit_minor": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "additionalProperties": false
+            }
           }
         },
         "additionalProperties": false

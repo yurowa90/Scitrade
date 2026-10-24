@@ -561,3 +561,24 @@ export function loadRiskProfile(id: string): RiskProfile {
 export function riskProfiles(): RiskProfile[] {
   return marketRules.risk_profiles.map((p) => loadRiskProfile(p.id));
 }
+
+/** 외상 칸이 모두 있는 프로필만 읽는다. 기존 위험 로더의 출력 모양은 유지한다. */
+export function loadCreditProfile(id: string): import('../engine/types').CreditProfile {
+  const p = marketRules.risk_profiles.find((p) => p.id === id);
+  if (!p?.credit_terms || p.credit_limit_unit_minor === undefined || !p.credit_limits
+    || p.collections.carry_bp_per_day === undefined || p.collections.recovery_bp === undefined
+    || p.collections.grades.some((g) => g.p_default_bp === undefined)) {
+    throw new Error(`외상 프로필의 필수 칸이 없습니다: ${id}`);
+  }
+  return {
+    profileId: id,
+    terms: p.credit_terms.map((t) => {
+      if (t.id !== 'BASE' && t.id !== 'D15' && t.id !== 'D30') throw new Error(`알 수 없는 외상 조건: ${t.id}`);
+      return { id: t.id, days: t.days, factorPct: t.factor_pct, premiumBp: t.premium_bp };
+    }),
+    limitUnitMinor: p.credit_limit_unit_minor,
+    limits: p.credit_limits.map((r) => ({ grade: r.grade, lots: r.lots, limitMinor: r.limit_minor })),
+    pDefaultBpByGrade: p.collections.grades.map((r) => ({ grade: r.grade, pDefaultBp: r.p_default_bp! })),
+    carryBpPerDay: p.collections.carry_bp_per_day, recoveryBp: p.collections.recovery_bp,
+  };
+}

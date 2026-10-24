@@ -1,4 +1,4 @@
-import { receivedForInvoice, dutyFor, referenceRate, rowCurrency, usdToKrwMinor } from './risk';
+import { isRiskRules, receivedForInvoice, dutyFor, referenceRate, rowCurrency, usdToKrwMinor } from './risk';
 import { offerDef } from './market';
 import { fixedCostsDue, lateDeliveryReduction, unpaidByCurrency } from './operations';
 import type { OperationsState } from './types';
@@ -101,7 +101,7 @@ export function preview(
   paymentDueDay: number,
   opts?: { goodId?: string; purchaseCurrency?: Currency },
 ): QuotePreview | null {
-  const risk = config.rules.rulesVersion === 'M2a-rules-3';
+  const risk = isRiskRules(config.rules.rulesVersion);
   if (risk && kind === 'DIRECT_TRADE' && !opts?.goodId) throw new Error('규칙 3 직접 무역 미리보기에는 품목이 필요합니다');
   const purchaseCurrency = opts?.purchaseCurrency ?? (risk ? rowCurrency(config, 'BUY') : config.tradeCurrency);
   const route = routeBetween(config, fromCityId, toCityId);

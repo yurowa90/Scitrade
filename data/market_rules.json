@@ -1266,6 +1266,203 @@
         "late_min_days": 5,
         "late_max_days": 15
       }
+    },
+    {
+      "id": "RISK_PROFILE_V2",
+      "data_basis": "DESIGN",
+      "status": "V2_START_2026-10-24",
+      "basis": "fictional_game_values_not_calibrated",
+      "fx": {
+        "start_krw_per_usd": 1300,
+        "step_bp": 275,
+        "min_krw_per_usd": 1170,
+        "max_krw_per_usd": 1430
+      },
+      "tariff": {
+        "base": [
+          {
+            "country_code": "CN",
+            "good_id": "APPAREL",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "CN",
+            "good_id": "COSMETICS",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "VN",
+            "good_id": "APPAREL",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "VN",
+            "good_id": "COSMETICS",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "CN",
+            "good_id": "SEASONED_LAVER",
+            "rate_bp": 500
+          },
+          {
+            "country_code": "VN",
+            "good_id": "SEASONED_LAVER",
+            "rate_bp": 500
+          }
+        ],
+        "max_changes": 2,
+        "lag_days": [
+          0,
+          3
+        ],
+        "step_bp": [
+          -200,
+          800
+        ],
+        "min_bp": 0,
+        "max_bp": 3000,
+        "basis": "fictional_uniform_equal_to_rules2_5pct",
+        "status": "DESIGN_not_actual_destination_tariff"
+      },
+      "surcharge": {
+        "p_zero_bp": 7000,
+        "min_bp": 500,
+        "max_bp": 3000
+      },
+      "claims": {
+        "by_good": [
+          {
+            "good_id": "COSMETICS",
+            "grade": "MID",
+            "p_claim_bp": 1100
+          },
+          {
+            "good_id": "APPAREL",
+            "grade": "LOW",
+            "p_claim_bp": 700
+          },
+          {
+            "good_id": "SEASONED_LAVER",
+            "grade": "LOW",
+            "p_claim_bp": 700
+          }
+        ],
+        "basis": "fictional_damage_grade",
+        "minor": {
+          "weight_bp": 8000,
+          "min_bp": 100,
+          "max_bp": 500
+        },
+        "major": {
+          "weight_bp": 2000,
+          "min_bp": 1500,
+          "max_bp": 3000
+        }
+      },
+      "collections": {
+        "by_counterparty": [
+          {
+            "counterparty_id": "CUSTOMER_DEMO",
+            "grade": "A"
+          },
+          {
+            "counterparty_id": "CUSTOMER_SHA_APPAREL",
+            "grade": "B"
+          },
+          {
+            "counterparty_id": "CUSTOMER_HAI_COSMETICS",
+            "grade": "C"
+          },
+          {
+            "counterparty_id": "CUSTOMER_DEMO_SHANGHAI",
+            "grade": "B"
+          },
+          {
+            "counterparty_id": "CUSTOMER_HAI_COSMETICS_NEW",
+            "grade": "A"
+          },
+          {
+            "counterparty_id": "CUSTOMER_SHA_COSMETICS_NEW",
+            "grade": "B"
+          },
+          {
+            "counterparty_id": "CUSTOMER_HAI_LAVER",
+            "grade": "C"
+          },
+          {
+            "counterparty_id": "CUSTOMER_SHA_LAVER",
+            "grade": "B"
+          }
+        ],
+        "basis": "fictional_grade",
+        "grades": [
+          {
+            "grade": "A",
+            "p_on_time_bp": 8000,
+            "p_late_bp": 1500,
+            "p_partial_bp": 500,
+            "p_default_bp": 200
+          },
+          {
+            "grade": "B",
+            "p_on_time_bp": 6500,
+            "p_late_bp": 2500,
+            "p_partial_bp": 1000,
+            "p_default_bp": 500
+          },
+          {
+            "grade": "C",
+            "p_on_time_bp": 5000,
+            "p_late_bp": 3500,
+            "p_partial_bp": 1500,
+            "p_default_bp": 1200
+          }
+        ],
+        "partial_bp": 5000,
+        "late_min_days": 5,
+        "late_max_days": 15,
+        "carry_bp_per_day": 3,
+        "recovery_bp": 3000
+      },
+      "credit_terms": [
+        {
+          "id": "BASE",
+          "days": 0,
+          "factor_pct": 100,
+          "premium_bp": 0
+        },
+        {
+          "id": "D15",
+          "days": 15,
+          "factor_pct": 150,
+          "premium_bp": 300
+        },
+        {
+          "id": "D30",
+          "days": 30,
+          "factor_pct": 200,
+          "premium_bp": 600
+        }
+      ],
+      "credit_limit_unit_minor": 400000,
+      "credit_limits": [
+        {
+          "grade": "A",
+          "lots": 3,
+          "limit_minor": 1200000
+        },
+        {
+          "grade": "B",
+          "lots": 2,
+          "limit_minor": 800000
+        },
+        {
+          "grade": "C",
+          "lots": 1,
+          "limit_minor": 400000
+        }
+      ]
     }
   ]
 }
