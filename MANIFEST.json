@@ -3046,6 +3046,11 @@
       "sha256": "1b04468742ec645d752e836e95db94b02f309f24d715b6119e54cd85f9542d99"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067-rules4-credit-engine.md",
+      "size_bytes": 24084,
+      "sha256": "ab7f517d3d12155ab18a38e137cac3d066450edcbedc6783ad780af79a9f2a8e"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
