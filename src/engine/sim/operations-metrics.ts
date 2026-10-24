@@ -6,13 +6,14 @@ import { contractReport } from '../reports';
 import type { GameState, ScenarioConfig } from '../types';
 import { candidateFor, parseVariant } from './variants';
 import type { ProjectionBooking } from './policies';
-import { rejectionCounts } from './operations-policy';
+import { rejectionCounts, rejectionUnits, type RejectionUnits } from './operations-policy';
 
 export function createOperationsCollector(config: ScenarioConfig, policyId: string) {
   const variant = parseVariant(policyId)!;
   const daily: { day: number; handlingUsedPt: number; handlingCapacityPt: number; storageUsedLiters: number; storageCapacityLiters: number; waitingTaskDays: number; waitingPt: number }[] = [];
   const bottlenecks: { day: number; pt: number; extraJobsPerWeek: number; usableAfter: number; otherPtPerWeek: number; storageDetail: WeeklyBottleneck['storageDetail'] }[] = [];
   const rejections = rejectionCounts();
+  const rejectionsV2 = config.rules.rulesVersion === 'M2a-rules-4' ? rejectionUnits() : undefined;
   let departing = new Set<string>();
   const promised = new Map<string, ProjectionBooking>(), missed = new Set<string>();
   return {
@@ -23,7 +24,11 @@ export function createOperationsCollector(config: ScenarioConfig, policyId: stri
         if (c) { const b = weeklyBottleneck(s, config, c.id); bottlenecks.push({ day: s.day, pt, extraJobsPerWeek: b.extraJobsPerWeek, usableAfter: b.usableAfter, otherPtPerWeek: b.otherPtPerWeek, storageDetail: b.storageDetail }); }
       }
     },
-    observeClosed(s: GameState, day: number, rejected: Record<string, number> = {}, projections: ProjectionBooking[] = []) {
+    observeClosed(s: GameState, day: number, rejected: Record<string, number> = {}, projections: ProjectionBooking[] = [], units?: RejectionUnits) {
+      if (rejectionsV2 && units) {
+        for (const reason of Object.keys(rejectionsV2.candidate) as (keyof RejectionUnits['candidate'])[]) rejectionsV2.candidate[reason] += units.candidate[reason];
+        rejectionsV2.pair += units.pair; rejectionsV2.quote += units.quote; rejectionsV2.skippedNotOpen += units.skippedNotOpen;
+      }
       for (const p of projections) {
         promised.set(p.bookingId, p);
         if (p.departureDay === day) departing.add(p.bookingId);
@@ -61,7 +66,7 @@ export function createOperationsCollector(config: ScenarioConfig, policyId: stri
         firstUnpaidDay: s.obligations.length ? Math.min(...s.obligations.map((o) => o.incurredDay)) : null,
         unpaidAtEnd: unpaidByCurrency(s, config).map(({ currency, amountMinor }) => ({ currency, amountMinor })), exchanges, currencies: books,
         warehouseWaitingTaskDays: daily.reduce((sum, d) => sum + d.waitingTaskDays, 0), warehouseWaitingPt: daily.reduce((sum, d) => sum + d.waitingPt, 0),
-        utilization: daily, rejections, bottlenecks,
+        utilization: daily, rejections, bottlenecks, ...(rejectionsV2 ? { rejectionsV2 } : {}),
         actualHires: variant.hires.map((h) => ({ pt: h.pt, plannedDay: h.day, actualDay: s.recruitment.candidates.find((c) => c.employeeId === candidateFor(config, h.pt)?.id)?.hiredDay ?? null })),
         maxBatchOffers: Math.max(0, ...s.operations!.batches.map((b) => b.offerIds.length)),
         forwardingPrepMin: Math.min(...forwardingPrep), forwardingPrepMax: Math.max(...forwardingPrep) };

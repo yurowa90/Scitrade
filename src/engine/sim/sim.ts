@@ -1,4 +1,4 @@
-import { riskMetrics, type RiskLevel, type RiskMeta } from './risk-metrics';
+import { riskMetrics, type RiskLevel, type RiskLevelV2, type RiskMeta } from './risk-metrics';
 import { createOperationsCollector } from './operations-metrics';
 import { loadScenario, SCENARIO_IDS } from '../../content/scenario';
 import { commitDay, createGame, openDay } from '../engine';
@@ -23,7 +23,7 @@ export interface SimOutput {
   runs: SimRun[];
 }
 
-export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number, observe?: (state: GameState, commands: import('../types').EngineCommand[]) => void, risk?: RiskLevel): { state: GameState; run: SimRun } {
+export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: number, observe?: (state: GameState, commands: import('../types').EngineCommand[]) => void, risk?: RiskLevel | RiskLevelV2): { state: GameState; run: SimRun } {
   const config = { ...baseConfig, seed };
   let day = 1;
   try {
@@ -41,7 +41,7 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
       if (++iterations > config.campaignDays + 1) throw new Error('캠페인 실행 고리의 안전 한도를 넘었습니다.');
       const opened = openDay(state, config).state;
       operations?.observeOpened(opened);
-      const { commands, rng, rejections, projectionBookings } = policy.decide(opened, config, policyRng);
+      const { commands, rng, rejections, projectionBookings, rejectionUnits } = policy.decide(opened, config, policyRng);
       observe?.(opened, commands);
       const result = commitDay(opened, config, commands);
       if (result.alreadyClosed) throw new Error('이미 마감한 날을 다시 마감했습니다.');
@@ -54,7 +54,7 @@ export function simulate(baseConfig: ScenarioConfig, policy: SimPolicy, seed: nu
         } else if (r.status === 'REJECTED') counts.rejected++;
         else counts.duplicate++;
       }
-      operations?.observeClosed(result.state, opened.day, rejections, projectionBookings);
+      operations?.observeClosed(result.state, opened.day, rejections, projectionBookings, rejectionUnits);
       collector.observeClosedDay(result.state, config, opened.day);
       state = result.state;
       policyRng = rng;
