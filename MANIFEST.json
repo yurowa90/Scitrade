@@ -1882,8 +1882,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-1.md",
-      "size_bytes": 1866,
-      "sha256": "2e0385264ba45fdab233b2a85557a7b5d266b89563cb7bf2acc5286714820e60"
+      "size_bytes": 3240,
+      "sha256": "c0bc237ebbe1ff9592fcf10322d4ad9e66186d2fbf8376345746dc0985efb4e5"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
@@ -1954,6 +1954,71 @@
       "path": "docs/ai/design/path5-measure-2026-10/v2-round0/run.sh",
       "size_bytes": 1403,
       "sha256": "9af56019f0e9d7635bf2d997eab42c663df072fb74f42abd319374cc9edf26bd"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R0P-R1.md",
+      "size_bytes": 1666,
+      "sha256": "5bd0ed7c973047d349740fb571fbb8b994dd535aa2fdd152d425bf14911f6962"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R1-R2.md",
+      "size_bytes": 1444,
+      "sha256": "d7304af0cac4c66495f5c3bfd85ba2c1d835817101c50262c6559c6001f8dbf7"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R2-R3.md",
+      "size_bytes": 1364,
+      "sha256": "ab289bc36cdc497921fc5f52de93eb8fd994c94a77424c14388b66b476e8a36c"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/CMP-R3-R4.md",
+      "size_bytes": 1366,
+      "sha256": "488e65411b816ee090a12d7788905364ce2d9eb58bc379264ab252f3f6b0b37f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/RUNLOG.tsv",
+      "size_bytes": 5819,
+      "sha256": "a2e4084a41fb1b8684407948900225e1e078966b32d7afbb68a4802b0087919f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/SHA256SUMS",
+      "size_bytes": 1270,
+      "sha256": "6509da76a64cb2605f1a74c1dd5252e018b72adcd7abd1ec26d13df7b971e33f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-REPORT.md",
+      "size_bytes": 16844,
+      "sha256": "2cc8d7857e255ef49c562fc5559ba717056455a3910d530181ba528ac5467d19"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R0P.md",
+      "size_bytes": 50986,
+      "sha256": "3428e24758fb92c27a1ec3f4fb2187dccffa33087fb8658686ec9b0c207695b7"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R1.md",
+      "size_bytes": 9807,
+      "sha256": "c9abb40ef7b3e18aaa953be3b58ab297d74b3d726c320648c252b6a8d9df2b24"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R2.md",
+      "size_bytes": 9787,
+      "sha256": "59b8d386c0606e7ddf790e3f8083fa80a843e3017243caaf5f5e23d0e97e3131"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R3.md",
+      "size_bytes": 9828,
+      "sha256": "a232001e2560244931447d0a5f643a04e0f7e2233a499a7169334921a26186be"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/V2-TABLES-R4.md",
+      "size_bytes": 55318,
+      "sha256": "1962f9217955778fc3a366a7bed30ef1055645eab63c936bfdadc97e55d69927"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v2-round1/run.sh",
+      "size_bytes": 1403,
+      "sha256": "37736ba3e3107cfe6b35cc1b236f05c9f3e29c45510d23bcc66a830d9279a428"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
