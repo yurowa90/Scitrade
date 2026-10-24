@@ -48,6 +48,8 @@ else
 fi
 run node tools/check_rules2_golden.mjs
 run node --test tools/check_rules2_golden.test.mjs
+run node tools/check_rules3_golden.mjs
+run node --test tools/check_rules3_golden.test.mjs
 # 그림 도구와 지도 생성 시험. 지도 원본 재생성 시험은 원본 폴더(SCITRADE_MAP_SOURCES, 없으면 저장소 옆 map/)가 있을 때만 돈다.
 run python3 tools/art/test_pixel_tools.py
 run python3 -m unittest discover -s scripts -p 'test_*.py'
