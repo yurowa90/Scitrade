@@ -3051,6 +3051,11 @@
       "sha256": "58920057defb2d7fae5863dfe139787606f3818a4f46f7f7b3d5e4c762d1326a"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067a-R1-tests.md",
+      "size_bytes": 5626,
+      "sha256": "ace714a5620154ce9754aeb64619258c87fe6f07d00e758c7c5493a117ffb488"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0067a-rules4-terms-skeleton.md",
       "size_bytes": 27920,
       "sha256": "5ac69e9fa26cfec9e4d6a409af77e1fecfb1c768472778045bbf189a63c9aba2"
@@ -3089,6 +3094,11 @@
       "path": "docs/ai/tasks/results/PRECHECK-0067a-HUB-2026-10-24.md",
       "size_bytes": 8979,
       "sha256": "17ac7933571cd246ad20662f9c641b3d7fb31f08e68add78af804f8deedd8f2d"
+    },
+    {
+      "path": "docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md",
+      "size_bytes": 4279,
+      "sha256": "90306c9690b107e6e27415f600a3f590516a26e12f5dd6b14438c1b92b792213"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
