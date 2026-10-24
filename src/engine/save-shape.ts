@@ -29,7 +29,7 @@ export const SAVE_ENUMS = {
   taskStatus: { QUEUED: true, RUNNING: true, DONE: true, ABORTED: true } satisfies Record<Task['status'], true>,
   employmentStatus: { employed: true, candidate: true } satisfies Record<EmployeeState['employmentStatus'], true>,
   candidateStage: { UNDISCOVERED: true, DISCOVERED: true, QUEST_RUNNING: true, INTERVIEW_READY: true, HIRED: true } satisfies Record<CandidateState['stage'], true>,
-  invoiceStatus: { OUTSTANDING: true, OVERDUE: true, PAID: true } satisfies Record<Invoice['status'], true>,
+  invoiceStatus: { OUTSTANDING: true, OVERDUE: true, PAID: true, WRITTEN_OFF: true } satisfies Record<Invoice['status'], true>,
   noticeKind: { PORT_RESTRICTION: true } satisfies Record<Notice['kind'], true>,
   delayChoice: { KEEP_SHIPMENT_BOOKING: true } satisfies Record<NonNullable<DelayDecision['choice']>, true>,
   commandStatus: { APPLIED: true, REJECTED: true } satisfies Record<CommandRecord['status'], true>,

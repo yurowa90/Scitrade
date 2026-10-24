@@ -928,6 +928,9 @@ def check_credit_profile(p, rules):
     defaults = ['p_default_bp' in g for g in col['grades']]
     check((all(present) and all(defaults)) or (not any(present) and not any(defaults)),
           prefix + '외상 칸은 모두 함께 있어야 함')
+    if any(present) or any(defaults):
+        check(len(col['grades']) == 3 and {g['grade'] for g in col['grades']} == {'A', 'B', 'C'},
+              prefix + 'collections.grades: A·B·C 각 한 행 필요')
     if not all(present) or not all(defaults):
         return
     def integer(v, low, high):
@@ -936,6 +939,9 @@ def check_credit_profile(p, rules):
         check(integer(g['p_default_bp'], 0, 10000), prefix + 'p_default_bp: 정수 범위 오류')
     check(integer(col['carry_bp_per_day'], 0, 100), prefix + 'carry_bp_per_day: 정수 범위 오류')
     check(integer(col['recovery_bp'], 0, 10000), prefix + 'recovery_bp: 정수 범위 오류')
+    if all(type(col[k]) is int for k in ('recovery_bp', 'carry_bp_per_day', 'late_max_days')):
+        check(col['recovery_bp'] >= col['carry_bp_per_day'] * col['late_max_days'],
+              prefix + 'recovery_bp: 확정일까지의 최대 누적 이자 이상이어야 함')
     terms = p['credit_terms']
     check(len(terms) == 3 and {t['id'] for t in terms} == {'BASE', 'D15', 'D30'},
           prefix + 'credit_terms: BASE·D15·D30 각 한 행 필요')

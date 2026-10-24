@@ -251,7 +251,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
   const lotKrw = usdLotKrw(config, s);
   const dueToSurviveMinor = cfg ? s.obligations.filter((o) => o.paidDay === null && o.currency === 'KRW' && o.incurredDay + cfg.failureAgeDays <= day).reduce((sum, o) => sum + o.amountMinor, 0) : 0;
   const usdOldest = oldest?.currency === 'USD';
-  const nextReceipt = s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID').sort((a, b) => a.dueDay - b.dueDay)[0];
+  const nextReceipt = s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID' && i.status !== 'WRITTEN_OFF').sort((a, b) => a.dueDay - b.dueDay)[0];
   const usdShort = oldest && usdOldest ? Math.max(0, oldest.amountMinor - balance(s.ledger, 'USD', 'CASH')) : 0;
   const fx = config.operations?.fx;
   return { level: s.operations?.outcome === 'FAILED' ? 'FAILED' as const : !cfg || !oldest ? 'NONE' as const : ageDays >= cfg.dangerFromAgeDays ? 'DANGER' as const : 'WARNING' as const,
@@ -262,7 +262,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
     recovery: { dueToSurviveMinor, lotsToSurvive: usdOldest || !lotKrw ? null : Math.ceil(Math.max(0, dueToSurviveMinor - krwCash) / lotKrw),
       lotsToClearAll: usdOldest || !lotKrw ? null : Math.ceil(Math.max(0, krwUnpaid + dailyKrwDue(s, config, day) - krwCash) / lotKrw),
       usdAvailableLots: fx ? Math.max(0, Math.floor(usdAvailableMinor / fx.lotUsdMinor)) : 0,
-      nextReceipt: usdOldest && nextReceipt ? { day: nextReceipt.dueDay, amountMinor: s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID' && i.dueDay === nextReceipt.dueDay).reduce((sum, i) => sum + i.amountMinor, 0) } : null,
+      nextReceipt: usdOldest && nextReceipt ? { day: nextReceipt.dueDay, amountMinor: s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID' && i.status !== 'WRITTEN_OFF' && i.dueDay === nextReceipt.dueDay).reduce((sum, i) => sum + i.amountMinor, 0) } : null,
       krwToUsdRequiredMinor: usdOldest && fx ? Math.ceil(usdShort / fx.lotUsdMinor) * fx.lotUsdMinor * (isRiskRules(config.rules.rulesVersion) ? exchangeAmounts(config, 'KRW_TO_USD', fx.lotUsdMinor, s.rng.seed, s.day).rate : fx.sellKrwPerUsd) / MINOR_PER_MAJOR.USD : null,
       heldSpendingKo: krwUnpaid > 0 ? '미지급이 있는 동안 고용 계약금·훈련·현지 활동·창고 확장은 자금 기준에서 막힙니다' : null } };
 }

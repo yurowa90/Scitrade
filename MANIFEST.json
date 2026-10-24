@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 118270,
-      "sha256": "722395f4f1d9125b5429b362f2f4c6ca16e83da9109f72a72ef6362c79ddf1c8"
+      "size_bytes": 119781,
+      "sha256": "ab8e0bb1d42bd86efaa38ea584d1ff8eba7feba7ec9a5d107e2482689fdd1bc3"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -2647,8 +2647,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25943,
-      "sha256": "9322ce1399adf73113f9673323f30443cd166eb6425e97dbd6ce3a8fe6b0d681"
+      "size_bytes": 26256,
+      "sha256": "1d4d72732d55e161c2957833c943d9745f965076ccb6cc2e6a5a1960fb9682b7"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3061,9 +3061,14 @@
       "sha256": "5ac69e9fa26cfec9e4d6a409af77e1fecfb1c768472778045bbf189a63c9aba2"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067b-R1-tests.md",
+      "size_bytes": 6318,
+      "sha256": "e9a284a12661f3fce464c002ab12b13df5f8751c6d4800cb78f1351f99259e58"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0067b-rules4-default-carry.md",
-      "size_bytes": 26829,
-      "sha256": "3433e6b0c310d890b2315e05e6285a050c755076a8ed00e23cdf8c69ea9f46f9"
+      "size_bytes": 26811,
+      "sha256": "951bbfd902acda8ff787d83f39808dafb442f591f8e33c7638395fb4fee3eb98"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -3109,6 +3114,11 @@
       "path": "docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md",
       "size_bytes": 4279,
       "sha256": "90306c9690b107e6e27415f600a3f590516a26e12f5dd6b14438c1b92b792213"
+    },
+    {
+      "path": "docs/ai/tasks/results/REVIEW-0067b-HUB-2026-10-24.md",
+      "size_bytes": 6007,
+      "sha256": "d2914d49678a0a2b25c853050068229b581cac14d3edde9d02575cd967971e95"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
@@ -3444,6 +3454,11 @@
       "path": "docs/ai/tasks/results/TASK-0067a.md",
       "size_bytes": 35788,
       "sha256": "03b312111451e54ffa6b4c802d91c5a3612a9e2179d06ac74a0ee931a5277e7b"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0067b.md",
+      "size_bytes": 29520,
+      "sha256": "dd1d0c199b15d13ccb346bb81cfc9320181ddbff58cec89bfcb0c5a27e5bfd2b"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -3972,13 +3987,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 93667,
-      "sha256": "2d278599caeff94fd37111387eefc6a2289f4ac0867137addd56919a24cf307a"
+      "size_bytes": 95847,
+      "sha256": "cee0de4c96eec21f24ff55b3ffecdfc1d7ffbfb7a3e6602cfec929e6a7b873ac"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 92697,
-      "sha256": "d03311ce731bf9375ebaf6237baa1b872403258c52f517ea9eddf3a127eadf6f"
+      "size_bytes": 93184,
+      "sha256": "7321b92a69158400086bb2013b920eaa161b461b0a66456b7e5d9cf2595e3f5b"
     }
   ]
 }
