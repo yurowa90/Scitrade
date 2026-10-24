@@ -1,6 +1,6 @@
 # TASK-0068b 경로 5 실행기 v2 ②: 표·보고·비교(6열 틀, J 판정, J9, 진단, `risk-compare-v2`, `v2-report`)
 
-- 지위: **초안(세션 A, 2026-10-24).** 허브 사전 검수 전이다.
+- 지위: **개정 1(세션 A, 2026-10-24).** 초안(`d8e3f6a`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0068b-HUB-2026-10-24.md`(확인 16, major 2, 기각 1)에서 수정 E1~E16을 받았다. 허브 결정 H29(진단 C는 v2 성분 아홉, 세션 A 확인 요청 셋 승인)를 반영했다. 처리는 끝의 ‘개정 1 처리표’에 있다.
   - TASK-0068 개정 1(`15e3551`)을 허브가 나눈 뒤쪽이다(H27 끝). 앞쪽 0068a(+R1)는 병합됐다(개발 브랜치 `56c6d80`, 기록 `7d81280`).
   - 0068 개정 1과 0068a에서 넘긴 항목, 허브 결정 H28, 세션 A 검수 주의 3건의 처리는 끝의 처리표에 있다.
 - codex_model: `gpt-6-astra`
@@ -24,6 +24,7 @@
     | 진단 U에 없는 칸 | 끝난 때 미결 수금 두 칸(`pendingPartialReceipts`·`pendingOverdue`)을 낸다 | H28-2 |
     | 6열 틀의 R0(기록) 열 | v1 `--risk R0` 출력(같은 시드 묶음)을 선택 입력으로 받아 기록만 한다. 입력이 없으면 ‘기록 없음’ | H27-3 |
     | 진단 J8·L4·V 사전 기대 | ‘유동성 효과를 뺀 값’ 주석과 TERM_GREEDY·기준 회사의 직접 무역 수를 나란히 적는다 | H28-1 |
+    | 진단 C(판본 1 3.1, v1 원인 일곱) | v2 성분 아홉(`default`·`carry` 포함) 가운데 가장 큰 음수 성분으로 센다. T·F·B는 판본 1 그대로 | H29-1(판정표 v2 3.1 정오표, 허브가 낸다) |
 
 - **이 지시서는 0068a 출력 JSON만 읽는다.**
   - 엔진, 정책, 실행기 실행 경로(`sim.ts`·`operations-*.ts`·`policies.ts`·`variants.ts`·`risk-metrics.ts`·`run.mjs`)는 바꾸지 않는다.
@@ -49,25 +50,28 @@
      - 작업 끝: `node src/engine/sim/run.mjs run --out /tmp/TASK-0068b-run-after.json`
      - 그 뒤 `cmp`
    - v1 위험 실행 회귀
-     - 명령: `node src/engine/sim/run.mjs d03 --risk R3 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seed-from 1 --seed-to 3 --workers 4 --out /tmp/TASK-0068b-v1r3-{before|after}.json`
+     - 명령: `node src/engine/sim/run.mjs d03 --risk R3 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seed-from 1 --seed-to 3 --workers 4 --out /tmp/TASK-0068b-v1r3-{before|after}.json > /tmp/TASK-0068b-v1r3-{before|after}.md`
      - JSON과 표준 출력을 각각 `cmp`한다.
    - **v2 실행 회귀**
-     - 명령: `node src/engine/sim/run.mjs d03 --risk-v2 R4 --policies MAX_CONTRIBUTION,TERM_GREEDY,CREDIT_AWARE,MARGIN_BUFFER --seed-base 2001 --seeds 3 --workers 3 --out /tmp/TASK-0068b-v2r4-{before|after}.json`
+     - 명령: `node src/engine/sim/run.mjs d03 --risk-v2 R4 --policies MAX_CONTRIBUTION,TERM_GREEDY,CREDIT_AWARE,MARGIN_BUFFER --seed-base 2001 --seeds 3 --workers 3 --out /tmp/TASK-0068b-v2r4-{before|after}.json > /tmp/TASK-0068b-v2r4-{before|after}.md`
      - JSON과 표준 출력(한 줄 요약)을 각각 `cmp`한다.
    - **v1 표 회귀(새 항목)**
      - 이 지시서는 `d03.ts`의 표 코드를 함수로 떼어 낼 수 있다(8절). 그래서 판본 1 표 문자열이 바뀌지 않는지 `--tables-from`으로 확인한다. 엔진이 같으므로 JSON은 작업 전에 한 번만 만든다.
-     - **작업 전**에 아래 네 JSON을 만든다(시드 2001~2003, (다), 워커 4).
-       1. `d03 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seeds 3 --workers 4 --out /tmp/TASK-0068b-plain.json`
-       2. 1과 같고 `--late cap30`을 더해 `/tmp/TASK-0068b-cap30.json`
-       3. 1과 같고 `--risk R0`을 더해 `/tmp/TASK-0068b-r0.json`
-       4. 1과 같고 `--risk R1`을 더해 `/tmp/TASK-0068b-r1.json`
-     - 작업 전과 작업 끝에 같은 명령으로 표를 다시 그려 표준 출력을 파일로 받고 `cmp`한다.
-       - `d03 --tables-from /tmp/TASK-0068b-plain.json`
-       - `d03 --tables-from /tmp/TASK-0068b-cap30.json --late cap30`
-       - `d03 --risk R0 --tables-from /tmp/TASK-0068b-r0.json`
-       - `d03 --risk R1 --tables-from /tmp/TASK-0068b-r1.json`
+     - **작업 전**에 아래 네 JSON을 만든다(시드 2001~2003, 워커 4). 1·2는 `SCENARIO_M2_OPERATIONS`(기본 시나리오, `--scenarios`를 주지 않는다), 3·4는 (다)다. (다)는 실험 시나리오라 `--risk` 없이 주면 종료 2이기 때문이다(`cli.ts:78`, `d03.ts:70`). 표준 출력은 `-before.md`로 받는다.
+       1. `node src/engine/sim/run.mjs d03 --seed-base 2001 --seeds 3 --workers 4 --out /tmp/TASK-0068b-plain.json > /tmp/TASK-0068b-plain-before.md`
+       2. `node src/engine/sim/run.mjs d03 --late cap30 --seed-base 2001 --seeds 3 --workers 4 --out /tmp/TASK-0068b-cap30.json > /tmp/TASK-0068b-cap30-before.md`
+       3. `node src/engine/sim/run.mjs d03 --risk R0 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seeds 3 --workers 4 --out /tmp/TASK-0068b-r0.json > /tmp/TASK-0068b-r0-before.md`
+       4. `node src/engine/sim/run.mjs d03 --risk R1 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seeds 3 --workers 4 --out /tmp/TASK-0068b-r1.json > /tmp/TASK-0068b-r1-before.md`
+     - **작업 끝**에 같은 JSON에서 표를 다시 그려 `-after.md`로 받고, 같은 이름의 `-before.md`와 `cmp`한다.
+       - `node src/engine/sim/run.mjs d03 --tables-from /tmp/TASK-0068b-plain.json > /tmp/TASK-0068b-plain-after.md`
+       - `node src/engine/sim/run.mjs d03 --tables-from /tmp/TASK-0068b-cap30.json --late cap30 > /tmp/TASK-0068b-cap30-after.md`
+       - `node src/engine/sim/run.mjs d03 --risk R0 --tables-from /tmp/TASK-0068b-r0.json > /tmp/TASK-0068b-r0-after.md`
+       - `node src/engine/sim/run.mjs d03 --risk R1 --tables-from /tmp/TASK-0068b-r1.json > /tmp/TASK-0068b-r1-after.md`
        - v1 R3 표는 위의 v1 위험 실행 회귀가 확인한다.
-     - `sim risk-compare /tmp/TASK-0068b-r0.json /tmp/TASK-0068b-r1.json`의 표준 출력도 작업 전과 작업 끝에 `cmp`한다.
+     - `node src/engine/sim/run.mjs risk-compare /tmp/TASK-0068b-r0.json /tmp/TASK-0068b-r1.json > /tmp/TASK-0068b-rc-{before|after}.md`를 작업 전과 작업 끝에 돌려 `cmp`한다.
+     - **3.2의 (가)를 고르면** 10시드 표 회귀를 하나 더한다. 3시드에서는 J2b 인접 검사와 J6 칸별 행이 돌지 않기 때문이다(n ≥ 10에서만 생긴다).
+       - 작업 전: `node src/engine/sim/run.mjs d03 --seed-base 2001 --seeds 10 --workers 4 --out /tmp/TASK-0068b-plain10.json > /tmp/TASK-0068b-plain10-before.md`
+       - 작업 끝: `node src/engine/sim/run.mjs d03 --tables-from /tmp/TASK-0068b-plain10.json > /tmp/TASK-0068b-plain10-after.md`, 그 뒤 `cmp`
    - 기존 `src/engine/sim/risk-runner.test.ts`, `seed-base.test.ts`, `risk-runner-v2.test.ts`가 통과한다(아래 2의 예외 한 곳만 고친 채).
 2. **기존 시험 파일은 고치지 않는다.**
    - 새 시험은 새 파일 `src/engine/sim/risk-tables-v2.test.ts`에 둔다.
@@ -83,7 +87,7 @@
 5. **위험 모듈 import 규칙**(`risk-runner.test.ts:486-532`가 지킨다)
    - 새 파일 `risk-tables-v2.ts`는 보고서 파일 목록(`risk-metrics`·`risk-tables`)에 없다.
    - 그래서 `../risk`에서는 허용 목록(`krwToUsdMinor`, `usdToKrwMinor`, `rowCurrency`, `divHalfAway`, `withRiskLevel`)만 가져올 수 있다. 이 지시서는 JSON만 읽으므로 `../risk`가 필요 없다.
-   - `risk-tables-v2.ts`는 `d03.ts`·`risk-tables.ts`·`variants.ts`·`sim.ts`(형만)에서 가져온다. `d03.ts`와 `risk-tables.ts`는 `risk-tables-v2.ts`를 가져오지 않는다(순환 금지).
+   - `risk-tables-v2.ts`는 `d03.ts`·`risk-tables.ts`·`variants.ts`·`sim.ts`(형만)·`risk-metrics.ts`(형만: `RiskLevelV2`·`RiskContract` 등)·`../../content/scenario`(`loadScenario`)에서 가져온다. `d03.ts`와 `risk-tables.ts`는 `risk-tables-v2.ts`를 가져오지 않는다(순환 금지).
 6. **측정하지 않는다.** 측정 명령은 결과 보고에 목록으로만 적고 실행하지 않는다(9절).
 7. 커밋, 푸시, 브랜치 전환은 하지 않는다.
 
@@ -120,11 +124,11 @@
 | 명령 | 입력 검사(어기면 종료 2) | 출력 |
 |---|---|---|
 | `sim v2-tables FILE` | 인수가 정확히 하나다. `meta.risk.rules === 'M2a-rules-4'`이다. `meta.lateMode === 'base'`이다. `meta.scenarioIds`가 `['SCENARIO_M2_OPS_COS_LAVER']`이다 | `d03TablesV2(output)`(3절) |
-| `sim risk-compare-v2 A B` | 인수가 정확히 둘이다. 둘 다 v2 출력이다. B가 A의 바로 다음 단계다(R0P→R1→R2→R3→R4). 메타가 같다(5절) | `riskCompareTablesV2(a, b)`(5절) |
-| `sim v2-report F1 … F5 [--r0 FILE]` | 위치 인수가 정확히 다섯이다. 다섯 모두 v2 출력이고 단계가 R0P·R1·R2·R3·R4를 하나씩 덮는다(인수 순서는 상관없다). 다섯의 메타가 같다(5절과 같은 키). `--r0`은 많아야 한 번 오고 값이 있어야 한다. `--r0` 입력은 4.3을 지킨다 | `v2Report(outputs, r0?)`(4절) |
+| `sim risk-compare-v2 A B` | 인수가 정확히 둘이다. 둘 다 v2 출력이다. 둘 다 `meta.lateMode === 'base'`이다. B가 A의 바로 다음 단계다(R0P→R1→R2→R3→R4). 메타가 같다(5절) | `riskCompareTablesV2(a, b)`(5절) |
+| `sim v2-report F1 … F5 [--r0 FILE]` | 위치 인수가 정확히 다섯이다. 다섯 모두 v2 출력이고 `meta.lateMode === 'base'`이며, 단계가 R0P·R1·R2·R3·R4를 하나씩 덮는다(인수 순서는 상관없다). 다섯의 메타가 같다(5절과 같은 키). `--r0`은 많아야 한 번 오고 값이 있어야 한다. `--r0` 입력은 4.3을 지킨다 | `v2Report(outputs, r0?)`(4절) |
 
-- v2 명령은 v1 출력(`meta.risk.rules` 없음)을 받지 않는다. `--r0`만 예외다.
-- `v2-tables`가 `lateMode !== 'base'`를 거절하는 이유: 판정표 v2가 base만 잰다. v2 실행 자체는 `--late`를 계속 받는다.
+- v2 명령은 v1 출력(`meta.risk.rules` 없음)을 받지 않는다. `--r0`만 예외다. 거절 문구는 `v2 명령은 rules-4 출력만 받습니다.`로 정한다(세 명령 공통).
+- lateMode 거절 문구는 `v2 표는 lateMode base만 받습니다.`로 정한다(세 명령과 `--r0` 공통). 이유: 판정표 v2가 base만 잰다. v2 실행 자체는 `--late`를 계속 받는다.
 
 ## 3. 단계 표 `d03TablesV2`(새 파일 `src/engine/sim/risk-tables-v2.ts`)
 
@@ -155,6 +159,7 @@
   | 진단 M | 기록 | 해당 없음 | 진단 | 진단 | 진단 | 진단 |
 
 - R0 열의 내용은 4.3이 정한다. L2는 `risk-compare-v2`에서만 낸다(5절).
+- 조회 함수 `judgmentKindV2(key, level): JudgmentKindV2`를 내보낸다. 상수를 열 이름으로 읽는다. `judgmentRowV2`와 `v2Report`는 종류를 이 함수로만 얻는다.
 - 행 하나를 그리는 함수 `judgmentRowV2(key, level, pass, evidence, missing)`
   - 판정: v1 `judgmentRow`처럼 `통과`나 `실패`를 쓴다. 실행이 없으면 `실행 없음: …`, `pass === null`이면 `근거 부족: `을 근거 앞에 붙인다.
   - 진단: 결과 칸에 `진단`을 쓰고 근거를 쓴다.
@@ -163,6 +168,7 @@
 
 ### 3.2 표 구성
 
+- **직접 무역 수**는 이 지시서 전체에서 실행마다 `metrics.risk.directAccepted`다(H28-1의 나란히 적기, 진단 U, 진단 J8·L4, ① 열 모두).
 - 비교 값: 모든 v2 단계에서 분석값이다.
   - `valueV2 = (r) => r.metrics.risk?.analysisValueMinor ?? NaN`
   - 0068a가 R0P에도 분석값을 낸다.
@@ -174,12 +180,14 @@
 
 | 절 | v2에서 | 비고 |
 |---|---|---|
-| ① 기준 표 | 남김 | 정책 목록: `IDLE`, `NO_FX`, `MAX_CONTRIBUTION`, `LATE_OK`, `MAX_CONTRIBUTION~fx:react`(full만), `MARGIN_BUFFER`, `TERM_GREEDY`, `CREDIT_AWARE`. v1 열 뒤에 **`직접 무역 수 중앙`**(시드마다 `directAccepted`의 중앙) 열을 더한다(H28-1) |
+| ① 기준 표 | 남김 | 정책 목록: `IDLE`, `NO_FX`, `MAX_CONTRIBUTION`, `LATE_OK`, `MAX_CONTRIBUTION~fx:react`(full만), `MARGIN_BUFFER`, `TERM_GREEDY`, `CREDIT_AWARE`. v1 열 뒤에 **`직접 무역 수 중앙`**(시드마다 직접 무역 수의 중앙) 열을 더한다(H28-1) |
 | ② 투자만 | full만 | reduced는 절 이름 아래 ‘해당 없음(축소 묶음)’ |
 | ③·④ 고용 표 | full만 | 같다 |
 | ⑤ J 판정 | 남김 | 행: J1, J2, J3, J4a~c, J4d, J5, J6, J7(새 정의), 이 순서. **J2b와 J7(옛 정의)은 내지 않는다.** 식은 3.3 |
 | J6 칸별 표, ⑥ 1위 분포, ⑧ 고용일 | full만 | reduced는 ‘해당 없음(축소 묶음)’ |
 | ⑦ 사업별 비중 | full만 | 제목 ‘⑦ 사업별 기여이익 비중 (USD 몫만·진단)’. v1과 같은 표시 |
+| 진단·조사 선행 비교 | full만 | reduced는 ‘해당 없음(축소 묶음)’ |
+| J6 설명 두 문단, ⑤의 J4 문장 | v1 문구 그대로 | |
 | ⑨ 위험 판정 | 남김 | 행: L1, J9, 진단 J8, 진단 L4, 진단 V, 진단 T, 진단 C, 진단 F, 진단 B, 진단 U, 진단 M, 진단 거절, 이 순서. **L0, L3, D, (iii), ‘변형 사이 차이’는 내지 않는다** |
 
 - ⑨ 아래에 v1 `riskTables`의 재료 줄(L2 재료, 완료·분류별 손실, 시드별 손실 비율 중앙·사분위)을 같은 문구로 둔다. `(iii) 재료` 줄은 빼고 둔다.
@@ -229,19 +237,20 @@
 | 진단 J8 | 시드마다 분석값 `TERM_GREEDY` > 기준 회사인 시드 수. 같음 수와 작음 수도 적는다. **그리고 두 정책의 직접 무역 수 합과 시드별 중앙을 나란히 적는다**(H28-1) | 중앙 35/40, 띠 8~32 안 확률 0.14(DESIGN-v2 2.4). **유동성 효과를 뺀 값(H28-1)** |
 | 진단 L4 | `CREDIT_AWARE` > 기준 회사 시드 수, 같음·작음 수, 두 정책의 직접 무역 수 | 중앙 36/40(DESIGN-v2 2.4). **유동성 효과를 뺀 값(H28-1)** |
 | 진단 V | 시드마다 `CREDIT_AWARE` − `TERM_GREEDY` 분석값. 중앙, 사분위(v1 `lossStats`와 같은 사분위 규칙), 동점·양수·음수 시드 수 | 평균 +21 USD/시드(표준편차 54), 동점 약 27, TG 우세 약 11.8, CA 우세 약 1.2(판정표 v2 3.5, DESIGN-v2 2.4). **유동성 효과를 뺀 값(H28-1)** |
-| 진단 T·C·F·B | v1 `diagnostics(runs, base, seeds)`의 같은 칸, 같은 문구 | 없음 |
+| 진단 T·F·B | v1 `diagnostics(runs, base, seeds)`의 같은 칸, 같은 문구 | 없음 |
+| 진단 C | 새 함수 `causesV2(base)`. 기준 회사 직접 무역 손실 계약(`realized < 0`)마다 v2 성분 아홉 `fx`·`tariff`·`surcharge`·`claim`·`collection`·`default`·`carry`·`late`·`cancel` 가운데 가장 큰 음수 성분(값이 가장 작은 것, 같으면 이 목록 순서의 앞)을 원인으로 센다. 음수 성분이 없으면 `음수 칸 없음`. 출력은 v1처럼 `JSON.stringify(원인별 수)`. v1 `diagnostics`는 고치지 않는다(H29-1) | 없음 |
 | 진단 U | 3.5 | 3.5 |
 | 진단 M | 3.6 | 없음(문턱을 쓰지 않는다) |
 | 진단 거절 | 3.7 | 없음 |
 
-- 유동성 주석은 사전 기대 칸 끝에 아래 문장을 그대로 붙인다(한 표에 한 번 각주로 두어도 된다).
+- 유동성 주석은 진단 J8·L4·V 세 행 각각의 사전 기대 칸 끝에 아래 문장을 그대로 붙인다.
   - ‘사전 기대는 유동성 효과(외상 정책이 첫날 D30으로 현금이 묶여 뒤 거래를 놓침)를 뺀 값이다(H28-1).’
 
 ### 3.5 진단 U(판정표 v2 3.1, H27-2 (b), H28-2, E13)
 
 - **정책별 표**: 각 정책(묶음 안의 정책 전체)의 `metrics.risk.credit`를 시드에 걸쳐 더한다.
   - 열은 `defaultsConfirmed`, `badDebtMinor`, `defaultsUnconfirmed`, `unconfirmedMinor`, `carryMinor`, `limitBlocked`, `termCounts`(BASE/D15/D30), `lateReceipts`, `partialReceipts`, `pendingPartialReceipts`, `pendingOverdue`, `dateEligible`, `dateLimitEligible`, 직접 무역 수다.
-  - 금액은 원 단위 정수다.
+  - 금액은 청구서 통화(USD) 센트 정수이고 환산하지 않는다. 열 머리에 `USD 센트`로 적는다.
 - **끝난 때 미결 지연(대손 아님)**: 열 `pendingOverdue − defaultsUnconfirmed`를 더한다.
   - 미확정 대손 청구서는 엔진에서 수금이 하나도 없이 OVERDUE로 남는다(`engine.ts`의 `processCollections`, 대손 분기는 수금 전에 `continue`한다). 그래서 `pendingOverdue`에 들어 있다.
   - 표 아래에 이 관계를 한 줄로 적는다.
@@ -272,7 +281,7 @@
 ### 3.7 진단 거절(판정표 v2 3.4, 세션 A 주의 (b))
 
 - 정책별로 `metrics.operations.rejectionsV2`를 시드에 걸쳐 더한다.
-  - 열은 후보 단위 사유 일곱(`funds`·`storage`·`handling`·`sailing`·`staff`·`onTime`·`credit`), 짝, 견적, OPEN 아님 건너뜀이다.
+  - 열은 후보 단위 사유 일곱(`funds`·`storage`·`handling`·`sailing`·`staff`·`onTime`·`credit`), **`후보 합`**(일곱 사유의 합, `skippedNotOpen` 제외), 짝, 견적, OPEN 아님 건너뜀이다.
 - **분모 범위가 다르므로 한 비율로 묶지 않는다.**
   - 후보 단위와 OPEN 아님 건너뜀은 운송 주선 후보도 센다.
   - 짝과 견적은 직접 무역만 센다(0068a 3.3).
@@ -301,6 +310,7 @@
 - M′ = **같은 보고 안의 R0P 출력**에서 낸 기준 회사 분석값 중앙(`median`, 시드 수가 짝수면 가운데 두 값의 평균)이다.
 - R4 판정: R4 기준 회사 분석값 중앙이 `1,069,200` 이상이고 M′ 이하이면 통과다. 같으면 통과다.
   - `1,069,200`은 `J4_BANDS.risk[0]`이고 시작 분석값 10,692 USD다.
+- 비교는 정수로 한다. 40시드에서 중앙이 x.5일 수 있으므로 `2 × R4 중앙 ≥ 2 × 1,069,200`, `2 × R4 중앙 ≤ 2 × M′`을 BigInt로 비교한다(`BigInt(x.5)`는 예외가 난다).
 - 근거 문구: `R4 중앙 {x}, M′(R0P 중앙) {y}, 하한 10,692`
 - R0P·R1·R2·R3의 J4d는 진단이고 중앙만 적는다.
 
@@ -324,8 +334,10 @@
   - `--r0` 입력 검사(어기면 종료 2)
     - `meta.risk`가 있고 `rules` 키가 없으며 `level === 'R0'`이다.
     - `meta.scenarioIds`에 (다)가 있다.
+    - `meta.lateMode === 'base'`이다.
     - `meta.seeds`가 다섯 v2 출력의 시드 집합과 같다.
     - `meta.risk.marketRulesSha256`이 v2 출력과 같다.
+  - R0 기록은 `scenarioId === 'SCENARIO_M2_OPS_COS_LAVER'`인 실행만 걸러 쓴다. 다른 시나리오 실행이 섞여 있어도 기록 값에 들어가지 않는다.
   - R0 열은 판정에 쓰지 않는다. 표 아래에 ‘R0 열은 기록이며 위험 효과의 기준 경로는 R0P다(판정표 v2 2절).’를 적는다.
 - J8·L4·V 행의 사전 기대 각주(3.4)를 이 표 아래에도 한 번 적는다.
 
@@ -358,7 +370,7 @@
 
 - 시드는 2001 이상만 쓴다. 0절 원칙을 따른다.
 - 대부분의 시험은 **손으로 만든 v2 `SimOutput`**으로 한다. 실행이 필요 없다.
-  - 고정물 만드는 법: 실제 R4 실행 하나(시드 2001, `MAX_CONTRIBUTION`)를 `simulate`로 얻는다. 그것을 `structuredClone`해 `seed`, `policyId`, `analysisValueMinor`, `contracts`, `credit`, `rejectionsV2`, `outcome`, `unpaidAtEnd`를 시험마다 덮어쓴다.
+  - 고정물 만드는 법: 실제 R4 실행 하나(시드 2001, `MAX_CONTRIBUTION`)를 `simulate`로 얻는다. 그것을 `structuredClone`해 `seed`, `policyId`, `analysisValueMinor`, `contracts`, `directAccepted`, `credit`, `rejectionsV2`, `outcome`, `unpaidAtEnd`를 시험마다 덮어쓴다. `directAccepted`는 `contracts`의 DIRECT_TRADE 수와 같게 둔다.
   - 메타는 0068a 모양(`rules`·`level`·`profileId`·`tuningRound`·`marketRulesSha256`)을 그대로 쓴다.
 
 1. **CLI**
@@ -366,16 +378,18 @@
    - 2.2 표의 입력 검사를 하나씩 확인한다(각각 종료 2와 오류 문구 일부).
      - 인수 개수
      - v1 출력을 v2 명령에 넣음
-     - `lateMode: 'cap30'` v2 출력을 `v2-tables`에 넣음
+     - `lateMode: 'cap30'` v2 출력을 `v2-tables`·`risk-compare-v2`·`v2-report`에 각각 넣음(`v2 표는 lateMode base만 받습니다.`)
      - (다) 아닌 시나리오
      - `v2-report`의 단계 중복·누락
      - `--r0` 값 없음·두 번
+   - v1 출력을 `v2-tables`에 넣으면 종료 2이고, 표준 오류에 거절 문구 `v2 명령은 rules-4 출력만 받습니다.`가 정확히 들어 있다.
    - 정상 입력은 종료 0이다.
 2. **6열 틀**
    - `RISK_JUDGMENT_KINDS_V2`가 3.1 표 전체와 리터럴로 같다.
    - 키 목록이 3.1 리터럴과 같은 순서다.
    - v1에만 있는 키(`J2b`, `J7(옛 정의)`, `L0`, `L3`, `D`)가 없다.
-   - 열을 이름으로 찾는다: `J1`의 R0은 `기록`, R0P는 `판정`. `J4d`의 R0P는 `진단`, R4는 `판정`. `J9`의 R0P는 `해당 없음`, R1은 `판정`.
+   - 조회 함수로 열을 이름으로 찾는다: `judgmentKindV2('J1','R0')`은 `기록`, `('J1','R0P')`는 `판정`. `('J4d','R0P')`는 `진단`, `('J4d','R4')`는 `판정`. `('J9','R0P')`는 `해당 없음`, `('J9','R1')`은 `판정`.
+   - `judgmentRowV2('J1','R0P', true, …)`의 결과 칸은 `통과`, `false`이면 `실패`다(`기록`이 아니다).
 3. **문턱표**
    - m = 10..40 전체가 3.3 표와 같다.
    - 각 m에서 `20 × Σ_{i≥k} C(m,i) ≤ 2^m`인 최소 k를 BigInt로 다시 계산해 대조한다.
@@ -399,13 +413,15 @@
      - 동점·양수·음수 시드 수, V의 중앙·사분위가 손 계산과 같다.
      - J8 행에 두 정책의 직접 무역 수 합이 나온다.
      - 세 행에 ‘유동성 효과를 뺀 값(H28-1)’ 문자열이 있다.
+   - **진단 C**(H29-1): 확정 대손 계약(`default` 성분이 가장 큰 음수, `fx`도 음수로 더 작은 크기) 하나가 있는 고정물에서 원인 집계에 `"default":1`이 나오고 `fx`로 세지 않는다.
    - **진단 M**
      - 원시 값이 손 계산과 같다.
      - 행 문자열에 `통과`·`실패`·`충족`이 없다.
-5. **J4d와 M′**(손 고정물 다섯 단계, R0P 중앙 ≠ R4 중앙)
+5. **J4d와 M′**(손 고정물 다섯 단계. 변형 5를 가르는 사례에서는 R0P 중앙 ≠ R4 중앙)
    - R4 중앙 = M′ → 통과
-   - R4 중앙 = M′ + 1 → 실패
+   - R4 중앙 = M′ + 1 → 실패. M′ ≥ 1,069,200으로 둔다.
    - R4 중앙 = 1,069,199 → 실패. 이때 M′ ≥ 1,069,199로 둔다.
+   - 40시드에서 R4 중앙이 x.5가 되는 고정물: R4 중앙 = M′ + 0.5 → 실패(예외 없이 끝난다).
    - `d03TablesV2` 단독 R4 표의 J4d는 `보류(v2-report에서 판정)`이다.
 6. **`risk-compare-v2`**
    - R0P→R1과 R3→R4를 받는다. R1→R3, R4→R3, R1→R0P는 거절한다.
@@ -421,7 +437,8 @@
    - `--r0`
      - 있으면 R0 열의 J1·J4a~c·J7(새 정의)·L1이 `기록:`으로 시작하고, 다른 키는 `기록 없음`이다.
      - 없으면 R0 열 전체가 `기록 없음`이다.
-     - 시드가 다른 `--r0`, v2 출력인 `--r0`, `level: 'R1'`인 v1 `--r0`은 각각 종료 2다.
+     - 시드가 다른 `--r0`, v2 출력인 `--r0`, `level: 'R1'`인 v1 `--r0`, `lateMode: 'cap30'`인 `--r0`은 각각 종료 2다.
+     - (다)와 다른 시나리오 실행이 섞인 `--r0`: 다른 시나리오 실행의 값(예: 실패 실행)이 R0 기록에 들어가지 않는다.
 8. **진단 U**
    - 정책별 합이 손 계산과 같다.
    - 끝난 때 미결 지연(대손 아님)이 `pendingOverdue − defaultsUnconfirmed`다. 고정물: `pendingOverdue` 3, `defaultsUnconfirmed` 2 → 1.
@@ -436,7 +453,7 @@
     - R3(축소)의 ②·③·④·J6 칸별·⑥·⑦·⑧이 `해당 없음(축소 묶음)`이다. R4(전체)에는 표가 있다.
     - 출력에 `J2b`, `J7(옛 정의)`, `| L0 `, `| L3 `, `| D `, `(iii)`, `변형 사이`가 없다.
     - ⑨에 3.2의 행 이름이 모두 이 순서로 있다.
-    - **J3 후보 제외**: `TERM_GREEDY`가 1위 근처 시드 수가 가장 많은 고정물에서, J3 근거의 ‘가장 강한’ 정책이 `TERM_GREEDY`가 아니다.
+    - **J3 후보 제외**: `TERM_GREEDY`가 1위 근처 시드 수가 가장 많은 고정물에서, J3 근거의 ‘가장 강한’ 정책이 `TERM_GREEDY`가 아니다. `CREDIT_AWARE`가 가장 많은 고정물에서도 ‘가장 강한’ 정책이 `CREDIT_AWARE`가 아니다.
 11. **R4 스모크**(실제 실행, 60초 이내)
     - `simMain(['d03', '--risk-v2', 'R4', '--policies', 'MAX_CONTRIBUTION,TERM_GREEDY,CREDIT_AWARE,MARGIN_BUFFER', '--seed-base', '2001', '--seeds', '2', '--out', path], io)` 뒤에 `simMain(['v2-tables', path], io)`가 종료 0이다.
     - 표에 ⑨의 열두 행 이름이 모두 있다.
@@ -469,8 +486,10 @@
 | 16 | 25% 관문 값을 `dateEligible`로 | 시험 8 | 고정물에서 두 비율이 다르다 |
 | 17 | 미결 지연에서 `defaultsUnconfirmed`를 빼지 않음 | 시험 8 | 3이 나와 기대 1과 다르다 |
 | 18 | 진단 거절의 후보 합에 `skippedNotOpen`을 더함 | 시험 9 | 후보 합이 8이 된다 |
-| 19 | `v2-tables`가 v1 출력을 받음 | 시험 1 | 종료 0이 된다 |
+| 19 | `v2-tables`가 v1 출력을 받음 | 시험 1 | 거절 문구가 나오지 않는다(다른 예외 문구 또는 종료 0) |
 | 20 | J8·L4·V의 유동성 주석을 지움 | 시험 4 | H28-1 문자열이 없다 |
+| 21 | J3 후보에서 `CREDIT_AWARE`를 빼지 않음 | 시험 10 | 가장 강한 정책이 `CREDIT_AWARE`가 된다 |
+| 22 | 진단 C 성분 목록에서 `default`를 뺌 | 시험 4 | 확정 대손 계약이 `fx`로 세어진다 |
 
 - 모두 되돌린 뒤 1절 1의 검사가 같고, `git status --porcelain`에 변형 흔적이 없음을 보인다.
 
@@ -504,7 +523,7 @@
    - `git diff --name-status <BASE> -- 'src/**/*.test.ts' 'tools/*.test.mjs' tests/golden`은 `M src/engine/sim/risk-runner-v2.test.ts` 한 줄뿐이다.
    - 그 diff는 1절 2의 리터럴뿐이다.
    - `git status --porcelain --untracked-files=all`의 `??` 줄은 새 파일 둘과 결과 보고뿐이다.
-3. 새 시험과 변형 20개가 기대대로다.
+3. 새 시험과 변형 22개가 기대대로다.
 4. 첫 화면 gzip이 작업 전과 작업 끝에 같다(1절 4).
 5. `python3 tools/build_package.py --manifest-only`와 `python3 tools/validate_data.py`가 통과한다.
 6. `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check <BASE>`가 `실패 0종`이다.
@@ -572,7 +591,7 @@
 | 5. 0068a 출력 JSON만 읽음, 엔진·정책 불변, 판본 1 출력·첫 화면 불변 | 머리말, 1절 1·3·4, 8절 |
 | 6. 측정 전 허브 할 일 | 10절 |
 
-### 세션 A가 이 초안에서 새로 정한 것(허브 확인 필요)
+### 세션 A가 초안에서 새로 정한 것(H29-2로 (1) v2-tables, (2) USAGE 예외, (3) pendingOverdue 겹침 승인)
 
 | 항목 | 정한 것 | 이유 |
 |---|---|---|
@@ -583,3 +602,25 @@
 | `v2-tables`의 lateMode | base만 받는다 | 판정표 v2가 base만 잰다 |
 | J9 분모 0 | 별도 예외 없이 교차곱 동점 | PRECHECK-0068 기각 항목(table-J9-edge)과 같은 결론 |
 | R0 기록의 정책 | `--policies MAX_CONTRIBUTION,NO_FX`로 돌리는 명령을 권고 | 기록 네 키에 필요한 실행만 돌리면 비용이 전체 묶음의 약 1/60이다 |
+
+## 개정 1 처리표(`PRECHECK-0068b-HUB-2026-10-24.md` 5절, H29)
+
+| 수정 | 반영 자리 |
+|---|---|
+| E1(major) | 1절 1 v1 표 회귀: JSON 1·2는 `SCENARIO_M2_OPERATIONS`, 모든 명령에 `node src/engine/sim/run.mjs` 접두와 `-before`·`-after` 리디렉션 |
+| E2(major) | 3.7 `후보 합` 열 |
+| E3 | 3.5 금액 단위(USD 센트, 환산 없음) |
+| E4 | 4.2 2×중앙 BigInt 비교, 시험 5 x.5 고정물 |
+| E5 | 2.2 세 명령 lateMode 검사, 시험 1 |
+| E6 | 4.3 `--r0` lateMode·(다) 실행만, 시험 7 |
+| E7 | 시험 10 CREDIT_AWARE 고정물, 변형 21 |
+| E8 | 1절 5 import 목록 |
+| E9 | 1절 1 10시드 표 회귀((가)일 때) |
+| E10 | 3.2 진단·조사 선행 비교, J6 설명·J4 문장 |
+| E11 | 3.4 유동성 주석은 세 행 각각 |
+| E12 | 3.1 `judgmentKindV2`, 시험 2 |
+| E13 | 2.2 거절 문구, 시험 1, 변형 19 이유 |
+| E14 | 3.2 직접 무역 수 정의, 6절 고정물 덮어쓰기 |
+| E15 | 시험 5 머리말과 M′ 하한 |
+| E16·H29-1 | 머리 이탈표, 3.4 진단 C `causesV2`, 시험 4, 변형 22 |
+| H29-2 | 처리표 ‘세션 A가 초안에서 새로 정한 것’ 제목 |
