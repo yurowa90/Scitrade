@@ -6,6 +6,7 @@
 - 돌리는 손잡이: 판매 마진 k = 0 → **+1**(판본 1 5.3 ‘J7 < 25% → k + 1’). 자료 위치는 `RISK_PROFILE_V2.sale_margin_k`(H31). 다른 값은 바꾸지 않는다.
 - 회차 자료: `data/market_rules.json` sha256 `e01c589cfcb755d0150ce0c70167dbd87ea3bda414e8b2bdbb58c402b2a1bfaa`. `check_profile_v2.py <판본 1> data/market_rules.json 1` → `DIFF 0`(출력 sha256 `a0c10c1e78dc61508f6183453a18e5fe3726377ea22a5380f15f25017a49948a`). 골든 둘 종료 0, validate 통과.
 - 명령: V2-RUN-PLAN 2절, `--round 1`.
+- **회차 프로필의 자리(허브 정정).** 처음에는 k = 1을 개발 브랜치에 커밋했다(`4ca3595`). 그러자 자료가 k = 0이라고 가정한 기존 시험 17개가 CI에서 실패했다(`m2a5-risk-credit-v2`, `m2a5-risk-default-v2`, `m2a5-risk-margin-k-v2`). 측정은 그 커밋에서 떼어 낸 측정 트리에서 돌므로 측정 결과에는 영향이 없다. 회차 프로필은 측정 브랜치 `claude/measure-v2-r1`(`4ca3595`)에만 두고, 개발 브랜치는 k = 0으로 되돌린다. 조정이 끝나면 최종 프로필과 그에 맞춘 시험 기대값을 Codex 지시서 하나로 개발 브랜치에 들인다.
 
 ## 미리 정한 보고 항목(H31-3)
 

@@ -98,7 +98,7 @@
     {
       "path": "data/market_rules.json",
       "size_bytes": 39283,
-      "sha256": "e01c589cfcb755d0150ce0c70167dbd87ea3bda414e8b2bdbb58c402b2a1bfaa"
+      "sha256": "24c8c520b238f7cb8b47ef448d945d118b87bf3b73068749f66c917e15837aba"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -1882,13 +1882,13 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-ROUND-1.md",
-      "size_bytes": 1219,
-      "sha256": "13cc331474825266a81493c38433fd756d224a283ba2b3940e9a1c866ddbc501"
+      "size_bytes": 1866,
+      "sha256": "2e0385264ba45fdab233b2a85557a7b5d266b89563cb7bf2acc5286714820e60"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
-      "size_bytes": 5719,
-      "sha256": "47d98f8cd151dbc41e6d18101d0db0a8f4ecb9e9724f1d07662a7177723cf4ea"
+      "size_bytes": 6004,
+      "sha256": "845fafa13082d70df2df84dc423e80a4d6f4904f6da029dc34d54fc9600de842"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/v2-round0/CMP-R0P-R1.md",
