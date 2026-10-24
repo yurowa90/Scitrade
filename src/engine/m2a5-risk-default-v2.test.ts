@@ -120,8 +120,71 @@ describe('TASK-0067b 대손·이자', () => {
     for (const g of risk.credit!.pDefaultBpByGrade) g.pDefaultBp = 10000;
     expect(defaultFor(cfg, 2001, '손-견적', customer.counterpartyId, 'BASE')).toBe(false);
   });
+  it('2 같은 계약에서 D30 조건 계수가 BASE와 다른 대손 결과를 만든다', () => {
+    const f = fixture('DEFAULT', 40);
+    f.cfg.operations!.risk!.credit = structuredClone(loadCreditProfile('RISK_PROFILE_V2'));
+    // 조건 계수만 분리하려고 기간·가산은 두 조건 모두 0으로 맞춘다.
+    for (const term of f.cfg.operations!.risk!.credit!.terms) { term.days = 0; term.premiumBp = 0; }
+    const c = ctr(f.s, f), risk = f.cfg.operations!.risk!;
+    const stream = `COLLECT:${c.sellOfferId}:default`;
+    // 시드 2003의 실제 계약 추첨값 953: BASE 500bp < 953 < D30 1000bp.
+    const seed = 2003;
+    expect(Math.floor(drawUniform({ seed, cursors: {} }, stream).value * 10000)).toBe(953);
+    expect(defaultFor(f.cfg, seed, c.sellOfferId!, c.customerId, 'BASE')).toBe(false);
+    expect(defaultFor(f.cfg, seed, c.sellOfferId!, c.customerId, 'D30')).toBe(true);
+    f.s.rng.seed = seed; f.cfg.seed = seed;
+    const base = through(f, 55);
+    const d30 = structuredClone(f); ctr(d30.s, d30).creditTermId = 'D30';
+    expect(ctr(f.s, f).creditTermId).toBe('BASE');
+    expect(risk.credit!.terms.find((t) => t.id === 'D30')!.factorPct).toBe(200);
+    expect(inv(through(d30, 55), d30).status).toBe('WRITTEN_OFF');
+    expect(inv(base, f).status).toBe('PAID');
+    expect(entriesFor(base, 'BADDEBT-')).toEqual([]);
+  });
+  it('2 추첨값이 반올림 확률과 같으면 대손이 아니다', () => {
+    const cfg = config(), risk = cfg.operations!.risk!, customer = risk.profile.collections.byCounterparty[0]!;
+    const draw = Math.floor(drawUniform({ seed: 2001, cursors: {} }, 'COLLECT:손-경계:default').value * 10000);
+    risk.credit!.terms.find((t) => t.id === 'BASE')!.factorPct = 100;
+    risk.credit!.pDefaultBpByGrade.find((g) => g.grade === customer.grade)!.pDefaultBp = draw;
+    expect(divHalfAway(draw * 100, 100)).toBe(draw);
+    expect(defaultFor(cfg, 2001, '손-경계', customer.counterpartyId, 'BASE')).toBe(false);
+  });
+  it('1 R4 (다) MAX_CONTRIBUTION 시드 2001 전체 실행', () => {
+    const { state } = simulate(config('R4', 2001), policyById('MAX_CONTRIBUTION')!, 2001);
+    expect(state.phase).toBe('ENDED');
+    expect(state.operations!.outcome).toBe('COMPLETED');
+  }, 60000);
+  it('3 R4 주선 청구서는 대손 확률 10000이어도 결제일에 수금한다', () => {
+    const f = fixture(); ctr(f.s, f).kind = 'FORWARDING';
+    expect(f.cfg.operations!.risk!.credit!.pDefaultBpByGrade.every((g) => g.pDefaultBp === 10000)).toBe(true);
+    const s = through(f, 10);
+    expect(inv(s, f).status).toBe('PAID');
+    expect(receipts(s, f).map((e) => [e.day, amount([e], 'CASH')])).toEqual([[10, 12345]]);
+    expect(entriesFor(through(f, 25), 'BADDEBT-')).toEqual([]);
+    expect(carries(through(f, 25), f)).toEqual([]);
+  });
+  it('5 결제일 뒤 부분 회수 두 번의 이자는 누적액의 증분이다', () => {
+    const f = fixture('LATE');
+    // 12일 마감까지 전액 미수, 13일부터 부분 회수 처리로 전환한다.
+    f.s = through(f, 12);
+    for (const g of f.cfg.operations!.risk!.profile.collections.grades) {
+      g.pLateBp = 0; g.pPartialBp = 10000;
+    }
+    const s = through(f, 16);
+    expect(receipts(s, f).map((e) => [e.day, amount([e], 'CASH')])).toEqual([[13, 6173], [16, 6172]]);
+    // 12345×3×2=74070 → 7, 이후 6172×3×3=55548, 합 129618 → 13.
+    expect(carries(s, f).map((e) => [e.id, e.day, amount([e], 'RECEIVABLE_CARRY')])).toEqual([
+      [`CARRY-${f.invId}-1`, 13, 7], [`CARRY-${f.invId}-2`, 16, 6],
+    ]);
+    expect(carryAccrued(s, f.cfg, f.invId, 16)).toBe(129618);
+    expect(amount(carries(s, f), 'RECEIVABLE_CARRY')).toBe(13);
+    expect(divHalfAway(carryAccrued(s, f.cfg, f.invId, 16), 10000)).toBe(13);
+  });
   it('3 대손 확정 분개 ID 순서 전체·금액·상태·로그', () => {
-    const f = fixture(), before = through(f, 24), s = through(f, 25);
+    const f = fixture();
+    f.cfg.operations!.risk!.profile.collections.lateMinDays = 5;
+    const before = through(f, 24), s = through(f, 25);
+    expect(inv(s, f).dueDay + f.cfg.operations!.risk!.profile.collections.lateMaxDays).toBe(25);
     expect(inv(before, f).status).toBe('OVERDUE'); expect(receipts(before, f)).toEqual([]);
     const entries = s.ledger.entries.filter((e) => e.contractId === f.id && e.day === 25);
     expect(entries.map((e) => e.id)).toEqual([`RECEIPT-RCPT-${f.invId}-R`, `CARRY-${f.invId}-1`, `BADDEBT-${f.invId}`]);
@@ -244,6 +307,21 @@ describe('TASK-0067b 대손·이자', () => {
       expect(r.components.carry).toBe(-usdToKrwMinor(expected, referenceRate(f.cfg, s.rng.seed, evaluationDay)));
       expect(r.components.residual).toBe(0);
     }
+    // 미기재 이자도 평가일(25일) 환율 1206의 원가 7센트와 묶는다.
+    const pending = fixture('DEFAULT', 10, config('R4', 7737)), open = through(pending, 24);
+    post(open.ledger, { id: 'SURCHARGE-미기재-반올림', day: 25, currency: 'USD', contractId: pending.id, reason: '평가일 원가',
+      lines: [{ account: 'INVENTORY', amount: 7 }, { account: 'CASH', amount: -7 }] });
+    post(open.ledger, { id: 'COGS-미기재-반올림', day: 25, currency: 'USD', contractId: pending.id, reason: '평가일 원가 대체',
+      lines: [{ account: 'COST_OF_GOODS_SOLD', amount: 7 }, { account: 'INVENTORY', amount: -7 }] });
+    expect(referenceRate(pending.cfg, 7737, 25)).toBe(1206);
+    expect(carries(open, pending)).toEqual([]);
+    const pendingReport = contractRiskReport(open, pending.cfg, pending.id);
+    const combined = usdToKrwMinor(-59, 1206) - usdToKrwMinor(-7, 1206);
+    const separate = -usdToKrwMinor(52, 1206);
+    expect(combined).toBe(-628); expect(separate).toBe(-627);
+    expect(pendingReport.components.carry).toBe(combined);
+    expect(pendingReport.components.carry).not.toBe(separate);
+    expect(pendingReport.components.residual).toBe(0);
     const f = fixture('LATE'), s = through(f, 20), r = contractRiskReport(s, f.cfg, f.id);
     expect(r.components.carry).toBe(-usdToKrwMinor(19, referenceRate(f.cfg, 2001, 16)));
     expect(r.components.residual).toBe(0);
@@ -269,6 +347,8 @@ describe('TASK-0067b 대손·이자', () => {
       ['대손 회수·손실 분개 수와 합계', (s) => { s.ledger.entries = s.ledger.entries.filter((e) => e.id !== `RECEIPT-RCPT-${f.invId}-R`); }],
       ['대손 회수·손실 분개 수와 합계', (s) => { s.ledger.entries = s.ledger.entries.filter((e) => e.id !== `BADDEBT-${f.invId}`); }],
       ['대손 회수·손실 분개 수와 합계', (s) => { s.ledger.entries.find((e) => e.id === `BADDEBT-${f.invId}`)!.lines[0]!.amount--; }],
+      ['대손 회수·손실 분개일이 확정일과 다릅니다', (s) => { s.ledger.entries.find((e) => e.id === `BADDEBT-${f.invId}`)!.day--; }],
+      ['대손 종결 계약의 상태·완료일이 다릅니다', (s) => { ctr(s, f).completedDay = 24; }],
       ['대손 확정 뒤 수금·이자 분개', (s) => { const e = structuredClone(receipts(s, f)[0]!); e.id += '-추가'; e.day = 26; post(s.ledger, e); }],
       ['대손 확정 뒤 수금·이자 분개', (s) => { const e = structuredClone(carries(s, f)[0]!); e.id += '-추가'; e.day = 26; post(s.ledger, e); }],
       ['확정일이 캠페인 끝을 넘는 청구서는 대손 종결할 수 없습니다', (s) => { inv(s, f).dueDay = 76; }],
@@ -279,23 +359,30 @@ describe('TASK-0067b 대손·이자', () => {
       expect(() => checkInvariants(s, f.cfg), message).toThrow(message);
     }
   });
+  it('11 rules-3에는 대손 종결 청구서를 넣을 수 없다', () => {
+    const f = fixture(), s = through(f, 25);
+    const cfg = structuredClone(f.cfg); cfg.rules.rulesVersion = 'M2a-rules-3';
+    expect(() => checkInvariants(s, cfg)).toThrow('대손·지연 이자는 규칙 4에서만 쓸 수 있습니다');
+  });
   it('11 회수 0이면 회수 분개 없이 대손 종결·그 뒤 이자 없음', () => {
     const f = fixture(); f.cfg.operations!.risk!.credit!.recoveryBp = 0;
     const s = through(f, 40); expect(receipts(s, f)).toEqual([]);
     expect(balance(s.ledger, 'USD', 'BAD_DEBT')).toBe(12345);
     expect(() => checkInvariants(s, f.cfg)).not.toThrow();
   });
-  it('12 확정 전날에는 대손과 지연 전액의 청구서·계약·로그·읽기가 같다', () => {
+  it('12 결제일부터 확정 전날까지 대손과 지연 전액의 청구서·계약·로그·읽기가 같다', () => {
     const f = fixture(), cfg = structuredClone(f.cfg);
     for (const g of cfg.operations!.risk!.credit!.pDefaultBpByGrade) g.pDefaultBp = 0;
-    const a = openDay(through(f, 23), f.cfg).state, b = openDay(through({ ...f, cfg }, 23), cfg).state;
-    expect(a.day).toBe(24);
-    expect(defaultFor(f.cfg, 2001, ctr(a, f).sellOfferId!, ctr(a, f).customerId, 'BASE')).toBe(true);
-    expect(defaultFor(cfg, 2001, ctr(b, f).sellOfferId!, ctr(b, f).customerId, 'BASE')).toBe(false);
-    expect(inv(a, f)).toEqual(inv(b, f)); expect(ctr(a, f)).toEqual(ctr(b, f));
-    const logs = (s: GameState) => s.log.filter((l) => l.textKo.includes(f.id)).map((l) => ({ ...l, textKo: l.textKo.replaceAll(f.id, '') }));
-    expect(logs(a)).toEqual(logs(b));
-    expect(contractProgress(a, f.cfg, ctr(a, f))).toEqual(contractProgress(b, cfg, ctr(b, f)));
-    expect(paymentDefaultStatus(a, f.cfg)).toEqual(paymentDefaultStatus(b, cfg));
+    for (let day = 10; day < 25; day++) {
+      const a = through(f, day), b = through({ ...f, cfg }, day);
+      expect(inv(a, f).status).toBe('OVERDUE');
+      expect(defaultFor(f.cfg, 2001, ctr(a, f).sellOfferId!, ctr(a, f).customerId, 'BASE')).toBe(true);
+      expect(defaultFor(cfg, 2001, ctr(b, f).sellOfferId!, ctr(b, f).customerId, 'BASE')).toBe(false);
+      expect(inv(a, f)).toEqual(inv(b, f)); expect(ctr(a, f)).toEqual(ctr(b, f));
+      const logs = (s: GameState) => s.log.filter((l) => l.textKo.includes(f.id)).map((l) => ({ ...l, textKo: l.textKo.replaceAll(f.id, '') }));
+      expect(logs(a)).toEqual(logs(b));
+      expect(contractProgress(a, f.cfg, ctr(a, f))).toEqual(contractProgress(b, cfg, ctr(b, f)));
+      expect(paymentDefaultStatus(a, f.cfg)).toEqual(paymentDefaultStatus(b, cfg));
+    }
   });
 });

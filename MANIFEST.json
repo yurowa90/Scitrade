@@ -3061,6 +3061,11 @@
       "sha256": "5ac69e9fa26cfec9e4d6a409af77e1fecfb1c768472778045bbf189a63c9aba2"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067b-R1-tests.md",
+      "size_bytes": 6318,
+      "sha256": "e9a284a12661f3fce464c002ab12b13df5f8751c6d4800cb78f1351f99259e58"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0067b-rules4-default-carry.md",
       "size_bytes": 26811,
       "sha256": "951bbfd902acda8ff787d83f39808dafb442f591f8e33c7638395fb4fee3eb98"
@@ -3447,8 +3452,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0067b.md",
-      "size_bytes": 20624,
-      "sha256": "b92d0b77b69f075c97ae9346adf02a63998ced48a968bea666d739b1931c2071"
+      "size_bytes": 29520,
+      "sha256": "dd1d0c199b15d13ccb346bb81cfc9320181ddbff58cec89bfcb0c5a27e5bfd2b"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -3977,13 +3982,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 94197,
-      "sha256": "33521bd8d9d1988927f65879e69ca9264bb64209b35a7c03c36f738dd47c3cd4"
+      "size_bytes": 95847,
+      "sha256": "cee0de4c96eec21f24ff55b3ffecdfc1d7ffbfb7a3e6602cfec929e6a7b873ac"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 92906,
-      "sha256": "f249bf0789e05b774a908891eed4d29fffeba50d18d8c72eade31e34968ddc30"
+      "size_bytes": 93184,
+      "sha256": "7321b92a69158400086bb2013b920eaa161b461b0a66456b7e5d9cf2595e3f5b"
     }
   ]
 }

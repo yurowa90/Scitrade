@@ -232,3 +232,99 @@ src/engine/m2a5-risk-credit-v2.test.ts:174:    for (const status of ['PAID', 'OU
 ## 질문
 
 없음.
+
+## R1 — 대손·이자 시험 판별력 보강과 회수·이자 검사
+
+- 모델: gpt-6-astra
+- 시작 HEAD: `e92d18809a876054fd546655097bb22e896251e6` (`git rev-parse HEAD`).
+- 지시: TASK-0067b-R1. 기존 보고 본문은 보존하고 이 절만 덧붙였다.
+
+### 바꾼 파일
+
+- `src/engine/m2a5-risk-default-v2.test.ts`: 조건 전달·확률 등호·R4 주선·R4 전체 실행·두 번의 이자 분개·확정일·불변식·미기재 원가 환산·매일 미래 누설 검사. 26개에서 32개로 증가.
+- `tools/validate_data.py`: `recovery_bp >= carry_bp_per_day * late_max_days` 검사 추가. 고정 메시지는 `recovery_bp: 확정일까지의 최대 누적 이자 이상이어야 함`이다.
+- `tools/test_validate_data.py`: 현재 자료·등호 허용·회수율 0 거절과 `main()`의 정확한 FAIL 출력 시험 2개 추가.
+- `docs/ai/tasks/results/TASK-0067b.md`: R1 보고 추가.
+- `MANIFEST.json`: 생성기로만 갱신.
+
+### 설계 판단
+
+- 조건 대조 시드는 **2003**, 실제 계약의 추첨값은 **953**이다. BASE의 500bp(계수 100%)에서는 정상, D30의 1000bp(계수 200%)에서는 대손이다. 다른 계약 값의 영향을 없애려고 시험 설정에서 기간·가산을 두 조건 모두 0으로 맞췄다. 같은 설정·상태를 복제하고 계약의 `creditTermId`만 바꿔 `through(..., 55)`로 PAID/WRITTEN_OFF를 대조한다. 생산 자료는 바꾸지 않았다.
+- 두 번의 이자 분개는 12일 마감까지 전액 미수인 상태에서 부분 회수 설정으로 이어 간다. 13일 6,173센트, 16일 6,172센트를 회수한다. `12345×3×2 = 74070 → 7`, 추가 `6172×3×3 = 55548`, 누적 `129618 → 13`이므로 CARRY-1은 7, CARRY-2는 6이다.
+- 미기재 이자는 시드 7737·평가일 25일·환율 1206에서 52센트다. 같은 평가일 원가 7센트를 추가하면 합산 환산 차이는 `−712 − (−84) = −628원`, 별도 환산은 `−627원`이다. carry와 residual을 함께 단언한다.
+- 확률 등호 시험은 시드 2001의 실제 추첨값에 BASE 확률 고정물을 맞춘다. 추첨 함수 주입·모킹은 하지 않는다.
+- 검증기 회귀는 메모리 자료 사본을 사용한다. 변형으로 해시 오류가 함께 생기더라도 정확한 신용 검사 FAIL 문장 자체를 요구한다.
+
+### 변형 R1-1~R1-11
+
+`.git` 없는 별도 사본 `/tmp/TASK-0067b-R1-copy`에 소스를 복사하고 기존 node_modules 연결을 사용했다. 각 변형은 대상 문자열 1개 일치를 확인한 뒤 적용하고, 지정 시험 하나를 실행한 뒤 원본 내용으로 복원·동일성을 확인했다. 11개 모두 종료 1로 탐지했으며 마지막에 사본을 삭제했다. 원래 작업 트리의 엔진에는 변형을 적용하지 않았다.
+
+| 변형 | 결과 | 지정 시험의 실패 근거 |
+|---|---|---|
+| R1-1 조건 대신 BASE | 탐지 | D30 결과 PAID ≠ WRITTEN_OFF |
+| R1-2 회수·이자 검사 삭제 | 탐지 | 정확한 신용 검사 FAIL 문장 누락. hash mismatch만으로 통과하지 않음 |
+| R1-3 확정 오프셋을 lateMinDays로 | 탐지 | 15일 조기 대손의 확정일 불변식 위반 |
+| R1-4 직접 무역 한정 삭제 | 탐지 | 주선 결제일 OVERDUE ≠ PAID |
+| R1-5 rules-4 전용 검사 삭제 | 탐지 | 규칙 4 전용 위반 문장 누락 |
+| R1-6 대손 분개 날짜 검사 삭제 | 탐지 | 대손 분개일 위반 문장 누락 |
+| R1-7 종결 계약 검사 삭제 | 탐지 | 잘못된 completedDay를 거절하지 않음 |
+| R1-8 이미 기재한 이자 차감 삭제 | 탐지 | 16일 누적 이자 합계 불변식 위반 |
+| R1-9 미기재 carry 흐름 cost=false | 탐지 | −627 ≠ −628 |
+| R1-10 추첨 `<`를 `<=`로 | 탐지 | 등호에서 true ≠ false |
+| R1-11 대손 결제일 OVERDUE 대입 삭제 | 탐지 | 결제일부터 OUTSTANDING ≠ OVERDUE |
+
+실행 스크립트: `/tmp/r1-mutations.py`. 개별 출력: `/tmp/r1-mutation-1.log`~`/tmp/r1-mutation-11.log`. 요약: `/tmp/r1-mutations.log`.
+
+### 실행한 검증과 결과
+
+검증 결과는 아래 최종 실행 기록을 따른다. 개발 중 새 고정물의 조건 기간·가산 정합성, 원가 분개 계정, 타입 오류를 고쳤다. MANIFEST 갱신 전 Python 전체 시험에서 해시 불일치 4건이 있었고, 생성 후 최종 검수로 재확인했다. 기존 시험의 기대값은 바꾸지 않았다.
+
+| 명령 | 결과 |
+|---|---|
+| `python3 tools/build_package.py --manifest-only` | 통과, 797파일. 보고 갱신 뒤에도 재생성 |
+| `python3 tools/validate_data.py` | 통과, 자료 25개·검사 34,037개 |
+| `npm run typecheck` | 통과 |
+| `npx vitest run src/engine/m2a5-risk-default-v2.test.ts` | 32개 통과 |
+| `npx vitest run` | 57파일·1,570개 통과, 기존 TODO 1개 |
+| `npm run build` (review_checks의 `npm run --silent build`) | 통과 |
+| `node tools/check_bundle_size.mjs dist` | 통과, 첫 화면 gzip 132,588 B |
+| 작업 전 `node tools/check_rules2_golden.mjs` | 종료 0, rules-2 105회·rules-1 400회 일치 |
+| 작업 전 `node tools/check_rules3_golden.mjs` | 종료 0, rules-3 108회 일치 |
+| 작업 전 `node src/engine/sim/run.mjs run --out /tmp/TASK-0067b-R1-run-before.json` | 종료 0, 비위험 400회 |
+| 작업 후 `node src/engine/sim/run.mjs run --out /tmp/TASK-0067b-R1-run-after.json` | 종료 0, 비위험 400회 |
+| `cmp /tmp/TASK-0067b-R1-run-before.json /tmp/TASK-0067b-R1-run-after.json` | 종료 0, 바이트 일치 |
+| 작업 후 `node tools/check_rules2_golden.mjs` | 종료 0, rules-2 105회·rules-1 400회 일치 |
+| 작업 후 `node tools/check_rules3_golden.mjs` | 종료 0, rules-3 108회 일치 |
+| `PYTHONDONTWRITEBYTECODE=1 python3 tools/test_validate_data.py` | 143개 통과 |
+
+첫 review_checks는 18종 중 1종 실패였다. 새 FAIL 출력 시험에서 `validator.read`의 문자열 인수만 바꿔 실제 Path 읽기를 놓친 시험 고정물 문제였다(`result: 0 != 1`). 기존 시험과 같은 `Path.read_text` 경로 주입으로 수정한 뒤 Python 전체 143개를 통과했고, R1-1~R1-11 변형을 최종 코드에서 다시 실행했다. 엔진 결함은 발견하지 않았다. 시드 설명 주석의 확률도 실제 자료인 BASE 500bp·D30 1000bp로 정정했다.
+
+### 완료 조건 대조
+
+| 지시 항목 | 판정·근거 |
+|---|---|
+| 1 외상 조건 전달 | 충족. 시드 2003·추첨 953, 같은 계약의 조건만 바꿔 through 결과 비교, R1-1 탐지 |
+| 2 회수·이자 검사 | 충족. 기존 자료와 등호 통과, 0 회수 사본의 정확한 FAIL 확인, R1-2 탐지 |
+| 3 확정일·주선·실제 R4 실행 | 충족. 5/15일 비대칭 범위, 25일 확정. 주선 정시 지급 및 비용 없음. (다)·MAX_CONTRIBUTION·2001 전체 COMPLETED, timeout 60000ms. R1-3·4 탐지 |
+| 4 불변식 세 경우 | 충족. BADDEBT 날짜·completedDay·rules-3 종결 청구서의 고유 문장, R1-5~7 탐지 |
+| 5 두 이자 분개 | 충족. CARRY-1=7, CARRY-2=6, 누적 13, R1-8 탐지 |
+| 6 미기재 이자 cost | 충족. 합산 −628원·별도 −627원 차이 및 residual 0, R1-9 탐지 |
+| 7 경계·미래 누설 | 충족. 추첨=확률은 false. 결제일 10일부터 확정 전날 24일까지 매일 청구서·계약·로그·진행·지급 상태 동치, R1-10·11 탐지 |
+| 8 결과 보고 | 충족. 기존 본문 보존, R1 절·시드·변형·회귀·검수 결과 기록 |
+| 허용 파일·생산 코드 보존 | 충족. `git diff --name-status e92d188`에 허용된 5파일만 존재. 엔진·기존 다른 시험·data·schemas·sim·골든 변경 없음 |
+
+### 범위 밖 발견
+
+- 지시서가 참조한 `docs/ai/tasks/results/REVIEW-0067b-HUB-2026-10-24.md`는 이 작업 트리에 없다. 승인 R1 지시서와 실제 코드로 요구를 대조했다.
+- 시작부터 미추적 상태인 `docs/ai/tasks/TASK-0067b-R1-tests.md`는 변경하지 않았다. 생성기는 이 파일까지 포함하여 MANIFEST를 797파일로 갱신했다.
+- 커밋·푸시·브랜치 전환·패키지 설치·측정은 하지 않았다.
+
+### 질문
+
+없음.
+
+### 최종 검수
+
+`PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check e92d188` 재실행은 **종료 0, 검사 18종·실패 0종**이다. 전체 출력은 `/tmp/r1-review-final.log`에 있다. Vitest 57파일·1,570개 통과(TODO 1), Python 자료 검사 회귀 143개 통과, 타입·빌드·크기·rules-1/2/3 골든·도구 회귀·작업 트리 변화 없음 검사가 모두 통과했다. 완료 조건 1~4를 모두 충족한다.
+
+검수 뒤에는 이 결과 문단과 MANIFEST만 갱신했다. `python3 tools/build_package.py --manifest-only`, `python3 tools/build_package.py --check`, `python3 tools/validate_data.py`, `git diff --check`, 허용 파일 목록 및 기존 보고 본문 보존 확인을 마쳤다. 작업 전·후 실행 파일의 `cmp`도 다시 종료 0을 확인했다.
