@@ -5,6 +5,7 @@
             + 판정표 v2 5.2 시작값·고정값 + DESIGN-v2 5.3 등급 배치.
 이것을 data/market_rules.json의 RISK_PROFILE_V2와 키로 맞춰 비교한다(배열 순서 무시).
 판본 1 프로필(RISK_PROFILE_DEFAULT)이 판본 1 최종과 같은지도 확인한다.
+risk_profiles 밖의 최상위 키(rule_sets 등)가 판본 1과 같은지도 본다. 판매 마진 k = 0(TASK-0065 값)의 근거다.
 
 쓰는 법: python3 check_profile_v2.py <판본 1 market_rules.json> <지금 market_rules.json>
 차이가 없으면 'DIFF 0'과 정규화한 JSON의 sha256을 내고 0으로 끝난다. 차이가 있으면 1.
@@ -23,11 +24,17 @@ def dump(x):
     return json.dumps(canon(x), ensure_ascii=False, sort_keys=True, separators=(',', ':'))
 
 def main(v1_path, now_path):
-    v1 = {p['id']: p for p in json.load(open(v1_path, encoding='utf-8'))['risk_profiles']}
-    now = {p['id']: p for p in json.load(open(now_path, encoding='utf-8'))['risk_profiles']}
+    v1_all = json.load(open(v1_path, encoding='utf-8'))
+    now_all = json.load(open(now_path, encoding='utf-8'))
+    v1 = {p['id']: p for p in v1_all['risk_profiles']}
+    now = {p['id']: p for p in now_all['risk_profiles']}
     assert set(v1) == {'RISK_PROFILE_DEFAULT'}, f'판본 1 프로필 {sorted(v1)}'
     assert set(now) == {'RISK_PROFILE_DEFAULT', 'RISK_PROFILE_V2'}, f'지금 프로필 {sorted(now)}'
     ok = True
+    others = sorted((set(v1_all) | set(now_all)) - {'risk_profiles'})
+    for k in others:
+        if dump(v1_all.get(k)) != dump(now_all.get(k)):
+            print(f'DIFF 최상위 키 {k}가 판본 1과 다르다'); ok = False
     if dump(v1['RISK_PROFILE_DEFAULT']) != dump(now['RISK_PROFILE_DEFAULT']):
         print('DIFF 판본 1 프로필이 바뀌었다'); ok = False
 
@@ -77,6 +84,7 @@ def main(v1_path, now_path):
     if not ok:
         return 1
     print('DIFF 0')
+    print('risk_profiles 밖 최상위 키 같음:', ','.join(others))
     print('v1 프로필 sha256', hashlib.sha256(dump(now['RISK_PROFILE_DEFAULT']).encode()).hexdigest())
     print('v2 프로필 sha256', hashlib.sha256(dump(got).encode()).hexdigest())
     return 0

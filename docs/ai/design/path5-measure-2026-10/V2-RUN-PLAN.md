@@ -1,6 +1,6 @@
 # 판정표 v2 측정 계획(허브, 2026-10-24)
 
-- 지위: **허브 초안, 세션 A 확인 전.** 판정 기준이 아니다. 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md`(승인 `b51ee20`)와 그 0절 고정 기록이다.
+- 지위: **허브 확정(세션 A 확인 반영, 2026-10-24).** 판정 기준이 아니다. 기준은 `docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md`(승인 `b51ee20`)와 그 0절 고정 기록이다.
 - 이 문서는 명령과 순서만 정한다. 판정표와 어긋나면 판정표를 따른다.
 
 ## 1. 시작 조건
@@ -18,28 +18,37 @@
 - 묶음은 `--policies` 없이 둔다. 그러면 실행기가 `d03PolicyIdsV2(level)`을 쓴다. R0P·R4는 전체 묶음, R1~R3은 줄인 묶음이다(판정표 1절, TASK-0068a-R1 compat-1 시험).
 - 프로필은 기본값 `RISK_PROFILE_V2`, 지연 모드는 `base`, 회차는 `--round 0`부터 시작한다.
 
-## 2. 0회차 명령(기준 시드)
+## 2. 회차 명령(기준 시드)
 
-| 순서 | 명령 | 예상 |
+`S` = `node src/engine/sim/run.mjs`, `n` = 회차 번호, `B` = 시드 시작(기준 1061, 표본 밖 1은 1101). 모든 v2 실행에 `--round n`을 넣는다(빠지면 v2-report가 메타 불일치로 거절한다).
+
+| 순서 | 명령 | 비고 |
 |---|---|---|
-| 1 | `node src/engine/sim/run.mjs d03 --risk-v2 R0P --round 0 --seed-base 1061 --seeds 40 --workers 4 --out V2-R0P.json` | 전체 묶음, 가장 오래 걸린다 |
-| 2 | `… d03 --risk-v2 R1 --round 0 --seed-base 1061 --seeds 40 --workers 4 --out V2-R1.json` | 줄인 묶음 |
-| 3 | `… d03 --risk-v2 R2 … --out V2-R2.json` | 줄인 묶음 |
-| 4 | `… d03 --risk-v2 R3 … --out V2-R3.json` | 줄인 묶음 |
-| 5 | `… d03 --risk-v2 R4 … --out V2-R4.json` | 전체 묶음 |
-| 6 | `… d03 --risk R0 --round 0 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 1061 --seeds 40 --workers 4 --out V1-R0.json` | R0 열 기록용(선택, 판정에 쓰지 않음) |
-| 7 | `… v2-report V2-R0P.json V2-R1.json V2-R2.json V2-R3.json V2-R4.json --r0 V1-R0.json > V2-REPORT-r0.md` | 6열 표와 단계별 근거 |
-| 8 | `… risk-compare-v2 V2-R2.json V2-R3.json`, `… risk-compare-v2 V2-R3.json V2-R4.json` | L2(판정), 나머지 비교는 진단 |
+| 1 | `S d03 --risk-v2 R0P --round n --seed-base B --seeds 40 --workers 4 --out V2-R0P.json` | 전체 묶음 |
+| 2 | `S d03 --risk-v2 R1 --round n --seed-base B --seeds 40 --workers 4 --out V2-R1.json` | 줄인 묶음 |
+| 3 | `S d03 --risk-v2 R2 --round n --seed-base B --seeds 40 --workers 4 --out V2-R2.json` | 줄인 묶음 |
+| 4 | `S d03 --risk-v2 R3 --round n --seed-base B --seeds 40 --workers 4 --out V2-R3.json` | 줄인 묶음 |
+| 5 | `S d03 --risk-v2 R4 --round n --seed-base B --seeds 40 --workers 4 --out V2-R4.json` | 전체 묶음 |
+| 6 | `S d03 --risk R0 --round n --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base B --seeds 40 --workers 4 --policies MAX_CONTRIBUTION,NO_FX --out V1-R0.json` | R0 열 기록용(판정에 쓰지 않음). R0 열 네 키에는 기준 회사와 NO_FX만 있으면 된다 |
+| 7 | 단계마다 `S v2-tables V2-{단계}.json > V2-TABLES-{단계}.md`(다섯 개) | ①~⑨ 전체 표, J6 칸별, 진단 U·거절 정책별 표. v2-report에는 ⑤·⑨만 나온다 |
+| 8 | `S v2-report V2-R0P.json V2-R1.json V2-R2.json V2-R3.json V2-R4.json --r0 V1-R0.json > V2-REPORT.md` | 6열 표와 단계별 근거 |
+| 9 | `S risk-compare-v2`를 R0P→R1, R1→R2, R2→R3, R3→R4 네 쌍 | L2 판정은 R2→R3·R3→R4. R0P→R1에서 J9 판본 1식 진단(사전 기대 0.00%p)이 나온다 |
 
+- 표본 밖 1은 같은 명령 셋을 `B = 1101`로 한 번 돌리고, 출력 이름에 `-OOS1`을 붙인다. M′는 표본 밖 1의 R0P에서 다시 낸다(판정표 3.3).
 - 회차마다 각 명령의 시작·끝 시각, 종료 코드, 출력 JSON·표의 sha256을 RUNLOG 표에 적는다(판본 1과 같은 양식).
-- 예상 시간은 작업자 4명 기준 약 1시간이다. 판정표 1절의 1시간 40분은 작업자 1명당 2.1초로 잡은 값이다. 실측이 크게 다르면 RUNLOG에 적는다.
+- 예상 시간: v2 다섯 단계 10,440회, 작업자 4명이면 약 83분이다(TASK-0068a 결과 보고의 추정). 6번은 두 정책이라 짧다. 실측은 RUNLOG에 적는다.
 
 ## 3. 판정과 조정
 
 - 판정은 `v2-report`의 6열 표와 L2 비교 결과로만 한다. 판정표 3절이 기준이다.
 - 어긋나면 판정표 5.1 우선순위(J1 > L1 > L2 > J9 > J7 > J4d)와 5.3 순서대로 손잡이 하나를 정한다. 그 회차 프로필을 커밋한 뒤 전체를 다시 잰다. 최대 3회다.
 - 조정 프로필은 `RISK_PROFILE_V2`의 값만 바꾼다. 바뀐 값, 새 sha256, 대조 결과를 회차 문서(`V2-ROUND-n.md`)에 적는다.
-- 모든 판정이 통과하면 표본 밖 1(1101~1140)을 한 번 돌린다. 최종 판정은 기준 시드와 표본 밖 1이 둘 다 통과해야 한다.
+- 모든 판정이 통과하면 표본 밖 1(1101~1140)을 한 번 돌린다.
+- 최종 보고는 ‘기준 | 표본 밖 1’ 두 열 표 하나다.
+  - 판정 대상 여섯(J1, J4d, J6, J7, L1, J9, 판정표 4절)은 두 열이 모두 통과해야 최종 통과다.
+  - 그 밖의 판정 행(J3, J4a~c, J5, L2)의 표본 밖 값은 ‘기록’으로만 적는다.
+  - 진단 J8·L4·V·U는 두 열을 나란히 적는다. 차이를 검정하지 않고 통과·실패 말을 쓰지 않는다. 사전 기대와 H28-1 읽기는 한 번만 적는다.
+  - 25% 관문은 시작 프로필의 첫 기준 회차와 최종 회차 값을 둘 다 적고(판정표 3.6), 표본 밖 1 값을 덧붙인다. 조정 없이 끝나면 두 자리에 같은 값을 쓴다.
 
 ## 4. 보고에 함께 적을 해석(측정 전 고정)
 
