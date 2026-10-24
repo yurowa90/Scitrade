@@ -20,3 +20,10 @@
 ## 검수 기준
 
 실명 기업·선박 금지, KOTRA·KITA 흉내 금지, 민감 소재 금지, 사실 섞임 검사(`check_fact_mixing`), 학생 어휘 수준, 교육 내용 정확성, 사용자 승인 문장(`docs/ai/design/BUSAN-approved-texts.md`) 보존. 자료 문구를 바꾸면 `python3 tools/validate_data.py`를 통과해야 한다.
+
+## 지시서
+
+| 지시서 | 내용 | 상태 |
+|---|---|---|
+| [TEXT-0001](tasks/TEXT-0001-copy-audit.md) | 학생 화면 한국어 문구 점검(읽기 전용) | 반영(지적 65건, 허브 검수 `results/TEXT-0001-HUB-REVIEW-2026-10-24.md`) |
+| [TEXT-0002](tasks/TEXT-0002-copy-final.md) | 받아들인 P1·P2 지적의 확정 문구 표 | 승인, 세션 T 실행 대기 |
