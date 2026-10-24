@@ -546,6 +546,7 @@ export type CreditTermId = 'BASE' | 'D15' | 'D30';
 /** 외상 설정은 엔진 전용이다. 읽기 함수는 공개 금액·날짜·등급만 골라 낸다. */
 export interface CreditProfile {
   profileId: string;
+  saleMarginK?: number;
   terms: { id: CreditTermId; days: number; factorPct: number; premiumBp: number }[];
   limitUnitMinor: number;
   limits: { grade: string; lots: number; limitMinor: number }[];
