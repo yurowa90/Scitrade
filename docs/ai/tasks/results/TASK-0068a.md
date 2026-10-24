@@ -263,3 +263,93 @@ node src/engine/sim/run.mjs d03 --risk-v2 R4 --seed-base 2001 --seeds 3 --worker
 ## 질문
 
 없음. 커밋·푸시·브랜치 전환·패키지 설치를 하지 않았다.
+
+## R1 — 정책·계측 시험 판별력과 끝난 때 미결 수금
+
+- 모델: gpt-6-astra (medium).
+- 시작 `git rev-parse HEAD`: `7d382986d1f98f1e18e4828e97979002929a3cb7` (지정 BASE 일치).
+- 시작 때 미추적 파일 `docs/ai/tasks/TASK-0068a-R1-tests.md`가 있었다. 전달된 지시서이며 수정하지 않았다.
+
+### 바꾼 파일
+
+- `src/engine/sim/risk-runner-v2.test.ts`: 기존 13개를 유지하고 R1 시험 13개 추가(총 26개).
+- `src/engine/sim/risk-metrics.ts`: v2 credit에 `pendingPartialReceipts`, `pendingOverdue` 두 칸만 추가. 기존 완료 수금 두 칸과 정책 동작은 보존.
+- `docs/ai/tasks/results/TASK-0068a.md`: 이 R1 절.
+- `MANIFEST.json`: 생성 명령으로 갱신.
+
+### 설계 판단
+
+- policy-1: 창고 67 L에 X(60 L) 또는 Y(30 L) 하나만 가능하다. BASE 기여 X=11,688 > Y=11,388, D30 가산 후 Y=13,170이다. 별도 후보는 BASE −312, D30 +768이다. 반올림 나머지가 있는 판매액을 썼다.
+- policy-2: 같은 B 거래처의 첫 D30 판매액 106,058로 한도를 정확히 채운다. 둘째는 D30 +768에서 BASE −312로 바뀌므로 credit 1, 짝 1, 견적 1이며 기존 funds를 포함한 거절은 모두 0이다.
+- policy-4: 두 정책의 실제 ACCEPT_TRADE 명령에서 BASE 키의 소유 여부와 값을 함께 확인한다.
+- policy-5: `decideOperations`의 `late`는 LATE_OK·SEEDED_RANDOM에만 참이다. `parseVariant`에도 외상 정책을 지연 수락 모드로 바꾸는 변형이 없다. 따라서 승인 지시대로 추가 지연 재평가 시험은 생략한다.
+- compat-1: 실제 CLI를 정책 옵션 없이 한 시드(2001)로 실행한다. R0P/R4 각 120개, R1 7개 정책이다. `ordered()`가 메타 ID를 정렬하므로 기대 묶음도 정렬해 대조한다. 판정 측정은 하지 않았다.
+- metrics-5·6: 엔진 형식 `RECEIPT-RCPT-{inv}`, `-1`, `-2`를 사용하고 청구서 receiptIds에도 `RCPT-...`를 기록했다. 네 칸 각각 1·합계 4뿐 아니라 청구서별 분류도 확인한다. 수금 없는 1센트 대손 확정은 미결 연체에서 제외한다.
+- metrics-1: 기대 환산액에 `rateAtV2`·`referenceRate`를 쓰지 않는다. R0P 90일의 시작 환율과 R4 1일·첫 걸음의 독립 정수 계산을 대조한다.
+- metrics-3: 2일과 5일에 서로 다른 거절 10개 값을 보내 후보 사유·짝·견적·OPEN 건너뜀을 모두 합산하는지 본다.
+- metrics-4: 결제일 41, D30만 한도 차단이면 D15가 가능하여 날짜/날짜+한도는 1/1이다. 결제일 43, 두 조건 모두 차단된 계약을 더하면 2/1이다. 단순히 `dateEligible - limitBlocked`로 계산하는 오류도 잡는다.
+
+### 실행한 검증과 결과
+
+검증 로그·임시 출력은 `/tmp/TASK-0068a-R1/`에 있다.
+
+| 명령·검증 | 작업 전 | 작업 후 |
+|---|---|---|
+| `node tools/check_rules2_golden.mjs` | 종료 0, rules-2 105회·rules-1 400회 | 종료 0, 동일 횟수 |
+| `node tools/check_rules3_golden.mjs` | 종료 0, rules-3 108회 | 종료 0, 동일 횟수 |
+| `node src/engine/sim/run.mjs run --out …/run-{before,after}.json` | 종료 0, 400회 | 종료 0, 400회, `cmp` 0 |
+| v1 R3 지시서 명령¹ | 종료 0, 351회 | 종료 0, 351회, JSON·표 각각 `cmp` 0 |
+| git 없는 dev 표시 빌드² | 첫 화면 gzip 132,576 B | 132,576 B, 크기 로그 전체 `cmp` 0 |
+
+¹ `node src/engine/sim/run.mjs d03 --risk R3 --scenarios SCENARIO_M2_OPS_COS_LAVER --seed-base 2001 --seed-from 1 --seed-to 3 --workers 4 --out /tmp/TASK-0068a-R1/v1r3-before.json > /tmp/TASK-0068a-R1/v1r3-before.md` 및 같은 `after` 명령. 실제 워커 3개, 전 556.85초 / 후 568.80초. 비위험 400회는 전 24.40초 / 후 24.13초.
+
+² 작업 전 `git archive HEAD` 사본, 작업 후 `.git`·`node_modules` 없이 복사한 작업 트리에 의존성 링크 후 각각 `npm run --silent build && node tools/check_bundle_size.mjs dist`. 첫 화면 원문 463,556 B, 청크 해시·크기까지 동일. 검증 사본은 정리했다. 작업 트리 직접 빌드는 커밋+수정 표시 때문에 132,588 B이며 크기 한도 통과.
+
+- `python3 tools/build_package.py --manifest-only`: 통과, 805개 파일.
+- `python3 tools/validate_data.py`: 통과, 자료 25개·검사 34,053개.
+- `npm run typecheck`: 통과.
+- 기본 묶음만 실행한 `npx vitest run src/engine/sim/risk-runner-v2.test.ts -t compat-1 --reporter=verbose`: 3개 통과(523.51초).
+- 최초 `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check 7d38298`: **18종 중 실패 1종**, `npx vitest run`에서 기존 `m2a5-risk-default-v2.test.ts`의 R0P/R1/R2/R3 상태 해시 시험 4개가 `Error: Test timed out in 5000ms.`로 실패했다. 57개 파일·1,592개 시험 통과, todo 1개, 838.81초. 이때 전후 캠페인 회귀와 기본 묶음 변형을 병행했다. 새 26개 시험과 나머지 검수 17종은 통과했다. 기존 시험·기대값·시간 제한을 고치지 않고 다른 작업이 모두 끝난 뒤 같은 18종 명령을 단독 재실행한다.
+- 최종 단독 재검수 `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check 7d38298`: **종료 0, 18종 실패 0** (`review-final.log`). `npx vitest run`은 **58개 파일·1,596개 시험 통과, 기존 todo 1개**, 509.24초. 최초 시간 초과 4개도 코드·기대값·제한 변경 없이 통과했다. `risk-runner.test.ts`·`seed-base.test.ts`도 무수정 통과했다.
+- 검수에 포함된 자료 검사·타입 검사·빌드·크기 한도·골든 둘·각 골든 도구 시험·그림·지도·자료 검사기·사실 섞임 검사 및 회귀·브라우저 라이브러리·크기 검사기·작업 트리 불변 검사는 모두 통과했다. 보고서 확정 뒤 MANIFEST 재생성·일치 확인·자료 검사·`git diff --check`를 다시 실행했다.
+
+- 초기 손 시험 9개 통과. 수금 고정물의 추가 대손 제외 검사는 BADDEBT 분개가 없어 처음 실패했고, 실제 형식의 대손 분개를 넣어 수정 후 통과했다. 생산 코드 결함은 발견하지 않았다.
+- 새 칸을 구현하기 전 타입 검사에서 두 칸 미존재 오류가 났고, 구현 후 `npm run typecheck` 통과.
+
+### 변형 결과
+
+Git 없는 임시 사본에서 변형마다 원문을 `finally`로 복원했고, 마지막에 관련 다섯 파일의 바이트가 작업 트리와 같은지 확인했다. 작업 트리의 정책·수집기·기본 묶음 파일은 수정하지 않았다. 실행 스크립트 `mutate.py`, 변형별 `mutation-NN.log`, 요약 `mutations.json`에 결과를 남겼다. **13개 모두 시험 단언 실패·종료 1로 탐지**했다.
+
+| 번호 | 변형 | 실제 실패 시험 | 실패 이유 |
+|---|---|---|---|
+| 1 | 후보 push의 sale·contribution을 BASE로 복귀 | policy-1 두 시험 | Y 대신 X 수락 / BASE 적자 후보가 누락됨 |
+| 2 | credit 재평가 검사 삭제 | policy-2 | credit 1 대신 0, onTime 0 대신 1 |
+| 3 | credit 사유를 funds로 변경 | policy-2 | credit 0, funds 1로 오분류 |
+| 4 | credit을 v1 rejections에도 기록 | policy-2 | `Object.hasOwn(rejections, 'credit')`가 참 |
+| 5 | BASE일 때 명령 키 생략 | policy-4 두 정책 | BASE 키·값의 명시 단언이 거짓 |
+| 6 | CLI 기본 묶음을 v1 목록으로 변경 | compat-1 R0P·R1·R4 | 외상 정책 누락 및 R1 축소 묶음 불일치 |
+| 7 | pendingPartialReceipts의 -2 제외 조건 삭제 | metrics-5·6 | 네 칸이 1/1/2/1로 중복 집계 |
+| 8 | 후보 사유 합산 +=를 =로 | metrics-3 | 첫 날 후보 사유별 계수가 빠짐 |
+| 9 | pair 합산 +=를 =로 | metrics-3 | 짝 45 대신 37 |
+| 10 | quote 합산 +=를 =로 | metrics-3 | 견적 50 대신 41 |
+| 11 | skippedNotOpen 합산 +=를 =로 | metrics-3 | 건너뜀 53 대신 43 |
+| 12 | rateAtV2를 시작 환율로 고정 | metrics-1 | 첫 걸음 환산액 1,115,798 대신 1,123,577 |
+| 13 | 한도 하나라도 막히면 날짜+한도에서 제외 | metrics-4 | D15가 가능한데 dateLimitEligible 1 대신 0 |
+
+### 완료 조건 대조
+
+| 조건 | 판정·근거 |
+|---|---|
+| 1. 항목 1~4, 새·기존 시험 통과 | 충족, 새 13개 추가 후 전체 1,596개 시험 통과(기존 todo 1개) |
+| 2. 필수 명령·review_checks 18종 실패 0 | 충족, 최종 단독 review_checks 종료 0·18종 실패 0. 최초 시간 초과와 재검증 근거는 위 기록 |
+| 3. 지시서 변형 모두 탐지 | 충족, 필수 변형 및 추가 대조 총 13개 탐지 |
+| 4. 허용 파일만 변경 | 충족, `git diff --name-status 7d38298`는 위 네 파일만 표시, `git diff --check` 통과 |
+
+### 범위 밖 발견
+
+- 지시서가 참조한 `docs/ai/tasks/results/REVIEW-0068a-HUB-2026-10-24.md`는 이 BASE 작업 트리에 없다. 전달된 R1 지시서의 검수 항목을 기준으로 구현했다.
+- 출력 메타 정책 순서는 기본 묶음 함수의 생성 순서가 아니라 정렬 순서다. 기존 직렬화 동작을 유지했다.
+
+### 질문
+
+없음.

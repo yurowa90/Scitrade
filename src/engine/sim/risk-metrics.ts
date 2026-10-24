@@ -106,6 +106,11 @@ function creditMetrics(state: GameState, config: ScenarioConfig) {
     carryMinor: amount('RECEIVABLE_CARRY'), limitBlocked: direct.filter((c) => c.creditEligible!.limitBlocked.length > 0).length,
     termCounts,
     partialReceipts: state.invoices.filter((inv) => state.ledger.entries.some((e) => e.id === `RECEIPT-RCPT-${inv.id}-2`)).length,
+    pendingPartialReceipts: state.invoices.filter((inv) =>
+      state.ledger.entries.some((e) => e.id === `RECEIPT-RCPT-${inv.id}-1`)
+      && !state.ledger.entries.some((e) => e.id === `RECEIPT-RCPT-${inv.id}-2`)).length,
+    pendingOverdue: state.invoices.filter((inv) => inv.status === 'OVERDUE'
+      && !state.ledger.entries.some((e) => e.id === `RECEIPT-RCPT-${inv.id}` || e.id.startsWith(`RECEIPT-RCPT-${inv.id}-`))).length,
     lateReceipts: state.invoices.filter((inv) => {
       const id = `RECEIPT-RCPT-${inv.id}`;
       const receipts = state.ledger.entries.filter((e) => e.id === id || e.id.startsWith(`${id}-`));

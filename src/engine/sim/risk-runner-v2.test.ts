@@ -4,7 +4,7 @@ import { createGame, openDay, planState } from '../engine';
 import { post } from '../ledger';
 import { contractRiskReport } from '../reports';
 import { usdToKrwMinor, withRiskLevel } from '../risk';
-import { createRng } from '../rng';
+import { createRng, drawUniform } from '../rng';
 import type { Contract, GameState, OfferDef } from '../types';
 import { d03Options, simMain, USAGE, type SimIo } from './cli';
 import { mergeD03, requestedRisk, workerOptions } from './d03';
@@ -324,4 +324,169 @@ D03의 --seed-base N은 시드 목록을 N~N+(시드 수−1)로 바꿉니다(�
     expect(mem.stderr.at(-1)).toContain('v1 --tables-from은 rules 메타');
     expect(() => riskTables(output('R1'))).toThrow('rules 메타');
   }, 60000);
+});
+
+
+describe('TASK-0068a R1 판별력', () => {
+  it('policy-1 조건 기여 정렬은 창고 하나를 Y에, BASE 정렬은 X에 준다', () => {
+    const f = hand(), x = f.add('X', 0, 'A', 3, 10001, 76), y = f.add('Y', 1, 'B', 3, 9901, 40);
+    // 화장품 60 L 또는 김 30 L는 각각 들어가지만 합계 90 L는 들어가지 않는다.
+    f.config.operations!.facility.storageLiters = 67;
+    const cx = candidate(f, x.sell), cy = candidate(f, y.sell);
+    const tx = termCandidate(f.state, f.config, cx, 'TERM_GREEDY', 1);
+    const ty = termCandidate(f.state, f.config, cy, 'TERM_GREEDY', 1);
+    expect(cx.contribution).toBe(11688); expect(cy.contribution).toBe(11388);
+    expect(tx.creditTermId).toBe('BASE'); expect(ty.creditTermId).toBe('D30');
+    expect(ty.contribution).toBe(13170); expect(ty.contribution).toBeGreaterThan(tx.contribution);
+    expect((cy.sale * 10600) % 10000).not.toBe(0);
+    expect(decision(f, 'TERM_GREEDY').state.contracts.map((c) => c.sellOfferId)).toEqual([y.sell.id]);
+    expect(decision(f, 'MAX_CONTRIBUTION').state.contracts.map((c) => c.sellOfferId)).toEqual([x.sell.id]);
+  });
+
+  it('policy-1 BASE 적자라도 D30 가산으로 흑자면 수락한다', () => {
+    const f = hand(), { sell } = f.add('가산흑자', 1, 'B', 3, 6001);
+    const c = candidate(f, sell), t = termCandidate(f.state, f.config, c, 'TERM_GREEDY', 1);
+    expect(c.contribution).toBe(-312); expect(t.contribution).toBe(768);
+    expect(t.creditTermId).toBe('D30');
+    expect(decision(f, 'TERM_GREEDY').state.contracts.map((c) => [c.sellOfferId, c.creditTermId])).toEqual([[sell.id, 'D30']]);
+    expect(decision(f, 'MAX_CONTRIBUTION').state.contracts).toHaveLength(0);
+  });
+
+  it('policy-2 한도 소진 뒤 BASE 적자는 credit에만 세고 짝과 견적에도 센다', () => {
+    const f = hand(), first = f.add('한도소진', 0, 'B', 5, 20011), second = f.add('재평가적자', 1, 'B', 3, 6001);
+    f.config.operations!.risk!.credit!.limits.find((l) => l.grade === 'B')!.limitMinor = 106058;
+    expect(first.sell.counterpartyId).toBe(second.sell.counterpartyId);
+    for (const sell of [first.sell, second.sell]) {
+      const t = termCandidate(f.state, f.config, candidate(f, sell), 'TERM_GREEDY', 1);
+      expect(t.creditTermId).toBe('D30'); expect(t.contribution).toBeGreaterThan(0);
+    }
+    const { d, state } = decision(f, 'TERM_GREEDY');
+    expect(state.contracts.map((c) => [c.sellOfferId, c.saleAmountMinor])).toEqual([[first.sell.id, 106058]]);
+    const t = termCandidate(state, f.config, candidate(f, second.sell), 'TERM_GREEDY', 1);
+    expect(t.creditTermId).toBe('BASE'); expect(t.contribution).toBe(-312);
+    expect(d.rejectionUnits).toEqual({ candidate: { funds: 0, storage: 0, handling: 0, sailing: 0, staff: 0, onTime: 0, credit: 1 },
+      pair: 1, quote: 1, skippedNotOpen: 0 });
+    expect(Object.hasOwn(d.rejections!, 'credit')).toBe(false);
+    expect(d.rejections).toEqual({ funds: 0, storage: 0, handling: 0, sailing: 0, staff: 0, onTime: 0 });
+  });
+
+  it.each(['TERM_GREEDY', 'CREDIT_AWARE'])('policy-4 %s는 BASE 키를 명시한다', (id) => {
+    const f = hand(), { sell } = f.add('명시BASE', 0, 'C', 7, 14009, 76);
+    const commands = decision(f, id).d.commands.filter((c) => c.type === 'ACCEPT_TRADE');
+    expect(commands).toHaveLength(1);
+    expect(commands[0]!.sellOfferId).toBe(sell.id);
+    expect(Object.hasOwn(commands[0]!, 'creditTermId') && commands[0]!.creditTermId === 'BASE').toBe(true);
+  });
+
+  it.each(['R0P', 'R1', 'R4'] as const)('compat-1 %s CLI 기본 묶음 메타', (level) => {
+    const mem = memoryIo();
+    expect(simMain(['d03', '--risk-v2', level, '--seed-base', '2001', '--seeds', '1', '--out', 'default.json'], mem.io), mem.stderr.join('')).toBe(0);
+    const output = JSON.parse(mem.files.get('default.json')!) as SimOutput;
+    // 출력 직렬화는 정책 ID를 정렬한다.
+    expect(output.meta.policyIds).toEqual(d03PolicyIdsV2(level).sort());
+    expect(output.runs.map((r) => r.policyId).sort()).toEqual(d03PolicyIdsV2(level).sort());
+  }, 600000);
+
+  it('metrics-5·6 엔진 수금 ID의 완료 두 칸과 미결 두 칸은 배타적이다', () => {
+    const f = hand(); f.add('수금원형', 0, 'A');
+    const template = decision(f, 'MAX_CONTRIBUTION').state.contracts[0]!;
+    f.state.day = 90; f.state.phase = 'ENDED';
+    f.state.contracts = []; f.state.invoices = []; f.state.ledger.entries = []; f.state.ledger.postedIds = {};
+    const rows = [
+      { id: '지연전액', amount: 11003, due: 31, status: 'PAID', receipts: [['', 38, 11003]] },
+      { id: '분할완료', amount: 17011, due: 43, status: 'PAID', receipts: [['-1', 43, 6804], ['-2', 54, 10207]] },
+      { id: '분할미결', amount: 23003, due: 83, status: 'OVERDUE', receipts: [['-1', 83, 9201]] },
+      { id: '연체미결', amount: 31013, due: 87, status: 'OVERDUE', receipts: [] },
+    ] as const;
+    for (const row of rows) {
+      f.state.contracts.push({ ...template, id: row.id, invoiceId: row.id, saleAmountMinor: row.amount, paymentDueDay: row.due,
+        deliveredDay: 10, status: row.status === 'PAID' ? 'COMPLETED' : 'IN_PROGRESS' });
+      f.state.invoices.push({ id: row.id, contractId: row.id, currency: 'USD', amountMinor: row.amount,
+        issuedDay: 10, dueDay: row.due, status: row.status, receiptIds: row.receipts.map(([suffix]) => `RCPT-${row.id}${suffix}`) });
+      for (const [suffix, day, amount] of row.receipts) post(f.state.ledger, { id: `RECEIPT-RCPT-${row.id}${suffix}`,
+        contractId: row.id, day, currency: 'USD', reason: '엔진 형식 손 수금',
+        lines: [{ account: 'CASH', amount }, { account: 'ACCOUNTS_RECEIVABLE', amount: -amount }] });
+    }
+    const count = (state: GameState) => {
+      const c = riskMetrics(state, f.config, createMetricsCollector(f.config).finish(state, f.config), 'R4').credit!;
+      return [c.lateReceipts, c.partialReceipts, c.pendingPartialReceipts, c.pendingOverdue];
+    };
+    expect(count(f.state)).toEqual([1, 1, 1, 1]);
+    expect(count(f.state).reduce((a, b) => a + b, 0)).toBe(rows.length);
+    // 합만 같은 잘못된 분류도 잡도록 청구서별로 어느 칸에 속하는지 확인한다.
+    rows.forEach((row, i) => {
+      const one = structuredClone(f.state);
+      one.invoices = one.invoices.filter((inv) => inv.id === row.id);
+      expect(count(one)).toEqual(rows.map((_, j) => Number(i === j)));
+    });
+    const writtenOff = structuredClone(f.state);
+    // 1센트의 회수액은 0으로 반올림되므로 수금 없는 대손 확정도 제외한다.
+    Object.assign(writtenOff.invoices.find((inv) => inv.id === '연체미결')!, { status: 'WRITTEN_OFF', amountMinor: 1, dueDay: 70 });
+    Object.assign(writtenOff.contracts.find((c) => c.id === '연체미결')!, { status: 'COMPLETED', saleAmountMinor: 1, paymentDueDay: 70 });
+    post(writtenOff.ledger, { id: 'BADDEBT-연체미결', contractId: '연체미결', day: 85, currency: 'USD', reason: '손 대손 확정',
+      lines: [{ account: 'BAD_DEBT', amount: 1 }, { account: 'ACCOUNTS_RECEIVABLE', amount: -1 }] });
+    expect(count(writtenOff)).toEqual([1, 1, 1, 0]);
+  });
+
+  it('metrics-1 수락 환산액은 R0P 매일 시작 환율, R4 첫 걸음의 독립 계산과 같다', () => {
+    const f = hand(); f.add('환산', 0, 'A', 7, 12347);
+    const template = decision(f, 'MAX_CONTRIBUTION').state.contracts[0]!;
+    const value = (config: ReturnType<typeof cfg>, day: number) => {
+      const state = structuredClone(f.state);
+      state.contracts = [{ ...template, acceptedDay: day }];
+      return riskMetrics(state, config, createMetricsCollector(config).finish(state, config), config.operations!.risk!.layers.length ? 'R4' : 'R0P')
+        .contracts[0]!.saleKrwAtAcceptMinor;
+    };
+    const r0 = cfg('R0P'), r4 = cfg('R4'), fx = r4.operations!.risk!.profile.fx;
+    const amount = template.saleAmountMinor;
+    const atStart = Math.floor((amount * fx.startKrwPerUsd + 50) / 100);
+    for (let day = 1; day <= 90; day++) expect(value(r0, day), `R0P ${day}일`).toBe(atStart);
+    expect(value(r4, 1)).toBe(atStart);
+    // rateAtV2/referenceRate를 기대값 계산에 사용하지 않는다.
+    const draw = drawUniform({ seed: 2001, cursors: { 'FX-REF': 1 } }, 'FX-REF').value;
+    const step = Math.floor(draw * (2 * fx.stepBp + 1)) - fx.stepBp;
+    const rate = Math.max(fx.minKrwPerUsd, Math.min(fx.maxKrwPerUsd, Math.floor((fx.startKrwPerUsd * (10000 + step) + 5000) / 10000)));
+    expect(rate).not.toBe(fx.startKrwPerUsd);
+    const day = r4.operations!.market.publish.firstDay + r4.operations!.market.publish.intervalDays;
+    expect(value(r4, day)).toBe(Math.floor((amount * rate + 50) / 100));
+    expect(value(r4, day)).not.toBe(atStart);
+    expect((amount * rate) % 100).not.toBe(0);
+  });
+
+  it('metrics-3 서로 다른 두 날의 거절 단위를 모두 더한다', () => {
+    const first = { candidate: { funds: 1, storage: 2, handling: 3, sailing: 4, staff: 5, onTime: 6, credit: 7 }, pair: 8, quote: 9, skippedNotOpen: 10 };
+    const second = { candidate: { funds: 11, storage: 13, handling: 17, sailing: 19, staff: 23, onTime: 29, credit: 31 }, pair: 37, quote: 41, skippedNotOpen: 43 };
+    const days: number[] = [];
+    const result = simulate(cfg(), { id: 'MAX_CONTRIBUTION', labelKo: '여러 날 손 거절', decide(opened, _config, rng) {
+      if (opened.day === 2 || opened.day === 5) days.push(opened.day);
+      return { commands: [], rng, ...(opened.day === 2 ? { rejectionUnits: first } : opened.day === 5 ? { rejectionUnits: second } : {}) };
+    } }, 2001, undefined, 'R4');
+    expect(days).toEqual([2, 5]);
+    expect(result.run.metrics.operations!.rejectionsV2).toEqual({
+      candidate: { funds: 12, storage: 15, handling: 20, sailing: 23, staff: 28, onTime: 35, credit: 38 }, pair: 45, quote: 50, skippedNotOpen: 53 });
+  });
+
+  it('metrics-4 D30만 한도에 막힌 이른 결제일은 D15로 가능하다', () => {
+    const f = hand(); f.add('날짜원형', 0, 'A');
+    const template = decision(f, 'MAX_CONTRIBUTION').state.contracts[0]!;
+    f.state.contracts = [{ ...template, id: 'D15가능', creditTermId: 'BASE', paymentDueDay: 41,
+      creditEligible: { dateRule: true, limitBlocked: ['D30'] } }];
+    const count = () => riskMetrics(f.state, f.config, createMetricsCollector(f.config).finish(f.state, f.config), 'R4').credit;
+    expect(count()).toMatchObject({ dateEligible: 1, dateLimitEligible: 1, limitBlocked: 1 });
+    f.state.contracts.push({ ...template, id: '둘다막힘', creditTermId: 'BASE', paymentDueDay: 43,
+      creditEligible: { dateRule: true, limitBlocked: ['D15', 'D30'] } });
+    expect(count()).toMatchObject({ dateEligible: 2, dateLimitEligible: 1, limitBlocked: 2 });
+  });
+
+  it('compat-2 v1과 v2의 양방향 비교 및 v2 표 입력은 거절한다', () => {
+    const mem = memoryIo();
+    expect(simMain(['d03', '--risk', 'R1', '--scenarios', SCENARIO, '--policies', 'IDLE', '--seed-base', '2001', '--seeds', '1', '--out', 'v1.json'], mem.io)).toBe(0);
+    expect(simMain(['d03', '--risk-v2', 'R1', '--policies', 'IDLE', '--seed-base', '2001', '--seeds', '1', '--out', 'v2.json'], mem.io)).toBe(0);
+    for (const files of [['v1.json', 'v2.json'], ['v2.json', 'v1.json']]) {
+      expect(simMain(['risk-compare', ...files], mem.io)).toBe(2);
+      expect(mem.stderr.at(-1)).toContain('v1 risk-compare는 rules 메타');
+    }
+    expect(simMain(['d03', '--tables-from', 'v2.json'], mem.io)).toBe(2);
+    expect(mem.stderr.at(-1)).toContain('v1 --tables-from은 rules 메타');
+  });
 });
