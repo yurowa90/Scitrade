@@ -824,3 +824,11 @@ M2a 남은 위험:
 - 실행 108회: 세 변형 × R3 6정책 × 시드 2001~2003(54회), R0·R1·R2 × `NO_FX`·`MAX_CONTRIBUTION`(각 18회). 실행 결과·`meta`를 뺀 마지막 상태·주간·공시일 탐침의 sha256과 저장 왕복, 위험 프로필 지문 둘(원문·로더)을 고정한다(`tests/golden/rules3-risk.tsv`, `tools/check_rules3_golden.mjs`).
 - 검수: `review_checks` 18종 실패 0(16종 + 새 2종), sim 400회 `cmp` 0, 동결 경로 변경 0. 변형 10개 기대 충족. 허브가 변형 4(위험 보고 fx 성분 +1)를 재현해 다른 줄 99개(R0 포함)를 확인했다. 세션 A 검수 major 0.
 - 넘길 조건: `operations.ts:266`(USD 미지급 환산의 rules-3 분기)은 골든 도달 0이다. 이 분기는 `m2a5-risk-fx.test.ts:318`(342행 단언)만 지키므로 TASK-0067은 이 시험을 바꾸지 않는다.
+
+## TASK-0067a rules-4 조건과 골격 반영 기록 (2026-10-24, Claude 검수)
+
+- 경로 3 v2 엔진 첫 단계(H26-1 나누기의 0067a). 새 규칙 판본 `M2a-rules-4`, 위험 술어 9곳(`isRiskRules`), `withRiskLevelV2`(R0P~R3), `RISK_PROFILE_V2` 자료(등급별 대손 확률·지연 이자·회수율·외상 조건 BASE/D15/D30·한도 단위 L 400,000과 등급별 한도)와 검증기 7가지, `loadCreditProfile`, d03 프로필 선택 최소 수정, 외상 조건 판정 `creditTermCheck`/`creditTermOptions`, 계약 칸 `creditTermId`·`creditEligible`(저장 형식 6 유지).
+- 대손·지연 이자·WRITTEN_OFF는 아직 없다(0067b). R4 층은 아직 받지 않는다.
+- 검수: review_checks 18종 실패 0(병합본), sim 400회 `cmp` 0, 골든 rules-2·rules-3 일치, d03 정규화 비교 0. 세션 A 검수 major 0. 허브 심층 검수 major 2(시험 판별력) → R1에서 보강했고, 허브가 가산 반올림을 내림으로 바꾼 변형을 재현해 새 시험이 잡는 것을 확인했다.
+- 첫 화면 gzip 131,180 B(깨끗한 트리, 직전 129,893 B). 여유 약 8.8 KB다. 엔진 코드가 첫 화면 묶음에 실리므로 0067b에서 다시 잰다.
+- 0067b로 넘길 것: 검증기의 A·B·C 등급 행 필수 검사(세션 A m1), 수량 오류도 외상 한도 사유로 먼저 거절되는 순서는 경로 11 화면 문구에서 다룬다(m2). 변형 1은 탐지 성공(비정상 종료 2, `operations-policy.ts:20`).
