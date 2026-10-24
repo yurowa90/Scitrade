@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 246532,
-      "sha256": "aa0177f471a1afdc45d5ddd298c5260933130f98b44c0c02de9a527feccd4629"
+      "size_bytes": 248212,
+      "sha256": "1f9b25981206ec3da6b3e272a1b40abe0850bc8ab11abf39892621d4f1bf50bf"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -242,8 +242,8 @@
     },
     {
       "path": "docs/ai/TEXT_LANE.md",
-      "size_bytes": 1653,
-      "sha256": "3613885e69f67255bd20a29a9f780e477be24f2a2680188da6c9dd31c9927a18"
+      "size_bytes": 2029,
+      "sha256": "249a7944ca09d10c469bfc0edeb74625cb37f2278a8f2631c3cd82729c656663"
     },
     {
       "path": "docs/ai/WORKFLOW.md",
@@ -2971,6 +2971,11 @@
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
     },
     {
+      "path": "docs/ai/tasks/TEXT-0002-copy-final.md",
+      "size_bytes": 2389,
+      "sha256": "a00e34e26e931e3d7ca7668c6ba2718c3730f0f2cc40469793da423c7ea181d4"
+    },
+    {
       "path": "docs/ai/tasks/results/.gitkeep",
       "size_bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -3306,6 +3311,16 @@
       "sha256": "1ca385a871421de931f252628cb0dcb881abe718ebd1805b5b3cb05b4a4e8a07"
     },
     {
+      "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
+      "size_bytes": 46699,
+      "sha256": "e5bd4711aa45509d513612c0813c6afa364d5a9719f8d67819ddfb3ca5698d85"
+    },
+    {
+      "path": "docs/ai/tasks/results/TEXT-0001.md",
+      "size_bytes": 65159,
+      "sha256": "becced1aa11b51522f9e60ee54d1ac33247b43f1790c3b9344acd09c10fae14c"
+    },
+    {
       "path": "docs/art/ASSET_BACKLOG.md",
       "size_bytes": 12517,
       "sha256": "c54fd139ccc58d44a4d02f69346961da09710960cff18bcd689615790c0bffac"
@@ -3589,6 +3604,11 @@
       "path": "tests/golden/rules2-d03.tsv",
       "size_bytes": 25236,
       "sha256": "2fa8f23fb54173e5066afb366f007a38d95e93b07c701ba57f67cc1bbac4f6eb"
+    },
+    {
+      "path": "tools/ai/agy_task.sh",
+      "size_bytes": 4485,
+      "sha256": "9164c850b7b666f4809f0b33e641e22544eb0c35ab21b4553137bf95862e4bae"
     },
     {
       "path": "tools/ai/codex_task.sh",
