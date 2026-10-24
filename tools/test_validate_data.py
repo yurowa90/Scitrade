@@ -1122,6 +1122,16 @@ class MarketRulesTest(unittest.TestCase):
             ('조건', lambda p: p['credit_terms'][0].update(days=1), 'credit_terms: 조건 값 오류'),
             ('등급', lambda p: [r.update(grade='B') for r in p['collections']['by_counterparty']], '품목마다 등급 둘 이상'),
             ('비대칭', lambda p: p['collections']['grades'][2].update(p_default_bp=0), '비대칭 제약'),
+            ('A 비용 초과', lambda p: p['collections']['grades'][0].update(p_default_bp=1000), '비대칭 제약: D15'),
+            ('B 비용 초과', lambda p: p['collections']['grades'][1].update(p_default_bp=1000), '비대칭 제약: D15'),
+            # 회수율 6000bp이면 D15 C 비용 0.02616 < 가산 0.03으로 뒤집힌다.
+            ('C 회수율', lambda p: p['collections'].update(recovery_bp=6000), '비대칭 제약: D15'),
+            ('비BASE 기간', lambda p: p['credit_terms'][1].update(days=0), 'credit_terms: 조건 값 오류'),
+            ('비BASE 계수', lambda p: p['credit_terms'][1].update(factor_pct=99), 'credit_terms: 조건 값 오류'),
+            ('비BASE 가산 하한', lambda p: p['credit_terms'][1].update(premium_bp=-1), 'credit_terms: 조건 값 오류'),
+            ('비BASE 가산 상한', lambda p: p['credit_terms'][1].update(premium_bp=10001), 'credit_terms: 조건 값 오류'),
+            ('판매 거래처 누락', lambda p: p['collections']['by_counterparty'].pop(), '외상 등급: 판매 거래처 누락'),
+            ('D30 가산 1000', lambda p: p['credit_terms'][2].update(premium_bp=1000), '한도 단위: 손잡이 최대 1로트 판매액 401060 미만'),
             ('한도 단위', lambda p: p.update(credit_limit_unit_minor=390000), '한도 단위'),
             ('한도 일치', lambda p: p['credit_limits'][1].update(limit_minor=800001), 'limit_minor ='),
             ('배수', lambda p: p['credit_limits'][0].update(lots=1), 'lots는 양의 정수'),
@@ -1140,6 +1150,18 @@ class MarketRulesTest(unittest.TestCase):
         d, t = self.fixtures()
         d['market_rules']['risk_profiles'][0]['collections']['grades'][0]['p_default_bp'] = 200
         self.assertTrue(any('외상 칸은 모두 함께' in e for e in self.errors(d, t)))
+
+    def test_credit_limit_boundary_cos_laver(self):
+        # 최댓값은 (다) M2A5_PYEONGTAEK_COS_LAVER의 상하이 김 1로트에서 나온다.
+        message = 'risk_profiles: RISK_PROFILE_V2: 한도 단위: 손잡이 최대 1로트 판매액 393768 미만'
+        for unit in (393767, 393768):
+            with self.subTest(unit=unit):
+                d, t = self.fixtures()
+                p = next(p for p in d['market_rules']['risk_profiles'] if p['id'] == 'RISK_PROFILE_V2')
+                p['credit_limit_unit_minor'] = unit
+                for row in p['credit_limits']:
+                    row['limit_minor'] = unit * row['lots']
+                self.assertEqual(self.errors(d, t), [message] if unit == 393767 else [])
 
     def test_current_data(self):
         self.assertEqual(self.errors(*self.fixtures()), [])

@@ -526,3 +526,92 @@ export interface CreditProfile {
 
 ## 질문
 - 변형 1의 기대를 “종료 1”에서 “결함을 탐지해 비정상 종료(현재 2)”로 정정할지 허브 검토가 필요하다. 구현은 끝냈으며 해당 기준을 임의로 통과 처리하지 않았다.
+
+## R1 — 반올림·검증기 시험 보강과 불변식 한 곳
+
+- 모델: gpt-6-astra
+- BASE 및 시작 `git rev-parse HEAD`: `f36198ba49705d8e0acf2a143183b1407f041d02`
+- 범위: TASK-0067a-R1 지시서 1~6. 커밋·푸시·브랜치 전환·패키지 설치·측정은 하지 않았다.
+
+### 바꾼 파일
+
+- `src/engine/m2a5-risk-credit-v2.test.ts`: 반올림 두 고정물, 판매 견적 ID가 없는 저장의 불변식 시험, 909센트 COMPLETED/PAID 노출 제외 고정물.
+- `tools/test_validate_data.py`: A/B 비용 초과, 회수율에 따른 C 부등식 반전, 비BASE 조건 네 사례, 거래처 누락, D30 가산 1000bp, (다) 한도 393767/393768 경계.
+- `tools/validate_data.py`: 한도 계산에 `max(800, 비BASE premium_bp 최댓값)` 전달.
+- `src/engine/invariants.ts`: rules-4 DIRECT_TRADE 판매 견적을 찾지 못하면 문제 기록.
+- `docs/ai/tasks/results/TASK-0067a.md`: 기존 본문을 보존하고 이 R1 절만 추가.
+- `MANIFEST.json`: `python3 tools/build_package.py --manifest-only`로만 갱신.
+
+### 설계 판단
+
+- 반올림 고정물은 수량 1, 단가 1017/1010, D15 300bp를 사용했다. 작은 수량을 실제 수락하도록 매입 견적의 `quantityStep`도 1로 설정했다. 10475100/10000 → 1048, 10403000/10000 → 1040을 손계산 정수 리터럴로 단언하며, 수락된 판매액과 불변식 무예외도 함께 확인한다. 시드는 기존 고정물의 2001이다.
+- 검증기 거부 시험은 `check_market_rules`가 수집한 오류 문장을 직접 단언한다. MANIFEST 검사를 호출하지 않으므로 해시 불일치로 변형을 잡는 경우가 없다. 경계 시험은 모든 `limit_minor`도 맞추고 오류 목록 전체를 비교해 393767의 정확한 오류 하나와 393768의 오류 0개를 확인한다.
+- 잘못된 형식의 가산은 기존 조건 검사에 맡기고, 한도 최댓값에는 정수 가산만 넣는다. 기존 자료와 800bp 손잡이 상한은 유지한다.
+- 새 저장 시험은 정상 직거래를 직렬화한 뒤 `state.contracts[0].sellOfferId`만 바꾸고 지정 문제 문장으로 불변식 예외를 확인한다.
+
+### 기존 보고 변형 1 판정 정정
+
+허브 결정에 따라 **결함 탐지 성공. 기대는 비정상 종료(1 또는 2)이고, 종료 2의 원인은 `operations-policy.ts:20`의 `referenceEstimate` 미정의 예외다.** 기존 본문의 미충족 판정·질문은 이 정정으로 해소한다. R1에서 과거 변형 1을 다시 실행했다는 뜻은 아니다.
+
+### R1 변형 시험
+
+`git archive HEAD`로 `.git` 없는 임시 사본 하나를 만들고 현재 수정 파일과 기존 node_modules를 복사했다. 변형마다 원문을 복원했으며 종료 후 사본은 삭제했다. 실행 스크립트는 `/tmp/TASK-0067a-R1-mutations.py`, 로그는 `/tmp/TASK-0067a-R1-{1..6}.log`에 남겼다.
+
+| 변형 | 검증·결과 | 판정 |
+|---|---|---|
+| R1-1 가산 `Math.floor` | 새 외상 시험 28개 중 1 실패, 종료 1. 1017 고정물: 기대 1048, 실제 1047 | 탐지 성공 |
+| R1-2 가산 `Math.ceil` | 새 외상 시험 28개 중 1 실패, 종료 1. 1010 고정물: 기대 1040, 실제 1041 | 탐지 성공 |
+| R1-3 A 조건 삭제 | Python 대상 2시험 중 A 비용 초과 하위 사례 실패, 종료 1 | 탐지 성공 |
+| R1-4 `(1−ρ)` 삭제 | C 회수율 하위 사례 실패, 종료 1 | 탐지 성공 |
+| R1-5 L 계산 첫 두 rule_set만 | 393767 경계와 D30 가산 하위 사례 실패, 종료 1 | 탐지 성공 |
+| R1-6 비BASE 조건 항상 참 | 기간·계수·가산 하한·상한 네 하위 사례 실패, 종료 1 | 탐지 성공 |
+
+R1-1·2 명령: `node node_modules/vitest/vitest.mjs run src/engine/m2a5-risk-credit-v2.test.ts`.
+R1-3~6 명령: `PYTHONDONTWRITEBYTECODE=1 python3 tools/test_validate_data.py MarketRulesTest.test_credit_profile_rejections MarketRulesTest.test_credit_limit_boundary_cos_laver`.
+
+### 실행한 검증과 결과
+
+| 명령 | 결과 |
+|---|---|
+| `python3 tools/build_package.py --manifest-only` | 통과. 792개 파일. R1 보고 추가 뒤에도 다시 생성 |
+| `python3 tools/validate_data.py` | 통과. 자료 25개, 검사 34025개 |
+| `npm run typecheck` | 통과 |
+| `npx vitest run src/engine/m2a5-risk-credit-v2.test.ts` | 28개 통과 |
+| `PYTHONDONTWRITEBYTECODE=1 python3 tools/test_validate_data.py MarketRulesTest` | 31개 통과 |
+| `npx vitest run` | 56개 파일, 1538개 통과·기존 TODO 1개(총 1539개) |
+| `npm run build` | 통과 |
+| `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check f36198b` | 종료 0. **검사 18종, 실패 0종**, 작업 트리 변화 없음 |
+| 위 검수의 Python 시험 | 그림 도구 21개, 지도 21개, 자료 검증기 140개, 사실 혼합 검사기 26개 통과 |
+| `git diff --check` | 통과 |
+
+검수 전체 로그: `/tmp/TASK-0067a-R1-review.log`. 18종 검수는 코드·시험 수정 및 MANIFEST 생성 뒤 실행했고, 이 실행 결과를 보고서에 추가한 뒤에는 MANIFEST 재생성·일치 확인과 자료 검증을 다시 실행했다.
+
+#### 작업 전·후 보존 확인
+
+| 명령 | 작업 전 | 작업 후 |
+|---|---|---|
+| `node tools/check_rules2_golden.mjs` | 종료 0, rules-2 105회·rules-1 400회 일치 | 종료 0, 같은 횟수 일치(18종 검수 안에서 실행) |
+| `node tools/check_rules3_golden.mjs` | 종료 0, rules-3 108회 일치 | 종료 0, 108회 일치(18종 검수 안에서 실행) |
+| `node src/engine/sim/run.mjs run --out /tmp/TASK-0067a-R1-run-{before,after}.json` | before 종료 0, 400회 | after 종료 0, 400회 |
+
+`cmp /tmp/TASK-0067a-R1-run-before.json /tmp/TASK-0067a-R1-run-after.json`: **종료 0**, 두 파일 875446바이트로 완전히 같다. 비위험 실행은 원 TASK-0067a의 D20 예외에 따른 고정 회귀 확인이며 측정하지 않았다.
+
+최종 `git diff --name-status f36198b`의 변경 파일은 위 ‘바꾼 파일’의 허용 6개뿐이다. 기존 보고 본문은 BASE 버전과 접두 바이트 비교로 동일함을 확인했다.
+
+### 완료 조건 대조
+
+| 조건 | 충족 여부·근거 |
+|---|---|
+| 1. 항목 1~6 반영·새 시험과 기존 시험 | 충족. 위 명령별 통과 기록 |
+| 2. 전체 검증·18종 실패 0 | 충족. 위 명령별 통과 기록 |
+| 3. R1 변형 6개 탐지 | 충족. 위 표 모두 종료 1, 해당 단언 실패 확인 |
+| 4. 허용 파일만 변경 | 충족. 허용 6개 파일만 변경 |
+
+### 범위 밖 발견
+
+- R1 지시서가 참조한 `docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md`는 이 BASE 작업 트리에 없다. 사용자 제공 승인 R1 지시서와 현재 코드에 따라 구현했다.
+- 시작부터 추적되지 않은 `docs/ai/tasks/TASK-0067a-R1-tests.md`가 있었다. 수정하지 않았다. MANIFEST 생성기는 이 기존 미추적 지시서도 자동으로 포함했다.
+
+### 질문
+
+없음.

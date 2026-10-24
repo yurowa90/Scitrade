@@ -3051,6 +3051,11 @@
       "sha256": "58920057defb2d7fae5863dfe139787606f3818a4f46f7f7b3d5e4c762d1326a"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067a-R1-tests.md",
+      "size_bytes": 5626,
+      "sha256": "ace714a5620154ce9754aeb64619258c87fe6f07d00e758c7c5493a117ffb488"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0067a-rules4-terms-skeleton.md",
       "size_bytes": 27920,
       "sha256": "5ac69e9fa26cfec9e4d6a409af77e1fecfb1c768472778045bbf189a63c9aba2"
@@ -3422,8 +3427,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0067a.md",
-      "size_bytes": 28918,
-      "sha256": "bdd47d1e343ea6115c1e775161975609eb709da973b8a54d1343184cbac08c0d"
+      "size_bytes": 35788,
+      "sha256": "03b312111451e54ffa6b4c802d91c5a3612a9e2179d06ac74a0ee931a5277e7b"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -3952,13 +3957,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 91695,
-      "sha256": "84ae7974cb2943456861a95766e99bec76a4e48ef647748092d65f44c8dfd4ee"
+      "size_bytes": 93667,
+      "sha256": "2d278599caeff94fd37111387eefc6a2289f4ac0867137addd56919a24cf307a"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 92528,
-      "sha256": "5ea5fc1574de37f043dc338faab28ad59a9d7fd114cc442397f3b7b32e0be4c0"
+      "size_bytes": 92697,
+      "sha256": "d03311ce731bf9375ebaf6237baa1b872403258c52f517ea9eddf3a127eadf6f"
     }
   ]
 }

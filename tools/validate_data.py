@@ -892,14 +892,14 @@ def check_experiments(documents, tables):
               'OFFER_SELL_02_NEW: 실험 복사 동일성: 정적 판매 견적이 다름')
 
 
-def credit_limit_sales(rule):
+def credit_limit_sales(rule, premium_bp=800):
     """DESIGN-v2 2.1: 단계마다 정수 halfUp으로 손잡이 상한의 1로트 판매액을 낸다."""
     from fractions import Fraction
     def half_up(n, d=1):
         v = Fraction(n, d)
         return (2 * v.numerator + v.denominator) // (2 * v.denominator)
-    # 판정표 v2 5.2 손잡이 범위: 판매 마진 k=+3, 외상 가산 최대 800bp.
-    margin_k, premium_bp = 3, 800
+    # 판정표 v2 5.2 판매 마진 k=+3, 가산은 손잡이 상한과 실제 조건 중 큰 값.
+    margin_k = 3
     buys = {r['good_id']: Fraction(str(r['base_price']['amount'])) * 100
             for r in rule['rows'] if r['side'] == 'BUY'}
     lots = {g['good_id']: g['base_lot'] for g in rule['trade']['goods']}
@@ -963,7 +963,9 @@ def check_credit_profile(p, rules):
             check(costs['A'] < pi and costs['B'] < pi and pi < costs['C'],
                   prefix + f"비대칭 제약: {t['id']} A·B 유리/C 불리 조건 위반")
     unit = p['credit_limit_unit_minor']
-    maximum = max((v for rule in rules for _, _, v in credit_limit_sales(rule)), default=0)
+    premium_bp = max([800] + [t['premium_bp'] for t in terms
+                              if t['id'] != 'BASE' and type(t['premium_bp']) is int])
+    maximum = max((v for rule in rules for _, _, v in credit_limit_sales(rule, premium_bp)), default=0)
     check(integer(unit, maximum, float('inf')), prefix + f'한도 단위: 손잡이 최대 1로트 판매액 {maximum} 미만')
     limits = p['credit_limits']
     check(len(limits) == 3 and {r['grade'] for r in limits} == {'A', 'B', 'C'},

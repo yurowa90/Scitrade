@@ -131,6 +131,17 @@ describe('TASK-0067a 외상 판정', () => {
     f.c.terms.paymentDueDay = 61;
     expect(check(f)).toMatchObject({ allowed: true, dateRule: false, limitBlocked: [] });
   });
+  it.each([[1017, 1048], [1010, 1040]] as const)('단가 %i의 가산은 정수 %i로 반올림한다', (unitPriceMinor, expected) => {
+    const f = fixture();
+    f.sell.unitPriceMinor = unitPriceMinor;
+    f.buy.quantityStep = 1; f.quantity = 1;
+    // D15 300bp: 1017 × 10300 = 10475100(나머지 5100), 1010 × 10300 = 10403000(나머지 3000).
+    expect(check(f, 'D15').saleAmountMinor).toBe(expected);
+    const r = accept(f, 'D15');
+    expect(r.results[0]!.status).toBe('APPLIED');
+    expect(r.state.contracts[0]!.saleAmountMinor).toBe(expected);
+    expect(() => checkInvariants(r.state, f.c)).not.toThrow();
+  });
   it.each([['D15', 60], ['D30', 45]] as const)('%s 날짜 90은 허용·91은 거절', (term, due) => {
     const f = fixture(); f.c.terms.paymentDueDay = due;
     expect(check(f, term).allowed).toBe(true); expect(accept(f, term).results[0]!.status).toBe('APPLIED');
@@ -152,7 +163,7 @@ describe('TASK-0067a 외상 판정', () => {
       { id: '인도 전', status: 'ACTIVE', saleAmountMinor: 101 },
       { id: '취소', status: 'CANCELLED', saleAmountMinor: 202 },
       { id: '완료', status: 'COMPLETED', saleAmountMinor: 303 },
-      { id: '0원 완료', status: 'COMPLETED', saleAmountMinor: 0 },
+      { id: '수금된 완료', status: 'COMPLETED', invoiceId: 'I-PAID', saleAmountMinor: 909 },
       { id: 'BASE', creditTermId: 'BASE', saleAmountMinor: 404 },
       { id: '다른 거래처', customerId: '다름', saleAmountMinor: 505 },
       { id: '수금 완료', status: 'IN_PROGRESS', invoiceId: 'I-PAID', saleAmountMinor: 606 },
@@ -213,6 +224,13 @@ describe('TASK-0067a 저장·불변식', () => {
       const x = structuredClone(s); delete x.contracts[0]![key];
       expect(() => checkInvariants(x, f.c)).toThrow('외상 조건과 선택 가능 기록');
     }
+  });
+  it('rules-4 저장의 판매 견적 ID가 없으면 불변식 문제를 기록한다', () => {
+    const f = fixture(), r = accept(f, 'D15');
+    expect(r.results[0]!.status).toBe('APPLIED');
+    const saved = JSON.parse(serializeSave(r.state));
+    saved.state.contracts[0].sellOfferId = '없는 판매 견적';
+    expect(() => checkInvariants(saved.state, f.c)).toThrow('판매 견적 없는 판매 견적이 없습니다');
   });
   it.each(['R0P', 'R1'] as const)('%s 환전 뒤 불변식', (level) => {
     const c = config(level); let s = fixture(c).s;

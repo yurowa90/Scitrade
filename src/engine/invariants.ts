@@ -47,6 +47,7 @@ export function checkInvariants(s: GameState, config: ScenarioConfig, opts: { cl
       const term = config.operations?.risk?.credit?.terms.find((t) => t.id === contract.creditTermId);
       const sell = offerDef(s, config, contract.sellOfferId!);
       if (!term || !contract.creditEligible) problems.push(`${contract.id}: 외상 조건과 선택 가능 기록이 필요합니다`);
+      if (!sell) problems.push(`${contract.id}: 판매 견적 ${contract.sellOfferId}이 없습니다`);
       if (term && sell) {
         const due = config.terms.paymentDueDay ?? sell.paymentDueDay ?? config.campaignDays;
         if (contract.paymentDueDay !== due + term.days) problems.push(`${contract.id}: 외상 결제일이 조건과 다릅니다`);
