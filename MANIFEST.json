@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 98670,
-      "sha256": "e6f67fe22b8a6952dcc491a8a9bd39109252de1c5cb51b5f01db81d788d6b6f5"
+      "size_bytes": 99529,
+      "sha256": "b3e6438606df6fb48e7a2ef4ad18c22ab967c3fba9de3f92a50c02f7d65318ac"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -2727,8 +2727,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27281,
-      "sha256": "93355de7039784f34b76712965a4f6f615360fb33c868399328a881d6b50eb9c"
+      "size_bytes": 27290,
+      "sha256": "fdc70fedc305614a1bf00f1c3dd5627aadbbb2451472a324d43531dcfb242193"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3177,8 +3177,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0069-v2-sale-margin-k.md",
-      "size_bytes": 7223,
-      "sha256": "17bdeb098a742888faf0d84af6dd6f51ac8b4ec7592f4b318d7471cec0ef177e"
+      "size_bytes": 12455,
+      "sha256": "5f63ca63c81cdd42f1de63472e9c4b061e1a6f81d26af76be7efe5b7dc690aad"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -3234,6 +3234,11 @@
       "path": "docs/ai/tasks/results/PRECHECK-0068b-HUB-2026-10-24.md",
       "size_bytes": 11522,
       "sha256": "a21ac385d8e9efe646a27c69e5a78c44fecbd7ffb7d5c58d448fb3e7c98d50a8"
+    },
+    {
+      "path": "docs/ai/tasks/results/PRECHECK-0069-HUB-2026-10-24.md",
+      "size_bytes": 13090,
+      "sha256": "dcf8d1ec6b95dc373d65da815442fccd237b8f414c3cb86e51b9d92b146e82c0"
     },
     {
       "path": "docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md",
