@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 91031,
-      "sha256": "45faef44849a14008cbfd1f82a6c16649e94e11f68e19794a50a62d3d369a041"
+      "size_bytes": 92846,
+      "sha256": "1351baa05ebc8e543fd7a30d24f4e40a6657c4b6212f9e9e26ecf591e17b1401"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3076,6 +3076,11 @@
       "sha256": "7777848e6b6049b7fcd5252844670a34268144dc67957ea3b4d9f5e5c268910d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0068a-R1-tests.md",
+      "size_bytes": 5330,
+      "sha256": "a3d236db94dffa56b3dcce43d0983f064191a7ca33746e244ddd11e3f0fcee20"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0068a-runner-v2-core.md",
       "size_bytes": 29824,
       "sha256": "aa3b4e2396b3e4ff10050379d207b714fbff669c541b6f533bd40ca136d85f0f"
@@ -3139,6 +3144,11 @@
       "path": "docs/ai/tasks/results/REVIEW-0067b-HUB-2026-10-24.md",
       "size_bytes": 6007,
       "sha256": "d2914d49678a0a2b25c853050068229b581cac14d3edde9d02575cd967971e95"
+    },
+    {
+      "path": "docs/ai/tasks/results/REVIEW-0068a-HUB-2026-10-24.md",
+      "size_bytes": 6837,
+      "sha256": "2981ee8cc242c3ce751dc705250a270a113a0476daa025e420724734779598dd"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
