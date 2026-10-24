@@ -3001,6 +3001,11 @@
       "sha256": "6c895e0e390355abd232b59422229074fba7ea19424f83d212cd96717a4c0f94"
     },
     {
+      "path": "docs/ai/tasks/TASK-0062b-rules3-golden.md",
+      "size_bytes": 20007,
+      "sha256": "3c6ddd2b0b596ddf6381ee8ef9216765d27f2135ec277c779032ad657537379b"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0063-R1-risk-cost-review-fixes.md",
       "size_bytes": 17349,
       "sha256": "29a887ac57200a924405008de4059c7026e5f7ebc44c0d744d56685381a25c08"
