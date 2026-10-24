@@ -3071,6 +3071,16 @@
       "sha256": "951bbfd902acda8ff787d83f39808dafb442f591f8e33c7638395fb4fee3eb98"
     },
     {
+      "path": "docs/ai/tasks/TASK-0068-runner-v2.md",
+      "size_bytes": 34717,
+      "sha256": "7777848e6b6049b7fcd5252844670a34268144dc67957ea3b4d9f5e5c268910d"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0068a-runner-v2-core.md",
+      "size_bytes": 28893,
+      "sha256": "64e0982f3d9822bece85f2448514fc662be1bdbb1341f77f124e43888dce4145"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
