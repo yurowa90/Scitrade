@@ -18,6 +18,7 @@
   - rules-4 엔진 병합 커밋
   - `data/market_rules.json` sha256
   - 시작 프로필(5.2)과의 대조 결과
+  - **기록(허브, 2026-10-24).** 판정표 v2 승인 커밋 `b51ee20`(초안 4 `1efd330`). rules-4 엔진 병합 커밋: TASK-0067a `dbe49c4`, TASK-0067b `b001681`. 실행기 v2 병합 커밋: TASK-0068a `56c6d80`, TASK-0068b `2bd7ea5`. `data/market_rules.json` sha256 `e4fa3308878696c08d169e289d3df588e925a77b77d7cfc9c7c17e97906cf4ca`. 대조 결과 `DIFF 0`. 대조 대상은 판본 1 최종 프로필(측정 커밋 `3d36846`, 파일 sha256 `fb3ee07c…22bd`)에 5.2 시작값·고정값과 DESIGN-v2 5.3 등급 배치를 더한 값이다. 판본 1 프로필이 그대로인지도 함께 확인했다. 대조 스크립트는 `docs/ai/design/path3-price-risk-2026-10/tools/check_profile_v2.py`(이 기록과 같은 커밋), 출력 sha256 `0498bc182fbfc2c61fde0554b7a5debc6e414dbf5567338e297e89774d81734a`. 정오표: H27-1(L2 ②는 행 정의를 따르고 문턱표는 J9만 씀), H29-1(진단 C는 v2 성분 아홉), H30-2(J9 해석 문구와 J8·L4·V 사전 기대의 읽기). 모두 `HUB-DECISIONS-2026-10-16.md`에 있다. 측정 명령: `docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md`.
 - M′는 고정 기록 항목이 아니다. 같은 실행의 R0′에서 계산한다(3.3).
 
 ## 1. 측정 격자
