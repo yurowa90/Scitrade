@@ -1697,8 +1697,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN-v2.md",
-      "size_bytes": 33396,
-      "sha256": "b48df56270a070b80b7bbea8893f6286a6a7e3dd5ec4a5be4e048ea3f7c8b0c9"
+      "size_bytes": 33560,
+      "sha256": "e85bb7340d0b384b32186677546c16323b3fe98c8e2cbe334f807dbe23b4148d"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/DESIGN.md",
@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 83690,
-      "sha256": "c4a13ba76821e4da4266cb8f64079ed4174df54f7604d99a555c9b42442c2809"
+      "size_bytes": 84594,
+      "sha256": "679cd8916c6d075d608559e49454c3d06914220bb110ecd9d1509b2724f1e338"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -1877,8 +1877,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 16529,
-      "sha256": "70b189a43b9a5746c856d2746162167a67b0c6c99e2734809377c960249ce531"
+      "size_bytes": 16573,
+      "sha256": "481899fab5115c390b93e2722b907157042d7c4a33e95523d02084d3eec2961e"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
