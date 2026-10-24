@@ -1,6 +1,6 @@
 # TASK-0067 경로 3 v2 엔진: rules-4(외상 기간·인수 한도·대손·지연 이자), 위험 술어화, `RISK_PROFILE_V2`
 
-- 지위: **초안(세션 A, 2026-10-24). 허브 사전 확인 전이다.**
+- 지위: **대체됨(H26-1, 2026-10-24).** 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0067-HUB-2026-10-24.md`에서 승인되지 않았고, `TASK-0067a-rules4-terms-skeleton.md`(조건과 골격)와 0067b(대손과 이자, 0067a 병합 뒤 작성)로 나눴다. 이 파일은 기록으로만 둔다. 실행하지 않는다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
 - 선행

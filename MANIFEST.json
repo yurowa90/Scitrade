@@ -3047,8 +3047,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0067-rules4-credit-engine.md",
-      "size_bytes": 25700,
-      "sha256": "2e0c87a645e9b0ebc83f16717fe2a3fa526c36914a29871010ff501b11abf9e7"
+      "size_bytes": 25959,
+      "sha256": "58920057defb2d7fae5863dfe139787606f3818a4f46f7f7b3d5e4c762d1326a"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0067a-rules4-terms-skeleton.md",
+      "size_bytes": 24749,
+      "sha256": "fcdb1d7ffe53a62fb1a455d60728443af67b43b91b65905be10f13962eff5d0d"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
