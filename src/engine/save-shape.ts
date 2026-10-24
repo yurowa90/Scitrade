@@ -99,6 +99,8 @@ const stateShape = obj({
   contracts: array(obj({ id: str, kind: enumShape('contractKind'),
     status: enumShape('contractStatus'), buyOfferId: ns, sellOfferId: ns,
     serviceOfferId: ns, supplierId: ns, customerId: str, goodId: str, quantity: int,
+    creditTermId: optional(oneOf('BASE', 'D15', 'D30')),
+    creditEligible: optional(obj({ dateRule: bool, limitBlocked: array(oneOf('D15', 'D30')) })),
     purchaseAmountMinor: int, saleAmountMinor: int, currency, originCityId: str, destinationCityId: str,
     deliveryDeadlineDay: int, paymentDueDay: int, acceptedDay: int, ownerEmployeeId: ns, cargoLotId: str,
     prepTaskId: str, bookingId: ns, invoiceId: ns, deliveredDay: ni, lateDays: int, priceReductionMinor: int,

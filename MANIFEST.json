@@ -97,8 +97,8 @@
     },
     {
       "path": "data/market_rules.json",
-      "size_bytes": 34621,
-      "sha256": "fb3ee07c6cc7d1ffd1b0a9078a59b9bbc06b16a9d135c90e7cced959360122bd"
+      "size_bytes": 39257,
+      "sha256": "e4fa3308878696c08d169e289d3df588e925a77b77d7cfc9c7c17e97906cf4ca"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 116803,
-      "sha256": "92c70469edcbdf605b7e4dd18d128701c18312993c241e97a92f407a21a5b840"
+      "size_bytes": 118270,
+      "sha256": "722395f4f1d9125b5429b362f2f4c6ca16e83da9109f72a72ef6362c79ddf1c8"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -2647,8 +2647,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 25570,
-      "sha256": "53c2701a93e549ea493e622f676343c5892aa190bba0b88632b964d215b7ef5d"
+      "size_bytes": 25943,
+      "sha256": "9322ce1399adf73113f9673323f30443cd166eb6425e97dbd6ce3a8fe6b0d681"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3051,9 +3051,14 @@
       "sha256": "58920057defb2d7fae5863dfe139787606f3818a4f46f7f7b3d5e4c762d1326a"
     },
     {
+      "path": "docs/ai/tasks/TASK-0067a-R1-tests.md",
+      "size_bytes": 5626,
+      "sha256": "ace714a5620154ce9754aeb64619258c87fe6f07d00e758c7c5493a117ffb488"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0067a-rules4-terms-skeleton.md",
-      "size_bytes": 27938,
-      "sha256": "1b4b83ab8800c3c2b9c716ecb8196c687fef0d559f7cf4a22503193f975339d1"
+      "size_bytes": 27920,
+      "sha256": "5ac69e9fa26cfec9e4d6a409af77e1fecfb1c768472778045bbf189a63c9aba2"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -3089,6 +3094,11 @@
       "path": "docs/ai/tasks/results/PRECHECK-0067a-HUB-2026-10-24.md",
       "size_bytes": 8979,
       "sha256": "17ac7933571cd246ad20662f9c641b3d7fb31f08e68add78af804f8deedd8f2d"
+    },
+    {
+      "path": "docs/ai/tasks/results/REVIEW-0067a-HUB-2026-10-24.md",
+      "size_bytes": 4279,
+      "sha256": "90306c9690b107e6e27415f600a3f590516a26e12f5dd6b14438c1b92b792213"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
@@ -3421,6 +3431,11 @@
       "sha256": "1ca385a871421de931f252628cb0dcb881abe718ebd1805b5b3cb05b4a4e8a07"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0067a.md",
+      "size_bytes": 35788,
+      "sha256": "03b312111451e54ffa6b4c802d91c5a3612a9e2179d06ac74a0ee931a5277e7b"
+    },
+    {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
       "size_bytes": 46699,
       "sha256": "e5bd4711aa45509d513612c0813c6afa364d5a9719f8d67819ddfb3ca5698d85"
@@ -3632,8 +3647,8 @@
     },
     {
       "path": "schemas/market_rules.schema.json",
-      "size_bytes": 21074,
-      "sha256": "b5c8216da4f71f5ede7c08d482ed02dd8137bb1c6f10022dcfd9669895866769"
+      "size_bytes": 23349,
+      "sha256": "28a40219a77bbbd0569cfe108e8023993d4411d4ed762707c35c70fc85bf177d"
     },
     {
       "path": "schemas/observed_fx_sample.schema.json",
@@ -3947,13 +3962,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 89662,
-      "sha256": "443a80eda22aec883f6e7e160f2e69755ba7a4a2c6e55aece3328dd469ae1ec7"
+      "size_bytes": 93667,
+      "sha256": "2d278599caeff94fd37111387eefc6a2289f4ac0867137addd56919a24cf307a"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 87185,
-      "sha256": "a8021903aa100d5ac35fdbf7f01911c51bdc34b03b018acf3e10322a8b99b044"
+      "size_bytes": 92697,
+      "sha256": "d03311ce731bf9375ebaf6237baa1b872403258c52f517ea9eddf3a127eadf6f"
     }
   ]
 }

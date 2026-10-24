@@ -1,6 +1,6 @@
 // 본사 운영의 계산과 명령. 금액은 통화별 최소 단위이며 환전도 두 장부에 따로 기록한다.
 import { cargoSpace, cityName, listSailings, routeBetween, routeOf, type Sailing } from './catalog';
-import { dutyFor, referenceRate } from './risk';
+import { isRiskRules, dutyFor, referenceRate } from './risk';
 import { offerDef } from './market';
 import { isAvailableFromToday } from './employees';
 import { balance, post, type LedgerEntry } from './ledger';
@@ -151,7 +151,7 @@ export function usdFundsParts(s: GameState, config: ScenarioConfig): string[] {
 /** 환전 명령과 미리 보기가 공유하는 두 통화 금액. */
 export function exchangeAmounts(config: ScenarioConfig, direction: ExchangeDirection, usd: number, seed?: number, day?: number) {
   const fx = config.operations?.fx;
-  if (config.rules.rulesVersion === 'M2a-rules-3') {
+  if (isRiskRules(config.rules.rulesVersion)) {
     if (seed === undefined || day === undefined || !fx) throw new Error('규칙 3 환전에는 시드와 날짜가 필요합니다');
     const r = referenceRate(config, seed, day), deduction = applyBasisPoints(r, fx.spreadBasisPoints);
     const rate = direction === 'USD_TO_KRW' ? r - deduction : r + deduction;
@@ -180,7 +180,7 @@ export function applyOperationsCommand(s: GameState, config: ScenarioConfig, cmd
       if (!toKrw && krwFunds.available < krw) return `환전할 수 있는 원화가 부족합니다. 필요 ${formatMoney('KRW', krw)}, 사용 가능 ${formatMoney('KRW', krwFunds.available)} = 현금 ${formatMoney('KRW', krwFunds.cash)}${krwFunds.unpaidObligations ? ` − 미지급 ${formatMoney('KRW', krwFunds.unpaidObligations)}` : ''}.`;
       const id = `FX${pad(state.exchanges.length + 1)}`;
       const from = toKrw ? formatMoney('USD', usd) : formatMoney('KRW', krw), to = toKrw ? formatMoney('KRW', krw) : formatMoney('USD', usd);
-      const reason = `환전: ${from} → ${to}(${config.rules.rulesVersion === 'M2a-rules-3' ? '오늘 참고 환율' : '게임용 고정 환율'} ${formatMoney('KRW', rate)}, 차감 ${formatMoney('KRW', spread)})`;
+      const reason = `환전: ${from} → ${to}(${isRiskRules(config.rules.rulesVersion) ? '오늘 참고 환율' : '게임용 고정 환율'} ${formatMoney('KRW', rate)}, 차감 ${formatMoney('KRW', spread)})`;
       const usdEntry: Omit<LedgerEntry, 'day'> = { id: `${id}-USD`, currency: 'USD', reason,
         lines: [{ account: toKrw ? 'CURRENCY_TRANSFER' : 'CASH', amount: usd }, { account: toKrw ? 'CASH' : 'CURRENCY_TRANSFER', amount: -usd }] };
       const krwEntry: Omit<LedgerEntry, 'day'> = { id: `${id}-KRW`, currency: 'KRW', reason,
@@ -232,7 +232,7 @@ export function dailyKrwDue(s: GameState, config: ScenarioConfig, day: number): 
 }
 /** USD 한 묶음을 원화로 바꿀 때 받는 금액. 임금 조달과 미지급 회복에 함께 쓴다. */
 export function usdLotKrw(config: ScenarioConfig, s?: GameState): number {
-  if (config.rules.rulesVersion === 'M2a-rules-3') {
+  if (isRiskRules(config.rules.rulesVersion)) {
     if (!s) throw new Error('규칙 3 묶음 계산에는 상태가 필요합니다');
     return exchangeAmounts(config, 'USD_TO_KRW', config.operations!.fx.lotUsdMinor, s.rng.seed, s.day).krw;
   }
@@ -263,7 +263,7 @@ export function paymentDefaultStatus(s: GameState, config: ScenarioConfig, day =
       lotsToClearAll: usdOldest || !lotKrw ? null : Math.ceil(Math.max(0, krwUnpaid + dailyKrwDue(s, config, day) - krwCash) / lotKrw),
       usdAvailableLots: fx ? Math.max(0, Math.floor(usdAvailableMinor / fx.lotUsdMinor)) : 0,
       nextReceipt: usdOldest && nextReceipt ? { day: nextReceipt.dueDay, amountMinor: s.invoices.filter((i) => i.currency === 'USD' && i.status !== 'PAID' && i.dueDay === nextReceipt.dueDay).reduce((sum, i) => sum + i.amountMinor, 0) } : null,
-      krwToUsdRequiredMinor: usdOldest && fx ? Math.ceil(usdShort / fx.lotUsdMinor) * fx.lotUsdMinor * (config.rules.rulesVersion === 'M2a-rules-3' ? exchangeAmounts(config, 'KRW_TO_USD', fx.lotUsdMinor, s.rng.seed, s.day).rate : fx.sellKrwPerUsd) / MINOR_PER_MAJOR.USD : null,
+      krwToUsdRequiredMinor: usdOldest && fx ? Math.ceil(usdShort / fx.lotUsdMinor) * fx.lotUsdMinor * (isRiskRules(config.rules.rulesVersion) ? exchangeAmounts(config, 'KRW_TO_USD', fx.lotUsdMinor, s.rng.seed, s.day).rate : fx.sellKrwPerUsd) / MINOR_PER_MAJOR.USD : null,
       heldSpendingKo: krwUnpaid > 0 ? '미지급이 있는 동안 고용 계약금·훈련·현지 활동·창고 확장은 자금 기준에서 막힙니다' : null } };
 }
 

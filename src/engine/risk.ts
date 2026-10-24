@@ -2,7 +2,7 @@
 import { cityName, dutyEstimate, goodOf } from './catalog';
 import { applyBasisPoints, type Currency } from './money';
 import { drawUniform } from './rng';
-import type { GameState, MarketSide, RiskProfile, ScenarioConfig } from './types';
+import type { CreditProfile, GameState, MarketSide, RiskProfile, ScenarioConfig } from './types';
 
 export function drawAt(seed: number, stream: string, index: number): number {
   return drawUniform({ seed, cursors: { [stream]: index } }, stream).value;
@@ -33,7 +33,7 @@ export function referenceRate(config: ScenarioConfig, seed: number, day: number)
 }
 
 export function rowCurrency(config: ScenarioConfig, side: MarketSide): Currency {
-  return config.rules.rulesVersion === 'M2a-rules-3' && config.operations?.risk && side === 'BUY' ? 'KRW' : 'USD';
+  return isRiskRules(config.rules.rulesVersion) && config.operations?.risk && side === 'BUY' ? 'KRW' : 'USD';
 }
 
 export interface TariffEvent {
@@ -182,5 +182,18 @@ export function withRiskLevel(config: ScenarioConfig, level: 'R0' | 'R1' | 'R2' 
     offer.unitPriceMinor = usdToKrwMinor(offer.unitPriceMinor, profile.fx.startKrwPerUsd);
     offer.currency = 'KRW';
   }
+  return c;
+}
+
+export const isRiskRules = (v: string): boolean => v === 'M2a-rules-3' || v === 'M2a-rules-4';
+
+/** 판본 4도 같은 원화 변환을 쓰되, 외상 설정과 층은 별도로 고정한다. */
+export function withRiskLevelV2(config: ScenarioConfig, level: 'R0P' | 'R1' | 'R2' | 'R3',
+  profile: RiskProfile, credit: CreditProfile): ScenarioConfig {
+  if (profile.id !== credit.profileId) throw new Error('위험 프로필과 외상 프로필 ID가 다릅니다');
+  const c = withRiskLevel(config, level === 'R0P' ? 'R1' : level, profile);
+  c.rules.rulesVersion = 'M2a-rules-4';
+  c.operations!.risk!.credit = structuredClone(credit);
+  if (level === 'R0P') c.operations!.risk!.layers = [];
   return c;
 }

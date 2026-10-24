@@ -46,8 +46,8 @@ export function requestedRisk(options: D03Options): RiskMeta | undefined {
   if (!['R0', 'R1', 'R2', 'R3'].includes(options.risk)) throw new Error('알 수 없는 위험 층');
   const tuningRound = options.tuningRound ?? 0;
   if (!Number.isInteger(tuningRound) || tuningRound < 0 || tuningRound > 3) throw new Error('조정 회차는 0~3입니다.');
-  const profiles = riskProfiles();
-  if (profiles.length !== 1) throw new Error('공유 위험 프로필은 하나여야 합니다.');
+  const profiles = riskProfiles().filter((p) => p.id === 'RISK_PROFILE_DEFAULT');
+  if (!profiles.length) throw new Error('공유 위험 프로필은 하나여야 합니다.');
   if (!options.marketRulesSha256 || !/^[a-f0-9]{64}$/.test(options.marketRulesSha256)) throw new Error('자료 sha256이 필요합니다.');
   return { level: options.risk, profileId: profiles[0]!.id, tuningRound, marketRulesSha256: options.marketRulesSha256 };
 }
