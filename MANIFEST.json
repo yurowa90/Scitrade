@@ -3072,8 +3072,13 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0068-runner-v2.md",
-      "size_bytes": 34839,
-      "sha256": "6c51f898e65be7d4ddd17e54eaa19e5144c45d75239be1ccc01566e235f42dd7"
+      "size_bytes": 34717,
+      "sha256": "7777848e6b6049b7fcd5252844670a34268144dc67957ea3b4d9f5e5c268910d"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0068a-runner-v2-core.md",
+      "size_bytes": 23736,
+      "sha256": "86ccda0e1fd724213b44cb2bb9fb30e99c1778cfabc6219a1688627e946e6754"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
