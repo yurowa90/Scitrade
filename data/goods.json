@@ -126,6 +126,22 @@
         "DESIGN-V03"
       ]
     }
+    ,
+    {
+      "id": "SEASONED_LAVER",
+      "name_ko": "조미김",
+      "quantity_unit": "case",
+      "mass_kg_per_unit": 3,
+      "volume_m3_per_unit": 0.01,
+      "storage_class": "dry",
+      "hs_code": null,
+      "hs_edition": null,
+      "hs_mapping_status": "NOT_VERIFIED",
+      "quality_model_status": "inspection_state_only_no_food_safety_threshold",
+      "source_refs": [
+        "DESIGN-V03"
+      ]
+    }
   ],
   "$schema": "../schemas/goods.schema.json"
 }

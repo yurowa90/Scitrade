@@ -1,0 +1,7 @@
+l1366: {"queue_from_bar_t1":779.3} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+cb1366t: {"queue_from_bar_t1":767.3} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+ipadAirL: {"queue_from_bar_t1":662.8} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+ipadminiL: {"queue_from_bar_t1":555.3} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+ipadmini6L: {"queue_from_bar_t1":620.8} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+l1920: {"queue_from_bar_t1":844.3} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다
+t1000: {"queue_from_bar_t1":711.8} 기대 실패, 실행 error, 글꼴 통과 | 6단계 measure #queue-chip: page.evaluate: Error: 요소가 없습니다

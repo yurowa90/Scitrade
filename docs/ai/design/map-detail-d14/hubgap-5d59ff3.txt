@@ -1,0 +1,14 @@
+l1366 route {"n":9,"active":7,"badge":11.5,"frameW":509,"under44":2,"closest":["말라카-싱가포르 30.5","평택-부산 33.1","하이퐁-홍콩 86.8"]}
+l1366 world {"n":27,"active":7,"badge":14.8,"frameW":1294,"under44":11,"closest":["파나마-파나마 2.0","호르무즈-두바이 8.0","말라카-싱가포르 10.7"]}
+cb1366t route {"n":9,"active":7,"badge":11.5,"frameW":509,"under44":2,"closest":["말라카-싱가포르 30.5","평택-부산 33.1","하이퐁-홍콩 86.8"]}
+cb1366t world {"n":27,"active":7,"badge":14.8,"frameW":1294,"under44":11,"closest":["파나마-파나마 2.0","호르무즈-두바이 8.0","말라카-싱가포르 10.7"]}
+ipadAirL route {"n":9,"active":7,"badge":9.1,"frameW":408,"under44":2,"closest":["말라카-싱가포르 30.5","평택-부산 33.1","하이퐁-홍콩 86.8"]}
+ipadAirL world {"n":27,"active":7,"badge":11.1,"frameW":1108,"under44":11,"closest":["파나마-파나마 2.0","호르무즈-두바이 8.0","말라카-싱가포르 10.7"]}
+ipadminiL route {"n":9,"active":7,"badge":7.2,"frameW":323,"under44":2,"closest":["말라카-싱가포르 30.5","평택-부산 33.1","하이퐁-홍콩 86.8"]}
+ipadminiL world {"n":27,"active":7,"badge":11.1,"frameW":952,"under44":15,"closest":["파나마-파나마 1.5","호르무즈-두바이 6.0","말라카-싱가포르 8.0"]}
+ipadmini6L route {"n":9,"active":7,"badge":8.6,"frameW":382,"under44":2,"closest":["말라카-싱가포르 30.5","평택-부산 33.1","하이퐁-홍콩 86.8"]}
+ipadmini6L world {"n":27,"active":7,"badge":11.1,"frameW":1061,"under44":15,"closest":["파나마-파나마 1.5","호르무즈-두바이 6.0","말라카-싱가포르 8.0"]}
+l1920 route {"n":9,"active":7,"badge":18.3,"frameW":811,"under44":0,"closest":["말라카-싱가포르 61.1","평택-부산 66.2","하이퐁-홍콩 173.6"]}
+l1920 world {"n":27,"active":7,"badge":14.8,"frameW":1848,"under44":5,"closest":["파나마-파나마 3.0","호르무즈-두바이 12.0","말라카-싱가포르 16.1"]}
+t1000 route {"n":9,"active":7,"badge":21,"frameW":928,"under44":0,"closest":["말라카-싱가포르 61.1","평택-부산 66.2","하이퐁-홍콩 173.6"]}
+t1000 world {"n":27,"active":7,"badge":11.1,"frameW":928,"under44":15,"closest":["파나마-파나마 1.5","호르무즈-두바이 6.0","말라카-싱가포르 8.0"]}

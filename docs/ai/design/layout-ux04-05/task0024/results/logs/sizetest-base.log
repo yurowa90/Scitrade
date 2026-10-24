@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: index.html에서 script·modulepreload·stylesheet 참조를 문서 순서로 고른다
+ok 1 - index.html에서 script·modulepreload·stylesheet 참조를 문서 순서로 고른다
+  ---
+  duration_ms: 3.216731
+  type: 'test'
+  ...
+# Subtest: 스타일시트의 url()을 스타일시트 위치 기준으로 풀고 data:·외부·중복을 뺀다
+ok 2 - 스타일시트의 url()을 스타일시트 위치 기준으로 풀고 data:·외부·중복을 뺀다
+  ---
+  duration_ms: 0.619407
+  type: 'test'
+  ...
+# Subtest: JS 청크 한도: 500,000 B는 통과하고 500,001 B는 실패한다
+ok 3 - JS 청크 한도: 500,000 B는 통과하고 500,001 B는 실패한다
+  ---
+  duration_ms: 0.313744
+  type: 'test'
+  ...
+# Subtest: 청크가 모두 한도 안이어도 첫 화면 합계가 넘으면 실패한다
+ok 4 - 청크가 모두 한도 안이어도 첫 화면 합계가 넘으면 실패한다
+  ---
+  duration_ms: 0.432813
+  type: 'test'
+  ...
+# Subtest: 글꼴 한도: 5,000,000 B는 통과하고 5,000,001 B는 실패한다
+ok 5 - 글꼴 한도: 5,000,000 B는 통과하고 5,000,001 B는 실패한다
+  ---
+  duration_ms: 0.700433
+  type: 'test'
+  ...
+# Subtest: 나중에 받는 JS는 첫 화면 합계에서 빠지고 청크 한도는 받는다
+ok 6 - 나중에 받는 JS는 첫 화면 합계에서 빠지고 청크 한도는 받는다
+  ---
+  duration_ms: 86.173523
+  type: 'test'
+  ...
+# Subtest: fonts/ 스타일시트는 글꼴 줄로 따로 세고 첫 화면 합계에 넣지 않는다
+ok 7 - fonts/ 스타일시트는 글꼴 줄로 따로 세고 첫 화면 합계에 넣지 않는다
+  ---
+  duration_ms: 29.47488
+  type: 'test'
+  ...
+# Subtest: 참조한 파일이 없으면 missing에 적는다
+ok 8 - 참조한 파일이 없으면 missing에 적는다
+  ---
+  duration_ms: 1.268974
+  type: 'test'
+  ...
+# Subtest: CLI: 한도 안이면 종료 0이고 판정 줄을 쓴다(한글·공백 경로, 링크 폴더)
+ok 9 - CLI: 한도 안이면 종료 0이고 판정 줄을 쓴다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 778.907379
+  type: 'test'
+  ...
+# Subtest: CLI: 한도를 넘으면 종료 1이다(한글·공백 경로, 링크 폴더)
+ok 10 - CLI: 한도를 넘으면 종료 1이다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 327.812044
+  type: 'test'
+  ...
+# Subtest: CLI: dist/index.html이 없으면 종료 2다(한글·공백 경로, 링크 폴더)
+ok 11 - CLI: dist/index.html이 없으면 종료 2다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 1047.354268
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2624.414515

@@ -1,0 +1,233 @@
+{
+ "dk": {
+  "sources": 39,
+  "evidence_kept": 83,
+  "evidence_dropped": 0,
+  "checked": 36,
+  "facts": 15,
+  "triangulated": 6,
+  "single_source": 0,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "guild": {
+  "sources": 36,
+  "evidence_kept": 76,
+  "evidence_dropped": 0,
+  "checked": 44,
+  "facts": 13,
+  "triangulated": 4,
+  "single_source": 5,
+  "contradicted_facts": 0,
+  "observations": 14
+ },
+ "d4": {
+  "sources": 33,
+  "evidence_kept": 83,
+  "evidence_dropped": 0,
+  "checked": 77,
+  "facts": 13,
+  "triangulated": 2,
+  "single_source": 5,
+  "contradicted_facts": 0,
+  "observations": 14
+ },
+ "sp2": {
+  "sources": 28,
+  "evidence_kept": 75,
+  "evidence_dropped": 0,
+  "checked": 75,
+  "facts": 15,
+  "triangulated": 8,
+  "single_source": 1,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "v3": {
+  "sources": 35,
+  "evidence_kept": 73,
+  "evidence_dropped": 1,
+  "checked": 33,
+  "facts": 13,
+  "triangulated": 0,
+  "single_source": 7,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "gersang": {
+  "sources": 26,
+  "evidence_kept": 75,
+  "evidence_dropped": 0,
+  "checked": 75,
+  "facts": 14,
+  "triangulated": 5,
+  "single_source": 4,
+  "contradicted_facts": 0,
+  "observations": 14
+ },
+ "staff": {
+  "sources": 35,
+  "evidence_kept": 73,
+  "evidence_dropped": 0,
+  "checked": 73,
+  "facts": 14,
+  "triangulated": 1,
+  "single_source": 8,
+  "contradicted_facts": 0,
+  "observations": 12
+ },
+ "trade": {
+  "sources": 28,
+  "evidence_kept": 76,
+  "evidence_dropped": 0,
+  "checked": 76,
+  "facts": 12,
+  "triangulated": 0,
+  "single_source": 8,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "envdata": {
+  "sources": 37,
+  "evidence_kept": 71,
+  "evidence_dropped": 0,
+  "checked": 67,
+  "facts": 11,
+  "triangulated": 0,
+  "single_source": 7,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "edu": {
+  "sources": 35,
+  "evidence_kept": 73,
+  "evidence_dropped": 0,
+  "checked": 72,
+  "facts": 13,
+  "triangulated": 6,
+  "single_source": 3,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "comps": {
+  "sources": 37,
+  "evidence_kept": 83,
+  "evidence_dropped": 0,
+  "checked": 72,
+  "facts": 11,
+  "triangulated": 4,
+  "single_source": 2,
+  "contradicted_facts": 1,
+  "observations": 14
+ },
+ "repo": {
+  "sources": 29,
+  "evidence_kept": 62,
+  "evidence_dropped": 0,
+  "checked": 62,
+  "facts": 12,
+  "triangulated": 6,
+  "single_source": 0,
+  "contradicted_facts": 1,
+  "observations": 13
+ },
+ "repo2": {
+  "sources": 9,
+  "evidence_kept": 16,
+  "evidence_dropped": 0,
+  "checked": 16,
+  "facts": 6,
+  "triangulated": 0,
+  "single_source": 2,
+  "contradicted_facts": 0,
+  "observations": 3
+ },
+ "gap1": {
+  "sources": 25,
+  "evidence_kept": 70,
+  "evidence_dropped": 0,
+  "checked": 70,
+  "facts": 11,
+  "triangulated": 2,
+  "single_source": 5,
+  "contradicted_facts": 0,
+  "observations": 12
+ },
+ "gap3": {
+  "sources": 24,
+  "evidence_kept": 68,
+  "evidence_dropped": 0,
+  "checked": 57,
+  "facts": 13,
+  "triangulated": 3,
+  "single_source": 4,
+  "contradicted_facts": 0,
+  "observations": 12
+ },
+ "gap8": {
+  "sources": 35,
+  "evidence_kept": 73,
+  "evidence_dropped": 0,
+  "checked": 73,
+  "facts": 16,
+  "triangulated": 6,
+  "single_source": 3,
+  "contradicted_facts": 0,
+  "observations": 14
+ },
+ "gap2": {
+  "sources": 31,
+  "evidence_kept": 90,
+  "evidence_dropped": 0,
+  "checked": 90,
+  "facts": 18,
+  "triangulated": 3,
+  "single_source": 5,
+  "contradicted_facts": 0,
+  "observations": 14
+ },
+ "gap6": {
+  "sources": 29,
+  "evidence_kept": 74,
+  "evidence_dropped": 0,
+  "checked": 74,
+  "facts": 16,
+  "triangulated": 2,
+  "single_source": 4,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "gap7": {
+  "sources": 34,
+  "evidence_kept": 76,
+  "evidence_dropped": 0,
+  "checked": 76,
+  "facts": 14,
+  "triangulated": 0,
+  "single_source": 4,
+  "contradicted_facts": 1,
+  "observations": 13
+ },
+ "gap4": {
+  "sources": 36,
+  "evidence_kept": 78,
+  "evidence_dropped": 1,
+  "checked": 79,
+  "facts": 20,
+  "triangulated": 4,
+  "single_source": 4,
+  "contradicted_facts": 0,
+  "observations": 13
+ },
+ "gap5": {
+  "sources": 35,
+  "evidence_kept": 70,
+  "evidence_dropped": 1,
+  "checked": 70,
+  "facts": 18,
+  "triangulated": 1,
+  "single_source": 9,
+  "contradicted_facts": 1,
+  "observations": 13
+ }
+}

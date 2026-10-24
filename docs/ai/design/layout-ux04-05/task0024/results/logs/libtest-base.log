@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: 프로필 일곱 개와 실제 배율
+ok 1 - 프로필 일곱 개와 실제 배율
+  ---
+  duration_ms: 2.655157
+  type: 'test'
+  ...
+# Subtest: 프로필 선택은 종류와 목록 순서를 지킨다
+ok 2 - 프로필 선택은 종류와 목록 순서를 지킨다
+  ---
+  duration_ms: 0.623834
+  type: 'test'
+  ...
+# Subtest: 묶음 시나리오 검증
+ok 3 - 묶음 시나리오 검증
+  ---
+  duration_ms: 2.948947
+  type: 'test'
+  ...
+# Subtest: 잘못된 단계와 기대를 거절한다
+ok 4 - 잘못된 단계와 기대를 거절한다
+  ---
+  duration_ms: 0.933277
+  type: 'test'
+  ...
+# Subtest: 정적 경로의 상위 이동을 막는다
+ok 5 - 정적 경로의 상위 이동을 막는다
+  ---
+  duration_ms: 61.017738
+  type: 'test'
+  ...
+# Subtest: 응답 형식 표와 기본 형식
+ok 6 - 응답 형식 표와 기본 형식
+  ---
+  duration_ms: 0.362327
+  type: 'test'
+  ...
+# Subtest: 글꼴 CSS만 사용자 에이전트를 캐시 키에 넣는다
+ok 7 - 글꼴 CSS만 사용자 에이전트를 캐시 키에 넣는다
+  ---
+  duration_ms: 0.90382
+  type: 'test'
+  ...
+# Subtest: 자료에서 만든 금지 이름·ID가 시나리오와 사용법에 없다
+ok 8 - 자료에서 만든 금지 이름·ID가 시나리오와 사용법에 없다
+  ---
+  duration_ms: 57.82412
+  type: 'test'
+  ...
+# Subtest: 기대 범위와 없는 값 및 적용 프로필
+ok 9 - 기대 범위와 없는 값 및 적용 프로필
+  ---
+  duration_ms: 1.119018
+  type: 'test'
+  ...
+# Subtest: 명령줄 dry-run과 저장소 안 쓰기 경로 거절
+ok 10 - 명령줄 dry-run과 저장소 안 쓰기 경로 거절
+  ---
+  duration_ms: 2449.488772
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2759.251951

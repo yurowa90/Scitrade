@@ -1,0 +1,54 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "smoke",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/3ec112a5-057f-529d-b1f4-e55e1685814c/scratchpad/b/b59r2/dist",
+  "dist_index_sha256": "81443f7ae63f591a310a9111c285b4c6eb90c21ee1eabee80ad5fe48e63a9b69",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 45
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "overflow_x_day1": 0,
+        "bar_bottom_day1": 166.3,
+        "overflow_x_day2": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "overflow_x_day1",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x_day2",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": true
+}

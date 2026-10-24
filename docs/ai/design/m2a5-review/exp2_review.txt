@@ -1,0 +1,245 @@
+▶ python3 tools/build_package.py --check
+MANIFEST 일치: 218개 파일
+  통과
+▶ python3 tools/validate_data.py
+PASS: 23 data documents; 25821 structural/reference/arithmetic checks
+26 acceptance specifications included (18 core + 8 character); linked by file and test name: 13 core and 3 character to engine tests, 3 to screen tests. This validator checks that those files and names exist; it does not run them (npx vitest run).
+Unlinked specifications: 5 core, 5 character. Curriculum: 0 P0 item links without a P0 label remain on the pending list (not approved exceptions).
+Game fixtures are DESIGN; ECB sample is OBSERVED_AND_DERIVED and import-only.
+Economic calibration and playtesting are pending.
+  통과
+▶ npm run --silent typecheck
+  통과
+▶ npx vitest run
+
+ RUN  v5.0.3 /tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/m2a5/exp2
+
+
+ Test Files  33 passed (33)
+      Tests  1000 passed | 1 todo (1001)
+   Start at  04:40:12
+   Duration  15.33s (tests 85%, transform 8%, import 7%)
+
+    Isolate  33 workers spawned · ~151ms startup each (spawn + environment, per file)
+             at least ~1.51s faster with isolate: false — reuses workers across files instead of one per file
+
+  통과
+▶ npm run --silent build
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 55 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.65 kB │ gzip:  0.39 kB
+dist/assets/index-B716u3GR.css   25.96 kB │ gzip:  6.74 kB
+dist/assets/index-CQuN4TJo.js   212.22 kB │ gzip: 71.72 kB
+dist/assets/data-COeDyC_l.js    317.89 kB │ gzip: 52.92 kB
+
+✓ built in 421ms
+  통과
+▶ node tools/check_bundle_size.mjs dist
+JS 청크 2개 (하나에 500,000 B 이하):
+  assets/data-COeDyC_l.js 317,893 B, gzip 50,160 B — 첫 화면
+  assets/index-CQuN4TJo.js 212,225 B, gzip 71,234 B — 첫 화면
+첫 화면 JS·CSS 3개: 556,087 B (한도 600,000 B), gzip 128,091 B (한도 140,000 B)
+글꼴: 스타일시트 1개 173,953 B + 글꼴 파일 378개 3,995,288 B = 4,169,241 B (한도 5,000,000 B). 첫 화면 합계에 넣지 않는다
+판정: 통과
+  통과
+▶ python3 tools/art/test_pixel_tools.py
+..................../usr/lib/python3.11/unittest/mock.py:1189: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  result = effect(*args, **kwargs)
+.
+----------------------------------------------------------------------
+Ran 21 tests in 2.363s
+
+OK
+  통과
+▶ python3 -m unittest discover -s scripts -p test_*.py
+.........재생성 원본 없음 (/tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/m2a5/map): bluemarble.jpg, topology.png, ne/ne_50m_land.geojson, ne/ne_50m_lakes.geojson
+s재생성 원본 없음 (/tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/m2a5/map): bluemarble.jpg, topology.png, ne/ne_10m_land.geojson, ne/ne_10m_lakes.geojson
+s....재생성 원본 없음 (/tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/m2a5/map): bluemarble.jpg, topology.png, ne/ne_10m_land.geojson, ne/ne_10m_lakes.geojson
+s.....
+----------------------------------------------------------------------
+Ran 21 tests in 0.812s
+
+OK (skipped=3)
+  통과
+▶ python3 tools/test_validate_data.py
+..........................................................................
+----------------------------------------------------------------------
+Ran 74 tests in 1.072s
+
+OK
+  통과
+▶ python3 tools/check_fact_mixing.py
+PASS: 사실 섞임 검사 — 자료 23개, 문장 7319개, 사실 표지 53개, 허용 목록 8건 모두 사용
+  통과
+▶ python3 tools/test_check_fact_mixing.py
+....................
+----------------------------------------------------------------------
+Ran 20 tests in 1.409s
+
+OK
+  통과
+▶ node --test tools/browser/lib.test.mjs
+TAP version 13
+# Subtest: 프로필 일곱 개와 실제 배율
+ok 1 - 프로필 일곱 개와 실제 배율
+  ---
+  duration_ms: 2.193033
+  type: 'test'
+  ...
+# Subtest: 프로필 선택은 종류와 목록 순서를 지킨다
+ok 2 - 프로필 선택은 종류와 목록 순서를 지킨다
+  ---
+  duration_ms: 0.455031
+  type: 'test'
+  ...
+# Subtest: 묶음 시나리오 검증
+ok 3 - 묶음 시나리오 검증
+  ---
+  duration_ms: 3.000001
+  type: 'test'
+  ...
+# Subtest: 잘못된 단계와 기대를 거절한다
+ok 4 - 잘못된 단계와 기대를 거절한다
+  ---
+  duration_ms: 0.670813
+  type: 'test'
+  ...
+# Subtest: 요소 폭과 부모 안 왼쪽 위치 측정
+ok 5 - 요소 폭과 부모 안 왼쪽 위치 측정
+  ---
+  duration_ms: 0.375995
+  type: 'test'
+  ...
+# Subtest: 정적 경로의 상위 이동을 막는다
+ok 6 - 정적 경로의 상위 이동을 막는다
+  ---
+  duration_ms: 0.792549
+  type: 'test'
+  ...
+# Subtest: 응답 형식 표와 기본 형식
+ok 7 - 응답 형식 표와 기본 형식
+  ---
+  duration_ms: 0.425363
+  type: 'test'
+  ...
+# Subtest: 글꼴 CSS만 사용자 에이전트를 캐시 키에 넣는다
+ok 8 - 글꼴 CSS만 사용자 에이전트를 캐시 키에 넣는다
+  ---
+  duration_ms: 0.67852
+  type: 'test'
+  ...
+# Subtest: 자료에서 만든 금지 이름·ID가 시나리오와 사용법에 없다
+ok 9 - 자료에서 만든 금지 이름·ID가 시나리오와 사용법에 없다
+  ---
+  duration_ms: 9.705364
+  type: 'test'
+  ...
+# Subtest: 기대 범위와 없는 값 및 적용 프로필
+ok 10 - 기대 범위와 없는 값 및 적용 프로필
+  ---
+  duration_ms: 0.651302
+  type: 'test'
+  ...
+# Subtest: 명령줄 dry-run과 저장소 안 쓰기 경로 거절
+ok 11 - 명령줄 dry-run과 저장소 안 쓰기 경로 거절
+  ---
+  duration_ms: 657.045242
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 770.749733
+  통과
+▶ node --test tools/check_bundle_size.test.mjs
+TAP version 13
+# Subtest: index.html에서 script·modulepreload·stylesheet 참조를 문서 순서로 고른다
+ok 1 - index.html에서 script·modulepreload·stylesheet 참조를 문서 순서로 고른다
+  ---
+  duration_ms: 2.63565
+  type: 'test'
+  ...
+# Subtest: 스타일시트의 url()을 스타일시트 위치 기준으로 풀고 data:·외부·중복을 뺀다
+ok 2 - 스타일시트의 url()을 스타일시트 위치 기준으로 풀고 data:·외부·중복을 뺀다
+  ---
+  duration_ms: 0.471738
+  type: 'test'
+  ...
+# Subtest: JS 청크 한도: 500,000 B는 통과하고 500,001 B는 실패한다
+ok 3 - JS 청크 한도: 500,000 B는 통과하고 500,001 B는 실패한다
+  ---
+  duration_ms: 0.395572
+  type: 'test'
+  ...
+# Subtest: 청크가 모두 한도 안이어도 첫 화면 합계가 넘으면 실패한다
+ok 4 - 청크가 모두 한도 안이어도 첫 화면 합계가 넘으면 실패한다
+  ---
+  duration_ms: 0.14307
+  type: 'test'
+  ...
+# Subtest: 글꼴 한도: 5,000,000 B는 통과하고 5,000,001 B는 실패한다
+ok 5 - 글꼴 한도: 5,000,000 B는 통과하고 5,000,001 B는 실패한다
+  ---
+  duration_ms: 0.242674
+  type: 'test'
+  ...
+# Subtest: 나중에 받는 JS는 첫 화면 합계에서 빠지고 청크 한도는 받는다
+ok 6 - 나중에 받는 JS는 첫 화면 합계에서 빠지고 청크 한도는 받는다
+  ---
+  duration_ms: 11.919957
+  type: 'test'
+  ...
+# Subtest: fonts/ 스타일시트는 글꼴 줄로 따로 세고 첫 화면 합계에 넣지 않는다
+ok 7 - fonts/ 스타일시트는 글꼴 줄로 따로 세고 첫 화면 합계에 넣지 않는다
+  ---
+  duration_ms: 3.324948
+  type: 'test'
+  ...
+# Subtest: 참조한 파일이 없으면 missing에 적는다
+ok 8 - 참조한 파일이 없으면 missing에 적는다
+  ---
+  duration_ms: 0.87817
+  type: 'test'
+  ...
+# Subtest: CLI: 한도 안이면 종료 0이고 판정 줄을 쓴다(한글·공백 경로, 링크 폴더)
+ok 9 - CLI: 한도 안이면 종료 0이고 판정 줄을 쓴다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 203.989306
+  type: 'test'
+  ...
+# Subtest: CLI: 한도를 넘으면 종료 1이다(한글·공백 경로, 링크 폴더)
+ok 10 - CLI: 한도를 넘으면 종료 1이다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 100.585681
+  type: 'test'
+  ...
+# Subtest: CLI: dist/index.html이 없으면 종료 2다(한글·공백 경로, 링크 폴더)
+ok 11 - CLI: dist/index.html이 없으면 종료 2다(한글·공백 경로, 링크 폴더)
+  ---
+  duration_ms: 396.304779
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 803.915127
+  통과
+▶ 작업 트리 변화 없음
+  통과
+검사 14종, 실패 0종 (모드: 확인)
+
+변경 요약 (기준: HEAD):
+EXIT 0

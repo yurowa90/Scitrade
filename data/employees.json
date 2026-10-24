@@ -11,8 +11,8 @@
       "name_ko": "귀솔",
       "fictional": true,
       "role": "sales",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "employed",
       "work_units_per_day": 2,
       "salary_per_day": {
@@ -34,8 +34,8 @@
       "name_ko": "물보리",
       "fictional": true,
       "role": "operations",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "employed",
       "work_units_per_day": 2,
       "salary_per_day": {
@@ -57,8 +57,8 @@
       "name_ko": "솔솔밤",
       "fictional": true,
       "role": "sales",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "candidate",
       "work_units_per_day": 3,
       "salary_per_day": {
@@ -77,11 +77,11 @@
     },
     {
       "id": "EMP04",
-      "name_ko": "돌몽",
+      "name_ko": "현돌",
       "fictional": true,
       "role": "operations",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "candidate",
       "work_units_per_day": 3,
       "salary_per_day": {
@@ -103,8 +103,8 @@
       "name_ko": "화랑콩",
       "fictional": true,
       "role": "sales",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "candidate",
       "work_units_per_day": 2,
       "salary_per_day": {
@@ -123,11 +123,11 @@
     },
     {
       "id": "EMP06",
-      "name_ko": "밤꾸미",
+      "name_ko": "바름",
       "fictional": true,
       "role": "operations",
-      "home_city_id": "BUSAN",
-      "location_city_id": "BUSAN",
+      "home_city_id": "PYEONGTAEK",
+      "location_city_id": "PYEONGTAEK",
       "employment_status": "candidate",
       "work_units_per_day": 2,
       "salary_per_day": {
