@@ -3086,6 +3086,11 @@
       "sha256": "aa3b4e2396b3e4ff10050379d207b714fbff669c541b6f533bd40ca136d85f0f"
     },
     {
+      "path": "docs/ai/tasks/TASK-0068b-tables-report-compare.md",
+      "size_bytes": 51341,
+      "sha256": "fe1b5af967557ad8301fb417a16323d5c13dac8b56d9b4a539552526114f24cf"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
