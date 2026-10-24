@@ -1707,8 +1707,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 94227,
-      "sha256": "cdb050548402a7a911e9413d85240e9abe990a42b99274cd40db80bc8c2b346f"
+      "size_bytes": 95856,
+      "sha256": "0ecfeaaf09ac76313f96664b0170d04503dbea17a9cd55ff138f7579aaf45991"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -2647,8 +2647,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 26874,
-      "sha256": "790ee305efa5301637f23f8233e4f445efcc48dc90a151b7504729c49a409b77"
+      "size_bytes": 27083,
+      "sha256": "30bccaa31fcba521cbd29b6e05e9e3d2ec50b4c8d5e7f203a4c62ec8876b7609"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3086,6 +3086,11 @@
       "sha256": "aa3b4e2396b3e4ff10050379d207b714fbff669c541b6f533bd40ca136d85f0f"
     },
     {
+      "path": "docs/ai/tasks/TASK-0068b-R1-tests.md",
+      "size_bytes": 6124,
+      "sha256": "790817f0a9fd9848edcd3045d1b41ad0cbb8a84233f61f202b98fc9977984ba3"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0068b-tables-report-compare.md",
       "size_bytes": 51355,
       "sha256": "cf1c389f26369eb0ac6a29184fe19a03fe30ccdd62adbf886140caf7309fc66e"
@@ -3159,6 +3164,11 @@
       "path": "docs/ai/tasks/results/REVIEW-0068a-HUB-2026-10-24.md",
       "size_bytes": 6837,
       "sha256": "2981ee8cc242c3ce751dc705250a270a113a0476daa025e420724734779598dd"
+    },
+    {
+      "path": "docs/ai/tasks/results/REVIEW-0068b-HUB-2026-10-24.md",
+      "size_bytes": 8698,
+      "sha256": "c8864e2fdd74877256cd6676defa71280072d697d4b7ee18976eaf24fe8236a7"
     },
     {
       "path": "docs/ai/tasks/results/TASK-0001.md",
