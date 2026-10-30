@@ -40,7 +40,9 @@ describe('TASK-0067a 판본·프로필', () => {
     ['R0P', []], ['R1', ['FX']], ['R2', ['FX', 'TARIFF', 'SURCHARGE']],
     ['R3', ['FX', 'TARIFF', 'SURCHARGE', 'CLAIM', 'COLLECTION']],
   ] as const)('%s 변환·원본 보존', (level, layers) => {
-    const b = base(), before = structuredClone(b), p = profile(), cr = credit();
+    const b = base(), before = structuredClone(b), p = profile();
+    // 변환·원본 보존은 최종 판매 마진과 무관하게 k=0으로 검사한다.
+    const { saleMarginK: _, ...cr } = credit();
     const c = withRiskLevelV2(b, level, p, cr);
     expect(c.rules.rulesVersion).toBe('M2a-rules-4'); expect(c.operations!.risk!.layers).toEqual(layers);
     expect(c.operations!.risk!.credit).toEqual(cr); expect(c.operations!.risk!.credit).not.toBe(cr);
@@ -86,12 +88,17 @@ describe('TASK-0067a 판본·프로필', () => {
       expect(r.trade.goods.map((g) => g.sell_counterparties.map((p) => profile().collections.byCounterparty.find((x) => x.counterpartyId === p.counterparty_id)!.grade))).toEqual(grades);
     }
   });
+  it('최종 V2 판매 마진은 1이고 DEFAULT에는 외상 칸이 없다', () => {
+    expect(loadCreditProfile('RISK_PROFILE_V2').saleMarginK).toBe(1);
+    expect(loadRiskProfile('RISK_PROFILE_DEFAULT')).not.toHaveProperty('credit');
+    expect(() => loadCreditProfile('RISK_PROFILE_DEFAULT')).toThrow();
+  });
   it('기존 로더 모양과 새 외상 로더의 원문 값', () => {
     const p = profile(), c = credit(), v = raw.risk_profiles.find((p) => p.id === 'RISK_PROFILE_V2')!;
     expect(Object.keys(p)).toEqual(Object.keys(loadRiskProfile('RISK_PROFILE_DEFAULT')));
     expect(Object.hasOwn(p, 'credit')).toBe(false);
     for (const g of p.collections.grades) expect(Object.hasOwn(g, 'pDefaultBp')).toBe(false);
-    expect(c).toEqual({ profileId: v.id, terms: v.credit_terms!.map((t) => ({ id: t.id, days: t.days, factorPct: t.factor_pct, premiumBp: t.premium_bp })),
+    expect(c).toEqual({ profileId: v.id, saleMarginK: 1, terms: v.credit_terms!.map((t) => ({ id: t.id, days: t.days, factorPct: t.factor_pct, premiumBp: t.premium_bp })),
       limitUnitMinor: v.credit_limit_unit_minor, limits: v.credit_limits!.map((r) => ({ grade: r.grade, lots: r.lots, limitMinor: r.limit_minor })),
       pDefaultBpByGrade: v.collections.grades.map((g) => ({ grade: g.grade, pDefaultBp: 'p_default_bp' in g ? g.p_default_bp : undefined })), carryBpPerDay: v.collections.carry_bp_per_day, recoveryBp: v.collections.recovery_bp });
     expect(() => loadCreditProfile('RISK_PROFILE_DEFAULT')).toThrow();

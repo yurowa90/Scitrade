@@ -98,7 +98,11 @@ describe('TASK-0067b 대손·이자', () => {
     ['R2', '194635b6b1cf766dea842036772df948c2cd95f8ebcb682c27c09089b455cc51'],
     ['R3', '79e4a37fb2ab9b70c9a39fe958a9a9b0c627c8474c62284fb261751243af71af'],
   ] as const)('1 %s의 실제 상태·원장은 BASE 시드 2001과 같다', async (level, hash) => {
-    const { state } = simulate(config(level), policyById('MAX_CONTRIBUTION')!, 2001);
+    // 기존 상태·원장 해시는 k=0 외상 프로필의 BASE 동작을 고정한다.
+    const { saleMarginK: _, ...credit } = loadCreditProfile('RISK_PROFILE_V2');
+    const cfg = withRiskLevelV2({ ...loadScenario('SCENARIO_M2_OPS_COS_LAVER'), seed: 2001 },
+      level, loadRiskProfile('RISK_PROFILE_V2'), credit);
+    const { state } = simulate(cfg, policyById('MAX_CONTRIBUTION')!, 2001);
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(state)));
     expect(Array.from(new Uint8Array(digest), (n) => n.toString(16).padStart(2, '0')).join('')).toBe(hash);
   });
