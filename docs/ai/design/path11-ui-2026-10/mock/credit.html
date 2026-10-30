@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경로 11 모형 (가) 외상 조건과 묶이는 현금</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="p11.css">
+</head>
+<body>
+<!-- 정적 모형. 숫자는 rules-4·R4·RISK_PROFILE_V2, 시나리오 (다), 시드 2001, 8일 상태에서 엔진 읽기 함수로 뽑았다(harness/mid.ts). 판정 시드가 아니다. -->
+<div class="mock-frame">
+<section class="panel" aria-labelledby="offers-h">
+  <h2 id="offers-h">8일 견적 <span class="mock-tag">모형 · 경로 11 (가)</span></h2>
+  <article class="offer">
+    <h3><span class="kind kind-trade">직접 무역</span> 화장품 50상자 · 평택 → 상하이</h3>
+    <p class="report-line">📋 <b>영업 직원의 보고</b> — “평택 공급자가 화장품 50상자를 내놨고, 상하이 화장품 신규 고객(B등급)이 같은 수량을 원합니다. 납기 15일, 계약상 대금일은 19일입니다.”</p>
+    <table class="money">
+      <tr><th>매입 (50상자, 원화)</th><td>−₩2,397,400</td></tr>
+      <tr><th>운임 (선지급)</th><td>−$180.00</td></tr>
+      <tr><th>관세 (가상 세율 · 상품 송장 기준)</th><td>−$92.85</td></tr>
+      <tr><th>판매 (현금 받기 기준)</th><td>+$2,596.00</td></tr>
+    </table>
+
+    <fieldset class="terms">
+      <legend>대금 받는 조건</legend>
+      <div class="term-opts" role="radiogroup" aria-describedby="terms-cmp-cap">
+        <label class="term-opt"><input type="radio" name="term" value="BASE"><span><b>대금일에 받기</b><small>19일 · 판매가 그대로</small></span></label>
+        <label class="term-opt"><input type="radio" name="term" value="D15"><span><b>15일 외상</b><small>34일 · 판매가 +3%</small></span></label>
+        <label class="term-opt"><input type="radio" name="term" value="D30" checked><span><b>30일 외상</b><small>49일 · 판매가 +6%</small></span></label>
+      </div>
+    </fieldset>
+
+    <table class="term-compare" aria-describedby="terms-note">
+      <caption id="terms-cmp-cap">조건별 비교 — 이 판의 숫자</caption>
+      <thead><tr><th scope="col"><span class="visually-hidden">항목</span></th><th scope="col">대금일</th><th scope="col">15일 외상</th><th scope="col" class="sel">30일 외상 (고름)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">판매대금</th><td>$2,596.00</td><td>$2,673.88</td><td class="sel">$2,751.76</td></tr>
+        <tr><th scope="row">더 받는 돈</th><td>—</td><td>+$77.88</td><td class="sel">+$155.76</td></tr>
+        <tr><th scope="row">대금 받는 날(계약)</th><td>19일</td><td>34일</td><td class="sel">49일</td></tr>
+        <tr><th scope="row">묶이는 돈</th><td colspan="3" style="text-align:center">₩2,397,400 + $272.85 (매입·운임·관세, 세 조건 같음)</td></tr>
+        <tr><th scope="row">묶이는 기간</th><td>11일</td><td>26일</td><td class="sel">41일</td></tr>
+        <tr><th scope="row">돈이 돌아오기 전 견적 공개</th><td>1번</td><td>3번</td><td class="sel">5번</td></tr>
+        <tr><th scope="row">외상 한도 사용 (B등급 $8,000.00)</th><td>—</td><td>$5,323.88</td><td class="sel">$5,401.76</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tl" aria-hidden="true">
+      <div class="tl-row"><span>대금일</span><div class="tl-bar"><i class="tl-span" style="left:0;width:26.2%"></i><i class="tl-tick" style="left:16.7%"></i><i class="tl-tick" style="left:33.3%"></i><i class="tl-tick" style="left:50%"></i><i class="tl-tick" style="left:66.7%"></i><i class="tl-tick" style="left:83.3%"></i></div></div>
+      <div class="tl-row"><span>15일 외상</span><div class="tl-bar"><i class="tl-span" style="left:0;width:61.9%"></i><i class="tl-tick" style="left:16.7%"></i><i class="tl-tick" style="left:33.3%"></i><i class="tl-tick" style="left:50%"></i><i class="tl-tick" style="left:66.7%"></i><i class="tl-tick" style="left:83.3%"></i></div></div>
+      <div class="tl-row tl-sel"><span>30일 외상</span><div class="tl-bar"><i class="tl-span" style="left:0;width:97.6%"></i><i class="tl-tick" style="left:16.7%"></i><i class="tl-tick" style="left:33.3%"></i><i class="tl-tick" style="left:50%"></i><i class="tl-tick" style="left:66.7%"></i><i class="tl-tick" style="left:83.3%"></i></div></div>
+      <div class="tl-axis"><span style="left:0">8일</span><span style="left:16.7%">15</span><span style="left:33.3%">22</span><span style="left:50%">29</span><span style="left:66.7%">36</span><span style="left:83.3%">43</span><span style="left:96%">49일</span></div>
+    </div>
+    <p id="terms-note" class="muted small">막대는 돈이 묶이는 기간, 세로선은 새 견적 묶음이 공개되는 날(7일마다, 3일 동안 유효)입니다. 거래처가 늦게 내면 받는 날은 더 늦어질 수 있습니다(B등급).</p>
+
+    <div class="p11-facts">
+      <h4>지금 회사 돈 (사실)</h4>
+      <ul>
+        <li>지금 쓸 수 있는 원화: ₩5,830,000 → 이 거래 뒤 ₩3,432,600</li>
+        <li>이 돈으로 같은 크기 매입을 1건 더 할 수 있습니다.</li>
+        <li>이미 묶인 돈: 1일 계약 판매대금 $2,650.00 — 42일에 받을 예정</li>
+      </ul>
+    </div>
+    <div class="p11-think">
+      <h4>생각해 볼 질문</h4>
+      <ul>
+        <li>30일 외상으로 더 받는 $155.76와, 41일 동안 묶이는 ₩2,397,400 가운데 어느 쪽이 더 클까요?</li>
+        <li>15·22·29·36·43일에 좋은 견적이 나오면 무슨 돈으로 사겠습니까?</li>
+      </ul>
+    </div>
+    <p style="margin-top:.7rem"><button class="primary" type="button">이 조건으로 수락 대기열에 넣기</button></p>
+  </article>
+</section>
+<aside class="mock-side">오른쪽 칸(직원·자원·대기열) — 이 모형에서 바꾸지 않음</aside>
+</div>
+</body>
+</html>

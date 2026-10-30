@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경로 11 모형 (나) 손익계산서·재무상태표 결산</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="p11.css">
+</head>
+<body>
+<!-- 정적 모형. 숫자는 rules-4·R4·RISK_PROFILE_V2, 시나리오 (다), 시드 2001, 정책 TERM_GREEDY의 30일 마감 상태를 원화로 환산한 값이다(harness/snap.ts). 판정 시드가 아니다.
+     #narrow를 붙이면 경영 보고 칸(1024에서 약 297px) 배치를 본다. -->
+<div class="mock-frame" id="frame">
+<section class="panel settlement" aria-labelledby="st-h">
+  <h2 id="st-h" tabindex="-1">30일 마감 결산 <span class="mock-tag">모형 · 경로 11 (나)</span></h2>
+  <p class="muted small">원화로 환산했습니다. 달러 금액은 거래한 날의 참고 환율, 재무상태표는 30일 참고 환율 ₩1,238/$로 바꿨습니다. 통화별 원장은 아래 ‘통화별 장부’에 그대로 있습니다.</p>
+
+  <div class="stmt-grid" id="grid">
+    <table class="money is">
+      <caption>손익계산서 · 1~30일</caption>
+      <tr class="group"><th>영업수익</th><td></td></tr>
+      <tr><th class="sub">매출액 (직접 무역)</th><td>₩10,224,351</td></tr>
+      <tr><th class="sub">운송 주선 수익</th><td>₩6,134,300</td></tr>
+      <tr class="group"><th>매출원가</th><td></td></tr>
+      <tr><th class="sub">상품·운임·관세 <span class="flag">교사 검토</span></th><td class="neg">−₩8,387,368</td></tr>
+      <tr><th class="sub">운송 주선 원가</th><td class="neg">−₩1,487,200</td></tr>
+      <tr class="mid"><th>매출총이익</th><td>₩6,484,083</td></tr>
+      <tr class="group"><th>판매비와관리비</th><td></td></tr>
+      <tr><th class="sub">급여</th><td class="neg">−₩4,800,000</td></tr>
+      <tr><th class="sub">임차료</th><td class="neg">−₩450,000</td></tr>
+      <tr><th class="sub">대손상각비</th><td>₩0</td></tr>
+      <tr class="mid"><th>영업이익</th><td>₩1,234,083</td></tr>
+      <tr class="group"><th>영업외손익</th><td></td></tr>
+      <tr><th class="sub">환전 차감</th><td class="neg">−₩43,900</td></tr>
+      <tr><th class="sub">늦은 대금 이자 비용</th><td>₩0</td></tr>
+      <tr><th class="sub">환율 변동 손익 <span class="flag">교사 검토</span></th><td class="neg">−₩605,148</td></tr>
+      <tr class="total"><th>당기순이익</th><td>₩585,035</td></tr>
+    </table>
+
+    <div>
+      <div class="bs" id="bs">
+        <table class="money">
+          <caption>재무상태표 · 30일 마감</caption>
+          <tr class="group"><th>자산</th><td></td></tr>
+          <tr><th>현금</th><td>₩1,657,820</td></tr>
+          <tr><th>매출채권</th><td>₩12,332,015</td></tr>
+          <tr><th>재고</th><td>₩0</td></tr>
+          <tr><th>선급운임</th><td>₩495,200</td></tr>
+          <tr class="total"><th>자산 합계</th><td>₩14,485,035</td></tr>
+        </table>
+        <table class="money">
+          <caption><span class="visually-hidden">재무상태표 · </span>부채와 자본</caption>
+          <tr class="group"><th>부채</th><td></td></tr>
+          <tr><th>매입채무</th><td>₩0</td></tr>
+          <tr><th>미지급금 (급여·임차료)</th><td>₩0</td></tr>
+          <tr class="group"><th>자본</th><td></td></tr>
+          <tr><th>시작 자본</th><td>₩13,900,000</td></tr>
+          <tr><th>쌓인 이익</th><td>₩585,035</td></tr>
+          <tr class="total"><th>부채와 자본 합계</th><td>₩14,485,035</td></tr>
+        </table>
+      </div>
+      <div class="bs-bar" role="img" aria-label="자산 구성: 현금 11.4%, 매출채권 85.1%, 재고 0%, 선급운임 3.4%">
+        <i class="c-cash" style="width:11.4%"></i><i class="c-ar" style="width:85.1%"></i><i class="c-pre" style="width:3.4%"></i>
+      </div>
+      <div class="bs-key" aria-hidden="true"><span><b class="c-cash"></b>현금 11%</span><span><b class="c-ar"></b>매출채권 85%</span><span><b class="c-inv"></b>재고 0%</span><span><b class="c-pre"></b>선급운임 3%</span></div>
+
+      <div class="p11-facts">
+        <h4>이 판의 기록 (사실)</h4>
+        <ul>
+          <li>당기순이익 +₩585,035, 현금 ₩1,657,820</li>
+          <li>받을 돈(매출채권): 31일 $1,040.00 · 33일 $1,020.00 · 42일 $2,650.00 · 49일 $5,251.24</li>
+          <li>자금 부족으로 받지 못한 견적: 15일 2건, 22일 2건, 29일 2건</li>
+        </ul>
+      </div>
+      <div class="p11-think">
+        <h4>생각해 볼 질문</h4>
+        <ul>
+          <li>이익이 났는데 15·22·29일 견적은 왜 받지 못했을까요?</li>
+          <li>같은 시드로 다시 시작해 대금일에 받기로 해 보면, 30일의 현금과 매출채권은 어떻게 달라질까요?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <details class="muted small" style="margin-top:.6rem"><summary>통화별 장부 (지금 결산 화면)</summary><p>USD와 KRW를 따로 결산합니다. 원화로 사서 달러로 파는 거래라, 통화별로 보면 USD 장부는 이익, KRW 장부는 손실로 보입니다.</p></details>
+  <p class="note-teacher">교사용 메모(학생 화면에는 접어 둠): 수출 운임·도착국 관세를 매출원가에 넣은 것과 환율 변동 손익의 분류는 게임의 단순화입니다. 일반기업회계기준에서는 판매 운임을 판매비(운반비)로 둘 수 있습니다.</p>
+</section>
+<aside class="mock-side" id="side">오른쪽 칸 — 이 모형에서 바꾸지 않음</aside>
+</div>
+<script>
+if (location.hash === '#narrow') {
+  const f = document.getElementById('frame');
+  f.style.gridTemplateColumns = '297px 1fr';
+  document.getElementById('grid').classList.add('narrow');
+  document.getElementById('bs').classList.add('narrow');
+  document.getElementById('side').textContent = '가운데 칸(견적·지도) — 경영 보고 칸 폭 297px를 보려는 모형';
+}
+</script>
+</body>
+</html>

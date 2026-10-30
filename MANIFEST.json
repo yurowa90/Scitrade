@@ -1686,6 +1686,101 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/path11-ui-2026-10/README.md",
+      "size_bytes": 17625,
+      "sha256": "42ffeac74752ac2b12be0e3cecbee3b11698bf865f0b8bbcb1f1724d8105c32c"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/chromebook-credit.png",
+      "size_bytes": 65833,
+      "sha256": "0f80dc27c18ee8f9fd9aa8cf11323f36eb10d6baa62d3941caee122609d89781"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/chromebook-settlement.png",
+      "size_bytes": 61531,
+      "sha256": "35706e1c98ddc4ccd5ef5f4b63bd4a54953978dfe6536ca78eccb11a9f603c11"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/attr.mjs",
+      "size_bytes": 2011,
+      "sha256": "a2d5fc8e793541825b875ac1e0da33f2a33a79274b41a636f2b6fe8fc1b0dc51"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/drop.mjs",
+      "size_bytes": 1640,
+      "sha256": "76e6d5b2cf2f563b1d49f5760d41f5b451323f9e527bb33896af0b33247db0fb"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/go.mjs",
+      "size_bytes": 296,
+      "sha256": "372725b208138ab29b95e27e20d4c3d9d32fde9d30a47ada26674bc46e81e910"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/mid.ts",
+      "size_bytes": 2196,
+      "sha256": "30fe3dc634d36325b9efe16d16df38b519358512b40480abaedec6511fbcc2bd"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/probe.ts",
+      "size_bytes": 1925,
+      "sha256": "e3fb59ff76e1ca90d1fafaf5d3883bc72e01f0e6ebee935349f1b52a27f06cac"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/shot.cjs",
+      "size_bytes": 1870,
+      "sha256": "b0e08e87e04d7e4754767729191a72dbaf792dff8ca276a64577f26e672203cd"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/harness/snap.ts",
+      "size_bytes": 3492,
+      "sha256": "8422908d223f73a0c68dfdf545d6776bf538f83d27fa8b627ae9b29b08c180b4"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/ipad-credit.png",
+      "size_bytes": 63721,
+      "sha256": "1420f325f78c3eae108f5a5ce458edebce28bc08c0707a2d15c310d7a5b3e058"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/ipad-settlement-narrow.png",
+      "size_bytes": 67668,
+      "sha256": "6f439c18bed5294079b2a2742ee81014e2183e7b69a4d060c5ffcf7c1f6a6e00"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/ipad-settlement.png",
+      "size_bytes": 62360,
+      "sha256": "46eb34116a93808cc67a9f4fe38406a568c15c2b348370061c40807761d7360f"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/mock/credit.html",
+      "size_bytes": 6002,
+      "sha256": "3a490f5b4075362c1dcae89bd7d2211d37858840ec7721fac85662689578b887"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/mock/p11.css",
+      "size_bytes": 4608,
+      "sha256": "f16e7167e863249c181e7004ff419641803cb6defb9a0c89b78cca9b3a537e18"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/mock/settlement.html",
+      "size_bytes": 6152,
+      "sha256": "64e828880467525a0b924407427c1ea37cff25b851f9758570a14d3a675702b0"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/raw/mid-TG.json",
+      "size_bytes": 6528,
+      "sha256": "8e32b506f63e370fd1daa59044ad00a62727a65b3543abc88f1e8cfca5cef308"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/raw/snap-MAX_CONTRIBUTION.json",
+      "size_bytes": 1909,
+      "sha256": "e8e8336e10829ff8f4168c61964135e04da6f65569bd3227ed6e2dc1f113a91f"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/raw/snap-TERM_GREEDY.json",
+      "size_bytes": 1375,
+      "sha256": "5455a487e0a101f9790ad0e48f73333f5d9cd580273cccb4c0223ecd3b80611d"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/CODEX-REVIEW-0062-HUB-2026-10-16.md",
       "size_bytes": 142649,
       "sha256": "dd58de45cb7bac2c2edee81ebdb2bcca0e2fec2896436ad6d4e1b9a735b89220"

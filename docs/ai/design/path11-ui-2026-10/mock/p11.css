@@ -1,0 +1,54 @@
+/* 경로 11 정적 모형 전용. 게임 CSS(game.css = 빌드의 index-*.css) 위에 얹는다. 구현 코드가 아니다. */
+.mock-frame { display: grid; grid-template-columns: minmax(0, 670px) 300px; gap: 18px; padding: 18px 18px 18px 18px; align-items: start; }
+@media (min-width: 1300px) { .mock-frame { grid-template-columns: minmax(0, 1012px) 300px; } }
+.mock-side { border: 1.5px dashed var(--line); border-radius: 12px; padding: .8rem; color: var(--navy-soft); font-size: .82rem; min-height: 420px; background: repeating-linear-gradient(135deg, transparent 0 10px, rgba(31,42,68,.025) 10px 20px); }
+.mock-tag { display: inline-block; font-size: .72rem; background: var(--navy); color: #fff; border-radius: 4px; padding: 0 .4rem; margin-left: .4rem; vertical-align: middle; }
+
+/* (가) 외상 조건 */
+.terms { border: 0; padding: 0; margin: .7rem 0 0; }
+.terms legend { font-weight: 700; margin-bottom: .35rem; }
+.term-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; }
+.term-opt { display: flex; gap: .45rem; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 10px; padding: .45rem .55rem; min-height: 44px; background: var(--paper); cursor: pointer; }
+.term-opt input { width: 20px; height: 20px; margin: .1rem 0 0; accent-color: var(--sky-deep); flex: none; }
+.term-opt b { display: block; }
+.term-opt small { color: var(--navy-soft); }
+.term-opt:has(input:checked) { border-color: var(--sky-deep); background: var(--sky); }
+table.term-compare { width: 100%; border-collapse: collapse; margin-top: .6rem; font-variant-numeric: tabular-nums; font-size: .9rem; }
+table.term-compare caption { text-align: left; font-weight: 700; padding-bottom: .25rem; }
+table.term-compare th, table.term-compare td { padding: .28rem .35rem; border-bottom: 1px solid var(--line); text-align: right; }
+table.term-compare thead th { font-weight: 700; color: var(--navy); }
+table.term-compare tbody th { text-align: left; font-weight: 400; color: var(--navy-soft); }
+table.term-compare .sel { background: rgba(58,110,165,.08); }
+.tl { margin: .55rem 0 0; }
+.tl-row { display: grid; grid-template-columns: 5.2rem 1fr; align-items: center; gap: .4rem; font-size: .8rem; margin: .18rem 0; }
+.tl-bar { position: relative; height: 16px; background: var(--cream); border-radius: 4px; }
+.tl-span { position: absolute; top: 3px; height: 10px; border-radius: 3px; background: var(--gold); }
+.tl-sel .tl-span { background: var(--warn); }
+.tl-tick { position: absolute; top: 0; width: 2px; height: 16px; background: var(--sky-deep); opacity: .65; }
+.tl-axis { position: relative; height: 1.1rem; margin-left: 5.6rem; font-size: .72rem; color: var(--navy-soft); }
+.tl-axis span { position: absolute; transform: translateX(-50%); }
+.p11-facts, .p11-think { border-radius: 10px; padding: .55rem .75rem; margin-top: .6rem; font-size: .88rem; }
+.p11-facts { background: var(--sky); }
+.p11-think { background: var(--cream); border: 1.5px dashed var(--line); }
+.p11-facts h4, .p11-think h4 { margin: 0 0 .25rem; font-size: .86rem; }
+.p11-facts ul, .p11-think ul { margin: 0; padding-left: 1.1rem; }
+.p11-facts li, .p11-think li { margin: .12rem 0; }
+
+/* (나) 결산 */
+.stmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+.stmt-grid.narrow { grid-template-columns: 1fr; }
+table.is th.sub { padding-left: 1rem; }
+table.is tr.group th { font-weight: 700; color: var(--navy); padding-top: .45rem; }
+table.is tr.mid th, table.is tr.mid td { font-weight: 700; color: var(--navy); border-top: 1px solid var(--line); }
+table.is td.neg { color: var(--warn); }
+.bs { display: grid; grid-template-columns: 1fr; gap: .6rem; }
+@media (min-width: 1300px) { .bs { grid-template-columns: 1fr 1fr; } }
+.settlement table.money td { white-space: nowrap; padding-left: .5rem; }
+.bs.narrow { grid-template-columns: 1fr; }
+.bs-bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; margin: .3rem 0 .1rem; background: var(--cream); }
+.bs-bar i { display: block; height: 100%; }
+.bs-key { display: flex; flex-wrap: wrap; gap: .2rem .7rem; font-size: .76rem; color: var(--navy-soft); }
+.bs-key b { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .25rem; vertical-align: -1px; }
+.c-cash { background: var(--mint-deep); } .c-ar { background: var(--gold); } .c-inv { background: var(--sky-deep); } .c-pre { background: #9aa6bd; }
+.flag { font-size: .76rem; color: var(--warn); }
+.note-teacher { font-size: .8rem; color: var(--navy-soft); border-left: 3px solid var(--gold); padding-left: .5rem; margin-top: .5rem; }
