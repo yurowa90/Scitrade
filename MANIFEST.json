@@ -3626,6 +3626,11 @@
       "sha256": "5b8e4a39f175c47db784996e40ab7c4ad1940fad903fa32bc32460cdc91e5221"
     },
     {
+      "path": "docs/ai/tasks/TASK-0073-engine-ops-split.md",
+      "size_bytes": 18339,
+      "sha256": "4dc75262cc73d327d07197c1772acb01a6046f27dc525f9edf12a4e093370ada"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
