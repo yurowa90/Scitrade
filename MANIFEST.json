@@ -2106,6 +2106,11 @@
       "sha256": "38573021e24cf18231ed8fe3a7c90947c2d9755c6f993d27023a4dd31b000aac"
     },
     {
+      "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v3.md",
+      "size_bytes": 22615,
+      "sha256": "74513922f0900a7d365724f4cd916725688c94dfa3009fe359585c9ffa3ff3f2"
+    },
+    {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
       "size_bytes": 34714,
       "sha256": "ed18dc99ad3266e3ac13fd70753cc55efaffa25db0f65068a263c7ff8ce3d0a9"
