@@ -1741,6 +1741,11 @@
       "sha256": "995c80d17a11b210002e105c2899848019f8106e9b8b72ccf8b1321e38a861d4"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-V3-HUB-2026-10-30.md",
+      "size_bytes": 17631,
+      "sha256": "0278d9ab4fe6651d087566789fd670e353f8c41127cc21e1492b81c7a34b838c"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
       "size_bytes": 226720,
       "sha256": "320f7dd73fc1ce0c11099d055571e84b2d28f5c04de43d1605389f2ea4d75675"
@@ -2169,6 +2174,11 @@
       "path": "docs/ai/design/research/PRIVACY-DATAFLOW.md",
       "size_bytes": 16448,
       "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
+    },
+    {
+      "path": "docs/ai/design/research/RECEIVABLES-CASH-EVIDENCE.md",
+      "size_bytes": 20053,
+      "sha256": "178fb4947cbcce01b037db4619625c1cc0ff168a04c6eb1068b34f6444b434b3"
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
@@ -2872,8 +2882,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27490,
-      "sha256": "e0d26eb782fdcef0d13b4ba449f5fe9e54dbe07a478e56da7db9cf6ca1bf02c0"
+      "size_bytes": 27497,
+      "sha256": "ecf281a547f2233b6fcd81741009c344fbcfd650bea7a5df85de24a42a04b298"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3327,8 +3337,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0070-v2-final-profile.md",
-      "size_bytes": 6119,
-      "sha256": "97921dbfbce500d859f4f32eddbca31eb8fb66b60fce34712b26d76484e5d385"
+      "size_bytes": 6647,
+      "sha256": "36af6b828b0c108aa668d15030df3a14db08a11902e24619e6b7d5e2c539e86f"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
