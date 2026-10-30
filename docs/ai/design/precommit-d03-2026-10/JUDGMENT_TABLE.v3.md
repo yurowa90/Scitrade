@@ -31,6 +31,16 @@
   3. `data/market_rules.json` sha256. 판본 2 최종 프로필과 같아야 한다(TASK-0070 병합 뒤).
   4. `check_profile_v2.py … 1` 결과 DIFF 0
   5. 4절의 v3 기준·표본 밖 1·예비 묶음(1181~1300)을 쓴 적이 없다는 확인. 판본 1·2 RUNLOG, 시험, 사전 계산 스크립트와 대조한 결과를 적는다.
+  - **기록(허브, 2026-10-30).**
+    1. 판정표 v3 승인 커밋은 `6a28985`다(초안 2 `026a337`).
+    2. 도구 지시서 TASK-0071 병합 커밋은 `7f2be78`이다(Codex `2b8012f`).
+    3. `data/market_rules.json` sha256은 `e01c589cfcb755d0150ce0c70167dbd87ea3bda414e8b2bdbb58c402b2a1bfaa`다. 판본 2 최종 프로필과 같고, TASK-0070 병합 `f51231e` 뒤의 값이다.
+    4. `check_profile_v2.py <판본 1> data/market_rules.json 1`은 `DIFF 0`이다. 출력 sha256은 `a0c10c1e78dc61508f6183453a18e5fe3726377ea22a5380f15f25017a49948a`다.
+    5. 1181~1300을 쓴 적이 없음을 세 가지로 확인했다. 모두 0건이었다.
+       - `path5-measure-2026-10` 아래 모든 RUNLOG.tsv·run.sh·md: 명령의 `--seed-base`와 `--seeds`로 범위를 계산했고, 1181~1300과 겹치는 범위가 없었다.
+       - `src`·`tools`의 `seedBase`·`seed-base`·`riskSeeds`·`seeds:`·`SIM_SEEDS` 인자: 1181~1300 값이 없었다.
+       - 저장소 전체 `--seed-base 1181~1300` 문자열 검색: 0건이었다. 판정표 v3와 TASK-0071·PRECHECK 문서는 계획서라서 셈에서 뺐다.
+       - 사전 계산(`diag/`)은 1001~1040만 썼다(DESIGN-v2 2.0).
 
 ## 1. 측정 격자
 

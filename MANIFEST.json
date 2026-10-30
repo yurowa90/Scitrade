@@ -2202,8 +2202,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v3.md",
-      "size_bytes": 22923,
-      "sha256": "7fc48710ddbdcc9d59648de968d4544a8e815c0f75411d4b5b4b0c09e0934508"
+      "size_bytes": 24109,
+      "sha256": "19b19bd270f2a0da61c949a72f83564a26873a06d13701da3ec1cfa92f73b31f"
     },
     {
       "path": "docs/ai/design/production-plan-2026-10-14/PLAN.md",
@@ -2977,8 +2977,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27768,
-      "sha256": "2d1ddd5d31a2d273406f97b492ccbf8dfeb7d12a387ad2b8e58202da35435a53"
+      "size_bytes": 27774,
+      "sha256": "1b16a154b3df93dc5f8bc0b0189ef09d1945ee378630a4a4548ec129d521caac"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
