@@ -2191,6 +2191,91 @@
       "sha256": "37736ba3e3107cfe6b35cc1b236f05c9f3e29c45510d23bcc66a830d9279a428"
     },
     {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/CMP-R0P-R1.md",
+      "size_bytes": 1666,
+      "sha256": "da5a4a10606a0b598ff4e78f23208b052f586e2b71915b65347c212f07f962fd"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/CMP-R1-R2.md",
+      "size_bytes": 1444,
+      "sha256": "c737a10ba533fd194bb06d82e9c0e3f04b637d9dff917b271c7a1d5a294191f5"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/CMP-R2-R3.md",
+      "size_bytes": 1360,
+      "sha256": "d8a154de2aa011ca08919f56656e8bc8b29d4fa76963f20258b21eb697974373"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/CMP-R3-R4.md",
+      "size_bytes": 1364,
+      "sha256": "fa3658147ec03e6377bbb55efe3b46070654667fdc891a5c48bd9e45013b2211"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/RUNLOG.tsv",
+      "size_bytes": 6667,
+      "sha256": "8f90e7cea6d882d530d46d1845486d48211a3397a375ef6c842158cedfd326e5"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/SHA256SUMS",
+      "size_bytes": 1602,
+      "sha256": "b98589261e526bab640c1f28c582803e252997bbe06d5d695652da4d3a73a934"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V2-TABLES-R0P.md",
+      "size_bytes": 50789,
+      "sha256": "3c7e9b11fe50045169a15b6db93e0d903bfab224b76c57a5e8345b819647053f"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V2-TABLES-R1.md",
+      "size_bytes": 9804,
+      "sha256": "5bf08ae32e82a911858f8a400b9e911dbbc91673faba63e1555f4886a773770a"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V2-TABLES-R2.md",
+      "size_bytes": 9794,
+      "sha256": "e058c77fc8d4a43f27d233057892c12a09b61003d7a67745d631a394d7261924"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V2-TABLES-R3.md",
+      "size_bytes": 9833,
+      "sha256": "b5b88dc20dc85e4f216eced8d6d7fe275296fe518a99013b605bdfdb704d10ca"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V2-TABLES-R4.md",
+      "size_bytes": 56239,
+      "sha256": "0f5b3ab40e93e6be575d4c93c324d909ad023ee6844fd5777f6e16caf4438a78"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V3-TABLES-R0P.md",
+      "size_bytes": 4642,
+      "sha256": "2539244ae69b61b507900546abc85cd7554ad9b18649ecd03d07a0e4cec929ab"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V3-TABLES-R1.md",
+      "size_bytes": 5792,
+      "sha256": "08ae80ef0a09f90476f458c1f579c41612f7208e1423356592917f4899b21696"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V3-TABLES-R2.md",
+      "size_bytes": 5781,
+      "sha256": "583bf84e866ade9c641c83ead56530f15800b9ff75aeed472f81f52140e897c5"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V3-TABLES-R3.md",
+      "size_bytes": 5845,
+      "sha256": "2185ac232412ff6f1e11462c1f5026593670fe404fc1b04def226fa1d43dc2ab"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/V3-TABLES-R4.md",
+      "size_bytes": 6220,
+      "sha256": "32de16a3cca2b19bc479d3aa565f7cf2da0386cee41795e5a2d1ee8635f3d9a0"
+    },
+    {
+      "path": "docs/ai/design/path5-measure-2026-10/v3-base/run.sh",
+      "size_bytes": 1412,
+      "sha256": "172ec16fab91041670a6de3fb15cb974b28cfab1d635a1a6780b857489707311"
+    },
+    {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.md",
       "size_bytes": 80399,
       "sha256": "a1525c91a70cd5c49cc8315d9e25e88bca1c713de29967bd91c843cf96ef877d"
