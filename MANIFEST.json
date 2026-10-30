@@ -2166,6 +2166,11 @@
       "sha256": "07225a3b17a1dde7957ea45a70ca90b9b01985f3b54de7b3de316961415f3a9d"
     },
     {
+      "path": "docs/ai/design/research/RECEIVABLES-CASH-EVIDENCE.md",
+      "size_bytes": 20053,
+      "sha256": "178fb4947cbcce01b037db4619625c1cc0ff168a04c6eb1068b34f6444b434b3"
+    },
+    {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
       "size_bytes": 48991,
       "sha256": "156cf6189bfd8da86a921c03e7b3361b21bf7a9d1abce4da3e42e6a3f8667113"
