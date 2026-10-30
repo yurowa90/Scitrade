@@ -2421,6 +2421,11 @@
       "sha256": "e9ab91ee3fdcc4ea80e942f289afc452c662c787dd8a1f6ba7a74604fe1015f8"
     },
     {
+      "path": "docs/ai/design/research/ACCOUNTING-CLASSIFICATION-MEMO.md",
+      "size_bytes": 9076,
+      "sha256": "d8bb13f21a865cce83da331192e1fba37fdc7c0df58eddcda701ad51d3a1a730"
+    },
+    {
       "path": "docs/ai/design/research/ALPHA-PLAN-MIGRATION.md",
       "size_bytes": 6939,
       "sha256": "53ab79d893d03521ee24d73147d76e5884f49a27a23e595604d913c1d3008a71"
