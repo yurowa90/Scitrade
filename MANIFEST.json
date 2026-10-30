@@ -3341,6 +3341,11 @@
       "sha256": "36af6b828b0c108aa668d15030df3a14db08a11902e24619e6b7d5e2c539e86f"
     },
     {
+      "path": "docs/ai/tasks/TASK-0071-v3-tables-report.md",
+      "size_bytes": 25814,
+      "sha256": "1765dbd71289f62a56bbed1a57ca6ab9eb97bdefea221591abe95b86411f93ed"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
