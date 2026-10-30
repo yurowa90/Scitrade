@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 123924,
-      "sha256": "4808d338ebdb40834f600f31af12f6ef0395317cd4f2602e552807b37896d3b9"
+      "size_bytes": 124713,
+      "sha256": "5e075b9cb44a67c24cb89cea545ea47935defc30f13fecfca2609e72a8fc49f2"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1992,8 +1992,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V2-RUN-PLAN.md",
-      "size_bytes": 6004,
-      "sha256": "845fafa13082d70df2df84dc423e80a4d6f4904f6da029dc34d54fc9600de842"
+      "size_bytes": 6069,
+      "sha256": "8c3b99cf50df9f7719b3bcf66b514b8e46c07944b737d981767c58f11a48dbad"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/v2-oos1/CMP-R0P-R1.md",
@@ -2197,8 +2197,8 @@
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v2.md",
-      "size_bytes": 18485,
-      "sha256": "38573021e24cf18231ed8fe3a7c90947c2d9755c6f993d27023a4dd31b000aac"
+      "size_bytes": 18860,
+      "sha256": "28fe92ddd4cb2132cb3b3bf75a35a3cb2936a83cbe7a6a766518853c372a3457"
     },
     {
       "path": "docs/ai/design/precommit-d03-2026-10/JUDGMENT_TABLE.v3.md",
@@ -2977,8 +2977,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27497,
-      "sha256": "ecf281a547f2233b6fcd81741009c344fbcfd650bea7a5df85de24a42a04b298"
+      "size_bytes": 27535,
+      "sha256": "70ddb5a2db2268c71901053077641abce865154e8a8e34182e6b7dee57580d47"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
