@@ -1,6 +1,6 @@
 # TASK-0072 위험·신용 시험 판별력 정리(STATUS 후속 787·788)
 
-- **지위: 초안(세션 A, 2026-10-30).** 허브 검토 전이다. Codex에 넘기지 않는다.
+- **지위: 승인(허브, 2026-10-30, 개정 1).** 세션 A 초안(5433a9c)에 허브 검토 세 가지를 반영했다. 골든 검사기 이름을 명시했고, review_checks를 회귀에 넣었고, 결과 보고 파일 이름을 기존 관례(`results/TASK-0072.md`)에 맞췄다.
 - 근거: `docs/STATUS.md` TASK-0064 후속의 ‘시험 판별력’·‘공유 실행 꼴’ 두 항목. 세션 A 설계자 검수 메모를 따른다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `medium`
@@ -83,15 +83,17 @@
 ## 3. 회귀
 
 1. `npx vitest run` 전체 통과. 시험 파일 수와 시험 수가 BASE와 같아야 한다. 1.2·1.3의 단언이 늘어나도 시험(`it`) 수는 그대로다.
-2. 골든: rules-2 105회와 rules-1 400회가 일치해야 한다.
+2. 골든 둘(`node tools/check_rules2_golden.mjs`, `node tools/check_rules3_golden.mjs`)이 작업 전·후 모두 종료 0이어야 한다. 작업 전에 0이 아니면 고치지 말고 멈춘다.
 3. `node src/engine/sim/run.mjs run` 400회(시드 1001~1020)를 돌린다. 출력이 BASE와 `cmp` 동일해야 한다.
 4. 첫 화면 gzip이 BASE와 같아야 한다. 시험 파일만 바꾸므로 같아야 한다. 다르면 멈춘다.
 5. `python3 tools/build_package.py --manifest-only`와 `python3 tools/validate_data.py`를 통과해야 한다.
-6. `git diff --stat BASE`에 `src/engine/m2a5-risk-credit.test.ts`와 결과 보고 파일만 있어야 한다.
+6. `git diff --stat BASE`에 `src/engine/m2a5-risk-credit.test.ts`, 결과 보고 파일, `MANIFEST.json`만 있어야 한다.
+7. `npm run typecheck`와 `npm run build`가 통과해야 한다.
+8. `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check <BASE>`: `실패 0종`.
 
 ## 4. 결과 보고
 
-`docs/ai/tasks/results/TASK-0072-RESULT.md`에 다음을 적는다.
+`docs/ai/tasks/results/TASK-0072.md`에 다음을 적는다.
 
 - BASE
 - 바뀐 시험 이름 목록
