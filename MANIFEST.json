@@ -1741,6 +1741,11 @@
       "sha256": "995c80d17a11b210002e105c2899848019f8106e9b8b72ccf8b1321e38a861d4"
     },
     {
+      "path": "docs/ai/design/path3-price-risk-2026-10/PRECHECK-V3-HUB-2026-10-30.md",
+      "size_bytes": 17631,
+      "sha256": "0278d9ab4fe6651d087566789fd670e353f8c41127cc21e1492b81c7a34b838c"
+    },
+    {
       "path": "docs/ai/design/path3-price-risk-2026-10/REREVIEW-HUB-2026-10-16.md",
       "size_bytes": 226720,
       "sha256": "320f7dd73fc1ce0c11099d055571e84b2d28f5c04de43d1605389f2ea4d75675"
