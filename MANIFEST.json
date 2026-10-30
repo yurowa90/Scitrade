@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 124713,
-      "sha256": "5e075b9cb44a67c24cb89cea545ea47935defc30f13fecfca2609e72a8fc49f2"
+      "size_bytes": 125382,
+      "sha256": "a5b55294208d23eaf4cdd8f134c7e6519fb35462ae31702bc09509e5e56a1b34"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1997,8 +1997,8 @@
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/V3-REPORT.md",
-      "size_bytes": 3847,
-      "sha256": "458a2a11721bde87d627350909d24ef5b455cf2fd724b3938262f6f2afb859cb"
+      "size_bytes": 5338,
+      "sha256": "dd6da2de1b308101acfd8ea3c6ba735b0d46bc5ea093e3a1c835f250c2a0b68d"
     },
     {
       "path": "docs/ai/design/path5-measure-2026-10/v2-oos1/CMP-R0P-R1.md",
