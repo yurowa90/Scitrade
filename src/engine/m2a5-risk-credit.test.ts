@@ -465,7 +465,7 @@ describe('TASK-0064 추첨과 공개 정보', () => {
     const engine = strip(sources['./engine.ts']!);
     const delivery = engine.slice(engine.indexOf('function processDeliveries(')).split(/\n(?:export )?function /)[0]!;
     const collection = engine.slice(engine.indexOf('function processCollections(')).split(/\n(?:export )?function /)[0]!;
-    const withoutDeliveryGuard = delivery.replace("if (contract.kind === 'DIRECT_TRADE') {", '');
+    const withoutDeliveryGuard = delivery.replace("if (contract.kind === 'DIRECT_TRADE') {", '{');
     const withoutCollectionGuard = collection.replace("contract.kind !== 'DIRECT_TRADE' || ", '');
     expect(withoutDeliveryGuard).not.toBe(delivery);
     expect(withoutCollectionGuard).not.toBe(collection);
