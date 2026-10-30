@@ -1686,6 +1686,11 @@
       "sha256": "041d2537e7d0a72130f9d0a7f609a115c5d16c7fd05014e5a6f35ec8fc151fc3"
     },
     {
+      "path": "docs/ai/design/path11-engine-seam-2026-10/SCOPE.md",
+      "size_bytes": 19409,
+      "sha256": "b3a61b3f64c66faf4f4cff1bb0fa0035b629ee1cc8d96f2104c644559311c151"
+    },
+    {
       "path": "docs/ai/design/path11-ui-2026-10/README.md",
       "size_bytes": 17625,
       "sha256": "42ffeac74752ac2b12be0e3cecbee3b11698bf865f0b8bbcb1f1724d8105c32c"
@@ -3614,6 +3619,11 @@
       "path": "docs/ai/tasks/TASK-0071-v3-tables-report.md",
       "size_bytes": 35245,
       "sha256": "9ea9e83968d0aba9c82bf499bc0a3e3724b75a4ef0a4124631ab17747ca0be39"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0072-test-discrimination-cleanup.md",
+      "size_bytes": 8656,
+      "sha256": "280eecbc98b77244c65a7800710c9f102196be69364861b21f4cb156f9d34791"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
