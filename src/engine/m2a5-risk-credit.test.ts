@@ -197,7 +197,7 @@ function record(name: string, r: Run, s = r.end) {
   evidence[name] = { seed: r.cfg.seed, invoice: invoice(r, s)?.id, dueDay: invoice(r, s)?.dueDay,
     ...contractRiskReport(s, r.cfg, r.id) };
 }
-// 첫 쌍 사례만 캐시한다. 공유 무역 실행은 아래 최상위에서 즉시 끝까지 만든다.
+// 첫 쌍 사례만 캐시한다. 공유 무역 실행은 sharedRuns의 첫 호출 때 만든다.
 const cases = new Map<string, Run>();
 function findCase(name: string, pre: (cfg: ScenarioConfig, pair: Pair, s: GameState) => boolean,
   accept: (r: Run) => boolean = () => true, p = profile, later = 0, allPairs = false): Run {
@@ -227,7 +227,7 @@ function claimCase(p = profile, name = '클레임', later = 0, allPairs = false)
     const c = contract(r), inv = invoice(r); if (!inv) return false;
     const q = claimFor(r.cfg, r.end.rng.seed, c.sellOfferId!, c.goodId)!, sale = c.saleAmountMinor - c.priceReductionMinor;
     return later ? c.priceReductionMinor > 0 && bpAmount(sale, q.rateBp) !== bpAmount(c.saleAmountMinor, q.rateBp)
-      && sale * q.rateBp % 10000 >= 5000 : c.priceReductionMinor === 0 && rate(r, c.deliveredDay!) !== rate(r, inv.dueDay);
+      && sale * q.rateBp % 10000 >= 5000 : c.deliveredDay !== null && c.deliveredDay <= c.deliveryDeadlineDay && rate(r, c.deliveredDay) !== rate(r, inv.dueDay);
   }, p, later, allPairs);
 }
 type Picked = { run: Run; state: GameState; inv: Invoice };
@@ -282,7 +282,57 @@ function buildTradeRuns() {
   }
   return { runs, times, late, partial, split, same, sorted };
 }
-const shared = buildTradeRuns();
+type SharedRuns = ReturnType<typeof buildTradeRuns>;
+let sharedCache: { value: SharedRuns } | { error: unknown } | undefined;
+function sharedRuns(): SharedRuns {
+  if (!sharedCache) {
+    try { sharedCache = { value: buildTradeRuns() }; }
+    catch (error) { sharedCache = { error }; }
+  }
+  if ('error' in sharedCache) throw sharedCache.error;
+  return sharedCache.value;
+}
+
+// 현재 원문의 토큰과 괄호 짝으로 호출의 가장 가까운 블록을 찾는다.
+// 문자열·주석 안의 괄호는 무시한다. 일반 제어 흐름 분석 대신 승인된 두 가드 꼴만 인정한다.
+function directTradeGuard(body: string, call: string): boolean {
+  const tokens = body.match(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`|[\w$]+|===|!==|\|\||[^\s]/g)?.filter((t) => !t.startsWith('//') && !t.startsWith('/*')) ?? [];
+  const stack: number[] = [], pairs = new Map<number, number>(), parents = new Map<number, number | undefined>();
+  const blocks: number[] = [], calls: number[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i]!;
+    parents.set(i, blocks.at(-1));
+    if (t === call && tokens[i + 1] === '(') calls.push(i);
+    if (t === '(' || t === '{' || t === '[') {
+      stack.push(i); if (t === '{') blocks.push(i);
+    } else if (t === ')' || t === '}' || t === ']') {
+      const start = stack.pop();
+      if (start === undefined || tokens[start] !== ({ ')': '(', '}': '{', ']': '[' }[t])) return false;
+      pairs.set(start, i); pairs.set(i, start); if (t === '}') blocks.pop();
+    }
+  }
+  if (stack.length || !calls.length) return false;
+  const condition = (block: number) => {
+    if (tokens[block - 1] !== ')') return '';
+    const open = pairs.get(block - 1)!;
+    return tokens[open - 1] === 'if' ? tokens.slice(open + 1, block - 1).join('') : '';
+  };
+  return calls.every((index) => {
+    const block = parents.get(index);
+    if (block === undefined) return false;
+    if (condition(block) === "contract.kind==='DIRECT_TRADE'") return true;
+    // 호출과 같은 블록에 있는 조기 탈출만 허용한다. continue는 해당 if의 마지막 직접 문장이어야 한다.
+    for (let i = block + 1; i < index; i++) {
+      if (tokens[i] !== '{' || parents.get(i) !== block || !condition(i).startsWith("contract.kind!=='DIRECT_TRADE'||")) continue;
+      const end = pairs.get(i)!;
+      if (end >= index || tokens[end - 2] !== 'continue' || tokens[end - 1] !== ';' || parents.get(end - 2) !== i) continue;
+      let loop = false;
+      for (let j = end + 1; j < index; j++) if ((tokens[j] === 'for' || tokens[j] === 'while') && tokens[j + 1] === '(') loop = true;
+      if (!loop) return true;
+    }
+    return false;
+  });
+}
 
 describe('TASK-0064 추첨과 공개 정보', () => {
   it('일정 오라클(클레임·수금): 모든 품목·거래처·키, R2 표 미참조', () => {
@@ -404,7 +454,7 @@ describe('TASK-0064 추첨과 공개 정보', () => {
           const body = src.slice(src.indexOf(`function ${host}(`)).split(/\n(?:export )?function /)[0]!;
           expect(body.match(new RegExp(`\\b${name}\\(`, 'g'))).toHaveLength(calls.length);
           expect(body).toMatch(new RegExp(`${name}\\(config, s\\.rng\\.seed,`));
-          expect(body.slice(0, body.indexOf(`${name}(`))).toMatch(/kind\s*(?:===|!==)\s*'(?:DIRECT_TRADE|FORWARDING)'/);
+          expect(directTradeGuard(body, name!), `${host}: ${name} 직접 무역 가드`).toBe(true);
         }
       }
       if (/CLAIM:|COLLECT:/.test(src)) expect(file).toBe('./risk.ts');
@@ -412,10 +462,21 @@ describe('TASK-0064 추첨과 공개 정보', () => {
         expect(src).not.toMatch(/import[^;]*(?:claimFor|collectionPlan|drawAt|drawUniform|['"]\.\/rng['"])/);
       }
     }
+    const engine = strip(sources['./engine.ts']!);
+    const delivery = engine.slice(engine.indexOf('function processDeliveries(')).split(/\n(?:export )?function /)[0]!;
+    const collection = engine.slice(engine.indexOf('function processCollections(')).split(/\n(?:export )?function /)[0]!;
+    const withoutDeliveryGuard = delivery.replace("if (contract.kind === 'DIRECT_TRADE') {", '');
+    const withoutCollectionGuard = collection.replace("contract.kind !== 'DIRECT_TRADE' || ", '');
+    expect(withoutDeliveryGuard).not.toBe(delivery);
+    expect(withoutCollectionGuard).not.toBe(collection);
+    expect(directTradeGuard(withoutDeliveryGuard, 'claimFor'), '인도 가드 삭제 사본').toBe(false);
+    expect(directTradeGuard(withoutCollectionGuard, 'collectionPlan'), '수금 가드 삭제 사본').toBe(false);
+    expect([directTradeGuard(delivery, 'claimFor'), directTradeGuard(collection, 'collectionPlan')], '원문 가드').toEqual([true, true]);
   });
 });
 function assertClaim(r: Run, late = false) {
   const c = contract(r), inv = invoice(r), cfg = r.cfg, sale = c.saleAmountMinor - c.priceReductionMinor;
+  if (!late) expect(c.priceReductionMinor, 'priceReductionMinor').toBe(0);
   const draw = claimFor(cfg, r.end.rng.seed, c.sellOfferId!, c.goodId)!;
   expect(draw).not.toBeNull(); expect(planFor(r).mode).toBe('ON_TIME');
   const x = bpAmount(sale, draw.rateBp), delivered = at(r, c.deliveredDay! + 1);
@@ -427,8 +488,7 @@ function assertClaim(r: Run, late = false) {
   expect(saleEntry.lines.find((l) => l.account === 'ACCOUNTS_RECEIVABLE')!.amount).toBe(sale);
   expect(delivered.ledger.entries.indexOf(saleEntry)).toBeLessThan(delivered.ledger.entries.indexOf(entry));
   expect(inv.amountMinor).toBe(sale - x);
-  if (!late) expect(c.priceReductionMinor).toBe(0);
-  else {
+  if (late) {
     const reduction = cfg.terms.lateDeliveryBasis === 'PER_LATE_DAY_CAPPED'
       ? Math.min(cfg.terms.lateDeliveryPriceReductionMinor * c.lateDays, bpAmount(c.saleAmountMinor, cfg.terms.lateDeliveryCapBasisPoints!))
       : cfg.terms.lateDeliveryPriceReductionMinor;
@@ -488,16 +548,19 @@ describe('TASK-0064 엔진 처리', () => {
     expect(r.end.ledger.entries.some((e) => e.id.startsWith('CLAIM-'))).toBe(false);
     expect(invoice(r, at(r, inv.dueDay + 1))).toMatchObject({ status: 'PAID', receiptIds: [`RCPT-${inv.id}`] });
     expect(cash(receiptEntries(r.end, inv)[0]!)).toBe(inv.amountMinor);
+    let beforeDueStates = 0;
     for (const s of r.states) {
       expect(s.invoices.some((i) => i.status === 'OVERDUE')).toBe(false);
       expect(Object.keys(s.rng.cursors).some((k) => /^(CLAIM:|COLLECT:)/.test(k))).toBe(false);
       expect(s.log.some((l) => /결제일에 대금이 들어오지 않음|대금 일부|대금 나머지|화물 일부 손상/.test(l.textKo))).toBe(false);
       if (s.invoices.length && s.day < inv.dueDay) {
+        beforeDueStates++;
         expect(receivableSchedule(s, cfg)).toEqual([{ invoiceId: inv.id, contractId: inv.contractId, currency: inv.currency,
           dueDay: inv.dueDay, outstandingMinor: inv.amountMinor, overdueDays: 0 }]);
         expect(campaignSummary(s, cfg).openInvoices[0]!.amountMinor).toBe(inv.amountMinor);
       }
     }
+    expect(beforeDueStates, '결제일 전 채권 상태 수').toBeGreaterThanOrEqual(1);
     expect(receivableSchedule(r.end, cfg)).toEqual([]); cases.set('R2', r);
   }, 60000);
   it('클레임 (가): 정시 인도·정시 수금·분개·로그 순서·순자산', () => assertClaim(claimCase()), 60000);
@@ -641,6 +704,7 @@ describe('TASK-0064 미래 정보와 단계별 손익', () => {
     expect(report.components.collection).toBe(expected); expect(report.components.open_valuation).toBe(0); record('연체 미수 평가 지연', r, s);
   }, 60000);
   it('연체 미수 평가 (나): 공유 실행의 부분 수금 줄별 반올림', () => {
+    const shared = sharedRuns();
     expect(shared.split).toBeDefined(); const { run: r, state: s, inv } = shared.split!;
     const entries = receiptEntries(s, inv), first = cash(entries[0]!), rest = inv.amountMinor - first;
     expect(entries.map((e) => e.id)).toEqual([`RECEIPT-RCPT-${inv.id}-1`]);
@@ -649,8 +713,9 @@ describe('TASK-0064 미래 정보와 단계별 손익', () => {
     expect(toKrw(first, rate(r, inv.dueDay)) + toKrw(rest, rate(r, inv.dueDay))).not.toBe(toKrw(inv.amountMinor, rate(r, inv.dueDay)));
     const report = identity(s, r.cfg, inv.contractId); expect(report.components.collection).toBe(collectionValue(s, r)); expect(report.components.open_valuation).toBe(0);
     record('연체 미수 평가 부분', r, s);
-  });
+  }, 60000);
   it('미래 누설 없음(호출 없음): 읽기·결제일 전 마감·양성 대조', () => {
+    const shared = sharedRuns();
     expect(shared.late).toBeDefined();
     const runs = [modeCase('LATE'), modeCase('PARTIAL')];
     for (const r of runs) {
@@ -751,6 +816,7 @@ describe('TASK-0064 저장·불변식·마감', () => {
     record(`주선 ${known}`, r, at(r, c.completedDay! + 1)); record(`주선 미수 ${known}`, r, delivered!);
   }, 60000);
   it('캠페인 끝: 공유 실행의 지연·부분 채권 잔액·매출채권 합', () => {
+    const shared = sharedRuns();
     expect(shared.late).toBeDefined(); expect(shared.partial).toBeDefined();
     for (const [picked, mode] of [[shared.late!, 'LATE'], [shared.partial!, 'PARTIAL']] as const) {
       const { run: r, state: s, inv } = picked, plan = planFor(r), outstanding = inv.amountMinor - received(s, inv);
@@ -766,7 +832,7 @@ describe('TASK-0064 저장·불변식·마감', () => {
       const report = identity(s, r.cfg, inv.contractId); expect(report.open).toBe(true); expect(report.evaluationDay).toBe(r.cfg.campaignDays);
       expect(report.components.collection).toBe(collectionValue(s, r)); record(`캠페인 끝 ${mode}`, r, s);
     }
-  });
+  }, 60000);
   it('불변식: 독립 사본 네 개의 저장 거부·서로 다른 문장·ID', () => {
     const partial = modeCase('PARTIAL'), inv = invoice(partial), plan = planFor(partial), fwd = forwardingCase(false), claim = claimCase();
     const sources = [at(partial, inv.dueDay + 1), at(partial, inv.dueDay + plan.days + 1), fwd.end, at(claim, contract(claim).deliveredDay! + 1)];
@@ -821,13 +887,14 @@ describe('TASK-0064 저장·불변식·마감', () => {
     const report = identity(transit, claim.cfg, claim.id); expect(report.components.claim).toBe(0); expect(report.components.collection).toBe(0);
   }, 60000);
   it('항등식 ⑤a: 같은 환율 D+1 부분 채권의 ±1원', () => {
+    const shared = sharedRuns();
     expect(shared.same).toBeDefined(); const { run: r, state: s, inv } = shared.same!, first = received(s, inv), rest = inv.amountMinor - first, rho = rate(r, inv.dueDay);
     expect(s.day).toBe(inv.dueDay + 1); expect(rate(r, s.day)).toBe(rho);
     expect(receiptEntries(s, inv).map((e) => e.id)).toEqual([`RECEIPT-RCPT-${inv.id}-1`]);
     expect(toKrw(first, rho) + toKrw(rest, rho)).not.toBe(toKrw(inv.amountMinor, rho));
     const report = identity(s, r.cfg, inv.contractId); expect(report.components.collection).toBe(toKrw(first, rho) + toKrw(rest, rho) - toKrw(inv.amountMinor, rho));
     expect(Math.abs(report.components.collection)).toBe(1); record('항등식 ⑤a', r, s);
-  });
+  }, 60000);
   it.each([false, true])('항등식 ⑥: 출항 전 취소, 편 놓침·재예약 %s', (rebook) => {
     const cfg = cfgFor(), start = setup(cfg, 0, 0, false, rebook); let s = start.s;
     if (rebook) {
@@ -842,6 +909,7 @@ describe('TASK-0064 저장·불변식·마감', () => {
     record(`취소 ⑥${rebook ? 'b' : 'a'}`, { cfg, states: [s], end: s, id: start.id });
   }, 60000);
   it('채권 일정 정렬: dueDay·invoiceId 독립 정렬과 역순 사본', () => {
+    const shared = sharedRuns();
     expect(shared.sorted).toBeDefined(); const { state: s, run: r } = shared.sorted!;
     const open = s.invoices.filter((i) => i.status !== 'PAID'); expect(open.length).toBeGreaterThanOrEqual(2);
     const expected = [...open].sort((a, b) => a.dueDay - b.dueDay || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -852,8 +920,9 @@ describe('TASK-0064 저장·불변식·마감', () => {
       expect(rows.map((i) => [i.invoiceId, i.dueDay])).toEqual(expected.map((i) => [i.id, i.dueDay]));
       expect(campaignSummary(state, r.cfg).openInvoices.map((i) => [i.invoiceId, i.amountMinor])).toEqual(rows.map((i) => [i.invoiceId, i.outstandingMinor]));
     }
-  });
+  }, 60000);
   it('결정성·저장: 두 완주·부분 중간 복원·클레임·끝 채권·커서', () => {
+    const shared = sharedRuns();
     const r = modeCase('PARTIAL'), cfg = r.cfg;
     const a = runFrom(setup(cfg).s, cfg), b = runFrom(setup(cfg).s, cfg);
     expect(serializeSave(a.end)).toBe(serializeSave(b.end));
@@ -866,6 +935,7 @@ describe('TASK-0064 저장·불변식·마감', () => {
     for (const s of [...a.states, ...b.states, ...cl.states, ...shared.runs.flatMap((r) => r.states)]) expect(Object.keys(s.rng.cursors).filter((k) => /^(CLAIM:|COLLECT:)/.test(k))).toEqual([]);
   }, 60000);
   it('진단 기록: 찾은 시드·공유 다섯 사건·노출 수·계획 표', () => {
+    const shared = sharedRuns();
     const events = Object.fromEntries((['late', 'partial', 'split', 'same', 'sorted'] as const).map((key) => {
       const p = shared[key]; expect(p, key).toBeDefined(); return [key, { seed: p!.run.cfg.seed, invoice: p!.inv.id, D: p!.inv.dueDay, rate: referenceRate(p!.run.cfg, p!.state.rng.seed, p!.inv.dueDay), day: p!.state.day }];
     }));
