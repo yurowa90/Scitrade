@@ -1,6 +1,6 @@
 # TASK-0071 판정표 v3 도구: `RISK_JUDGMENT_KINDS_V3`, `v3-tables`, `v3-report`(J10, 진단 J10②, 진단 X, J1 관문)
 
-- 지위: **개정 1(세션 A, 2026-10-30).** 초안(`b828110`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0071-HUB-2026-10-30.md`(major 1, minor 21, 기각 3)를 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
+- 지위: **승인(허브, 2026-10-30, 개정 1 `0969eba`).** 초안(`b828110`)은 허브 사전 검수 `docs/ai/tasks/results/PRECHECK-0071-HUB-2026-10-30.md`(major 1, minor 21, 기각 3)를 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
 - codex_model: `gpt-6-astra`
 - reasoning_effort: `high`
 - 선행: TASK-0070(최종 프로필 k = +1)이 병합됐다.
