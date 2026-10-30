@@ -27,7 +27,8 @@ function expectedZero(input: ScenarioConfig, level: RiskLevelV2): ScenarioConfig
   profile.tariff.base = profile.tariff.base.filter((r) => goods.has(r.goodId));
   profile.claims.byGood = profile.claims.byGood.filter((r) => goods.has(r.goodId));
   c.rules.rulesVersion = 'M2a-rules-4';
-  c.operations!.risk = { profile, layers: [...layers[level]], credit: loadCreditProfile(profileId) };
+  const { saleMarginK: _, ...credit } = loadCreditProfile(profileId);
+  c.operations!.risk = { profile, layers: [...layers[level]], credit };
   const prices = [52000, 5170, 5300, 26000, 2560, 2660];
   c.operations!.market.rows.forEach((r, i) => { r.basePriceMinor = prices[i]!; });
   for (const offer of c.offers) if (offer.kind === 'supplier') {

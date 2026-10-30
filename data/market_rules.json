@@ -1269,7 +1269,7 @@
     },
     {
       "id": "RISK_PROFILE_V2",
-      "sale_margin_k": 0,
+      "sale_margin_k": 1,
       "data_basis": "DESIGN",
       "status": "V2_START_2026-10-24",
       "basis": "fictional_game_values_not_calibrated",

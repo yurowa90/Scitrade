@@ -98,7 +98,7 @@
     {
       "path": "data/market_rules.json",
       "size_bytes": 39283,
-      "sha256": "24c8c520b238f7cb8b47ef448d945d118b87bf3b73068749f66c917e15837aba"
+      "sha256": "e01c589cfcb755d0150ce0c70167dbd87ea3bda414e8b2bdbb58c402b2a1bfaa"
     },
     {
       "path": "data/observed_fx_sample.json",
@@ -3764,6 +3764,11 @@
       "path": "docs/ai/tasks/results/TASK-0069.md",
       "size_bytes": 14373,
       "sha256": "a6c2509ef8977117edce384d53d37c95e6b2dd9f16269c2ca9535e451252bbba"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0070.md",
+      "size_bytes": 11412,
+      "sha256": "7be5ca33d84c8726b908f7865cbfab041f20db0547c6caf961c9b2ee40a69829"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
