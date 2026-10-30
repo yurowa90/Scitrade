@@ -48,14 +48,14 @@ export const SIGN_THRESHOLDS_V2: Readonly<Record<number, number>> = {
   30: 20, 31: 21, 32: 22, 33: 22, 34: 23, 35: 23, 36: 24, 37: 24, 38: 25, 39: 26, 40: 26,
 };
 export const valueV2 = (r: SimRun) => r.metrics.risk?.analysisValueMinor ?? NaN;
-const unpaid = (r: SimRun) => r.metrics.operations!.unpaidAtEnd.find((x) => x.currency === 'KRW')?.amountMinor ?? 0;
-const healthy = (r: SimRun) => r.metrics.operations!.outcome !== 'FAILED' && unpaid(r) === 0;
-const num = (n: number) => Number.isFinite(n) ? n.toFixed(2) : '—';
+export const unpaid = (r: SimRun) => r.metrics.operations!.unpaidAtEnd.find((x) => x.currency === 'KRW')?.amountMinor ?? 0;
+export const healthy = (r: SimRun) => r.metrics.operations!.outcome !== 'FAILED' && unpaid(r) === 0;
+export const num = (n: number) => Number.isFinite(n) ? n.toFixed(2) : '—';
 const dollars = (n: number, sign = false) => Number.isFinite(n) ? `${sign && n >= 0 ? '+' : ''}${Math.round(n / 100).toLocaleString('en-US')}` : '—';
-const getRuns = (o: SimOutput, id = BASE) => o.runs.filter((r) => r.scenarioId === SCENARIO && r.policyId === id);
+export const getRuns = (o: SimOutput, id = BASE) => o.runs.filter((r) => r.scenarioId === SCENARIO && r.policyId === id);
 const directCount = (rs: SimRun[]) => rs.reduce((s, r) => s + r.metrics.risk!.directAccepted, 0);
 const volumeText = (id: string, rs: SimRun[]) => `${id} 직접 무역 합 ${directCount(rs)}, 중앙 ${num(median(rs.map((r) => r.metrics.risk!.directAccepted)))}`;
-const sameSeeds = (a: SimOutput, b: SimOutput) => JSON.stringify([...a.meta.seeds].sort((x, y) => x - y)) === JSON.stringify([...b.meta.seeds].sort((x, y) => x - y));
+export const sameSeeds = (a: SimOutput, b: SimOutput) => JSON.stringify([...a.meta.seeds].sort((x, y) => x - y)) === JSON.stringify([...b.meta.seeds].sort((x, y) => x - y));
 export function validateV2(output: SimOutput): RiskLevelV2 {
   const risk = output.meta.risk;
   if (risk?.rules !== 'M2a-rules-4') throw new Error('v2 명령은 rules-4 출력만 받습니다.');
@@ -64,7 +64,7 @@ export function validateV2(output: SimOutput): RiskLevelV2 {
   if (!LEVELS_V2.includes(risk.level)) throw new Error('알 수 없는 v2 단계입니다.');
   return risk.level;
 }
-function matchingMeta(a: SimOutput, b: SimOutput) {
+export function matchingMeta(a: SimOutput, b: SimOutput) {
   validateV2(a); validateV2(b);
   for (const key of ['profileId', 'tuningRound', 'marketRulesSha256'] as const) if (a.meta.risk![key] !== b.meta.risk![key]) throw new Error(`다른 메타: ${key}`);
   for (const key of ['engineVersion', 'dataVersion', 'format', 'lateMode', 'scenarioIds'] as const) if (JSON.stringify(a.meta[key]) !== JSON.stringify(b.meta[key])) throw new Error(`다른 메타: ${key}`);
@@ -116,7 +116,7 @@ export function pairedValuesV2(base: SimRun[], other: SimRun[]) {
     median: median(values), q1: median(values.slice(0, Math.floor(values.length / 2))), q3: median(values.slice(Math.ceil(values.length / 2))) };
 }
 export const LIQUIDITY_NOTE = '사전 기대는 유동성 효과(외상 정책이 첫날 D30으로 현금이 묶여 뒤 거래를 놓침)를 뺀 값이다(H28-1).';
-const EXPECTATIONS = {
+export const EXPECTATIONS = {
   '진단 J8': `중앙 35/40, 띠 8~32 안 확률 0.14(DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
   '진단 L4': `중앙 36/40(DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
   '진단 V': `평균 +21 USD/시드(표준편차 54), 동점 약 27, TG 우세 약 11.8, CA 우세 약 1.2(판정표 v2 3.5, DESIGN-v2 2.4). ${LIQUIDITY_NOTE}`,
@@ -217,9 +217,9 @@ function fullCalculations(output: SimOutput) {
   });
   return { ids, get, stats, coreHires, j6, complete, strongest, shares, wins };
 }
-interface Evidence { pass: boolean | null; evidence: string; missing: string[] }
-interface Stage { level: RiskLevelV2; rows: Record<JudgmentKeyV2, Evidence>; full: ReturnType<typeof fullCalculations> | null }
-function stageEvidence(output: SimOutput): Stage {
+export interface Evidence { pass: boolean | null; evidence: string; missing: string[] }
+export interface Stage { level: RiskLevelV2; rows: Record<JudgmentKeyV2, Evidence>; full: ReturnType<typeof fullCalculations> | null }
+export function stageEvidence(output: SimOutput): Stage {
   const level = validateV2(output), base = getRuns(output), n = base.length;
   const full = bundleKindV2(level) === 'full' ? fullCalculations(output) : null;
   const rows = {} as Record<JudgmentKeyV2, Evidence>;
@@ -358,7 +358,7 @@ export function j4dV2(r0p: SimOutput, r4: SimOutput): Evidence {
     evidence: `R4 중앙 ${medianUsd(getRuns(r4))}, M′(R0P 중앙) ${medianUsd(getRuns(r0p))}, 하한 10,692`,
     missing: [r0p, r4].flatMap((o) => missingRuns(o, SCENARIO, [BASE]).map((m) => `${o.meta.risk!.level}/${m}`)) };
 }
-function validateR0(r0: SimOutput, v2: SimOutput) {
+export function validateR0(r0: SimOutput, v2: SimOutput) {
   const risk = r0.meta.risk;
   if (!risk || Object.hasOwn(risk, 'rules') || risk.level !== 'R0') throw new Error('--r0은 rules 키가 없는 v1 R0 출력이어야 합니다.');
   if (r0.meta.lateMode !== 'base') throw new Error('v2 표는 lateMode base만 받습니다.');
@@ -366,7 +366,7 @@ function validateR0(r0: SimOutput, v2: SimOutput) {
   if (!sameSeeds(r0, v2)) throw new Error('다른 --r0 메타: seeds');
   if (risk.marketRulesSha256 !== v2.meta.risk!.marketRulesSha256) throw new Error('다른 --r0 메타: marketRulesSha256');
 }
-function r0Record(key: JudgmentKeyV2, r0?: SimOutput): string {
+export function r0Record(key: JudgmentKeyV2, r0?: SimOutput): string {
   if (!r0 || !['J1', 'J4a~c', 'J7(새 정의)', 'L1'].includes(key)) return '기록 없음';
   const base = getRuns(r0), n = base.length;
   if (!n) return '기록: 기준 회사 실행 없음';
