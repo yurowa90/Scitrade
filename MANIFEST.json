@@ -2452,8 +2452,8 @@
     },
     {
       "path": "docs/ai/design/research/RECEIVABLES-CASH-EVIDENCE.md",
-      "size_bytes": 20053,
-      "sha256": "178fb4947cbcce01b037db4619625c1cc0ff168a04c6eb1068b34f6444b434b3"
+      "size_bytes": 21925,
+      "sha256": "0f8bba8f5bc42516b9c3a15935b1d0ce4ba12170a0c9b24be9b564894c87a9d8"
     },
     {
       "path": "docs/ai/design/research/ROUTE-4A-10B1-SOURCES.md",
@@ -3157,8 +3157,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 27774,
-      "sha256": "1b16a154b3df93dc5f8bc0b0189ef09d1945ee378630a4a4548ec129d521caac"
+      "size_bytes": 28059,
+      "sha256": "ad430fc1cce7aec782ad766384cf361ac3858017b72b1d5b5e8cf946b4b95fcf"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3622,8 +3622,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0072-test-discrimination-cleanup.md",
-      "size_bytes": 8656,
-      "sha256": "280eecbc98b77244c65a7800710c9f102196be69364861b21f4cb156f9d34791"
+      "size_bytes": 9139,
+      "sha256": "5b8e4a39f175c47db784996e40ab7c4ad1940fad903fa32bc32460cdc91e5221"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
