@@ -51,14 +51,22 @@
 
 ### 2.1 도움말(`cli.ts`의 `USAGE`)
 
-- `sim v2-report …` 줄 바로 다음에 두 줄을 넣는다. 다른 줄은 그대로 둔다.
+- 바뀌는 것은 둘이다. 다른 줄은 그대로 둔다.
+  1. `sim v2-report …` 줄 바로 다음에 명령 두 줄을 넣는다.
 
-  ```text
-    sim v3-tables FILE
-    sim v3-report --base R0P,R1,R2,R3,R4 [--base-r0 FILE] [--oos R0P,R1,R2,R3,R4] [--oos-r0 FILE]
-  ```
+     ```text
+       sim v3-tables FILE
+       sim v3-report --base R0P,R1,R2,R3,R4 [--base-r0 FILE] [--oos R0P,R1,R2,R3,R4] [--oos-r0 FILE]
+     ```
 
-  들여쓰기는 지금 명령 줄과 같은 두 칸이다. 두 시험 파일의 리터럴(1절 2)과 새 시험 1이 전문을 검사한다.
+     들여쓰기는 지금 명령 줄과 같은 두 칸이다.
+  2. 맨 끝(`D03의 --seed-base …` 줄 다음)에 종료 코드 줄 하나를 들여쓰기 없이 더한다(허브 확인 2).
+
+     ```text
+     종료 코드: 0 성공, 1 비교 결과 다름, 2 사용법·입력·실행 오류, 3 v3 J1 관문 실패(출력은 모두 냄).
+     ```
+
+   두 시험 파일의 리터럴(1절 2)과 새 시험 1이 전문을 검사한다.
 
 ### 2.2 새 명령 둘
 
@@ -295,6 +303,10 @@
      - 다섯 파일은 경로가 출력에 들어가지 않는 것들이다. 줄인 묶음이라 각 약 1.5분이다. 다른 단계와 보고(경로 포함)는 재현 대상이 아니다.
      - sha만 비교하고 표 내용은 결과 보고에 옮기지 않는다.
      - 세션 A가 측정 트리 `4ca3595`(자료·코드가 TASK-0070 병합 뒤와 같음)에서 이 다섯 파일을 다시 만들어 다섯 sha가 모두 같음을 확인했다(2026-10-30).
+   - **큰 출력 지우기**(허브 요청, ENOSPC 재발 방지)
+     - 이 절과 9절 3·4에서 만든 JSON·표 파일(`/tmp/T71-*`, `/tmp/TASK-0068a-*` 이름을 따른 회귀 파일, SHA256SUMS 재현용 V2-R1·R2 JSON)은 sha256과 cmp 결과를 결과 보고에 적은 즉시 지운다. 측정 JSON은 sha만 남기고 커밋하지 않는다는 규칙과 같은 취지다.
+     - 회귀를 돌리기 전 `df -h /tmp`의 여유를 결과 보고에 적는다. 여유가 2 GB보다 작으면 묵은 출력과 작업 트리를 먼저 지우고, 지운 것을 적는다.
+     - 작업 끝에 `ls /tmp/T71-* 2>/dev/null`이 빈 출력이어야 한다.
    - `git diff --name-status <BASE> -- 'src/**/*.test.ts' 'tools/*.test.mjs' tests/golden`은 1절 2의 두 파일(`M`)만 보인다.
    - `git diff <BASE> -- src/engine/sim/risk-tables-v2.ts`는 `export` 추가뿐이다.
 2. 골든 둘(`check_rules2_golden.mjs`, `check_rules3_golden.mjs`) 종료 0
@@ -304,7 +316,8 @@
 6. 새 시험과 변형 14개가 기대대로다.
 7. `npx vitest run`, `npm run typecheck`, `npm run build`, `python3 tools/build_package.py --manifest-only`, `python3 tools/validate_data.py`가 통과한다.
 8. `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check <BASE>`: `실패 0종`
-9. 결과 보고 `docs/ai/tasks/results/TASK-0071.md`
+9. 9절 1의 큰 출력을 모두 지웠다(`ls /tmp/T71-*`가 빈 출력).
+10. 결과 보고 `docs/ai/tasks/results/TASK-0071.md`
 
 ## 10. 결과 보고에 적을 것
 
@@ -340,3 +353,5 @@
 | 첫 화면 gzip 증가 0 | 1절 4, 9절 5 |
 | 시험 시드 2001 이상과 400회 예외를 같은 문장에 | 머리말 ‘시드’, 7절 머리 |
 | BASE는 0070 병합 뒤 | 머리말 |
+| 허브 확인 1~4(8c55e3d 회신) | 3절 ‘해당 없음’ 유지, 2.1 종료 코드 줄, 10절 `--round 1`, 2.2 시드 겹침 거절 |
+| 큰 JSON 지우기(ENOSPC) | 9절 1 ‘큰 출력 지우기’, 완료 조건 9 |
