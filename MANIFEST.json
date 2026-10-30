@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 125382,
-      "sha256": "a5b55294208d23eaf4cdd8f134c7e6519fb35462ae31702bc09509e5e56a1b34"
+      "size_bytes": 126742,
+      "sha256": "569729b53d3f634904767e1ba17851d54c38487a40e736f2d182d0ff9ef760cc"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1692,8 +1692,8 @@
     },
     {
       "path": "docs/ai/design/path11-ui-2026-10/README.md",
-      "size_bytes": 17625,
-      "sha256": "42ffeac74752ac2b12be0e3cecbee3b11698bf865f0b8bbcb1f1724d8105c32c"
+      "size_bytes": 19104,
+      "sha256": "7894706b47d40d0729ace174e26c63f936b8cc7d0b1ae0b834e87b0064803a06"
     },
     {
       "path": "docs/ai/design/path11-ui-2026-10/chromebook-credit.png",
@@ -2419,6 +2419,11 @@
       "path": "docs/ai/design/pyeongtaek-device-check/zoom-5d59ff3.json",
       "size_bytes": 2698,
       "sha256": "e9ab91ee3fdcc4ea80e942f289afc452c662c787dd8a1f6ba7a74604fe1015f8"
+    },
+    {
+      "path": "docs/ai/design/research/ACCOUNTING-CLASSIFICATION-MEMO.md",
+      "size_bytes": 14279,
+      "sha256": "9f2e88fc83c812bbe9b845dd84f8c5c8403dad3c76ac8bb397b8042a2ffd4103"
     },
     {
       "path": "docs/ai/design/research/ALPHA-PLAN-MIGRATION.md",
@@ -3157,8 +3162,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 28059,
-      "sha256": "ad430fc1cce7aec782ad766384cf361ac3858017b72b1d5b5e8cf946b4b95fcf"
+      "size_bytes": 28386,
+      "sha256": "1a13a2ac71e31782296344ba4b2eaaa575b9402d960a47bb66894867653ba65d"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3627,8 +3632,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0073-engine-ops-split.md",
-      "size_bytes": 18339,
-      "sha256": "4dc75262cc73d327d07197c1772acb01a6046f27dc525f9edf12a4e093370ada"
+      "size_bytes": 19251,
+      "sha256": "1e8bcc36ea1b4f72fa565e177b0327a86a03cbdc76013881ed05808c37d1200d"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -4084,6 +4089,11 @@
       "path": "docs/ai/tasks/results/TASK-0071.md",
       "size_bytes": 203005,
       "sha256": "212c8dc296c6d4f46824c6dc3a29dcef1690f59c2ea6748a02b1c0881af69959"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0072.md",
+      "size_bytes": 12432,
+      "sha256": "f78d908973ca087ef5ac2a9d81a7fda5045a748b6681f81b0e51081ffebaf7ed"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
