@@ -1,6 +1,7 @@
 import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS, loadCreditProfile } from '../../content/scenario';
 import type { RiskLevel, RiskLevelV2 } from './risk-metrics';
 import { riskCompareTables } from './risk-tables';
+import { d03TablesV3, gateFailedV3, v3Report, validateShaV3 } from './risk-tables-v3';
 import { d03TablesV2, riskCompareTablesV2, v2Report } from './risk-tables-v2';
 import { d03Tables, mergeD03, runD03, requestedRisk, workerOptions } from './d03';
 import { parseVariant, type LateMode } from './variants';
@@ -25,11 +26,14 @@ export const USAGE = `사용법:
   sim v2-tables FILE
   sim risk-compare-v2 A B
   sim v2-report R0P R1 R2 R3 R4 [--r0 FILE]
+  sim v3-tables FILE
+  sim v3-report --base R0P,R1,R2,R3,R4 [--base-r0 FILE] [--oos R0P,R1,R2,R3,R4] [--oos-r0 FILE]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
 run의 시드 수 N은 기본 목록의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
 D03의 --seed-base N은 시드 목록을 N~N+(시드 수−1)로 바꿉니다(시드 수 기본 20, 최대 40). --seed-base 없이 시드 수는 20 이하입니다. 분할 번호는 이 목록에 적용됩니다.
+종료 코드: 0 성공, 1 비교 결과 다름, 2 사용법·입력·실행 오류, 3 v3 J1 관문 실패(출력은 모두 냄).
 `;
 function integer(value: string, min: number, max: number, label: string): number {
   const n = Number(value);
@@ -98,7 +102,7 @@ export function writeD03(output: SimOutput, io: SimIo, out?: string) {
   io.out(d03Tables(output));
 }
 
-/** 종료 코드: 성공·같음 0, 비교 결과 다름 1, 사용법·입력·실행 오류 2. */
+/** 종료 코드: 성공·같음 0, 비교 결과 다름 1, 사용법·입력·실행 오류 2, v3 J1 관문 실패 3(출력은 모두 냄). */
 export function simMain(argv: readonly string[], io: SimIo): number {
   try {
     const [action, ...args] = argv;
@@ -136,6 +140,28 @@ export function simMain(argv: readonly string[], io: SimIo): number {
       if (path) io.writeText(path, text); else io.out(text);
       io.err(`실행 ${output.runs.length}회 · ${((io.now() - start) / 1000).toFixed(2)}초\n`);
       return 0;
+    }
+    if (action === 'v3-tables') {
+      if (args.length !== 1 || args[0]!.startsWith('--')) throw new Error('v3 출력 파일 1개가 필요합니다.');
+      const output = readOutput(args[0]!, io);
+      validateShaV3([output], io.marketRulesSha256?.());
+      io.out(d03TablesV3(output)); return gateFailedV3([output]) ? 3 : 0;
+    }
+    if (action === 'v3-report') {
+      const options = new Map<string, string>();
+      for (let i = 0; i < args.length; i += 2) {
+        const key = args[i]!, value = args[i + 1];
+        if (!['--base', '--oos', '--base-r0', '--oos-r0'].includes(key) || !value || value.startsWith('--') || options.has(key)) throw new Error(`잘못된 v3-report 인수: ${key}`);
+        options.set(key, value);
+      }
+      if (!options.has('--base')) throw new Error('--base가 필요합니다.');
+      const base = options.get('--base')!.split(',').map((p) => readOutput(p, io));
+      const oos = options.get('--oos')?.split(',').map((p) => readOutput(p, io));
+      const basePath = options.get('--base-r0'), oosPath = options.get('--oos-r0');
+      const baseR0 = basePath ? readOutput(basePath, io) : undefined, oosR0 = oosPath ? readOutput(oosPath, io) : undefined;
+      validateShaV3([...base, ...(oos ?? []), ...(baseR0 ? [baseR0] : []), ...(oosR0 ? [oosR0] : [])], io.marketRulesSha256?.());
+      io.out(v3Report(base, oos, { base: baseR0, oos: oosR0, basePath, oosPath }));
+      return gateFailedV3([...base, ...(oos ?? [])]) ? 3 : 0;
     }
     if (action === 'v2-tables' || action === 'risk-compare-v2') {
       const count = action === 'v2-tables' ? 1 : 2;

@@ -92,11 +92,14 @@ describe('TASK-0068a 실행기 v2', () => {
   sim v2-tables FILE
   sim risk-compare-v2 A B
   sim v2-report R0P R1 R2 R3 R4 [--r0 FILE]
+  sim v3-tables FILE
+  sim v3-report --base R0P,R1,R2,R3,R4 [--base-r0 FILE] [--oos R0P,R1,R2,R3,R4] [--oos-r0 FILE]
   sim compare BEFORE AFTER [--limit N]
   sim summary FILE
   sim help | --help
 run의 시드 수 N은 기본 목록의 앞 1~20개입니다. 비교 표시 한도는 0 이상의 정수입니다.
 D03의 --seed-base N은 시드 목록을 N~N+(시드 수−1)로 바꿉니다(시드 수 기본 20, 최대 40). --seed-base 없이 시드 수는 20 이하입니다. 분할 번호는 이 목록에 적용됩니다.
+종료 코드: 0 성공, 1 비교 결과 다름, 2 사용법·입력·실행 오류, 3 v3 J1 관문 실패(출력은 모두 냄).
 `);
     const base = ['--risk-v2', 'R4', '--seed-base', '2001'];
     for (const args of [
