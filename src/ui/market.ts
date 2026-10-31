@@ -2,7 +2,7 @@
 import { commitDay } from '../engine/engine';
 import type { UiCommand } from './session';
 import { cityName, goodOf } from '../engine/catalog';
-import { marketTable } from '../engine/market';
+import { marketTable } from '../engine/market-lazy';
 import { MINOR_PER_MAJOR, formatMoney } from '../engine/money';
 import { paymentDefaultStatus } from '../engine/operations';
 import { payrollRunwayDay } from '../engine/previews';

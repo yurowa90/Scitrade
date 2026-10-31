@@ -1,5 +1,5 @@
 import { withRiskLevelV2 } from '../engine/risk';
-import marketRules from '../../data/market_rules.json';
+import { opsData } from './ops-data';
 import type { OperationsConfig, RiskProfile, Task } from '../engine/types';
 import { applyBasisPoints } from '../engine/money';
 // data/*.json의 DESIGN fixture를 엔진 시나리오 설정으로 변환한다 (M1 거래 한 건, M2a 복수 계약).
@@ -141,6 +141,9 @@ function resolveScenarioRecord(id: string): AnyRecord {
   if (!baseId) return { ...record };
   return { ...resolveScenarioRecord(baseId), ...record };
 }
+
+export function scenarioTitle(id: string): string { return String(resolveScenarioRecord(id).title_ko ?? TITLES[id as M1ScenarioId] ?? id); }
+export function isOperationsScenario(id: string): boolean { return !!resolveScenarioRecord(id).operations; }
 
 function toOffer(id: string): OfferDef {
   const o = findById(marketOffers, id);
@@ -486,10 +489,10 @@ function toOperations(s: AnyRecord, cfg: AnyRecord): OperationsConfig | null {
   const o = s.operations as NonNullable<(typeof scenarios.items)[number]['operations']> | undefined;
   if (!o) return null;
   const [file, ruleId] = o.market_rules_ref.split('#');
-  const m = marketRules.rule_sets.find((r) => r.id === ruleId);
+  const m = opsData().rule_sets.find((r) => r.id === ruleId);
   if (file !== 'market_rules.json' || !m) throw new Error('시장 규칙 묶음을 찾을 수 없습니다.');
   if (o.fx_exchange.base_rate_ref !== 'game_config.json#/config/fx_krw_per_usd') throw new Error('환율 참조가 기본 설정과 다릅니다.');
-  const counterparties = marketRules.counterparties.map((p) => ({ id: p.id, nameKo: p.name_ko }));
+  const counterparties = opsData().counterparties.map((p) => ({ id: p.id, nameKo: p.name_ko }));
   const party = (id: string) => { if (!counterparties.some((p) => p.id === id)) throw new Error(`거래처 이름 없음 ${id}`); };
   for (const id of s.offer_ids as string[]) party(toOffer(id).counterpartyId);
   for (const t of m.forwarding.templates) {
@@ -544,7 +547,7 @@ function toOperations(s: AnyRecord, cfg: AnyRecord): OperationsConfig | null {
 
 /** 자료의 다섯 위험 묶음을 엔진 설정으로 변환한다. 금액은 원·bp 그대로다. */
 export function loadRiskProfile(id: string): RiskProfile {
-  const p = marketRules.risk_profiles.find((p) => p.id === id);
+  const p = opsData().risk_profiles.find((p) => p.id === id);
   if (!p) throw new Error(`위험 프로필이 없습니다: ${id}`);
   const tier = (t: typeof p.claims.minor) => ({ weightBp: t.weight_bp, minBp: t.min_bp, maxBp: t.max_bp });
   return {
@@ -563,12 +566,12 @@ export function loadRiskProfile(id: string): RiskProfile {
   };
 }
 export function riskProfiles(): RiskProfile[] {
-  return marketRules.risk_profiles.map((p) => loadRiskProfile(p.id));
+  return opsData().risk_profiles.map((p) => loadRiskProfile(p.id));
 }
 
 /** 외상 칸이 모두 있는 프로필만 읽는다. 기존 위험 로더의 출력 모양은 유지한다. */
 export function loadCreditProfile(id: string): import('../engine/types').CreditProfile {
-  const p = marketRules.risk_profiles.find((p) => p.id === id);
+  const p = opsData().risk_profiles.find((p) => p.id === id);
   if (!p?.credit_terms || p.credit_limit_unit_minor === undefined || !p.credit_limits
     || p.collections.carry_bp_per_day === undefined || p.collections.recovery_bp === undefined
     || p.collections.grades.some((g) => g.p_default_bp === undefined)) {

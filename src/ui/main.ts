@@ -6,7 +6,7 @@ import { applyPixelScale } from './pixel';
 import { esc } from './html';
 import { CULTURE_KO, cultureAnchorBlocks, culturePanelScreen, cultureResultTasks, cultureTab, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
-import { ALL_SCENARIO_IDS, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
+import { ALL_SCENARIO_IDS, LOADABLE_SCENARIO_IDS, scenarioTitle, isOperationsScenario, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
 import { cityName, createGame, listSailings, openDay, planCommands, planState, restartWithSameSeed } from '../engine/engine';
 import { formatMoney } from '../engine/money';
@@ -40,7 +40,7 @@ const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 1~6은 엔진이 명시 문구로 거절한다. */
 const LEGACY_SAVE_KEY = 'scitrade-m1-save';
-const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loadScenario(id).titleKo])) as Record<AnyScenarioId, string>;
+const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, scenarioTitle(id)])) as Record<AnyScenarioId, string>;
 
 let opsScreens: typeof import('./ops-screens') | null = null;
 let culturePanel: typeof import('./culture-panel') | null = null;
@@ -1547,7 +1547,7 @@ app.addEventListener('change', async (ev) => {
     const id = el.value as AnyScenarioId;
     enteringScenario = true;
     try {
-      if (loadScenario(id).operations && !opsScreens) await ensureOpsScreens();
+      if (isOperationsScenario(id) && !opsScreens) await ensureOpsScreens();
       startScenario(id);
       render();
     } catch (error) {
@@ -1599,14 +1599,18 @@ app.addEventListener('change', async (ev) => {
 
 async function loadText(text: string, fromSave = false) {
   if (enteringScenario) return;
+  let scenarioId: string | undefined;
+  try { scenarioId = JSON.parse(text)?.scenarioId; } catch {}
+  if (scenarioId && (LOADABLE_SCENARIO_IDS as readonly string[]).includes(scenarioId) && isOperationsScenario(scenarioId) && !opsScreens) {
+    enteringScenario = true;
+    try { await ensureOpsScreens(); }
+    catch (error) { screenLoadWarning(error, fromSave); return; }
+    finally { enteringScenario = false; }
+  }
   const loaded = loadSaveText(text);
   if ('errorKo' in loaded) {
     ui.flash = { kind: 'warn', text: loaded.errorKo };
   } else {
-    enteringScenario = true;
-    try { if (loaded.config.operations && !opsScreens) await ensureOpsScreens(); }
-    catch (error) { screenLoadWarning(error, fromSave); return; }
-    finally { enteringScenario = false; }
     config = loaded.config;
     state = loaded.state;
     savedState = state;

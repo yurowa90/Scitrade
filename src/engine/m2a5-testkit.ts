@@ -1,3 +1,4 @@
+import '../content/ops-data-entry';
 // 인수 명세의 명령·수치를 시험들이 공유한다. 엔진 입력과 기대 결과는 자료에서 읽는다.
 import acceptance from '../../tests/acceptance_cases.json';
 import { loadScenario, OPERATIONS_SCENARIO_IDS } from '../content/scenario';

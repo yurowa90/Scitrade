@@ -4,7 +4,7 @@ import { isAvailableFromToday } from '../employees';
 import { planState } from '../engine';
 import { offerDef, openTradePairs, prepWorkUnitsFor } from '../market';
 import { dailyKrwDue, handlingOrder, lateDeliveryReduction, projectPrepCompletion, rentDueMinor, usdLotKrw } from '../operations';
-import { creditTermOptions } from '../readers';
+import { creditTermOptions } from '../readers-lazy';
 import { preview, type QuotePreview } from '../reports';
 import { krwToUsdMinor } from '../risk';
 import type { Currency } from '../money';

@@ -1,8 +1,9 @@
 // 경로 11 읽기 모델. 원장·청구서와 오늘까지 공개된 경로만 읽는다.
 import { ACCOUNT_KIND, balance, summarize, type Account, type Ledger } from './ledger';
 import type { Currency } from './money';
-import { creditTermOptions, quotePreview } from './readers';
-import { receivableSchedule } from './reports';
+import { quotePreview } from './readers';
+import { creditTermOptions } from './readers-lazy';
+import { receivableSchedule } from './reports-lazy';
 import { fundsPosition } from './reservations';
 import { divHalfAway, referenceRate, usdToKrwMinor } from './risk';
 import type { CreditTermId, GameState, ScenarioConfig } from './types';

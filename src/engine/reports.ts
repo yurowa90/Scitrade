@@ -323,7 +323,7 @@ export function upcomingPayments(
 }
 
 /** 실행 환경의 로케일에 영향을 받지 않는 ID·통화 정렬. */
-function compareText(a: string, b: string): number {
+export function compareText(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
@@ -407,12 +407,7 @@ export function campaignSummary(s: GameState, config: ScenarioConfig): CampaignS
 }
 
 /** 약정된 청구 결제일과 원장의 실제 수금만 보여 준다. */
-export function receivableSchedule(s: GameState, _config: ScenarioConfig) {
-  return s.invoices.filter((i) => i.status !== 'PAID' && i.status !== 'WRITTEN_OFF').map((i) => ({
-    invoiceId: i.id, contractId: i.contractId, currency: i.currency, dueDay: i.dueDay,
-    outstandingMinor: i.amountMinor - receivedForInvoice(s, i.id), overdueDays: Math.max(0, s.day - i.dueDay),
-  })).sort((a, b) => a.dueDay - b.dueDay || compareText(a.invoiceId, b.invoiceId));
-}
+
 
 interface RiskFlow { amount: number; currency: Currency; day: number; cost: boolean }
 
