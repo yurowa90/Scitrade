@@ -5,7 +5,7 @@
     "DESIGN-V04"
   ],
   "items": [],
-  "status": "SPECIFICATION_NOT_IMPLEMENTED",
+  "status": "PARTIALLY_IMPLEMENTED_M2A_GROWTH_DISPLAY_ONLY",
   "attributes": [
     {
       "id": "water",
@@ -169,7 +169,7 @@
     "synergy_cap": 0.1,
     "max_individual_multiplier_before_capacity": 1.21,
     "formula": "min(facility_remaining_units, sum(base_contribution_i * (0.9 + 0.002*weighted_final_stat_i)) * (1+min(0.10, synergy_sum)))",
-    "mode_switch": "M1: LEGACY_FIXED; enabled M2: CHARACTER_WEIGHTED; never both",
+    "mode_switch": "M1 and M2a: LEGACY_FIXED (M2a levels and abilities are display-only, 2026-10-05); CHARACTER_WEIGHTED from M2b under a new rules version; never both",
     "rounding": "fixed-point carry of remaining progress; no repeated rounding gains",
     "scope": "company_controlled_preparation_tasks_only",
     "excluded": [

@@ -1,0 +1,213 @@
+diff --git a/src/ui/growth.ts b/src/ui/growth.ts
+index 9c86688..5979987 100644
+--- a/src/ui/growth.ts
++++ b/src/ui/growth.ts
+@@ -53,7 +53,7 @@ export function trainingBlock(state:GameState, config:ScenarioConfig, def:Employ
+     ${training ? `<p>${esc(crewStatusKo(training))} — 훈련비 ${money(preview.fee.minor)} 반영됨. 완료하면 +${preview.xpGain} 경험치</p>` : `<p>훈련에 쓸 수 있는 원화: 지금 ${money(preview.availableBeforeMinor)} → 훈련 뒤 ${money(preview.availableAfterMinor)}</p>`}
+     <p>${esc(change)}. 성장 변화는 완료할 때 반영됩니다.</p>
+     <p>원화 급여 지급 가능일: 지금 ${runway(payrollRunwayDay(state,config))}${training ? '' : ` → 훈련하면 ${runway(payrollRunwayDay(state,config,preview.fee.minor))}`}</p>
+-    ${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}
++    <div data-action-slot="train-${esc(def.id)}">${trainingQueued ? `<span class="pill" id="status-train-${esc(def.id)}" tabindex="-1">일반 훈련 예정</span>` : `<button data-action="train" data-emp="${esc(def.id)}" aria-label="${esc(def.nameKo)} 일반 훈련" ${preview.allowed ? '' : 'disabled'}>일반 훈련</button>`}</div>
+     ${training ? trainingQueued
+       ? '<p>이미 일반 훈련을 넣었습니다. 빼려면 오늘 할 일에서 ‘빼기’를 누르세요.</p>'
+       : ''
+diff --git a/src/ui/main.ts b/src/ui/main.ts
+index 312635c..bbb41b7 100644
+--- a/src/ui/main.ts
++++ b/src/ui/main.ts
+@@ -206,6 +206,58 @@ function endDay() {
+   ignoreClicksUntil = Date.now() + 500;
+ }
+ 
++
++/** 오른쪽 칸의 읽기 기준 후보. 다시 그린 뒤에도 같은 열쇠로 찾는다. */
++const SIDE_PANELS = '.crew, .resources, .queue';
++const SIDE_ANCHORS = '.crew h2, .crew h3, .crew h4, .crew article.card, .crew tbody tr, .resources h2, .resources h3, .resources li, .queue h2, .queue li, .queue .growth-notices';
++function sideKey(el: HTMLElement): string {
++  if (el.id) return `#${el.id}`;
++  const panel = el.closest(SIDE_PANELS)?.classList[1] ?? '';
++  return `${panel}|${el.tagName}|${el.dataset.emp ?? (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 24)}`;
++}
++
++/** 시안 C: 넓은 화면(1001px 이상)의 오른쪽 칸은 따로 굴러가는 창이다. 1000px 이하는 묶음이 풀려 창이 아니다. */
++function paneEl(): HTMLElement | null {
++  const pane = app.querySelector<HTMLElement>('.sidecol');
++  return pane && getComputedStyle(pane).overflowY === 'auto' ? pane : null;
++}
++
++/** 창의 굴림 위치와, 창 안에서 보이던 첫 후보(제목·카드·줄)의 높이를 기억한다. */
++function capturePane() {
++  const pane = paneEl();
++  if (!pane) return null;
++  const box = pane.getBoundingClientRect();
++  const anchors = Array.from(pane.querySelectorAll<HTMLElement>(SIDE_ANCHORS)).map((el) => ({ el, r: el.getBoundingClientRect() }))
++    .filter(({ r }) => r.height > 0 && r.bottom > box.top + 1 && r.top < box.bottom)
++    .map(({ el, r }) => ({ key: sideKey(el), top: r.top }));
++  return { scrollTop: pane.scrollTop, anchors };
++}
++
++/** 다시 그린 창(innerHTML로 새로 생겨 굴림이 0)을 같은 굴림 위치로 되돌리고, 남은 첫 후보를 같은 높이에 둔다. */
++function restorePane(before: ReturnType<typeof capturePane>) {
++  const pane = paneEl();
++  if (!pane || !before) return;
++  pane.scrollTop = before.scrollTop;
++  const all = Array.from(pane.querySelectorAll<HTMLElement>(SIDE_ANCHORS));
++  const hit = before.anchors.map((a) => ({ ...a, element: all.find((el) => sideKey(el) === a.key) })).find((a) => a.element);
++  if (hit) { const dy = hit.element!.getBoundingClientRect().top - hit.top; if (Math.abs(dy) >= 1) pane.scrollTop += dy; }
++}
++
++/** 펼친 칸의 실행 단추(훈련·고용)를 보이는 띠 안으로 최소 거리만 가져온다. 칸 제목(일반 훈련·면담)은 막대(창 위 끝) 아래에 남긴다. */
++function revealBelow(target: HTMLElement | null, head: HTMLElement | null) {
++  if (!target) return;
++  const pane = paneEl();
++  const inPane = !!pane && pane.contains(target);
++  let top = app.querySelector<HTMLElement>('.statusbar')?.getBoundingClientRect().bottom ?? 0;
++  // 누른 뒤 생길 아래쪽 알림 자리(72px)를 미리 비워 둔다(부산 현지 미리 보기와 같은 규칙).
++  let bottom = Math.min(window.innerHeight - 72, app.querySelector<HTMLElement>('.flash-toast')?.getBoundingClientRect().top ?? Infinity);
++  if (inPane) { const box = pane!.getBoundingClientRect(); top = Math.max(top, box.top); bottom = Math.min(bottom, box.bottom); }
++  let dy = target.getBoundingClientRect().bottom + 8 - bottom;
++  if (dy < 1) return;
++  if (head) dy = Math.min(dy, head.getBoundingClientRect().top - top - 8);
++  if (dy >= 1) (inPane ? pane! : window).scrollBy(0, dy);
++}
++
+ // ── 화면 조각 ──
+ 
+ function stageOf(c: Contract): number {
+@@ -649,6 +701,15 @@ function reportPanel(): string {
+   </section>`;
+ }
+ 
++/** 시안 공통: 카드로 골랐으면 그 카드 바로 아래, 운영표 줄로 골랐으면 운영표 바로 아래(기존 자리)에 상세를 둔다. */
++let detailUnder: 'card' | 'roster' = 'card';
++/** 시안 공통: 고른 카드 바로 아래에 성장·훈련 상세를 둔다(카드 칸 전체 폭). M2만. */
++function inlineDetail(id: string): string {
++  if (detailUnder !== 'card' || ui.selectedCard !== id || !employedDefs(view, config).some((e) => e.id === id)) return '';
++  const html = employeeDetail(view, config, config.employees.find((e) => e.id === id)!, ui.detailId === id, ui.pending.some((p) => p.type === 'START_TRAINING' && p.employeeId === id));
++  return html ? `<div class="card-detail">${html}</div>` : '';
++}
++
+ function crewPanel(): string {
+   const shown = crewEntries(view, config, ui.crewFilter);
+   const filterBtn = (f: typeof ui.crewFilter, label: string) =>
+@@ -659,12 +720,12 @@ function crewPanel(): string {
+   <aside class="panel crew" aria-labelledby="crew-h">
+     <h2 id="crew-h" tabindex="-1">동료 <small>${employedDefs(view, config).length}명 고용 중</small></h2>
+     <div class="seg crew-filter" role="group" aria-label="동료 보기">${filterBtn('all', '전체')}${filterBtn('free', '대기')}${filterBtn('busy', '업무·교육 중')}${config.recruitment ? filterBtn('candidate', '후보') : ''}</div>
+-    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id)).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
++    <div class="crew-cards">${shown.map((entry) => crewEntryCard(entry, view, config, ui.selectedCard === entry.def.id) + (config.culture ? inlineDetail(entry.def.id) : '')).join('') || '<p class="muted small">이 조건의 동료가 없습니다.</p>'}</div>
+     <table class="roster"><caption>운영표 — 카드와 같은 상태</caption>
+       <thead><tr><th scope="col">동료·직무</th><th scope="col">상태·위치</th><th scope="col">처리량·일급</th></tr></thead>
+       <tbody>${rows}</tbody>
+     </table>
+-    ${ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
++    ${(!config.culture || detailUnder === 'roster' || !shown.some((entry)=>entry.def.id===ui.selectedCard)) && ui.selectedCard && employedDefs(view,config).some((e)=>e.id===ui.selectedCard) ? employeeDetail(view,config,config.employees.find((e)=>e.id===ui.selectedCard)!,ui.detailId===ui.selectedCard,ui.pending.some((p)=>p.type==='START_TRAINING' && p.employeeId===ui.selectedCard)) : ''}
+     ${recruitmentPanel(view, config, ui.recruitSelections, ui.interviewId, tryCommand, ui.pending, queuedStatus)}
+     <p class="muted small">${esc(crewNoteKo(config, view))}</p>
+   </aside>`;
+@@ -746,25 +807,33 @@ function render(skipFocus = false, anchor: { slot: string; top: number } | null
+   const tag = focused?.tagName;
+   const blockHeading = focused?.closest(FOCUS_FALLBACK_SELECTORS.join(', '))?.querySelector('h3, h4')?.id
+     ?? focused?.closest('.contract, .panel')?.querySelector('h3[id], h2[id]')?.id;
++  const paneBefore = capturePane();
+   app.innerHTML = `
+     ${topbar()}
+-    <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">
++    <main class="layout ${mapPresentation(config, mapMode).world ? 'map-wide' : ''}">${config.culture ? `
++      <div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>
++      <div class="sidecol">${queuePanel()}${crewPanel()}${resourcePanel()}</div>
++      ${worldMap()}
++      ${reportPanel()}
++      ${logPanel()}` : `
+       ${worldMap()}
+       ${crewPanel()}
+-      ${config.culture ? `<div class="maincol">${culturePanel(state, view, ui.pending, config, ui, queuedStatus)}${tradePanel()}</div>` : tradePanel()}
++      ${tradePanel()}
+       ${resourcePanel()}
+       ${queuePanel()}
+       ${reportPanel()}
+-      ${logPanel()}
++      ${logPanel()}`}
+     </main>
+     ${ui.flash ? `<div class="flash-toast flash ${ui.flash.kind}"${ui.flash.action === 'culture-result' ? ui.cultureResultFresh ? ' role="status"' : '' : ' role="status"'}>${esc(ui.flash.text)}${ui.flash.action === 'culture-result' ? `<button data-action="culture-result">${CULTURE_KO.resultButton}</button>` : ''}</div>` : ''}`;
+   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
+   document.documentElement.style.setProperty('--toast-h', toastEl ? `${Math.ceil(window.innerHeight - toastEl.getBoundingClientRect().top) + 8}px` : '0px');
+   measureStatusbar();
++  restorePane(paneBefore);
+   if (anchor) {
+     const now = document.getElementById(`status-${anchor.slot}`)?.parentElement ?? app.querySelector<HTMLElement>(`[data-action-slot="${anchor.slot}"]`);
+     const dy = now ? now.getBoundingClientRect().top - anchor.top : 0;
+-    if (dy >= 1) window.scrollBy(0, dy);
++    const pane = paneEl();
++    if (dy >= 1) (now && pane?.contains(now) ? pane : window).scrollBy(0, dy);
+   }
+   // 다음 하루 진행·초기화까지 글은 남기고, 화면 읽기 알림은 첫 그리기만 한다.
+   ui.growthNoticesFresh = false;
+@@ -905,14 +974,18 @@ app.addEventListener('click', (ev) => {
+         return queue({ id: newId('TRAIN'), type: 'START_TRAINING', employeeId: d.emp! });
+       case 'detail':
+         ui.detailId = ui.detailId === d.emp ? null : d.emp!;
+-        return render();
++        render();
++        if (ui.detailId) revealBelow(app.querySelector<HTMLElement>(`[data-action="train"][data-emp="${ui.detailId}"]`) ?? document.getElementById(`status-train-${ui.detailId}`), document.querySelector<HTMLElement>(`#growth-${ui.detailId} .training h4`) ?? document.getElementById(`growth-h-${ui.detailId}`));
++        return;
+       case 'scout':
+         return queue({ id: newId('SCOUT'), type: 'SCOUT_SITE', venueId: d.venue!, employeeId: d.emp! });
+       case 'recruit-quest':
+         return queue({ id: newId('QUEST'), type: 'START_RECRUIT_QUEST', candidateId: d.candidate!, employeeId: d.emp! });
+       case 'interview':
+         ui.interviewId = ui.interviewId === d.candidate ? null : d.candidate!;
+-        return render();
++        render();
++        if (ui.interviewId) revealBelow(app.querySelector<HTMLElement>(`[data-action="hire"][data-candidate="${ui.interviewId}"]`) ?? document.getElementById(`status-hire-${ui.interviewId}`), document.getElementById(`interview-h-${ui.interviewId}`));
++        return;
+       case 'hire':
+         return queue({ id: newId('HIRE'), type: 'HIRE_CANDIDATE', candidateId: d.candidate! });
+       case 'end-day':
+@@ -937,6 +1010,7 @@ app.addEventListener('click', (ev) => {
+         mapMode = d.mode === 'world' ? 'world' : 'route';
+         return render();
+       case 'select-card':
++        detailUnder = el.tagName === 'TR' ? 'roster' : 'card';
+         ui.selectedCard = d.emp ?? null;
+         render();
+         showGrowthControl();
+@@ -988,6 +1062,7 @@ app.addEventListener('keydown', (ev) => {
+   const el = ev.target as HTMLElement;
+   if (el.dataset.action === 'select-card' && (ev.key === 'Enter' || ev.key === ' ')) {
+     ev.preventDefault();
++    detailUnder = el.tagName === 'TR' ? 'roster' : 'card';
+     ui.selectedCard = el.dataset.emp ?? null;
+     render();
+     showGrowthControl();
+diff --git a/src/ui/style.css b/src/ui/style.css
+index dc7b49a..ba34588 100644
+--- a/src/ui/style.css
++++ b/src/ui/style.css
+@@ -510,3 +510,26 @@ main.layout { padding-bottom: 5.5rem; }
+ .flash-toast:has([data-action="culture-result"]) { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
+ .flash-toast button { pointer-events: auto; min-height: 44px; flex-shrink: 0; }
+ @media (max-width: 640px) { .local-venues > div { grid-template-columns: 1fr; gap: .15rem; } }
++
++/* 배치 시안 공통(S1c): 고른 동료 카드 바로 아래에 성장·훈련 상세를 둔다. */
++.crew-cards > .card-detail { grid-column: 1 / -1; min-width: 0; }
++.card-detail .growth-detail { margin-top: 0; }
++/* 훈련 단추를 감싼 칸(F1) 안의 예정 표시도 단추와 같은 높이를 지킨다. */
++.training > [data-action-slot] > .pill { display: inline-flex; align-items: center; min-height: 34px; }
++@media (any-pointer: coarse) { .training > [data-action-slot] > .pill { min-height: 44px; } }
++
++/* 시안 C: M2의 넓은 화면(1001px 이상) 오른쪽 칸은 한 묶음이다(오늘 할 일 → 동료 → 자원 예약). 1000px 이하는 묶음을 풀어 한 열 순서를 그대로 쓴다. */
++.sidecol { display: contents; }
++@media (min-width: 1001px) {
++  .layout:has(> .sidecol) { grid-template-rows: auto auto; grid-template-areas: "trade trade side" "world report log"; }
++  .layout.map-wide:has(> .sidecol) { grid-template-rows: auto auto auto; grid-template-areas: "trade trade side" "world world world" "report report log"; }
++  .sidecol { grid-area: side; display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
++}
++@media (min-width: 1001px) {
++  /* 시안 C: 오른쪽 묶음은 막대 아래에 붙은 창으로, 안에서 따로 굴러간다. */
++  .sidecol {
++    position: sticky; top: calc(var(--topbar-h) + .5rem); align-self: start;
++    max-height: calc(100dvh - var(--topbar-h) - 1rem); overflow-y: auto; overscroll-behavior: contain;
++    scroll-padding-bottom: var(--toast-h); padding: 0 .35rem calc(var(--toast-h) + .5rem) 0;
++  }
++}

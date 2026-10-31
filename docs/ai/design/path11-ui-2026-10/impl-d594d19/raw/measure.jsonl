@@ -1,0 +1,25 @@
+{"id":"ipadminiL","state":"d8","card":{"cards":2,"cardH":884,"addClosed":209,"addOpen":884,"labels":[44,44,44],"sumH":44},"ov":{"doc":0,"els":[]}}
+{"id":"ipadminiL","state":"d8-radio","focus":{"tag":"INPUT","term":"D15","checked":true},"live":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번","summary":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번"}
+{"id":"ipadminiL","state":"d8-toggle","openAfterClick":true,"keptAfterQty":null,"keptAfterTerm":true,"ov":{"doc":0,"els":[]},"anim":0}
+{"id":"ipadminiL","state":"d22","disabled":[{"term":"D15","reason":"외상 한도 초과","visible":true},{"term":"D30","reason":"외상 한도 초과","visible":true}],"ov":{"doc":0,"els":[]}}
+{"id":"ipadminiL","state":"d31-report","rep":{"w":297,"p11h":[151,318,563],"asof":["30:30일",":어제 마감 (30일)"],"btnH":44,"sums":[44]},"ov":{"doc":0,"els":[]}}
+{"id":"ipadminiL","state":"d31-dialog","dlg":{"open":true,"focus":"p11-dialog-h","inert":[true,true,true,true],"rect":[942,707]},"ov":{"doc":0,"els":[]}}
+{"id":"ipadminiL","state":"d31-escape","open":false,"focus":"p11-dialog"}
+{"id":"ipadminiL","state":"d36-leak","leak":{"badDebtShown":["CT004 대금 회수 불능 확정: 1,626.50 USD 회수, 3,795.16 USD 대손 처리","확정 대손"],"pct":["62일 · 판매가 +3%","77일 · 판매가 +6%","관세 (가상 세율 5% · 상품 송장 기준)","62일 · 판매가 +3%"],"both":[],"banned":[],"allowance":"-142222","badDebt":"4907142"},"ov":{"doc":0,"els":[]}}
+{"id":"ipadAirL","state":"d8","card":{"cards":2,"cardH":884,"addClosed":209,"addOpen":868,"labels":[44,44,44],"sumH":44},"ov":{"doc":0,"els":[]}}
+{"id":"ipadAirL","state":"d8-radio","focus":{"tag":"INPUT","term":"D15","checked":true},"live":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번","summary":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번"}
+{"id":"ipadAirL","state":"d8-toggle","openAfterClick":true,"keptAfterQty":null,"keptAfterTerm":true,"ov":{"doc":0,"els":[]},"anim":0}
+{"id":"ipadAirL","state":"d22","disabled":[{"term":"D15","reason":"외상 한도 초과","visible":true},{"term":"D30","reason":"외상 한도 초과","visible":true}],"ov":{"doc":0,"els":[]}}
+{"id":"ipadAirL","state":"d31-report","rep":{"w":368,"p11h":[151,318,563],"asof":["30:30일",":어제 마감 (30일)"],"btnH":44,"sums":[44]},"ov":{"doc":0,"els":[]}}
+{"id":"ipadAirL","state":"d31-dialog","dlg":{"open":true,"focus":"p11-dialog-h","inert":[true,true,true,true],"rect":[1086,754]},"ov":{"doc":0,"els":[]}}
+{"id":"ipadAirL","state":"d31-escape","open":false,"focus":"p11-dialog"}
+{"id":"ipadAirL","state":"d36-leak","leak":{"badDebtShown":["CT004 대금 회수 불능 확정: 1,626.50 USD 회수, 3,795.16 USD 대손 처리","확정 대손"],"pct":["62일 · 판매가 +3%","77일 · 판매가 +6%","관세 (가상 세율 5% · 상품 송장 기준)","62일 · 판매가 +3%"],"both":[],"banned":[],"allowance":"-142222","badDebt":"4907142"},"ov":{"doc":0,"els":[]}}
+{"id":"m1366","state":"d8","card":{"cards":2,"cardH":834,"addClosed":209,"addOpen":868,"labels":[44,44,44],"sumH":44},"ov":{"doc":0,"els":[]}}
+{"id":"m1366","state":"d8-radio","focus":{"tag":"INPUT","term":"D15","checked":true},"live":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번","summary":"34일에 받음 · 26일 묶임 · 그동안 견적 공개 3번"}
+{"id":"m1366","state":"d8-toggle","openAfterClick":true,"keptAfterQty":null,"keptAfterTerm":true,"ov":{"doc":0,"els":[]},"anim":0}
+{"id":"m1366","state":"d22","disabled":[{"term":"D15","reason":"외상 한도 초과","visible":true},{"term":"D30","reason":"외상 한도 초과","visible":true}],"ov":{"doc":0,"els":[]}}
+{"id":"m1366","state":"d31-report","rep":{"w":453,"p11h":[151,306,518],"asof":["30:30일",":어제 마감 (30일)"],"btnH":37,"sums":[44]},"ov":{"doc":0,"els":[]}}
+{"id":"m1366","state":"d31-dialog","dlg":{"open":true,"focus":"p11-dialog-h","inert":[true,true,true,true],"rect":[1257,707]},"ov":{"doc":0,"els":[]}}
+{"id":"m1366","state":"d31-escape","open":false,"focus":"p11-dialog"}
+{"id":"m1366","state":"d36-leak","leak":{"badDebtShown":["CT004 대금 회수 불능 확정: 1,626.50 USD 회수, 3,795.16 USD 대손 처리","확정 대손"],"pct":["62일 · 판매가 +3%","77일 · 판매가 +6%","관세 (가상 세율 5% · 상품 송장 기준)","62일 · 판매가 +3%"],"both":[],"banned":[],"allowance":"-142222","badDebt":"4907142"},"ov":{"doc":0,"els":[]}}
+{"id":"z400","state":"d8","card":{"cards":2,"cardH":1503,"addClosed":390,"addOpen":1559,"labels":[180,180,180],"sumH":44},"ov":{"doc":0,"els":[]}}

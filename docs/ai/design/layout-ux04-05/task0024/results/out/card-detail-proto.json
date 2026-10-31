@@ -1,0 +1,579 @@
+{
+  "schema": "scitrade-browser-measure/1",
+  "scenario": "card-detail",
+  "dist": "/tmp/claude-0/-home-user-Scitrade/f4d522f3-f152-5ace-92c9-a3132cd403a2/scratchpad/accept28/t24h/proto/dist",
+  "dist_index_sha256": "e2f77696e7d90216815b6fd15a801cdba54d836f4c54ea2f38e320a0accd174e",
+  "chromium": "141.0.7390.37",
+  "runs": [
+    {
+      "profile": "l1366",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.4,
+        "card_after": 39.2,
+        "detail_btn_from_bar": 382.3,
+        "train_head_from_bar": 117,
+        "train_btn_from_bar": 467.6,
+        "train_btn_h": 37.3,
+        "pill_from_bar": 447.9,
+        "pill_h": 34,
+        "toast_from_bar": 537.6,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "cb1366t",
+      "inner": {
+        "width": 1366,
+        "height": 657
+      },
+      "dpr": 1,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.1,
+        "card_after": 39,
+        "detail_btn_from_bar": 382,
+        "train_head_from_bar": 103.5,
+        "train_btn_from_bar": 454,
+        "train_btn_h": 44,
+        "pill_from_bar": 434.3,
+        "pill_h": 44,
+        "toast_from_bar": 530.9,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadAirL",
+      "inner": {
+        "width": 1180,
+        "height": 820
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": 39.1,
+        "detail_btn_from_bar": 384,
+        "train_head_from_bar": 265.9,
+        "train_btn_from_bar": 616.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 596.6,
+        "pill_h": 44,
+        "toast_from_bar": 693.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadminiL",
+      "inner": {
+        "width": 1024,
+        "height": 768
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": 39.1,
+        "detail_btn_from_bar": 384,
+        "train_head_from_bar": 213.9,
+        "train_btn_from_bar": 564.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 544.6,
+        "pill_h": 44,
+        "toast_from_bar": 641.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "ipadmini6L",
+      "inner": {
+        "width": 1133,
+        "height": 744
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.2,
+        "card_after": 39.1,
+        "detail_btn_from_bar": 384,
+        "train_head_from_bar": 189.9,
+        "train_btn_from_bar": 540.3,
+        "train_btn_h": 44,
+        "pill_from_bar": 520.6,
+        "pill_h": 44,
+        "toast_from_bar": 617.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "l1920",
+      "inner": {
+        "width": 1920,
+        "height": 969
+      },
+      "dpr": 1,
+      "coarse": false,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.4,
+        "card_after": 39.2,
+        "detail_btn_from_bar": 382.3,
+        "train_head_from_bar": 429,
+        "train_btn_from_bar": 779.6,
+        "train_btn_h": 37.3,
+        "pill_from_bar": 759.9,
+        "pill_h": 34,
+        "toast_from_bar": 849.6,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    },
+    {
+      "profile": "t1000",
+      "inner": {
+        "width": 1000,
+        "height": 700
+      },
+      "dpr": 2,
+      "coarse": true,
+      "size_ok": true,
+      "fonts": {
+        "cache": 0,
+        "network": 0,
+        "failed": 0,
+        "local": 46
+      },
+      "fonts_ok": true,
+      "blocked_hosts": [],
+      "values": {
+        "card_before": 40.1,
+        "card_after": 39.9,
+        "detail_btn_from_bar": 401.9,
+        "train_head_from_bar": 264.4,
+        "train_btn_from_bar": 496.7,
+        "train_btn_h": 44,
+        "pill_from_bar": 496.7,
+        "pill_h": 44,
+        "toast_from_bar": 573.4,
+        "overflow_x": 0
+      },
+      "page_errors": [],
+      "status": "ok",
+      "error": null
+    }
+  ],
+  "expect": [
+    {
+      "value": "card_after",
+      "profile": "l1366",
+      "actual": 39.2,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "cb1366t",
+      "actual": 39,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadAirL",
+      "actual": 39.1,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadminiL",
+      "actual": 39.1,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "ipadmini6L",
+      "actual": 39.1,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "l1920",
+      "actual": 39.2,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "card_after",
+      "profile": "t1000",
+      "actual": 39.9,
+      "min": 38,
+      "max": 42,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "l1366",
+      "actual": 382.3,
+      "min": 0,
+      "max": 548.4,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "cb1366t",
+      "actual": 382,
+      "min": 0,
+      "max": 535,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadAirL",
+      "actual": 384,
+      "min": 0,
+      "max": 697.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadminiL",
+      "actual": 384,
+      "min": 0,
+      "max": 645.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 384,
+      "min": 0,
+      "max": 621.5,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "l1920",
+      "actual": 382.3,
+      "min": 0,
+      "max": 860.4,
+      "ok": true
+    },
+    {
+      "value": "detail_btn_from_bar",
+      "profile": "t1000",
+      "actual": 401.9,
+      "min": 0,
+      "max": 577.5,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "l1366",
+      "actual": 117,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "cb1366t",
+      "actual": 103.5,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadAirL",
+      "actual": 265.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadminiL",
+      "actual": 213.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 189.9,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "l1920",
+      "actual": 429,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_head_from_bar",
+      "profile": "t1000",
+      "actual": 264.4,
+      "min": 7,
+      "max": 900,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "l1366",
+      "actual": 467.6,
+      "min": 0,
+      "max": 468.4,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "cb1366t",
+      "actual": 454,
+      "min": 0,
+      "max": 455,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadAirL",
+      "actual": 616.3,
+      "min": 0,
+      "max": 617.5,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadminiL",
+      "actual": 564.3,
+      "min": 0,
+      "max": 565.5,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 540.3,
+      "min": 0,
+      "max": 541.5,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "l1920",
+      "actual": 779.6,
+      "min": 0,
+      "max": 780.4,
+      "ok": true
+    },
+    {
+      "value": "train_btn_from_bar",
+      "profile": "t1000",
+      "actual": 496.7,
+      "min": 0,
+      "max": 497.5,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "l1366",
+      "actual": 447.9,
+      "min": 0,
+      "max": 503.6,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "cb1366t",
+      "actual": 434.3,
+      "min": 0,
+      "max": 486.9,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadAirL",
+      "actual": 596.6,
+      "min": 0,
+      "max": 649.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadminiL",
+      "actual": 544.6,
+      "min": 0,
+      "max": 597.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "ipadmini6L",
+      "actual": 520.6,
+      "min": 0,
+      "max": 573.4,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "l1920",
+      "actual": 759.9,
+      "min": 0,
+      "max": 815.6,
+      "ok": true
+    },
+    {
+      "value": "pill_from_bar",
+      "profile": "t1000",
+      "actual": 496.7,
+      "min": 0,
+      "max": 529.4,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1366",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "cb1366t",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadAirL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadminiL",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "ipadmini6L",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "l1920",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    },
+    {
+      "value": "overflow_x",
+      "profile": "t1000",
+      "actual": 0,
+      "min": 0,
+      "max": 0,
+      "ok": true
+    }
+  ],
+  "ok": true
+}

@@ -1,0 +1,7 @@
+l1366: {"queue_from_bar_t1":779.3,"chip_from_bar":-54.4,"chip_h":35.6,"queue_from_bar":0.3,"first_item_from_bar":207.4,"first_item_h":51.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+cb1366t: {"queue_from_bar_t1":767.3,"chip_from_bar":-62,"chip_h":44,"queue_from_bar":0.3,"first_item_from_bar":207.4,"first_item_h":72.9,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadAirL: {"queue_from_bar_t1":662.8,"chip_from_bar":-62.5,"chip_h":44,"queue_from_bar":-0.2,"first_item_from_bar":206.9,"first_item_h":72.9,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadminiL: {"queue_from_bar_t1":555.3,"chip_from_bar":-62.5,"chip_h":44,"queue_from_bar":-0.2,"first_item_from_bar":206.9,"first_item_h":72.9,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+ipadmini6L: {"queue_from_bar_t1":620.8,"chip_from_bar":-62.5,"chip_h":44,"queue_from_bar":-0.2,"first_item_from_bar":206.9,"first_item_h":72.9,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+l1920: {"queue_from_bar_t1":844.3,"chip_from_bar":-54.4,"chip_h":35.6,"queue_from_bar":0.3,"first_item_from_bar":207.4,"first_item_h":51.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과
+t1000: {"queue_from_bar_t1":711.8,"chip_from_bar":-62.5,"chip_h":44,"queue_from_bar":-0.2,"first_item_from_bar":145.1,"first_item_h":50.4,"overflow_x":0} 기대 통과, 실행 ok, 글꼴 통과

@@ -1,0 +1,10 @@
+ec l1366 0
+ec cb1366t 0
+ec ipadminiL 0
+ec t1000 0
+ec ipadAirL 0
+LANE cb1366t ipadAirL DONE
+ec ipadmini6L 0
+LANE ipadminiL ipadmini6L DONE
+ec l1920 0
+LANE l1366 t1000 l1920 DONE

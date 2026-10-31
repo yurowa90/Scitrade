@@ -13,4 +13,8 @@
 
 2026-10-05 추가된 레퍼런스는 [연구 인계 안내](references/playthrough_research_2026-10-05/HANDOFF.md)에서 읽는다. 세 관점의 보고서·개발 및 그래픽 사양·소스 데이터를 현재 구현과 대조하는 자료다.
 
+Codex는 Claude가 쓴 작업 지시서(`docs/ai/tasks/`)를 받아 구현하고, 결과를 `docs/ai/tasks/results/`에 보고한다. 역할과 흐름은 WORKFLOW.md의 ‘역할 분담’을 따른다.
+
+Claude 세션은 허브 하나와 갈래별 하위 세션으로 나눠 일한다(2026-10-10 사용자 결정). 세션마다 맡는 일·브랜치·작업 번호와 허브만 쓰는 파일은 [docs/ai/SESSION_TREE.md](docs/ai/SESSION_TREE.md)에 있다.
+
 검증 시작 명령: `python3 tools/validate_data.py`.
