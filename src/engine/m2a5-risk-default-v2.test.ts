@@ -103,7 +103,10 @@ describe('TASK-0067b 대손·이자', () => {
     const cfg = withRiskLevelV2({ ...loadScenario('SCENARIO_M2_OPS_COS_LAVER'), seed: 2001 },
       level, loadRiskProfile('RISK_PROFILE_V2'), credit);
     const { state } = simulate(cfg, policyById('MAX_CONTRIBUTION')!, 2001);
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(state)));
+    // TASK-0074의 놓친 견적 기록은 결정에 쓰이지 않는 새 칸이다. 이 칸을 뺀 상태가 BASE 해시와 같아야 한다.
+    expect(Array.isArray(state.operations!.unaffordable)).toBe(true);
+    const { unaffordable: _u, ...operations } = state.operations!;
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify({ ...state, operations })));
     expect(Array.from(new Uint8Array(digest), (n) => n.toString(16).padStart(2, '0')).join('')).toBe(hash);
   });
   it('2 대손 추첨 결정론·조건 계수 반올림·DEFAULT 층', () => {
