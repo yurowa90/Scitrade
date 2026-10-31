@@ -3666,6 +3666,11 @@
       "sha256": "c98c116ab7d4ea5cefee27f7d282afcbc44032bfba9d028decef7ce343f91623"
     },
     {
+      "path": "docs/ai/tasks/TASK-0077-path11-screens.md",
+      "size_bytes": 26842,
+      "sha256": "3904f6bfb7c4a76e029eb090f502c3c234a679cc41035b1cc8edf2345f243936"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
