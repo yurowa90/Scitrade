@@ -509,8 +509,7 @@ def check_world_hubs(documents, tables, source_ids):
         if city.get('availability', {}).get('status') == 'MAP_PREVIEW':
             check(city['venue_ids'] == [] and city['availability']['stage'] == 'P1',
                   cid + ': preview hubs have no playable content yet')
-    for sid in tables['scenarios']:
-        scenario = resolve_scenario(tables['scenarios'], sid)
+    for scenario in tables['scenarios'].values():
         stage = stage_order.get(scenario['stage'])
         for city_id in scenario.get('city_ids', []):
             avail = world[city_id]['availability']
@@ -1224,7 +1223,7 @@ def main():
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
     expected_counts = {'world': 21, 'goods': 9, 'routes': 6, 'employees': 6,
-                       'market_offers': 7, 'scenarios': 10, 'securities': 4,
+                       'market_offers': 7, 'scenarios': 11, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}

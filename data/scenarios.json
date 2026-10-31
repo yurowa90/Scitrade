@@ -829,6 +829,10 @@
     },
     {
       "id": "SCENARIO_M2_OPS_CREDIT",
+      "ipo_enabled": false,
+      "securities_enabled": false,
+      "source_refs": ["DESIGN-V04"],
+      "stage": "M2",
       "base_scenario_id": "SCENARIO_M2_OPS_COS_LAVER",
       "risk_setup": {
         "level": "R4",

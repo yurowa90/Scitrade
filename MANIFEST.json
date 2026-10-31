@@ -122,8 +122,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 29673,
-      "sha256": "a91608fbd78d5d7861667ab9fe1159095c4dc71d9dfa6897d937e9f29190333a"
+      "size_bytes": 29794,
+      "sha256": "1cc27de744f2b0e1d688b30e9ad974a67d20448a270e21f79be5c8c8f8768f4a"
     },
     {
       "path": "data/securities.json",
@@ -3646,6 +3646,11 @@
       "sha256": "e86c227cf7bfae93e30b769e85cf1b7dfc20e7de0ae7420b6bb4a0ee8c50d282"
     },
     {
+      "path": "docs/ai/tasks/TASK-0074-R2-resume.md",
+      "size_bytes": 2815,
+      "sha256": "9103d2a83a7bc8462fb63364f405672434e099c249366d926153c59a697fbc16"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
       "size_bytes": 26868,
       "sha256": "5882827de44f4400c9961c52aac1b4c885b4e5d06ad80be4e1666c5032b41550"
@@ -4122,8 +4127,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0074.md",
-      "size_bytes": 23198,
-      "sha256": "675489d691e2d9fe4a678c474733b571758118087a105bc014a789bcf93ebef8"
+      "size_bytes": 42234,
+      "sha256": "0ac4f42a3615840c39acf3082545f00197593bf6e86eb16b1b07da169b5a42a8"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -4652,13 +4657,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 98621,
-      "sha256": "e779423303d25cf9a0673aa7f771249a8fc696dc762754c39aa8435f75d5fcd9"
+      "size_bytes": 97657,
+      "sha256": "23d8192b345782ccfcc70dbaed33f5e854afbc60d7213fcffaa0499c18192342"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 94448,
-      "sha256": "8117b6123eaf9cc11369c704ec4f3410ace93d533beefc145704c2115ce52051"
+      "size_bytes": 94400,
+      "sha256": "a2449e775d53dc14b6af88591bfe1e4e256a4030b7d86656e746a0f133c5328f"
     }
   ]
 }

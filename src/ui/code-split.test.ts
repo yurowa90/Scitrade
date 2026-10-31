@@ -476,3 +476,26 @@ describe('TASK-0059 지연 화면 진입', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 });
+
+describe('TASK-0074 화면의 옛 형식 거절', () => {
+  it.each(['import', 'SAVE_KEY', 'LEGACY_SAVE_KEY'] as const)('%s 거절은 알림만 바꾸고 상태·오늘 할 일·select를 보존한다', async (mode) => {
+    const ui = await freshUi(), items = storage();
+    await ui.click({ action: 'end-day' });
+    await ui.click({ action: 'accept' });
+    const before = readState(ui, items), pending = pendingHtml(ui.app.innerHTML);
+    const select = (html: string) => html.match(/<select[^>]*data-action="scenario"[\s\S]*?<\/select>/)?.[0];
+    const selected = select(ui.app.innerHTML), title = ui.doc.title;
+    expect(pending).toBeDefined(); expect(selected).toBeDefined();
+    if (mode === 'import') await ui.importText(opsSaveV6);
+    else {
+      items.clear();
+      items.set(mode === 'SAVE_KEY' ? 'scitrade-save' : 'scitrade-m1-save', opsSaveV6);
+      await ui.click({ action: 'load' });
+    }
+    expect(ui.app.innerHTML).toContain('flash warn');
+    expect(ui.app.innerHTML).toContain('이전 저장 형식(판본 6)의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.');
+    expect(pendingHtml(ui.app.innerHTML)).toBe(pending);
+    expect(select(ui.app.innerHTML)).toBe(selected); expect(ui.doc.title).toBe(title);
+    expect(readState(ui, items)).toBe(before);
+  });
+});
