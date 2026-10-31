@@ -2,8 +2,11 @@ import { cultureKeys } from './culture';
 import { isAvailableFromToday } from './employees';
 import { planState } from './engine';
 import { cashLessUnpaidMinor, runningTaskOf } from './reservations';
-import { payrollRunwayDay, CULTURE_UNCHANGED_KO } from './previews';
+import { payrollRunwayDay } from './previews';
 import type { GameState, ScenarioConfig } from './types';
+
+export const CULTURE_UNCHANGED_KO = '가격·하루 처리량·운임·관세·거래 신뢰';
+
 /** 실제 시작 명령과 같은 검사를 사본에서 수행한다. 거절되어도 지출 시의 비교값을 제공한다. */
 export function culturePreview(state: GameState, config: ScenarioConfig, activityId: string, employeeId: string) {
   const activity = config.culture?.activities.find((a) => a.id === activityId);

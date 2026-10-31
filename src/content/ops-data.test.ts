@@ -28,14 +28,17 @@ describe('TASK-0076 운영 자료 계약', () => {
     }
     expect(isOperationsScenario('SCENARIO_M2_OPS_CREDIT')).toBe(true);
   });
-  it.each([false, true])('진입 모듈 재평가: 다른 자료=%s', async (different) => {
+  it.each(['같은 객체', '같은 내용의 다른 객체', '한 칸이 다른 객체'])('진입 모듈 재평가: %s', async (kind) => {
     // 등록부의 정적 인스턴스를 유지하고 진입 모듈만 다시 평가한다.
     vi.resetModules();
     vi.doMock('./ops-data', () => ({ OPS_DATA_MISSING, opsData, setOpsData }));
     const data = await import('../../data/market_rules.json');
-    const value = different ? structuredClone(data.default) : data.default;
+    const value = kind === '같은 객체' ? data.default : structuredClone(data.default);
+    if (kind === '한 칸이 다른 객체') value.counterparties[0]!.name_ko += ' 변경';
+    if (kind !== '같은 객체') expect(value).not.toBe(data.default);
+    if (kind === '같은 내용의 다른 객체') expect(value).toEqual(data.default);
     setOpsData(value);
-    if (different) await expect(import('./ops-data-entry')).rejects.toThrow('운영 자료가 이미 등록되어 있습니다.');
+    if (kind === '한 칸이 다른 객체') await expect(import('./ops-data-entry')).rejects.toThrow(new Error('운영 자료가 이미 등록되어 있습니다.'));
     else await expect(import('./ops-data-entry')).resolves.toBeDefined();
     expect(opsData()).toBe(value);
   });

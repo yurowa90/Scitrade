@@ -7,8 +7,6 @@ import { levelFor, statsFor } from './growth';
 import { cashLessUnpaidMinor, runningTaskOf, fundsPosition, trainingAvailableMinor } from './reservations';
 import type { GameState, ScenarioConfig } from './types';
 
-export const CULTURE_UNCHANGED_KO = '가격·하루 처리량·운임·관세·거래 신뢰';
-
 export function trainingPreview(state: GameState, config: ScenarioConfig, employeeId: string) {
   const training = config.growth?.ordinaryTraining;
   const currency = training?.currency ?? config.payrollCurrency;

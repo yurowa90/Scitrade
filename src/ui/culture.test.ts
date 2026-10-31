@@ -3,7 +3,7 @@ import venues from '../../data/venues.json';
 import { loadScenario } from '../content/scenario';
 import { cultureBook } from '../engine/culture';
 import { commitDay, createGame, openDay, planState } from '../engine/engine';
-import { CULTURE_UNCHANGED_KO } from '../engine/previews';
+import { CULTURE_UNCHANGED_KO } from '../engine/previews-lazy';
 import { culturePreview } from '../engine/previews-lazy';
 import { runDays } from '../engine/testkit';
 import type { Command, GameState, ScenarioConfig } from '../engine/types';
