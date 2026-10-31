@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 112502,
-      "sha256": "f8e627b2a62c09e3fdfb17af03962a438293abec01387695d80c6c7ce0db1a3c"
+      "size_bytes": 113548,
+      "sha256": "eb45c304adb6f215bd26274cda15c37c948f98b129fb1eb28fdf5762e3ff6f5a"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3182,8 +3182,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 29947,
-      "sha256": "7e811ddd7de8988c59fecd10ff325b51d38f771224d21a946ac4eabb3a2eb918"
+      "size_bytes": 30000,
+      "sha256": "7183453c1bead7e1db5e57b65eddd6c14674de622a4302d56a8794066c07829c"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3679,6 +3679,11 @@
       "path": "docs/ai/tasks/TASK-0076-R1-d-c.md",
       "size_bytes": 24411,
       "sha256": "5fdf58bcd9b9ecddfd98e01aacbfeaf80092b65bc44432838b9e93889e9fc872"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0076-R2-resume.md",
+      "size_bytes": 3492,
+      "sha256": "b0a43adbd4dacfb66fbdc9aedae0546e9bd24cbcebab60d4dafa5beece77d76c"
     },
     {
       "path": "docs/ai/tasks/TASK-0076-first-screen-split.md",
