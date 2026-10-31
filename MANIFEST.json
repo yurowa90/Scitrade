@@ -3167,8 +3167,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 28484,
-      "sha256": "204660de470cde2b76019957904eef40a25fb6e3eb1bfe1f3e0b6a53b9ac1f0e"
+      "size_bytes": 28788,
+      "sha256": "02463add7f1f6b16b58157c809cf53d4b757cad66885beba29fdd7d7f86534dc"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3642,8 +3642,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
-      "size_bytes": 26624,
-      "sha256": "f3f6871ecd36fcbece7affbb8a76c4e1f3de9c6001e3dea4e6bb514917865ac7"
+      "size_bytes": 26868,
+      "sha256": "5882827de44f4400c9961c52aac1b4c885b4e5d06ad80be4e1666c5032b41550"
     },
     {
       "path": "docs/ai/tasks/TASK-0075-path11-readers.md",
