@@ -3636,6 +3636,11 @@
       "sha256": "1e8bcc36ea1b4f72fa565e177b0327a86a03cbdc76013881ed05808c37d1200d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
+      "size_bytes": 22045,
+      "sha256": "6703eb3ccbcb61d478196359cf1958ad9ec70596bbdea5f40877239d063888ce"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
