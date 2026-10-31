@@ -3671,6 +3671,11 @@
       "sha256": "c98c116ab7d4ea5cefee27f7d282afcbc44032bfba9d028decef7ce343f91623"
     },
     {
+      "path": "docs/ai/tasks/TASK-0076-R1-d-c.md",
+      "size_bytes": 18031,
+      "sha256": "73dd0d3300c1455a1b750b126af025cf9a09559377ea24e36ef1d64c4f799365"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0076-first-screen-split.md",
       "size_bytes": 14353,
       "sha256": "552fdf0527a236c89d32ac21872474b95cce6b67e3fe0898d2b4fd9295c0b642"
