@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 106535,
-      "sha256": "eb08f96b775f80f90ccecb4201858a44a9af987699bdef9223171688b0530a52"
+      "size_bytes": 107931,
+      "sha256": "e8b53c5f4f561b065b735e3e6bda2fc09e5ccd1df31613a30f5848487232a8d4"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3167,8 +3167,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 28788,
-      "sha256": "02463add7f1f6b16b58157c809cf53d4b757cad66885beba29fdd7d7f86534dc"
+      "size_bytes": 29005,
+      "sha256": "7f59f6dcf31a2a757932ce4c0d29561fd99ca46301dbbb956e550edfa236a9a9"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3639,6 +3639,11 @@
       "path": "docs/ai/tasks/TASK-0073-engine-ops-split.md",
       "size_bytes": 19251,
       "sha256": "1e8bcc36ea1b4f72fa565e177b0327a86a03cbdc76013881ed05808c37d1200d"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0074-R1-resume.md",
+      "size_bytes": 3003,
+      "sha256": "e86c227cf7bfae93e30b769e85cf1b7dfc20e7de0ae7420b6bb4a0ee8c50d282"
     },
     {
       "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
