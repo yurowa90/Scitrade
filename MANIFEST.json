@@ -3666,6 +3666,11 @@
       "sha256": "c98c116ab7d4ea5cefee27f7d282afcbc44032bfba9d028decef7ce343f91623"
     },
     {
+      "path": "docs/ai/tasks/TASK-0076-first-screen-split.md",
+      "size_bytes": 13723,
+      "sha256": "746c08d08e902592e2f88036366a45c5b8b043adc34a97cdc6eefd54e6dc0d18"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
