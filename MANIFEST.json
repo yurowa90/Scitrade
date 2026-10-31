@@ -177,8 +177,8 @@
     },
     {
       "path": "docs/DECISIONS.md",
-      "size_bytes": 248212,
-      "sha256": "1f9b25981206ec3da6b3e272a1b40abe0850bc8ab11abf39892621d4f1bf50bf"
+      "size_bytes": 250254,
+      "sha256": "18b000ed6b0243f166a9696bf9fa0bbebd3e9f6a0b1b5bd7ed36ca551f449742"
     },
     {
       "path": "docs/DESIGN_v0.4.md",
@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 103507,
-      "sha256": "df43af17bde90b422b2098111a57bbcacaa63356ea0e73fdfbf470eedbc22fab"
+      "size_bytes": 105037,
+      "sha256": "580cbf955fffc3fc66b7b18afde71db4e4180bd3c2b9e80b1f165f4d1a4a63f2"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
