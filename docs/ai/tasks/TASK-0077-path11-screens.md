@@ -1,6 +1,13 @@
 # TASK-0077 경로 11 화면(②-c): 외상 비교·묶이는 돈·중간 재무상태·원화 결산·놓친 견적·시나리오 선택
 
-- **지위: 개정 1(세션 B, 2026-10-31). 허브 사전 검수 `docs/ai/tasks/PRECHECK-0077-HUB-2026-10-31.md`(22건, 중대 13)를 반영했다. 허브 승인 전에는 Codex에 넘기지 않는다.**
+- **지위: 승인(허브, 2026-10-31, 개정 1 + 허브 개정 2).** 사전 검수 22건(`PRECHECK-0077-HUB-2026-10-31.md`) 반영 확인. 이전 지위 표기: 개정 1(세션 B, 2026-10-31). 허브 사전 검수 `docs/ai/tasks/PRECHECK-0077-HUB-2026-10-31.md`(22건, 중대 13)를 반영했다. 허브 승인 전에는 Codex에 넘기지 않는다.**
+  - **허브 개정 2(2026-10-31, TASK-0076 병합 780ec75 뒤 재확인).** 아래 ‘0076 뒤 사실’이 0절·3.6의 옛 서술보다 우선한다.
+    - `main.ts:43`은 이제 `SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, scenarioTitle(id)]))`이다. `scenarioTitle`(`src/content/scenario.ts`)은 운영 자료 없이 제목을 읽는다. select는 `:411`의 `ALL_SCENARIO_IDS.map(...)`이다.
+    - 시나리오 고른 뒤 운영 판별은 `loadScenario(id).operations`가 아니라 `isOperationsScenario(id)`다(`main.ts` 시나리오 선택 처리).
+    - **3.6 변경:** select와 `SCENARIO_TITLES`는 `LOADABLE_SCENARIO_IDS`를 쓰되 **제목은 반드시 `scenarioTitle(id)`로 만든다.** 첫 화면에서 `loadScenario`로 제목을 만들면, 운영 자료가 아직 등록되지 않아 `SCENARIO_M2_OPS_CREDIT`에서 ‘운영 자료 없음’ 예외가 난다. 시험 하나를 더한다: 운영 자료 미등록 상태(startUi 직후 새 인스턴스)에서 첫 화면이 그려지고 select에 새 option이 있다.
+    - **3.6의 ‘첫 화면 비용 주의’와 `loadScenario` 30회 측정(C21)은 지운다.** 제목 읽기가 더 이상 `loadScenario`를 부르지 않기 때문이다. 8절 브라우저 시작 시간 기록은 세션 B 실측으로 그대로 둔다.
+    - **화면 시험은 TASK-0076의 등록 규칙을 따른다.** `startUi` 뒤 화면 쪽 운영 자료는 새 인스턴스·미등록으로 시작한다(vitest `resetModules`). 운영 화면을 그리는 시험은 운영 시나리오 선택(또는 `screensReady`)으로 관문을 지난 뒤 단언한다. 등록 상태가 필요하면 `await import('../content/ops-data')`로 받은 새 인스턴스에서 읽는다. 엔진 쪽 기대값 계산(`history()` 등)은 vitest 준비 파일의 등록을 그대로 쓴다.
+    - 첫 화면 예산의 기준은 TASK-0076 뒤 HEAD(첫 화면 132,034 B)다. 화면 몫 ≤ 300 B와 select 몫을 따로 재는 방식은 그대로다.
   - 초안 `95b5b88`. 처리는 끝의 ‘개정 1 처리표’에 있다.
   - **실행은 TASK-0076-R1(첫 화면 분할 D+C) 병합 뒤다(H39-3).** 0076-R1의 C가 `main.ts:43` `SCENARIO_TITLES`를 운영 자료 없이 제목을 읽도록 바꾸기 때문이다.
   - 그래서 `main.ts:43`·`:411`의 줄 번호와 ‘제목을 어떻게 읽는가’(0절, 3.6)는 **0076-R1 병합 뒤 HEAD에서 다시 확인한다.** 허브가 그 부분만 맞춰 재확인한다.
