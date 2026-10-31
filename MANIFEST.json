@@ -3171,6 +3171,11 @@
       "sha256": "a2437e155264b4e878a980bb4a10e688db8e27d814f36af6f1023b54e01ea377"
     },
     {
+      "path": "docs/ai/tasks/PRECHECK-0077-HUB-2026-10-31.md",
+      "size_bytes": 26536,
+      "sha256": "e88d0d9530d59991907356e47c8b8cd3659a649ba3479e981ad88b4bb547ed0e"
+    },
+    {
       "path": "docs/ai/tasks/README.md",
       "size_bytes": 29884,
       "sha256": "937f281bc5797606e99e176ecc8ca5c572b36ada90497e08ad668bf673a1e39f"
