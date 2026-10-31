@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 110804,
-      "sha256": "e9f7f9358b7d0ddcb0dd47aca3c8a44b3bdba484f5e70b3d7bad20474d5c9724"
+      "size_bytes": 112502,
+      "sha256": "f8e627b2a62c09e3fdfb17af03962a438293abec01387695d80c6c7ce0db1a3c"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3177,8 +3177,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 29884,
-      "sha256": "937f281bc5797606e99e176ecc8ca5c572b36ada90497e08ad668bf673a1e39f"
+      "size_bytes": 29930,
+      "sha256": "32af3548ad6f05163c2e7c3a4bda4dfda70bd723edcc3565b2eb1320647d6274"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
