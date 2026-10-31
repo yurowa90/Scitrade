@@ -3696,6 +3696,11 @@
       "sha256": "f4088a27571e5f01c6896862e7958f7d52efbe3b50fdadf827fec3eef97d62ed"
     },
     {
+      "path": "docs/ai/tasks/TASK-0077-R2-card-height.md",
+      "size_bytes": 2509,
+      "sha256": "bc8f3f7d98bd2e9c3c67cf6a2065e494e9d7610c407e593f721c478686d707bb"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0077-path11-screens.md",
       "size_bytes": 46227,
       "sha256": "fc493132f3880b7319108dd1f6e20be8f550385554beb78921cc1b5e569db744"
@@ -4182,8 +4187,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0077.md",
-      "size_bytes": 57415,
-      "sha256": "bec9e907b220055aa0d9aff518c4ddca0e9ff3d29baad78fc531b57b98152fda"
+      "size_bytes": 62719,
+      "sha256": "ad413047a1ffa74f5185536f9c43eb720839158adaf6057e328df6192de6d2d1"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",

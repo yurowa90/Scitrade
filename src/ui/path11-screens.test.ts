@@ -48,6 +48,8 @@ describe('TASK-0077 경로 11 화면', () => {
       const radios = [...ui.app.innerHTML.matchAll(new RegExp(`<input[^>]*data-key="${key.replaceAll('+', '\\+')}"[^>]*>`, 'g'))];
       expect(radios).toHaveLength(3); expect(radios[0]![0]).toContain('value="BASE" checked');
       expect(ui.app.innerHTML).toContain(`data-p11-key="credit-${key}"><summary>조건 비교`);
+      const collapsed = ui.app.innerHTML.split(`<p data-p11-summary="${key}">`)[1]!.split('<details')[0]!;
+      expect(collapsed).toMatch(/^\d+일에 받음 · \d+일 묶임 · 그동안 견적 공개 \d+번 · 거래처 [ABC]등급 · 늦게 낼 수 있음<\/p>$/);
       // 고정 기록은 묶음 명령을 써서 BOOK_SAILING 이력이 없다. 화면 학습 관문만 연다.
       if (action === 'accept-plan') vi.spyOn(await import('./recruitment'), 'batchUnlocked').mockReturnValue(true);
       const before = ui.announcements.length;
