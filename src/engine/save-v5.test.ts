@@ -47,64 +47,23 @@ describe('평택 자료 판본의 저장과 이전 자료 거절', () => {
     }
   });
 
-  it('0.5.0 실제 저장은 전체 상태를 왕복한다', () => {
-    expect(currentFixture.dataVersion).toBe('0.5.0');
-    expect(load(currentFixture)).toEqual({ ...currentFixture.state, operations: null });
-    expect(JSON.parse(serializeSave(load(currentFixture)))).toEqual({ ...currentFixture, formatVersion: SAVE_FORMAT_VERSION, state: { ...currentFixture.state, operations: null } });
+  it('판본 5은 새 문구로 거절한다', () => {
+    expect(() => load(currentFixture)).toThrow(`이전 저장 형식(판본 ${5})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
-  it('경험치·지급 기록·진행 업무와 culture 이외의 전체 상태를 그대로 복원한다', () => {
-    expect(fixture.formatVersion).toBe(4);
-    expect(fixture.state).not.toHaveProperty('culture');
-    expect(fixture.state.employees.map(e => e.xp)).toEqual([10, 70, 0, 0, 0, 0]);
-    expect(Object.keys(fixture.state.xpAwards).some(k => k.endsWith('|TRAINING_XP'))).toBe(true);
-    expect(Object.keys(fixture.state.xpAwards).some(k => k.endsWith('|TASK_COMPLETION_XP'))).toBe(true);
-    expect(fixture.state.tasks.some(t => t.status === 'RUNNING')).toBe(true);
-    expect(fixture.state.recruitment.candidates.some(c => c.stage === 'QUEST_RUNNING')).toBe(true);
-    expect(fixture.state.invoices.some(i => i.status === 'OUTSTANDING')).toBe(true);
-    const restored = load(fixture);
-    expect(restored.employees.map(e => e.xp)).toEqual(fixture.state.employees.map(e => e.xp));
-    for (const key of ['xpAwards', 'xpAwardAmounts', 'tasks', 'ledger', 'recruitment', 'processedCommands'] as const) {
-      expect(restored[key], key).toEqual(fixture.state[key]);
-    }
-    const { culture, operations, ...originalFields } = restored;
-    expect(operations).toBeNull();
-    expect(originalFields).toEqual(fixture.state);
-    expect(culture).toEqual(emptyCulture);
+  it('판본 4은 새 문구로 거절한다', () => {
+    expect(() => load(fixture)).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('3일 더 진행해 영입 의뢰를 끝내고 경험치를 정확히 한 번 지급한다', () => {
-    const restored = load(fixture);
-    const before = structuredClone(restored);
-    const key = 'EMP02|TASK-DONE-RECRUIT-EMP04|TASK_COMPLETION_XP';
-    expect(restored.xpAwards[key]).toBeUndefined();
-    const next = runDays(restored, config, restored.day + 2).state;
-    expect(restored).toEqual(before);
-    expect(next.day).toBe(11);
-    expect(next.tasks.find(t => t.id === 'RECRUIT-EMP04')).toMatchObject({ status: 'DONE', completedDay: 9 });
-    expect(next.employees.map(e => e.xp)).toEqual([10, 80, 0, 0, 0, 0]);
-    expect(next.xpAwards).toEqual({ ...restored.xpAwards, [key]: true });
-    expect(next.xpAwardAmounts).toEqual({ ...restored.xpAwardAmounts, [key]: 10 });
-    const again = load(JSON.parse(serializeSave(next)));
-    const snapshot = structuredClone(again);
-    expect(awardTaskCompletion(again, config, again.tasks.find(t => t.id === 'RECRUIT-EMP04')!)).toBe(false);
-    expect(again).toEqual(snapshot);
-    expect(runDays(again, config, 13).state.xpAwardAmounts).toEqual(next.xpAwardAmounts);
+  it('판본 4은 새 문구로 거절한다', () => {
+    expect(() => load(fixture)).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('같은 저장의 판본 숫자만 3으로 바꾸면 시작 경험치로 돌아가는 대조군이다', () => {
-    const restored = load({ ...fixture, formatVersion: 3 });
-    expect(restored.employees.map(e => e.xp)).toEqual(config.employees.map(e => e.growth?.startXp ?? 0));
-    expect(restored.xpAwards).toEqual({});
-    expect(restored.xpAwardAmounts).toEqual({});
-    expect(restored.tasks).toEqual(fixture.state.tasks);
-    expect(restored.culture).toEqual(emptyCulture);
+  it('판본 3은 새 문구로 거절한다', () => {
+    expect(() => load({ ...fixture, formatVersion: 3 })).toThrow(`이전 저장 형식(판본 ${3})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('판본 4에 미리 적힌 culture도 빈 기록으로 덮고 입력 객체를 바꾸지 않는다', () => {
-    const file = { ...fixture, state: { ...fixture.state, culture: records } };
-    const before = structuredClone(file);
-    expect(load(file)).toEqual(load(fixture));
-    expect(file).toEqual(before);
+  it('판본 4은 새 문구로 거절한다', () => {
+    expect(() => load({ ...fixture, state: { ...fixture.state, culture: records } })).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 });
 
@@ -124,12 +83,11 @@ describe('판본 5와 이전 판본 읽기', () => {
     expect(deserializeSave(text, { dataVersion: cfg.dataVersion, config: cfg })).toEqual(s);
   });
 
-  it('진행한 상태의 판본 5 왕복도 전체 깊은 비교로 같다', () => {
-    const s = runDays(load(fixture), config, 10).state;
-    expect(load(JSON.parse(serializeSave(s)))).toEqual(s);
+  it('판본 4은 새 문구로 거절한다', () => {
+    expect(() => load(fixture)).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it.each([1, 2, 3, 4])('판본 %i를 읽을 때 해당 판본 이후의 필드만 복원한다', version => {
+  it.each([1, 2, 3, 4])('판본 %i는 새 문구로 거절한다', version => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     const s = createGame(cfg);
     const file = JSON.parse(serializeSave(s));
@@ -144,10 +102,10 @@ describe('판본 5와 이전 판본 읽기', () => {
       delete file.state.recruitment;
       for (const e of file.state.employees) delete e.availableFromDay;
     }
-    expect(deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion })).toEqual(s);
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion })).toThrow(`이전 저장 형식(판본 ${version})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it.each([0, 7, '5', 5.5])('허용 목록 밖 판본 %s는 거절한다', version => {
+  it.each([0, 8, '7', 6.5])('허용 목록 밖 판본 %s는 거절한다', version => {
     const file = freshFile();
     file.formatVersion = version;
     reject(file, '지원하지 않는 저장 형식 판본');

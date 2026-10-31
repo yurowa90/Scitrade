@@ -7,7 +7,7 @@ import { summarize } from './ledger';
 import { campaignSummary, upcomingPayments } from './reports';
 import { findSailing } from './catalog';
 import { fundsPosition, sailingLoad } from './reservations';
-import { deserializeSave, migrateV5toV6, SAVE_FORMAT_VERSION, serializeSave } from './save';
+import { deserializeSave, SAVE_FORMAT_VERSION, serializeSave } from './save';
 import { checkSaveShape } from './save-shape';
 import { runDays } from './testkit';
 import { applied, atDay, book, caseOf, config, fresh, planned, scriptOf } from './m2a5-testkit';
@@ -53,7 +53,7 @@ describe('P0-M2A5-12 기존 기대값 보존', () => {
 
 });
 
-describe('P0-M2A5-13 저장 판본 6과 재현', () => {
+describe('P0-M2A5-13 저장 판본 7과 재현', () => {
   it('마감 직후·환전 계획·확장 계획 저장을 전체 상태로 재현한다', () => {
     const script = scriptOf(c13), days = c13.expected_numeric.save_days as number[];
     const close = runDays(createGame(config), config, days[0]!).state;
@@ -70,14 +70,8 @@ describe('P0-M2A5-13 저장 판본 6과 재현', () => {
     expect(runDays(restored, config, config.campaignDays).state).toEqual(runDays(live, config, config.campaignDays).state);
     expect([JSON.parse(serializeSave(live)).formatVersion, SAVE_FORMAT_VERSION]).toEqual([c13.expected_numeric.save_version, c13.expected_numeric.save_version]);
   });
-  it('판본 5 실제 저장에 operations만 붙이고 입력·경제 결과를 보존한다', () => {
-    const cfg = loadScenario(SCENARIO_IDS[0]), before = structuredClone(fixture);
-    const expected = { ...fixture.state, operations: null } as GameState;
-    expect(migrateV5toV6(fixture.state as unknown as GameState)).toEqual(expected);
-    const restored = deserializeSave(JSON.stringify(fixture), { dataVersion: cfg.dataVersion });
-    expect(restored).toEqual(expected); expect(fixture).toEqual(before);
-    expect(runDays(restored, cfg, restored.day + c13.expected_numeric.legacy_continue_days - 1).state)
-      .toEqual(runDays(expected, cfg, expected.day + c13.expected_numeric.legacy_continue_days - 1).state);
+  it('판본 5는 새 문구로 거절한다', () => {
+    expect(() => deserializeSave(JSON.stringify(fixture), { dataVersion: config.dataVersion })).toThrow(`이전 저장 형식(판본 ${5})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
   it('생성 견적의 모든 필드가 저장 모양 검사 대상이다', () => {
     const original = runDays(createGame(config), config, c13.expected_numeric.save_days[0]).state;

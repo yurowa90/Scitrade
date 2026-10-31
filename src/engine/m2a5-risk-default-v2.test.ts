@@ -342,7 +342,7 @@ describe('TASK-0067b 대손·이자', () => {
   it('10 판본 4 대손·두 비용 계정 저장 왕복 바이트', () => {
     const f = fixture(), s = through(f, 25), text = serializeSave(s);
     expect(text).toContain('WRITTEN_OFF'); expect(text).toContain('BAD_DEBT'); expect(text).toContain('RECEIVABLE_CARRY');
-    expect(JSON.parse(text).formatVersion).toBe(6);
+    expect(JSON.parse(text).formatVersion).toBe(7);
     expect(serializeSave(deserializeSave(text, { config: f.cfg, dataVersion: f.cfg.dataVersion }))).toBe(text);
   });
   it('11 손으로 만든 대손·이자 위반 상태를 각각 거절', () => {

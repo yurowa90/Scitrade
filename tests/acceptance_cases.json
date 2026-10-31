@@ -4100,7 +4100,7 @@
       "id": "P0-M2A5-13",
       "phase": "P0",
       "milestone": "M2",
-      "title": "저장 판본 6과 재현",
+      "title": "저장 판본 7과 재현",
       "currency": "USD",
       "evidence_class": "DESIGN",
       "scenario_id": "SCENARIO_M2_OPERATIONS",
@@ -4133,22 +4133,22 @@
         }
       ],
       "expected_numeric": {
-        "save_version": 6,
+        "save_version": 7,
         "save_days": [
           7,
           8,
           22
-        ],
-        "legacy_continue_days": 10
+        ]
       },
       "expected_assertions": [
         "M2A5-SPEC 18절 13의 전체 수치·상태와 일치한다.",
-        "읽기 함수는 상태를 바꾸지 않고 저장 재개 후 같은 결과를 낸다."
+        "읽기 함수는 상태를 바꾸지 않고 저장 재개 후 같은 결과를 낸다.",
+        "형식 5 저장은 옛 형식 문구로 거절한다"
       ],
       "human_review_check": "개발용 합성값이며 실제 시세·임금·계약 관행을 뜻하지 않는다. 전체 객체 단언과 문장 반례를 확인한다.",
       "engine_test_ref": "src/engine/m2a5-save.test.ts",
       "engine_test_names": [
-        "P0-M2A5-13 저장 판본 6과 재현"
+        "P0-M2A5-13 저장 판본 7과 재현"
       ],
       "test_fixture": {
         "seed": 42032026,

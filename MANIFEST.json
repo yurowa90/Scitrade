@@ -3641,6 +3641,11 @@
       "sha256": "1e8bcc36ea1b4f72fa565e177b0327a86a03cbdc76013881ed05808c37d1200d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0074-R1-resume.md",
+      "size_bytes": 3003,
+      "sha256": "e86c227cf7bfae93e30b769e85cf1b7dfc20e7de0ae7420b6bb4a0ee8c50d282"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
       "size_bytes": 26868,
       "sha256": "5882827de44f4400c9961c52aac1b4c885b4e5d06ad80be4e1666c5032b41550"
@@ -4117,8 +4122,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0074.md",
-      "size_bytes": 11716,
-      "sha256": "7808b76908f5ed287e5be74ab4d217cf5622376156f2b26454b4f88dd76ad5d5"
+      "size_bytes": 23198,
+      "sha256": "675489d691e2d9fe4a678c474733b571758118087a105bc014a789bcf93ebef8"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -4397,8 +4402,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 208445,
-      "sha256": "abde4968cabcbdc7695002fc5fd44892016ad546b8e47f89e7ef1c9467506c95"
+      "size_bytes": 208473,
+      "sha256": "e549c264237ef11d6ebcf3f474f873d8877ff83bac117772a4a9bc85c93ad2f6"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -4647,13 +4652,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 96905,
-      "sha256": "5bbf29ac4e0286850b7d506bbe7e6e9d05133373fedad52ee9e06b913e79b1b8"
+      "size_bytes": 98621,
+      "sha256": "e779423303d25cf9a0673aa7f771249a8fc696dc762754c39aa8435f75d5fcd9"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 93390,
-      "sha256": "43ea7b2fe5aa9a92b09b0d2ab176dad5b64bb097e5c1867f21404dd3d3e8563a"
+      "size_bytes": 94448,
+      "sha256": "8117b6123eaf9cc11369c704ec4f3410ace93d533beefc145704c2115ce52051"
     }
   ]
 }

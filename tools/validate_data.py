@@ -509,7 +509,8 @@ def check_world_hubs(documents, tables, source_ids):
         if city.get('availability', {}).get('status') == 'MAP_PREVIEW':
             check(city['venue_ids'] == [] and city['availability']['stage'] == 'P1',
                   cid + ': preview hubs have no playable content yet')
-    for scenario in tables['scenarios'].values():
+    for sid in tables['scenarios']:
+        scenario = resolve_scenario(tables['scenarios'], sid)
         stage = stage_order.get(scenario['stage'])
         for city_id in scenario.get('city_ids', []):
             avail = world[city_id]['availability']
@@ -991,6 +992,19 @@ def check_credit_profile(p, rules):
 def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
+    for sid in tables['scenarios']:
+        scenario = resolve_scenario(tables['scenarios'], sid)
+        setup = scenario.get('risk_setup')
+        if setup is None:
+            continue
+        check(setup.get('level') == 'R4', f'{sid}: risk_setup.level은 R4여야 함')
+        profile = next((p for p in market['risk_profiles'] if p['id'] == setup.get('profile_id')), None)
+        check(profile is not None and all(k in profile for k in ('credit_terms', 'credit_limit_unit_minor', 'credit_limits'))
+              and all(k in profile.get('collections', {}) for k in ('carry_bp_per_day', 'recovery_bp'))
+              and {g['grade'] for g in profile.get('collections', {}).get('grades', []) if 'p_default_bp' in g} == {'A', 'B', 'C'},
+              f'{sid}: risk_setup.profile_id는 외상 칸이 모두 있는 위험 프로필이어야 함')
+        check(scenario.get('base_scenario_id') in EXPERIMENT_SCENARIO_IDS,
+              f'{sid}: risk_setup.base_scenario_id는 실험 시나리오여야 함')
     names = {p['id'] for p in market['counterparties']}
     party_counts = {}
     for party in market['counterparties']:

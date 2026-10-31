@@ -1121,6 +1121,35 @@ class DataDrivenMainTest(unittest.TestCase):
 
 
 class MarketRulesTest(unittest.TestCase):
+    def test_risk_setup_rejections(self):
+        for field, value, message in (
+                ('level', 'R3', 'risk_setup.level은 R4여야 함'),
+                ('profile_id', 'MISSING', 'risk_setup.profile_id는 외상 칸이 모두 있는 위험 프로필이어야 함'),
+                ('base_scenario_id', 'SCENARIO_M2_OPERATIONS', 'risk_setup.base_scenario_id는 실험 시나리오여야 함')):
+            with self.subTest(field=field):
+                d, t = self.fixtures()
+                row = t['scenarios']['SCENARIO_M2_OPS_CREDIT']
+                (row if field == 'base_scenario_id' else row['risk_setup'])[field] = value
+                self.assertIn(row['id'] + ': ' + message, self.errors(d, t))
+
+    def test_inherited_world_hubs(self):
+        d, t = self.fixtures()
+        t['scenarios']['INHERITED'] = {'id': 'INHERITED', 'base_scenario_id': 'SCENARIO_M2_OPS_COS_LAVER'}
+        validator.ERRORS.clear()
+        validator.check_world_hubs(d, t, {s['id'] for s in d['sources']['sources']})
+        self.assertEqual(validator.ERRORS, [])
+
+    def test_inherited_world_hubs_preserves_parent_stage_check(self):
+        d, t = self.fixtures()
+        parent = t['scenarios']['SCENARIO_M2_OPS_COS_LAVER']
+        parent['stage'] = 'M1'
+        city = next(c for c in t['world'].values() if c['availability']['stage'] == 'M3')
+        parent['city_ids'] = [city['id']]
+        t['scenarios']['INHERITED'] = {'id': 'INHERITED', 'base_scenario_id': parent['id']}
+        validator.ERRORS.clear()
+        validator.check_world_hubs(d, t, {s['id'] for s in d['sources']['sources']})
+        self.assertIn('INHERITED: ' + city['id'] + ' opens no later than the scenario stage', validator.ERRORS)
+
     def test_sale_margin_k_range(self):
         message = 'risk_profiles: RISK_PROFILE_V2: sale_margin_k: -2~3 정수여야 함'
         for value in (4, 2.5, '1', -3, True):

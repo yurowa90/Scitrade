@@ -29,24 +29,15 @@ function recruited(day: number) {
 }
 
 describe('이관 결과와 저장 모양 경로', () => {
-  it.each([1, 2, 3, 4])('판본 %i 이관 뒤 offers[0] 모양 손상을 경로로 거절한다', (version) => {
+  it.each([1, 2, 3, 4])('판본 7 offers[0] 손상과 옛 판본 %i 모양 손상을 경로로 거절한다', (version) => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     const file = JSON.parse(serializeSave(createGame(cfg)));
-    file.formatVersion = version;
-    delete file.state.culture;
-    if (version <= 3) {
-      delete file.state.xpAwards;
-      delete file.state.xpAwardAmounts;
-      for (const e of file.state.employees) delete e.xp;
-    }
-    if (version <= 2) {
-      delete file.state.recruitment;
-      for (const e of file.state.employees) delete e.availableFromDay;
-    }
     file.state.offers = [null];
     const load = () => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion });
     expect(load).toThrow(SaveError);
     expect(load).toThrow('state.offers[0]');
+    file.formatVersion = version;
+    expect(load).toThrow(`이전 저장 형식(판본 ${version})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
   it.each([
