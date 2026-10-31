@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 130105,
-      "sha256": "114153eec2066e07cf0d94d2aefa81d208aa8408686b333401f2cdfc4fb45981"
+      "size_bytes": 132420,
+      "sha256": "125679431ab54f988017ea0aebc3d530849b583cf67350f23b9ac22481e34708"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -3172,8 +3172,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 29372,
-      "sha256": "bb1888146690defdb689a9f405b401fe214cae3f7de8001e2ab3717dbc4727ac"
+      "size_bytes": 29651,
+      "sha256": "5c545fdc27f966c72c0d489c2049de0de18f78bcbec234dc70d87a8d4a910b7e"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3662,8 +3662,8 @@
     },
     {
       "path": "docs/ai/tasks/TASK-0075-path11-readers.md",
-      "size_bytes": 23690,
-      "sha256": "95d684b0e429fecde54f5ae8bed7fda0f50c7040bb06053e254dd4e8edfb9f45"
+      "size_bytes": 24095,
+      "sha256": "c98c116ab7d4ea5cefee27f7d282afcbc44032bfba9d028decef7ce343f91623"
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
@@ -4134,6 +4134,11 @@
       "path": "docs/ai/tasks/results/TASK-0074.md",
       "size_bytes": 42234,
       "sha256": "0ac4f42a3615840c39acf3082545f00197593bf6e86eb16b1b07da169b5a42a8"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0075.md",
+      "size_bytes": 15781,
+      "sha256": "8c627842f80c4c3d616b3a1ac781768d8087303d4d37a889e8803c8638a3eb84"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
