@@ -10,6 +10,8 @@ export type UiCommand = Command | Extract<import('../engine/types').OperationsCo
 
 export function initialUiState() {
   return {
+    creditTerms: {} as Record<string, import('../engine/types').CreditTermId>, creditTermsDay: null as number | null,
+    path11Open: [] as string[], path11AsOfDay: null as number | null, path11DialogOpen: false,
     offerQuantities: {} as Record<string, number>, offerQuantitiesDay: null as number | null,
     exchangeDirection: 'USD_TO_KRW' as import('../engine/types').ExchangeDirection, exchangeLots: 1,
     scheduleOpen: false, schedulePrev: null as Record<string, number | null> | null,

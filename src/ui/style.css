@@ -609,3 +609,19 @@ main.layout { padding-bottom: 5.5rem; }
 .payment-alert h3, .failure h3 { margin-top: 0; }
 .hiring-outlook { padding-left: 1.4rem; }
 .failure ul, .payment-alert ul { overflow-wrap: anywhere; }
+
+/* 경로 11: 좁은 보고 칸에서도 표와 대화상자가 폭 안에서 접힌다. */
+.p11 { min-width: 0; overflow-wrap: anywhere; }
+.p11 fieldset { min-width: 0; padding: 0; border: 0; }
+.p11-terms { display: flex; flex-wrap: wrap; gap: .3rem; }
+.p11-terms label { display: flex; align-items: center; flex: 1; min-height: 44px; }
+.p11 small { display: block; }
+.p11 summary { min-height: 44px; }
+.p11 table { width: 100%; table-layout: fixed; }
+.p11 td { font-size: .8rem; }
+.p11-statements { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1rem; }
+.p11-statements td { white-space: nowrap; }
+.p11-bar { display: flex; height: 18px; }
+.p11-bar span { background: var(--gold); border: 1px solid var(--navy); }
+.p11-bar span:nth-child(even) { background: var(--sky); }
+.p11-dialog { position: fixed; inset: 4%; z-index: 100; overflow: auto; }
