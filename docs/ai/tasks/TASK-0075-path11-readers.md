@@ -50,7 +50,7 @@
 
 ## 2. 함수(출력 모양은 이것을 따른다)
 
-통화 배열의 순서는 `Currency` 정렬 순서다. 원화 환산은 USD 줄마다 `usdToKrwMinor`로 바꾼 뒤 더한다. 즉 줄마다 반올림한다. KRW 줄은 그대로 쓴다.
+통화 배열의 순서는 통화 코드 사전순(`KRW`, `USD`)이다. `Currency` 형의 선언 순서(`USD`, `KRW`, …)가 아니다. 원화 환산은 USD 줄마다 `usdToKrwMinor`로 바꾼 뒤 더한다. 즉 줄마다 반올림한다. KRW 줄은 그대로 쓴다.
 
 ### 2.1 `creditLockPreview(s, config, buyOfferId, sellOfferId, quantity?)`(SCOPE 1.2)
 
