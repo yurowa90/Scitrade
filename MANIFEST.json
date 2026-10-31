@@ -3666,9 +3666,15 @@
       "sha256": "c98c116ab7d4ea5cefee27f7d282afcbc44032bfba9d028decef7ce343f91623"
     },
     {
+<<<<<<< HEAD
       "path": "docs/ai/tasks/TASK-0076-first-screen-split.md",
       "size_bytes": 14353,
       "sha256": "552fdf0527a236c89d32ac21872474b95cce6b67e3fe0898d2b4fd9295c0b642"
+=======
+      "path": "docs/ai/tasks/TASK-0077-path11-screens.md",
+      "size_bytes": 26842,
+      "sha256": "3904f6bfb7c4a76e029eb090f502c3c234a679cc41035b1cc8edf2345f243936"
+>>>>>>> origin/claude/ui-layout
     },
     {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
