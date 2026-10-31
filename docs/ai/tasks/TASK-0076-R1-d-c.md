@@ -1,6 +1,6 @@
 # TASK-0076-R1 첫 화면 분할 구현: D(지연 전용 함수 이동) + C(운영 자료 지연)
 
-- **지위: 초안(세션 A, 2026-10-31).** 허브 사전 검수 전이다. Codex에 넘기지 않는다.
+- **지위: 개정 1(세션 A, 2026-10-31). 허브 재확인 전이다.** 초안(`6995670`)은 허브 사전 검수 `docs/ai/tasks/PRECHECK-0076-R1-HUB-2026-10-31.md`(`b14679c`, 중대 7·경미 3)를 받았다. 처리는 끝의 ‘개정 1 처리표’에 있다.
 - 근거
   - 허브 결정 H39-1~H39-4(`HUB-DECISIONS-2026-10-16.md:1090-1109`)
   - 1회차 결과 `docs/ai/tasks/results/TASK-0076.md`: 후보별 탐침, C·D 경계, 진행 중 경로 표, 부록 1~4
@@ -12,6 +12,8 @@
 - **목표(H39-2)**: R1 뒤 첫 화면 여유 **≥ 7,900 B**. 최종 판정 허용 오차는 ±64 B다. 한도가 140,000 B이므로 첫 화면 gzip ≤ 132,100 B(+64)다.
   - 1회차 탐침: D −820 B, D+C −2,690 B(첫 화면 132,034 B)
 - **성격: 동작 불변 정리다.** 게임 결과, 문구, 저장 형식, 화면 HTML(BASE_HTML 세 sha)은 바이트로 그대로다. 바뀌는 것은 **운영 시나리오 진입·운영 저장 불러오기에 자료 관문이 하나 더 생기는 것**뿐이다.
+  - 허용하는 동작 변화 하나(C5): 열 수 없는 **옛 판본 운영 저장**(형식 6 등)도 이제 운영 묶음을 먼저 받는다. 관문이 성공하면 같은 옛 형식 거절 문구가 나오고, 관문이 실패하면 경고만 나온다(상태 보존). 4-6 (마)가 둘 다 단언한다.
+- **관문은 다시 옮기지 않는다(C7).** 5-5 예산에 못 미치면 마무리하지 않고 멈춰 보고한다. 허브는 이 지시서에 대해 관문(여유 ≥ 7,900 B, ±64 B)을 측정 뒤 다시 낮추지 않는다.
 - 범위 밖: 후보 A′·B, 새 기능, TASK-0077(select에 새 시나리오), 측정
 - **시드**: 새 시험과 일회 확인은 2001 이상만 쓴다. 예외는 둘이다.
   1. 기본 `node src/engine/sim/run.mjs run` 400회 회귀는 고정 시드 1001~1020을 그대로 쓴다.
@@ -85,12 +87,16 @@ grep -rn "\bcreditTermOptions\b\|\breceivableSchedule\b\|\bmarketTable\b\|\bcult
 
 ### 2.1 장치(1회차 C-2 탐침 구조를 제품으로)
 
-- **자료 등록 모듈** `src/content/ops-data.ts`(이름은 바꿀 수 있음)
-  - `registerOpsData(rules)`: 같은 값을 다시 등록하면 아무 일도 하지 않는다. 다른 값이면 예외를 낸다.
-  - `opsData()`: 등록 전이면 `OpsDataNotRegisteredError`를 낸다. 한국어 메시지에 등록을 빠뜨린 진입점을 알 수 있게 쓴다.
-  - 시험 전용 `resetOpsDataForTest()`: 제품 코드에서는 부르지 않는다. 원천 검사로 고정한다.
+- **첫 화면 쪽은 최소로, 검사는 지연 쪽에(C7).** 1회차 C 탐침의 등록부는 두 줄이었다. 남는 여유가 약 130 B뿐이므로 첫 화면에 들어가는 코드와 문자열을 최소로 한다.
+  - **`src/content/ops-data.ts`(첫 화면)**: 다음 넷만 둔다.
+    - `export const OPS_DATA_MISSING`: 짧은 한국어 문구 상수 하나(예: `'운영 자료 없음'`). 이 문구가 미등록 오류의 유일한 표지다.
+    - `opsData()`: 미등록이면 `throw new Error(OPS_DATA_MISSING)`. 오류 클래스는 새로 만들지 않는다.
+    - `setOpsData(value)`: 값을 넣기만 한다. 검사는 하지 않는다.
+    - 시험 전용 `resetOpsDataForTest()`: 제품에서 부르지 않으므로 빌드에서 빠진다(4-8 원천 검사).
   - **대체값이 없다.** 미등록일 때 빈 자료나 기본값으로 빠지지 않는다.
-- **자료 진입 모듈** `src/content/ops-data-entry.ts`: `market_rules.json`을 정적 import하고 평가될 때 `registerOpsData`를 부른다.
+  - **재등록 검사는 지연 쪽에 둔다.** 아래 진입 모듈이 이미 다른 값이 들어 있으면 예외를 내고, 같은 값이면 아무것도 하지 않는다. 진입 모듈은 자기 정적 import 값만 넣으므로, 다른 값은 시험에서만 생긴다.
+  - 미등록 판정은 **문구 비교**로 한다: `error instanceof Error && error.message === OPS_DATA_MISSING`. 모듈 인스턴스가 달라도(C3, `vi.resetModules`) 같은 결과가 나온다.
+- **자료 진입 모듈** `src/content/ops-data-entry.ts`(지연): `market_rules.json`을 정적 import한다. 평가될 때 재등록 검사를 한 뒤 `setOpsData`를 부른다.
 - `scenario.ts`
   - `market_rules.json`의 정적 import를 지우고, `:489-492`·`:546`·`:565`·`:570`은 `opsData()`를 읽는다.
   - 운영이 없는 시나리오의 `loadScenario`는 `opsData()`를 부르지 않는다. 그래서 등록 없이도 그대로 동작한다.
@@ -107,13 +113,17 @@ grep -rn "\bcreditTermOptions\b\|\breceivableSchedule\b\|\bmarketTable\b\|\bcult
     2. `isOperationsScenario(scenarioId)`면 `ensureOpsScreens()`를 기다린다. **`LOADABLE_SCENARIO_IDS`의 `SCENARIO_M2_OPS_CREDIT`도 여기에 든다.**
     3. 그다음 `loadSaveText`를 부른다.
     4. 관문이 실패하면 `screenLoadWarning(error, fromSave)`로 끝내고 상태·오늘 할 일·select를 보존한다.
-  - `session.ts`의 `loadSaveText`: `catch`가 `OpsDataNotRegisteredError`를 `errorKo`로 바꾸지 않고 다시 던진다. 관문이 지켜지면 닿지 않는 길이므로, 닿으면 ‘깨진 저장’으로 숨지 않고 결함으로 드러나게 한다.
+  - `session.ts`의 `loadSaveText`: `catch`가 미등록 오류(문구 비교)를 `errorKo`로 바꾸지 않고 다시 던진다. 관문이 지켜지면 닿지 않는 길이므로, 닿으면 ‘깨진 저장’으로 숨지 않고 결함으로 드러나게 한다.
 - **노드 진입점 등록**(작업자 스레드 포함, TASK-0073 허브 개정 1의 교훈)
   - 다음 모듈이 `ops-data-entry`를 import한다. 등록은 **모듈 평가 때** 일어나야 한다. 그래야 작업자가 진입 모듈을 다시 평가할 때도 등록된다.
     - `src/engine/sim/cli.ts`
     - `tools/rules2_golden_entry.ts`, `tools/rules3_golden_entry.ts`
     - `src/engine/m2a5-testkit.ts`
     - vitest 준비 파일(`vite.config.ts` `test.setupFiles`에 새 파일 하나)
+  - **vitest 준비 파일이 덮는 범위(C3·C9)**: 시험 파일이 정적으로 import한 모듈 인스턴스만 덮는다.
+    - `startUi`(`main-testkit.ts:10`)는 `vi.resetModules()`를 부른다. vitest 5.0.3은 이때 준비 파일이 평가한 모듈까지 다시 평가되게 한다.
+    - 그래서 `startUi` 뒤의 화면 쪽 `scenario`·`ops-data`는 **새 인스턴스이고 미등록**으로 시작한다. 등록되는 길은 `ops-screens` → `ops-data-entry`뿐이다.
+    - 이것이 화면 관문 시험의 전제다.
   - 그 밖에 운영 시나리오를 노드에서 여는 진입점이 grep(2.3)에서 나오면 같은 방식으로 더하고 결과 보고에 적는다.
 
 ### 2.2 바꾸지 않는 것
@@ -131,6 +141,7 @@ grep -rn "import.meta.glob\|subtle.digest\|createHash\|readdirSync" src tools --
 grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
 ```
 
+- `import('../content/scenario')`·`import('../content/ops-data')`를 쓰는 시험도 grep해 적는다. `startUi` 뒤 새 `scenario`로 관문 없이 운영 시나리오를 읽는 시험이 없어야 한다(C3).
 - 1회차 부록 1에서 C·D 열이 ‘고칠’인 줄(`main.ts:1550`·`:1607`, `scenario.ts:2`, D의 import 여덟 줄)은 모두 2·3절 허용 파일에 들어 있다.
 - `path11-readers.test.ts`의 4.1-10 (나)(빌드 청크 문자열)는 표지 문자열이 `ops-screens-*.js`에 있다고 단언한다.
   - C·D 뒤 청크 배치가 바뀌어 표지가 다른 **지연** 청크로 가면, 단언을 ‘`dist.lazy`에 속하고 첫 화면 청크에 없음’으로만 넓힌다.
@@ -146,13 +157,14 @@ grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
 | 1.3의 제품·sim·도구·시험 줄 | import 경로만 |
 | 새 `src/content/ops-data.ts`·`ops-data-entry.ts` | 2.1 |
 | `src/content/scenario.ts` | `market_rules.json` import 제거, `opsData()` 읽기, `scenarioTitle`·`isOperationsScenario` |
-| `src/ui/main.ts` | `:43`, `:1550`, `loadText`만 |
-| `src/ui/session.ts` | `catch`의 다시 던지기만 |
+| `src/ui/main.ts` | `:9` import 줄(`scenarioTitle`·`isOperationsScenario` 추가, C1), `:43`, `:1550`, `loadText`만 |
+| `src/ui/session.ts` | `OPS_DATA_MISSING` import 한 줄과 `catch`의 다시 던지기만 |
 | `src/ui/ops-screens.ts` | `ops-data-entry` import 한 줄 |
 | `vite.config.ts` | `data` 정규식, `test.setupFiles` |
 | 새 vitest 준비 파일 | `ops-data-entry` import |
 | `src/engine/sim/cli.ts`, `tools/rules2_golden_entry.ts`, `tools/rules3_golden_entry.ts`, `src/engine/m2a5-testkit.ts` | `ops-data-entry` import |
 | `src/engine/path11-readers.test.ts` | 2.3의 조건부 완화만 |
+| `src/engine/m2a5-risk-credit.test.ts` | `:461` 조건에 `'./readers-lazy.ts'`·`'./reports-lazy.ts'`를 더하는 것만(C2·C4). 단언 내용은 그대로 |
 | 새 시험 파일 | 4절 |
 | `docs/ai/tasks/results/TASK-0076.md`(R1 절), `MANIFEST.json` | 결과, 생성 명령 |
 
@@ -161,33 +173,42 @@ grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
 ## 4. 새 시험(2001 이상 시드)
 
 1. **D 이동 확인**
-   - 1.2의 탐지 스크립트 결과를 시험이나 일회 확인으로 남긴다. 탐지 결과 지연 전용 export가 0개여야 한다.
+   - 1.2의 탐지 스크립트 결과를 시험이나 일회 확인으로 남긴다.
+   - **탐지 결과는 허용 목록 `{ setOpsData }`와 정확히 같아야 한다(C8).** 등록 함수는 성격상 지연 쪽(`ops-data-entry`)에서만 부르기 때문이다. 다른 이름이 나오면 실패다.
    - TASK-0075 4.1-10 (가) 방식의 `main.ts` 정적 닫힘에 새 `*-lazy.ts` 넷과 `ops-data-entry.ts`가 없음을 단언한다.
    - 음성 대조: 메모리 사본에서 `readers.ts`에 `export { creditTermOptions } from './readers-lazy'`를 넣으면 거부해야 한다.
+   - `m2a5-risk-cost.test.ts:941`, `m2a5-risk-fx.test.ts:636`, `save-v7.test.ts:187`의 glob이 새 `*-lazy.ts` 파일을 덮는지 결과 보고에 적는다(C4).
 2. **가벼운 판별의 같음**(자료 등록 상태에서)
    - `LOADABLE_SCENARIO_IDS`와 `EXPERIMENT_SCENARIO_IDS`의 모든 ID에 대해 다음을 단언한다.
      - `scenarioTitle(id) === loadScenario(id).titleKo`
      - `isOperationsScenario(id) === (loadScenario(id).operations !== null)`
    - M1 세 시나리오(`TITLES` 대체)를 포함한다.
-3. **미등록 예외**(`resetOpsDataForTest` 뒤)
-   - 운영 시나리오 `loadScenario`, `loadRiskProfile`, `loadCreditProfile`, `riskProfiles`가 `OpsDataNotRegisteredError`를 낸다.
+3. **미등록 예외**(엔진 시험, 정적 인스턴스. `resetOpsDataForTest` 뒤, `afterEach`에서 이전 값으로 `setOpsData`를 되돌린다)
+   - 운영 시나리오 `loadScenario`, `loadRiskProfile`, `loadCreditProfile`, `riskProfiles`가 `OPS_DATA_MISSING` 문구의 오류를 낸다.
+   - 진입 모듈의 재등록 검사: 다른 값을 넣으려 하면 예외, 같은 값이면 무시
    - 운영 저장의 `loadSaveText`는 `errorKo`가 아니라 예외를 다시 던진다.
    - 기본 시나리오와 M1의 `loadScenario`는 등록 없이 성공한다.
-4. **기본 새 게임은 자료 청크 없이**(`code-split.test.ts` 방식, `resetOpsDataForTest` 뒤)
+4. **기본 새 게임은 자료 청크 없이**(`code-split.test.ts` 방식)
+   - **화면 시험 4~6의 공통 규칙(C3·C9)**: 등록 상태는 `startUi` 뒤 `await import('../content/ops-data')`로 받은 **새 인스턴스**에서 읽는다. 오류 판정은 문구(`OPS_DATA_MISSING`)로 한다. 정적 import한 `ops-data`를 화면 시험에서 쓰지 않고, `resetOpsDataForTest`도 화면 시험에서는 쓰지 않는다.
    - `startUi` 첫 렌더가 성공한다.
    - 한가할 때 미리 받기 전까지 운영 묶음 호출 수가 0이다.
    - 기본 시나리오로 3일 진행해도 예외가 없다.
    - 첫 렌더 HTML은 BASE_HTML `first`와 같다.
+   - 새 인스턴스의 `opsData()`가 미등록 오류를 낸다.
 5. **운영 진입 실패와 재시도**(`lazy` 모의, 0073 3.5-3 계열)
-   - (가) 시나리오 select로 운영 시나리오를 고르는데 운영 묶음 첫 시도가 실패한다 → 경고, 상태·오늘 할 일·select 보존, 자료 미등록 유지. 다음 시도에서 성공하면 진입한다.
-   - (나) 두 번 실패 → 새로 고침 안내(`ScreenLoadExhaustedError`), 상태 보존
+   - (가) 시나리오 select로 운영 시나리오를 고르는데 운영 묶음 첫 시도가 실패한다 → 경고, 상태·오늘 할 일·select 보존, 새 인스턴스의 `opsData()`가 여전히 미등록 오류. 다음 시도에서 성공하면 진입하고, 그때는 등록되어 있다.
+   - (나) 두 번 실패 → 새로 고침 안내(`ScreenLoadExhaustedError`), 상태 보존, 새 인스턴스의 `opsData()`가 여전히 미등록 오류(C10)
 6. **운영 저장 불러오기 관문**
    - (가) 미리 받기 전에 운영 저장을 파일로 불러온다 → 관문을 기다린 뒤 정상으로 불러온다. `errorKo`가 없다. `loadSaveText` 호출이 관문 성공 뒤에 일어남을 호출 순서로 단언한다.
    - (나) 같은 경우를 브라우저 저장으로 한다. `SAVE_KEY`만 채운 경우와 `LEGACY_SAVE_KEY`만 채운 경우를 따로 본다.
    - (다) **`SCENARIO_M2_OPS_CREDIT` 저장**도 (가)와 같이 관문을 지난다. 이 ID는 `ALL_SCENARIO_IDS` 밖이지만 `LOADABLE`에 있다.
-   - (라) 관문이 실패하면 경고를 띄우고 상태를 보존한다. 저장 내용은 읽지 않는다.
+   - (라) 관문이 실패하면 경고를 띄우고 상태를 보존한다. 저장 내용은 읽지 않는다. 새 인스턴스의 `opsData()`가 여전히 미등록 오류다(C10).
+   - (마) **옛 판본 운영 저장(C5)**: `code-split.test.ts`의 `opsSaveV6`를 쓴다.
+     - 관문 성공 → 운영 묶음 호출 1회 뒤 옛 형식 거절 문구
+     - 관문 실패 → 경고만, 상태 보존
 7. **노드 진입점**: 골든 둘을 작업자 여러 명(기본값)으로 돌려 종료 0인지 본다. sim `run`과 판본 2 재현도 작업자 여러 명으로 돈다(5절 1~3).
 8. **원천 검사**
+   - **동적 import 닫힌 목록(C10)**: `src/ui`의 비시험 파일에서 값으로 쓰는 동적 `import()`의 대상이 정확히 `{ './ops-screens', './situation', './culture-panel' }`이다. 타입 위치의 `typeof import(...)`는 제외한다. AST로 센다. 그래서 자료를 다른 약속으로 받는 변형(V10)이 잡힌다.
    - `resetOpsDataForTest`가 `.test.ts`와 준비 파일 밖에서 불리지 않는다.
    - `market_rules.json`을 import하는 비시험 파일이 `ops-data-entry.ts` 하나다.
 9. **첫 화면 표지**
@@ -205,7 +226,8 @@ grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
    - (나) D만
    - (다) D+C(작업 뒤)
    - 판정: (다)의 첫 화면 gzip ≤ 132,100 B + 64 B(여유 ≥ 7,900 B − 64 B)
-   - (나)−(가)와 (다)−(나)를 따로 적는다. 1회차 탐침값(−820 B, −2,690 B)과의 차이가 ±64 B를 넘으면 원인을 적는다.
+   - **비교 기준(C6)**: D 몫 (나)−(가)는 1회차 D 단독 탐침 **−820 B**와 비교한다. C 몫 (다)−(나)는 1회차 조합 차이 **−1,870 B**(= −2,690 − (−820))와 비교한다. 차이가 ±64 B를 넘으면 원인을 적는다.
+   - **탐침에 없던 비용(C7)**: 1회차 C 탐침에 없던 항목(문구 상수, 미등록 검사, 다시 던지기 비교, 재등록 검사)의 몫을 따로 적는다. 방법: (다)와, 같은 트리에서 그 항목들을 1회차의 두 줄 등록부로 되돌린 사본의 차이.
 6. `npm run typecheck`, `npm run build`, `python3 tools/build_package.py --manifest-only`, `python3 tools/validate_data.py`, `python3 tools/test_validate_data.py` 통과
 7. `PYTHONDONTWRITEBYTECODE=1 bash tools/ai/review_checks.sh --check <BASE>`: `실패 0종`(18종)
 8. 디스크
@@ -227,9 +249,11 @@ grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
 | V6 | `scenarioTitle`이 `TITLES` 대체를 빼먹는다 | 4-2, 4-4 BASE_HTML |
 | V7 | `data` 정규식이 `market_rules.json`을 그대로 묶는다 | 4-9, 5-5 |
 | V8 | `rules3_golden_entry.ts`가 `ops-data-entry`를 import하지 않는다 | 5-1(작업자) |
-| V9 | `opsData()`가 미등록일 때 빈 자료를 돌려준다 | 4-3 |
-| V10 | `ops-data-entry`를 `ops-screens`와 다른 약속으로 받는다(재시도 규칙 밖) | 4-5 (나), 4-6 (라) |
-| V11 | `loadSaveText`의 `catch`가 `OpsDataNotRegisteredError`를 `errorKo`로 바꾼다 | 4-3 |
+| V9 | `opsData()`가 미등록일 때 빈 자료를 돌려준다 | 4-3, 4-4 새 인스턴스 단언 |
+| V10 | `ops-data-entry`를 `ops-screens`와 다른 약속(`import()`)으로 받는다 | 4-8 동적 import 닫힌 목록, 4-5 (나)·4-6 (라)의 새 인스턴스 단언 |
+| V11 | `loadSaveText`의 `catch`가 미등록 오류를 `errorKo`로 바꾼다 | 4-3 |
+| V12 | 재등록 검사를 첫 화면 `ops-data.ts`로 옮긴다 | 4-1 탐지(허용 목록 불일치), 5-5 탐침에 없던 비용 |
+| V13 | 4-1 탐지 허용 목록에 `creditTermOptions`가 다시 나타난다(V1과 함께) | 4-1 |
 
 ## 7. 결과 보고
 
@@ -250,3 +274,16 @@ grep -rn "ops-screens\|lazyScreen\|ensureOpsScreens" src --include=*.ts
 - 5-5 예산에 못 미칠 때. 이때 1회차 탐침값과 다른 원인을 적는다.
 - 미등록 상태에서 운영 자료 없이 진행되는(대체값으로 조용히 빠지는) 경로가 보일 때
 - `isOperationsScenario`·`scenarioTitle`이 어느 ID에서든 `loadScenario`와 다를 때
+
+## 개정 1 처리표
+
+| 지적 | 처리 |
+|---|---|
+| C1 허용 줄 | 3절: `main.ts:9` import 줄, `session.ts` import 한 줄 |
+| C2·C4 원천 검사 조건 | 3절: `m2a5-risk-credit.test.ts:461` 조건에 lazy 파일 둘만 추가. 4-1: risk-cost·risk-fx·save-v7 glob이 새 파일을 덮는지 결과에 기록 |
+| C3·C9 `vi.resetModules` | 2.1에 준비 파일이 덮는 범위와 화면 쪽 새 인스턴스 전제를 명시. 4-4~4-6 공통 규칙: 새 인스턴스를 `await import`로 받아 읽기, 문구로 판정, 화면 시험에서 reset 금지. 4-3은 정적 인스턴스 reset과 `afterEach` 복원. 2.3 grep에 `import('../content/scenario'·'ops-data')` |
+| C5 옛 판본 운영 저장 | 성격에 허용 동작 변화로 명시. 4-6 (마): 관문 성공·실패 둘 다 단언 |
+| C6 비교 기준 | 5-5: D 몫은 −820 B, C 몫은 −1,870 B와 비교 |
+| C7 등록 계약 비용 | 2.1: 첫 화면 `ops-data.ts`를 상수·getter·setter·시험 reset 넷으로 최소화. 클래스 없이 짧은 문구 상수, 재등록 검사는 지연 진입 모듈로. 5-5에 ‘탐침에 없던 비용’ 측정. 머리에 ‘관문은 다시 옮기지 않는다’ 명시. V12 |
+| C8 탐지 허용 목록 | 4-1: 탐지 결과 = `{ setOpsData }`. V13 |
+| C10 V10 잡는 시험 | 4-8 동적 import 닫힌 목록(AST), 4-5 (가)·(나)·4-6 (라)에 새 인스턴스 미등록 단언 |
