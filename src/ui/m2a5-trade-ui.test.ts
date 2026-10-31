@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadScenario, OPERATIONS_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
+import { loadScenario, LOADABLE_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS, SCENARIO_IDS } from '../content/scenario';
 import { commitDay, createGame, openDay, planState } from '../engine/engine';
 import { listSailings, routeBetween } from '../engine/catalog';
 import { dailyKrwDue, paymentDefaultStatus } from '../engine/operations';
@@ -96,7 +96,7 @@ describe('시나리오·생성 견적·시세표', () => {
   it('규칙 1 순서를 보존하고 자료 이름으로 규칙 2를 열며 지도·명부·캐릭터를 그린다', async () => {
     const ui = await startUi(); await (await import('./main-testkit')).screensReady();
     const select = ui.app.innerHTML.match(/<select data-action="scenario">([\s\S]*?)<\/select>/)![1]!;
-    expect([...select.matchAll(/value="([^"]+)"/g)].map((m) => m[1])).toEqual([...SCENARIO_IDS, ...OPERATIONS_SCENARIO_IDS]);
+    expect([...select.matchAll(/value="([^"]+)"/g)].map((m) => m[1])).toEqual([...LOADABLE_SCENARIO_IDS]);
     expect(select).toContain(esc(cfg.titleKo));
     await ui.change({ action: 'scenario' }, cfg.id);
     for (const text of ['시세표', '환전', '운영표 — 카드와 같은 상태', 'data-map-frame', 'crew-cards']) expect(ui.app.innerHTML).toContain(text);

@@ -6,7 +6,7 @@ import { applyPixelScale } from './pixel';
 import { esc } from './html';
 import { CULTURE_KO, cultureAnchorBlocks, culturePanelScreen, cultureResultTasks, cultureTab, cultureToastText } from './culture';
 import { employedDefs } from '../engine/employees';
-import { ALL_SCENARIO_IDS, LOADABLE_SCENARIO_IDS, scenarioTitle, isOperationsScenario, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
+import { LOADABLE_SCENARIO_IDS, scenarioTitle, isOperationsScenario, assumptionNotes, loadScenario, type AnyScenarioId } from '../content/scenario';
 import { cargoSpace, goodOf, routeBetween, unitKo } from '../engine/catalog';
 import { cityName, createGame, listSailings, openDay, planCommands, planState, restartWithSameSeed } from '../engine/engine';
 import { formatMoney } from '../engine/money';
@@ -40,7 +40,7 @@ const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 const SAVE_KEY = 'scitrade-save';
 /** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 1~6은 엔진이 명시 문구로 거절한다. */
 const LEGACY_SAVE_KEY = 'scitrade-m1-save';
-const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, scenarioTitle(id)])) as Record<AnyScenarioId, string>;
+const SCENARIO_TITLES = Object.fromEntries(LOADABLE_SCENARIO_IDS.map((id) => [id, scenarioTitle(id)])) as Record<(typeof LOADABLE_SCENARIO_IDS)[number], string>;
 
 let opsScreens: typeof import('./ops-screens') | null = null;
 let culturePanel: typeof import('./culture-panel') | null = null;
@@ -102,10 +102,10 @@ let lastColumn: 'main' | 'side' | null = null;
 /** 동료를 카드로 골랐으면 상세를 그 카드 바로 아래에 둔다. 운영표 줄로 골랐으면 운영표 아래. */
 let detailUnder: 'card' | 'roster' = 'card';
 /** Esc로 닫는 칸. 안쪽 칸이 앞이다(기록장은 현지 패널 안). */
-type LayerKey = 'book' | 'local' | 'interview' | 'detail' | 'map';
-const LAYER_ORDER: LayerKey[] = ['book', 'local', 'interview', 'detail', 'map'];
+type LayerKey = 'book' | 'local' | 'interview' | 'detail' | 'map' | 'path11';
+const LAYER_ORDER: LayerKey[] = ['book', 'local', 'interview', 'detail', 'map', 'path11'];
 /** 칸마다 마지막으로 열거나 그 안을 누르거나 초점을 둔 순번. */
-const layerTouched: Record<LayerKey, number> = { book: 0, local: 0, interview: 0, detail: 0, map: 0 };
+const layerTouched: Record<LayerKey, number> = { book: 0, local: 0, interview: 0, detail: 0, map: 0, path11: 0 };
 let layerSeq = 0;
 /** 지도 상세에서 고른 표시와 가까운 후보의 열쇠. */
 let mapPick: string | null = null;
@@ -408,7 +408,7 @@ function topbar(): string {
     <div class="brand"><span class="logo">Scitrade</span><span class="sub">시제품 · 모든 숫자는 가상값 · 빌드 ${esc(BUILD_ID)}</span></div>
     <label class="scenario">시나리오
       <select data-action="scenario">
-        ${ALL_SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
+        ${LOADABLE_SCENARIO_IDS.map((id) => `<option value="${id}" ${id === config.id ? 'selected' : ''}>${esc(SCENARIO_TITLES[id])}</option>`).join('')}
       </select>
     </label>
     <div class="actions">
@@ -596,14 +596,14 @@ function offerBoard(): string {
       <tr><th>운임 (선지급)</th><td>−${usd(q.freight)}</td></tr>
       <tr><th>관세 (가상 세율 ${config.terms.dutyRateBasisPoints / 100}% · 상품 송장 기준)</th><td>−${usd(q.duty)}</td></tr>
       <tr><th>판매 (${quantity}${esc(unitKo(g))} × ${usd(sell.unitPriceMinor)})${q.lateOnNextSailing ? ' − 지연 감액' : ''}</th><td>+${usd(q.sale)}</td></tr>`;
-    const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id, ...(config.operations ? { quantity } : {}) };
+    const cmd: Command = { id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: buy.id, sellOfferId: sell.id, ...(config.operations ? { quantity, ...opsScreens!.path11Term(config, ui, key) } : {}) };
     offerCommands[`${buy.id}+${sell.id}`] = cmd;
     const space = cargoSpace(config, buy.goodId, quantity);
     cards.push(`
     <article class="offer">
       <h3><span class="kind kind-trade">직접 무역</span> ${esc(qtyKo(buy.goodId, quantity))} · ${esc(cityName(config, buy.cityId))} → ${esc(cityName(config, sell.cityId))}</h3>
       <p class="report-line">📋 <b>${esc(by?.nameKo ?? '직원')}의 보고</b> — “${esc(cityName(config, buy.cityId))} 공급자가 ${esc(g.nameKo)} ${quantity}${esc(unitKo(g))}을(를) 내놨고, ${esc(cityName(config, sell.cityId))} 고객이 같은 수량을 원합니다. 납기 ${deadline}일, 계약상 대금일은 ${due}일입니다.”</p>
-      ${config.operations ? opsScreens!.quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity, quoteCheck(q, cmd).status !== 'APPLIED' ? `quote-reason-${key}` : undefined) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? opsScreens!.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
+      ${config.operations ? opsScreens!.quantityControl(key, q as OperationsQuotePreview, config, buy.goodId, buy.quantity, quoteCheck(q, cmd).status !== 'APPLIED' ? `quote-reason-${key}` : undefined) : ''}${config.operations ? opsScreens!.path11Credit(view, config, ui, key, quantity) : ''}${quoteBlock(q, rows, cmd, [`화물 공간 ${fmtKg(space.massGrams)} · ${fmtM3(space.volumeLiters)}`, ...(config.operations ? opsScreens!.operationsQuoteFacts(q as OperationsQuotePreview, view, config) : [])], Math.min(buy.validUntilDay, sell.validUntilDay), `${buy.id}+${sell.id}`, buy.cityId)}
     </article>`);
   }
   for (const offer of visibleForwardingOffers(view, config)) {
@@ -890,7 +890,8 @@ function settlementBlock(): string {
     const first = Math.min(...rows.map((o) => o.incurredDay)), last = Math.max(...rows.map((o) => o.incurredDay));
     unpaid.push(`<p>남은 미지급 ${esc(standing.currency)}: ${esc(formatMoney(standing.currency, rows.reduce((a, o) => a + o.amountMinor, 0)))} — ${rows.length}건, ${first === last ? first : `${first}~${last}`}일 발생</p>`);
   }
-  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? opsScreens!.operationsSettlement(sum) : ''}<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div><p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
+  const books = `<p>통화마다 따로 결산합니다. USD와 KRW는 더하지 않습니다.</p><div class="books">${sum.byCurrency.map((st) => `<table class="money"><caption>결산 · ${esc(st.currency)}</caption>${settlementRows(st, config).map(([label, value, total]) => `<tr${total ? ' class="total"' : ''}><th>${esc(label)}</th><td>${esc(formatMoney(st.currency, value))}</td></tr>`).join('')}</table>`).join('')}</div>`;
+  return `<div class="settlement"><h3 id="settlement-h" tabindex="-1">${sum.operations?.outcome === 'FAILED' ? `${sum.operations.failure!.day}일 마감 결산` : `${sum.campaignDays}일 결산`}</h3>${config.operations ? opsScreens!.operationsSettlement(sum) : ''}${config.operations ? opsScreens!.path11Settlement(state, config, sum.operations?.failure?.day ?? sum.campaignDays, ui, books) : books}<p>계약 ${c.total}건 — 수금 완료 ${c.completed}건 · 인도 뒤 수금 대기 ${c.awaitingPayment}건 · 진행 중 ${c.inProgress}건 · 취소 ${c.cancelled}건</p>${deliveryRateBlock()}<p>받지 못한 대금: ${sum.openInvoices.map((i) => `${contractLink(i.contractId)} ${i.dueDay}일 ${esc(formatMoney(i.currency, i.amountMinor))}`).join(', ') || '없음'}</p>${unpaid.join('') || '<p>남은 미지급: 없음</p>'}${sum.unpaidObligations.length ? `<details class="muted small"><summary>남은 미지급 목록 (${sum.unpaidObligations.length}건)</summary><ul>${sum.unpaidObligations.map((o) => `<li>${esc(obligationLineKo(o))} ${esc(formatMoney(o.currency, o.amountMinor))}</li>`).join('')}</ul></details>` : ''}</div>`;
 }
 
 function reportPanel(): string {
@@ -944,7 +945,7 @@ function reportPanel(): string {
         <tr><td colspan="2" class="muted small">${esc(krwReportNoteKo(config))}</td></tr>
       </table>
     </div>
-    ${operationsBlock()}
+    ${config.operations ? opsScreens!.path11Report(state, config, ui) : ''}${operationsBlock()}
     <div class="why"><h3>현금과 이익이 다른 이유</h3><ul>${why.map((w) => `<li>${w}</li>`).join('')}</ul></div>
   </section>`;
 }
@@ -995,7 +996,7 @@ function commandLabel(c: Command): string {
       return `${employeeName(c.employeeId)} 일반 훈련`;
     case 'ACCEPT_TRADE': {
       const buy = offerDef(view, config, c.buyOfferId);
-      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, c.quantity ?? buy.quantity) : c.buyOfferId})${planLabel(c.plan)}`;
+      return `직접 무역 수락·매입 (${buy ? qtyKo(buy.goodId, c.quantity ?? buy.quantity) : c.buyOfferId})${planLabel(c.plan)}${config.operations ? opsScreens!.path11CommandLabel(config, c) : ''}`;
     }
     case 'ACCEPT_FORWARDING': {
       const o = offerDef(view, config, c.offerId);
@@ -1085,6 +1086,7 @@ function openLayers(): { key: LayerKey; within: string; opener: () => HTMLElemen
   const dt = ui.detailId;
   if (dt && dt === ui.selectedCard && document.getElementById(`growth-${dt}`)) layers.push({ key: 'detail', within: `#growth-${dt}, [data-action="detail"][data-emp="${dt}"]`, opener: () => app.querySelector<HTMLElement>(`[data-action="detail"][data-emp="${dt}"]`) });
   if (document.getElementById('map-detail')) layers.push({ key: 'map', within: '#map-detail, #map-pick, [data-map-frame]', opener: () => document.getElementById('map-pick') });
+  if (ui.path11DialogOpen) layers.push({ key: 'path11', within: '#p11-dialog', opener: () => app.querySelector<HTMLElement>('[data-action="p11-dialog"]') });
   return layers;
 }
 /** 누르거나 초점을 둔 곳이 열린 칸 안이면 그 칸을 맨 위로 올린다. */
@@ -1114,6 +1116,7 @@ function closeTopLayer(ev: KeyboardEvent) {
   if (top.key === 'book') ui.cultureBookOpen = false;
   if (top.key === 'interview') ui.interviewId = null;
   if (top.key === 'detail') ui.detailId = null;
+  if (top.key === 'path11') ui.path11DialogOpen = false;
   if (top.key === 'map') { mapPick = null; mapNear = []; }
   render(true);
   revealOpener(top.opener() ?? document.getElementById('crew-h'));
@@ -1170,6 +1173,7 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
   for (const key of Object.keys(ui.offerQuantities)) {
     if (key.split('+').some((id) => view.offers.find((o) => o.id === id)?.status !== 'OPEN')) delete ui.offerQuantities[key];
   }
+  const path11 = opsScreens?.path11Render(false, app, state, view, config, ui) ?? '';
   const previousMarket = document.getElementById('market-scroll');
   const marketScrollLeft = previousMarket?.scrollLeft;
   const previousInvestment = document.getElementById('investment-details') as HTMLDetailsElement | null;
@@ -1194,7 +1198,8 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
       ${config.culture ? `<div class="maincol">${ui.cultureOpen ? culturePanel!.culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus) : ''}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
-    </main>`;
+    </main>${path11}`;
+  opsScreens?.path11Render(true, app, state, view, config, ui);
   const marketScroll = document.getElementById('market-scroll');
   if (marketScroll && marketScrollLeft !== undefined) marketScroll.scrollLeft = marketScrollLeft;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
@@ -1336,6 +1341,7 @@ app.addEventListener('click', (ev) => {
   activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
   try {
+    if (opsScreens?.path11Handle(d.action, app, ui, render, markOpened, revealOpener)) return;
     switch (d.action) {
       case 'situation':
         enteringScenario = true;
@@ -1429,7 +1435,7 @@ app.addEventListener('click', (ev) => {
         return;
       }
       case 'accept':
-        return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell!, ...(config.operations ? { quantity: ui.offerQuantities[`${d.buy}+${d.sell}`] ?? offerDef(view, config, d.buy!)!.quantity } : {}) });
+        return queue({ id: newId('ACCEPT'), type: 'ACCEPT_TRADE', buyOfferId: d.buy!, sellOfferId: d.sell!, ...(config.operations ? { quantity: ui.offerQuantities[`${d.buy}+${d.sell}`] ?? offerDef(view, config, d.buy!)!.quantity, ...opsScreens!.path11Term(config, ui, `${d.buy}+${d.sell}`) } : {}) });
       case 'expand-warehouse':
         return queue({ id: newId('EXPAND'), type: 'EXPAND_WAREHOUSE' });
       case 'sign-space-contract':
@@ -1537,6 +1543,7 @@ app.addEventListener('keydown', (ev) => {
 });
 
 app.addEventListener('change', async (ev) => {
+  if (opsScreens?.path11Change(ev, view, config, ui, render, liveStatus, liveRegionText)) return;
   const el = ev.target as HTMLInputElement | HTMLSelectElement;
   if (el.dataset.action === 'scenario') {
     if (!confirm('시나리오를 바꾸면 현재 진행과 오늘 할 일이 사라집니다. 바꿀까요?')) {

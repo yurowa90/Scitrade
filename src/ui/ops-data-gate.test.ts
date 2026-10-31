@@ -50,7 +50,8 @@ function missing(data: Awaited<ReturnType<typeof fresh>>['data']) { expect(data.
 describe('TASK-0076 화면 자료 관문', () => {
   it('기본 첫 렌더 SHA와 3일 진행은 자료 없이 성공한다', async () => {
     const ctx = await fresh();
-    const html = ctx.ui.app.innerHTML.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev');
+    expect(ctx.ui.app.innerHTML.match(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g)).toHaveLength(1);
+    const html = ctx.ui.app.innerHTML.replace(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g, '').replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev');
     const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html)))].map((n) => n.toString(16).padStart(2, '0')).join('');
     expect(digest).toBe('06654dd41520d48e0c625f5b9fd45c130ce434d8e761c76b13c63ab34927c05e');
     for (let i = 0; i < 3; i++) await ctx.ui.click({ action: 'end-day' });
