@@ -1,6 +1,12 @@
 # TASK-0077 경로 11 화면(②-c): 외상 비교·묶이는 돈·중간 재무상태·원화 결산·놓친 견적·시나리오 선택
 
 - **지위: 승인(허브, 2026-10-31, 개정 1 + 허브 개정 2).** 사전 검수 22건(`PRECHECK-0077-HUB-2026-10-31.md`) 반영 확인. 이전 지위 표기: 개정 1(세션 B, 2026-10-31). 허브 사전 검수 `docs/ai/tasks/PRECHECK-0077-HUB-2026-10-31.md`(22건, 중대 13)를 반영했다. 허브 승인 전에는 Codex에 넘기지 않는다.**
+  - **허브 개정 3(2026-10-31, 1차 멈춤 뒤).** 1차 실행은 허브 개정 2가 TASK-0076이 새로 더한 시험을 다시 grep하지 않아 멈췄다(허브 몫의 누락).
+    - **`src/ui/ops-data-gate.test.ts:53-55`**(TASK-0076이 더한 전체 HTML 해시, select 포함)를 0절 고정 해시 목록과 2절 표, 1절 9 예외에 더한다. 허용하는 변경은 `:53` replace 사슬에 새 option 한 조각 제거와 그 조각이 정확히 한 번 있었다는 단언뿐이다. 해시 `06654dd4…`는 바꾸지 않는다.
+    - 같은 파일 `:46`의 `select(...)` 비교는 같은 세션 전·후 비교라 영향이 없다.
+    - 허브가 다시 grep한 결과(`rg -ln 'data-action="scenario"|ALL_SCENARIO_IDS|LOADABLE_SCENARIO_IDS|innerHTML' --glob '*.test.ts' src`, 15파일), 0절·개정 3 밖에서 select 전체 HTML을 고정하는 시험은 더 없다. 그래도 그 밖의 시험이 깨지면 멈춘다.
+    - **TASK-0076의 지연 전용 export 탐지**(`src/engine/first-screen-split.test.ts`, 허용 집합 `{ setOpsData }`)가 새 안전장치다. 화면 코드가 첫 화면에서 쓰지 않던 첫 화면 함수를 지연 쪽에서 처음 부르면 이 시험이 실패한다. 이것은 의도한 동작이다(첫 사용 비용). 5.2 허용 목록 밖 함수가 필요해 실패하면 멈추고 보고한다.
+    - 5.2 정정: `creditTermOptions`는 TASK-0076 D로 `src/engine/readers-lazy.ts`(지연)로 옮겨졌다. 지연 청크 안에서 부르는 것은 첫 화면 비용이 아니다.
   - **허브 개정 2(2026-10-31, TASK-0076 병합 780ec75 뒤 재확인).** 아래 ‘0076 뒤 사실’이 0절·3.6의 옛 서술보다 우선한다.
     - `main.ts:43`은 이제 `SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, scenarioTitle(id)]))`이다. `scenarioTitle`(`src/content/scenario.ts`)은 운영 자료 없이 제목을 읽는다. select는 `:411`의 `ALL_SCENARIO_IDS.map(...)`이다.
     - 시나리오 고른 뒤 운영 판별은 `loadScenario(id).operations`가 아니라 `isOperationsScenario(id)`다(`main.ts` 시나리오 선택 처리).
