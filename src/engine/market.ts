@@ -4,7 +4,7 @@ import { cargoSpace, routeBetween } from './catalog';
 import { drawUniform } from './rng';
 import type { GameState, MarketBatch, MarketSide, OfferDef, ScenarioConfig } from './types';
 
-const halfUp = (n: number, d: number) => Math.floor((n + d / 2) / d);
+export const halfUp = (n: number, d: number) => Math.floor((n + d / 2) / d);
 
 export function batchZero(config: ScenarioConfig): MarketBatch {
   const m = config.operations!.market;
@@ -92,19 +92,7 @@ export function openTradePairs(state: GameState, config: ScenarioConfig): { buyO
     .map((sell) => ({ buyOfferId: buy.id, sellOfferId: sell.id })));
 }
 
-export function marketTable(state: GameState, config: ScenarioConfig) {
-  if (!state.operations || !config.operations) return [];
-  const batch = state.operations.batches.filter((b) => b.publishDay <= state.day).at(-1)!;
-  const next = batch.publishDay + config.operations.market.publish.intervalDays;
-  return batch.rows.map((r) => {
-    const indexBp = batch.index.find((i) => i.goodId === r.goodId)!.bp;
-    return { cityId: r.cityId, goodId: r.goodId, side: r.side, basePriceMinor: r.basePriceMinor, currency: rowCurrency(config, r.side),
-      indexPoints: halfUp(indexBp, 100), indexBp, observedDay: batch.publishDay, ageDays: state.day - batch.publishDay,
-      nextObservationDay: next <= config.operations!.market.publish.lastDay ? next : null,
-      hasQuoteInBatch: batch.offerIds.some((id) => { const o = offerDef(state, config, id)!;
-        return o.goodId === r.goodId && o.cityId === r.cityId && o.kind === (r.side === 'BUY' ? 'supplier' : 'customer'); }) };
-  });
-}
+
 
 export function prepWorkUnitsFor(config: ScenarioConfig, offer: OfferDef, quantity: number): number {
   if (!config.operations) return offer.kind === 'forwarding' ? config.terms.forwardingPrepWorkUnits : config.terms.prepWorkUnits;

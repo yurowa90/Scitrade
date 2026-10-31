@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, commitDay, openDay, planState } from './engine';
-import { batchZero, generateBatch, marketTable, offerDef, openTradePairs, prepWorkUnitsFor } from './market';
+import { batchZero, generateBatch, offerDef, openTradePairs, prepWorkUnitsFor } from './market';
+import { marketTable } from './market-lazy';
 import { createRng, drawUniform } from './rng';
 import { deserializeSave, serializeSave } from './save';
 import { runDays } from './testkit';

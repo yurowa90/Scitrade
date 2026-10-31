@@ -3,7 +3,8 @@ import { loadRiskProfile, loadScenario, OPERATIONS_SCENARIO_IDS, riskProfiles } 
 import { dutyEstimate, listSailings, routeBetween, routeOf } from './catalog';
 import { commitDay, createGame, openDay, planState } from './engine';
 import { balance, contractAmount, post } from './ledger';
-import { marketTable, offerDef, openTradePairs } from './market';
+import { offerDef, openTradePairs } from './market';
+import { marketTable } from './market-lazy';
 import marketRulesData from '../../data/market_rules.json';
 import { applyBasisPoints, formatMoney, type Currency } from './money';
 import { dailyKrwDue, exchangeAmounts, paymentDefaultStatus, usdLotKrw } from './operations';

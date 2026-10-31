@@ -1,3 +1,4 @@
+import '../../content/ops-data-entry';
 import { EXPERIMENT_SCENARIO_IDS, OPERATIONS_SCENARIO_IDS, loadCreditProfile } from '../../content/scenario';
 import type { RiskLevel, RiskLevelV2 } from './risk-metrics';
 import { riskCompareTables } from './risk-tables';
