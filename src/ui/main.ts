@@ -38,7 +38,7 @@ declare const __BUILD_ID__: string | undefined;
 const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 
 const SAVE_KEY = 'scitrade-save';
-/** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 판본 1은 엔진이 명시적으로 이관한다. */
+/** M1 시제품이 쓰던 저장 칸. 불러오기만 하며, 저장 형식 1~6은 엔진이 명시 문구로 거절한다. */
 const LEGACY_SAVE_KEY = 'scitrade-m1-save';
 const SCENARIO_TITLES = Object.fromEntries(ALL_SCENARIO_IDS.map((id) => [id, loadScenario(id).titleKo])) as Record<AnyScenarioId, string>;
 

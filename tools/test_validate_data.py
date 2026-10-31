@@ -1121,6 +1121,17 @@ class DataDrivenMainTest(unittest.TestCase):
 
 
 class MarketRulesTest(unittest.TestCase):
+    def test_risk_setup_rejections(self):
+        for field, value, message in (
+                ('level', 'R3', 'risk_setup.level은 R4여야 함'),
+                ('profile_id', 'MISSING', 'risk_setup.profile_id는 외상 칸이 모두 있는 위험 프로필이어야 함'),
+                ('base_scenario_id', 'SCENARIO_M2_OPERATIONS', 'risk_setup.base_scenario_id는 실험 시나리오여야 함')):
+            with self.subTest(field=field):
+                d, t = self.fixtures()
+                row = t['scenarios']['SCENARIO_M2_OPS_CREDIT']
+                (row if field == 'base_scenario_id' else row['risk_setup'])[field] = value
+                self.assertIn(row['id'] + ': ' + message, self.errors(d, t))
+
     def test_sale_margin_k_range(self):
         message = 'risk_profiles: RISK_PROFILE_V2: sale_margin_k: -2~3 정수여야 함'
         for value in (4, 2.5, '1', -3, True):
@@ -1286,7 +1297,7 @@ class MarketRulesTest(unittest.TestCase):
         new_parties.update(g['buy_counterparty_id'] for r in rules for g in r['trade']['goods'])
         added_parties = new_parties - old_parties
         added_goods = {g['good_id'] for g in rules[1]['trade']['goods']} - {g['good_id'] for g in old['trade']['goods']}
-        for sid in validator.EXPERIMENT_SCENARIO_IDS:
+        for sid in (*validator.EXPERIMENT_SCENARIO_IDS, 'SCENARIO_M2_OPS_CREDIT'):
             del t['scenarios'][sid]
         for oid in set(scenarios[0]['offer_ids']) - set(base['offer_ids']):
             del t['market_offers'][oid]

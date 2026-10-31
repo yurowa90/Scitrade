@@ -991,6 +991,19 @@ def check_credit_profile(p, rules):
 def check_market_rules(documents, tables):
     """반복 시장과 운영 시나리오의 참조·경제 조건을 검사한다."""
     market = documents['market_rules']
+    for sid in tables['scenarios']:
+        scenario = resolve_scenario(tables['scenarios'], sid)
+        setup = scenario.get('risk_setup')
+        if setup is None:
+            continue
+        check(setup.get('level') == 'R4', f'{sid}: risk_setup.level은 R4여야 함')
+        profile = next((p for p in market['risk_profiles'] if p['id'] == setup.get('profile_id')), None)
+        check(profile is not None and all(k in profile for k in ('credit_terms', 'credit_limit_unit_minor', 'credit_limits'))
+              and all(k in profile.get('collections', {}) for k in ('carry_bp_per_day', 'recovery_bp'))
+              and {g['grade'] for g in profile.get('collections', {}).get('grades', []) if 'p_default_bp' in g} == {'A', 'B', 'C'},
+              f'{sid}: risk_setup.profile_id는 외상 칸이 모두 있는 위험 프로필이어야 함')
+        check(scenario.get('base_scenario_id') in EXPERIMENT_SCENARIO_IDS,
+              f'{sid}: risk_setup.base_scenario_id는 실험 시나리오여야 함')
     names = {p['id'] for p in market['counterparties']}
     party_counts = {}
     for party in market['counterparties']:
@@ -1210,7 +1223,7 @@ def main():
     curriculum = index(documents['curriculum_links']['links'], 'curriculum')
     source_ids = set(tables['sources'])
     expected_counts = {'world': 21, 'goods': 9, 'routes': 6, 'employees': 6,
-                       'market_offers': 7, 'scenarios': 10, 'securities': 4,
+                       'market_offers': 7, 'scenarios': 11, 'securities': 4,
                        'events': 6, 'culture_activities': 6, 'venues': 5, 'contacts': 2,
                        'observed_fx_sample': 10, 'characters': 60, 'organization': 7,
                        'job_templates': 6, 'team_synergies': 3, 'ui_screens': 15}
