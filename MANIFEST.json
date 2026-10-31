@@ -3252,8 +3252,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 30450,
-      "sha256": "ebd970b96fc496e1d24dd8cf058cd1e11e0743657e7ad68068bee70f38a68caf"
+      "size_bytes": 30510,
+      "sha256": "dbabfd8cca0c27d06f3efcd7224f0665727e881a3e92cf34566b0ec64942706b"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3764,6 +3764,11 @@
       "path": "docs/ai/tasks/TASK-0077-R1-resume.md",
       "size_bytes": 4404,
       "sha256": "f4088a27571e5f01c6896862e7958f7d52efbe3b50fdadf827fec3eef97d62ed"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0077-R2-card-height.md",
+      "size_bytes": 2509,
+      "sha256": "bc8f3f7d98bd2e9c3c67cf6a2065e494e9d7610c407e593f721c478686d707bb"
     },
     {
       "path": "docs/ai/tasks/TASK-0077-path11-screens.md",
