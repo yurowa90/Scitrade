@@ -3641,6 +3641,11 @@
       "sha256": "6703eb3ccbcb61d478196359cf1958ad9ec70596bbdea5f40877239d063888ce"
     },
     {
+      "path": "docs/ai/tasks/TASK-0075-path11-readers.md",
+      "size_bytes": 15822,
+      "sha256": "cc2bb2b71e48188965d4673898221d6165f42020cce369065a8d837107e0821b"
+    },
+    {
       "path": "docs/ai/tasks/TEXT-0001-copy-audit.md",
       "size_bytes": 3431,
       "sha256": "03971f8f1f446fe88a90ad72b75cd107f469409c25470012cdafbb83ea1eae6a"
