@@ -1,5 +1,5 @@
 import type { OfferDef, MarketBatch, OperationsState, DefaultEvent } from './types';
-// 저장은 외부 입력이다. 이관한 판본 6의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
+// 저장은 외부 입력이다. 판본 7의 필수 필드·배열 원소까지 확인한 뒤 엔진에 넘긴다.
 import { ACCOUNT_KIND } from './ledger';
 import { MINOR_PER_MAJOR } from './money';
 import type { GameState, DayPhase, OfferState, Contract, CargoLot, Booking, Task,
@@ -65,6 +65,8 @@ const defaultEvent = obj({ day: int, level: enumShape('defaultLevel'), obligatio
 const unpaid = array(obj({ currency, amountMinor: int, count: int }));
 const stateShape = obj({
   operations: nullable(obj({
+    unaffordable: optional(array(obj({ day: int, buyOfferId: str, sellOfferId: str, quantity: int,
+      shortfalls: array(obj({ currency, needMinor: int, availableMinor: int })) }))),
     batches: array(obj({ k: int, publishDay: int, index: array(obj({ goodId: str, bp: int, stepPct: ni })),
       destinations: nullable(array(obj({ goodId: str, cityId: str }))),
       rows: array(obj({ cityId: str, goodId: str, side: enumShape('marketSide'), basePriceMinor: int, regionalPct: int })),
@@ -142,4 +144,10 @@ const stateShape = obj({
 
 export function checkSaveShape(value: unknown): asserts value is GameState {
   stateShape(value, 'state');
+  const s = value as GameState;
+  if (s.meta.rulesVersion === 'M2a-rules-4') {
+    if (!Array.isArray(s.operations?.unaffordable)) throw new Error('state.operations.unaffordable: 배열이 필요합니다.');
+  } else if (s.operations && Object.hasOwn(s.operations, 'unaffordable')) {
+    throw new Error('state.operations.unaffordable: 규칙 4에서만 허용합니다.');
+  }
 }

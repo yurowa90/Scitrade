@@ -1,5 +1,5 @@
 // 새 게임과 저장 읽기는 같은 화면 초기값을 사용한다. 게임 상태는 엔진만 소유한다.
-import { loadScenario, ALL_SCENARIO_IDS, type AnyScenarioId } from '../content/scenario';
+import { loadScenario, LOADABLE_SCENARIO_IDS, type AnyScenarioId } from '../content/scenario';
 import { commitDay, openDay } from '../engine/engine';
 import { deserializeSave, SaveError } from '../engine/save';
 import type { Command, CommitPlan, GameState, ScenarioConfig } from '../engine/types';
@@ -28,7 +28,7 @@ export function loadSaveText(text: string): { config: ScenarioConfig; state: Gam
   try {
     let peek: { scenarioId?: string } | null;
     try { peek = JSON.parse(text); } catch { throw new SaveError('저장 파일을 읽을 수 없습니다 (JSON 형식 오류).'); }
-    if (!peek?.scenarioId || !(ALL_SCENARIO_IDS as readonly string[]).includes(peek.scenarioId)) {
+    if (!peek?.scenarioId || !(LOADABLE_SCENARIO_IDS as readonly string[]).includes(peek.scenarioId)) {
       throw new SaveError('이 시제품의 시나리오 저장이 아닙니다.');
     }
     const config = loadScenario(peek.scenarioId as AnyScenarioId);

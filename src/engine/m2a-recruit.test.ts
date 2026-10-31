@@ -314,29 +314,11 @@ describe('P0-M2A-04 고용: 계약금 한 번, 다음 날부터 배정·급여',
 });
 
 describe('저장 이관·기준 경로·불변 조건', () => {
-  it('판본 2를 4로 연쇄 이관하되 경제 값을 유지하고 후보 없는 저장의 영입을 거절한다', () => {
-    const legacyConfig: ScenarioConfig = { ...config, recruitment: null, employees: config.employees.slice(0, 2) };
-    const original = until(2, { ...legacyConfig, growth: null }, { 1: [trade('EMP01')] });
-    const file = JSON.parse(serializeSave(original));
-    file.formatVersion = 2;
-    delete file.state.recruitment;
-    for (const e of file.state.employees) delete e.availableFromDay;
-    for (const t of file.state.tasks) delete t.subjectId;
-    const restored = deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
-    expect(SAVE_FORMAT_VERSION).toBe(6);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(SAVE_FORMAT_VERSION);
-    expect(restored).toEqual(original);
-    for (const currency of ['KRW', 'USD'] as const) {
-      expect(summarize(restored.ledger, currency)).toEqual(summarize(original.ledger, currency));
-    }
-    expect(restored.cargoLots).toEqual(original.cargoLots);
-    expect(restored.tasks).toEqual(original.tasks);
-    expect(restored.bookings).toEqual(original.bookings);
-    const p = plan(restored, [scout(), quest(), hire()]);
-    expect(p.results.every((r) => r.status === 'REJECTED' && r.reasonKo.includes('후보 정보가 없습니다'))).toBe(true);
-    expect(runDays(restored, config, 5).state).toEqual(runDays(original, legacyConfig, 5).state);
-    checkInvariants(restored, config);
+  it('판본 2는 새 문구로 거절한다', () => {
+    const file = { ...JSON.parse(serializeSave(createGame(config))), formatVersion: 2 };
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(`이전 저장 형식(판본 ${2})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
+  it('현재 저장 판본은 7이다', () => { expect(SAVE_FORMAT_VERSION).toBe(7); });
 
   it('M1은 세 영입 명령을 모두 거절하며 업무·장부가 바뀌지 않는다', () => {
     const m1 = loadScenario('SCENARIO_M1_ONE_TRADE');

@@ -11,6 +11,14 @@ export function operationsProblems(s: GameState, config: ScenarioConfig, closing
   if ((s.operations !== null) !== (config.operations !== null)) problems.push('설정과 상태의 operations 유무가 다릅니다');
   const o = s.operations, c = config.operations;
   if (!o || !c) return problems;
+  const seen = new Set<string>();
+  let previousDay = 0;
+  for (const row of o.unaffordable ?? []) {
+    const key = JSON.stringify([row.day, row.buyOfferId, row.sellOfferId]);
+    if (row.day < previousDay || row.day > s.day || seen.has(key)) problems.push('놓친 견적의 날짜 순서·현재 날짜·짝 중복이 올바르지 않습니다');
+    previousDay = row.day;
+    seen.add(key);
+  }
   for (const inv of s.invoices) {
     const received = receivedForInvoice(s, inv.id);
     if (received > inv.amountMinor) problems.push(`${inv.id}: 받은 금액(${received})이 청구액(${inv.amountMinor})을 넘습니다`);

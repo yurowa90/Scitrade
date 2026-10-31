@@ -209,7 +209,7 @@ describe('TASK-0067a 외상 판정', () => {
 describe('TASK-0067a 저장·불변식', () => {
   it('형식 6 rules-4 외상 계약 왕복·rules-3 기대 판본 거절', () => {
     const f = fixture(), r = accept(f, 'D30'); expect(r.results[0]!.status).toBe('APPLIED');
-    const text = serializeSave(r.state); expect(JSON.parse(text).formatVersion).toBe(6);
+    const text = serializeSave(r.state); expect(JSON.parse(text).formatVersion).toBe(7);
     expect(serializeSave(deserializeSave(text, { config: f.c, dataVersion: f.c.dataVersion, rulesVersion: 'M2a-rules-4' }))).toBe(text);
     const c3 = withRiskLevel(base(), 'R3', loadRiskProfile('RISK_PROFILE_DEFAULT'));
     expect(() => deserializeSave(text, { config: c3, dataVersion: c3.dataVersion, rulesVersion: 'M2a-rules-3' })).toThrow('이 시나리오의 규칙은 M2a-rules-3이며');

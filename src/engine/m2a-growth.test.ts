@@ -308,44 +308,14 @@ describe('기준 경로·판본 이관·불변 조건', () => {
     checkInvariants(s, config);
   });
 
-  it.each([1, 2, 3, 4])('판본 %i의 누락 필드를 복원하고 성장 활성 판본 2·3에서 소급 보상하지 않는다', (version) => {
-    const cfg = version === 1 ? loadScenario('SCENARIO_M1_ONE_TRADE') : fixtureConfig();
-    if (cfg.employees[0]!.growth) cfg.employees[0]!.growth.startXp = 90;
-    const s = until(2, { ...cfg, growth: null }, { 1: [trade()] });
-    const file = JSON.parse(serializeSave(s));
-    file.formatVersion = version;
-    delete file.state.culture;
-    if (version <= 3) {
-      delete file.state.xpAwards;
-      delete file.state.xpAwardAmounts;
-      for (const e of file.state.employees) delete e.xp;
-    }
-    if (version <= 2) {
-      delete file.state.recruitment;
-      for (const e of file.state.employees) delete e.availableFromDay;
-      for (const t of file.state.tasks) delete t.subjectId;
-    }
-    if (version === 1) {
-      for (const c of file.state.contracts) delete c.serviceOfferId;
-      for (const l of file.state.cargoLots) delete l.ownerPartyId;
-    }
-    const restored = deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg });
-    expect(SAVE_FORMAT_VERSION).toBe(6);
-    expect(JSON.parse(serializeSave(restored)).formatVersion).toBe(SAVE_FORMAT_VERSION);
-    expect(restored).toEqual(s);
-    expect(employee(restored).xp).toBe(cfg.employees[0]!.growth?.startXp ?? 0);
-    expect(restored.xpAwards).toEqual({});
-    if (version !== 1) expect(runDays(restored, cfg, 3).state.xpAwards).toEqual({});
-    checkInvariants(restored, cfg);
+  it.each([1, 2, 3, 4])('판본 %i은 새 문구로 거절한다', (version) => {
+    const file = { ...JSON.parse(serializeSave(createGame(config))), formatVersion: version };
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(`이전 저장 형식(판본 ${version})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('판본 3 이관은 저장 시나리오의 직원 정의를 기본으로 찾는다', () => {
-    const file = JSON.parse(serializeSave(createGame(config)));
-    file.formatVersion = 3;
-    delete file.state.xpAwards;
-    delete file.state.xpAwardAmounts;
-    for (const e of file.state.employees) delete e.xp;
-    expect(deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toEqual(createGame(config));
+  it('판본 3은 새 문구로 거절한다', () => {
+    const file = { ...JSON.parse(serializeSave(createGame(config))), formatVersion: 3 };
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(`이전 저장 형식(판본 ${3})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
   it('경험치 불일치·지급액 누락·중단 업무 보상·훈련비 중복을 탐지한다', () => {
@@ -424,30 +394,26 @@ describe('재작업 1 회귀 방어', () => {
     return file;
   }
 
-  it('판본 3 이관은 전달한 설정의 0이 아닌 시작 경험치를 사용한다', () => {
-    const cfg = structuredClone(config);
-    cfg.employees[0]!.growth!.startXp = 90;
-    const restored = deserializeSave(JSON.stringify(oldSave(cfg)), { dataVersion: cfg.dataVersion, config: cfg });
-    expect(employee(restored).xp).toBe(90);
-    expect(restored).toEqual(createGame(cfg));
+  it('판본 3은 새 문구로 거절한다', () => {
+    const file = { ...JSON.parse(serializeSave(createGame(config))), formatVersion: 3 };
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(`이전 저장 형식(판본 ${3})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('판본 3은 다른 시나리오 설정과 직원 정의 누락을 SaveError로 거절한다', () => {
-    const file = oldSave();
-    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config });
-    const other = { ...config, id: 'OTHER' };
-    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: other }))
-      .toThrow(/이관 설정과 저장 시나리오가 다릅니다/);
-    file.state.employees[0].id = 'MISSING';
-    expect(load).toThrow(SaveError);
-    expect(load).toThrow(/직원 정의가 없습니다/);
+  it('판본 7은 다른 시나리오 설정을 거절하고 판본 3은 새 문구로 거절한다', () => {
+    const file = JSON.parse(serializeSave(createGame(config)));
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: { ...config, id: 'OTHER' } });
+    expect(load).toThrow('이관 설정과 저장 시나리오가 다릅니다.');
+    file.formatVersion = 3;
+    expect(load).toThrow(`이전 저장 형식(판본 ${3})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it.each([1, 2, 3, 4])('판본 %i의 알 수 없는 시나리오를 SaveError로 거절한다', (version) => {
-    const file = oldSave();
-    file.formatVersion = version;
+  it.each([1, 2, 3, 4])('판본 7의 알 수 없는 시나리오와 옛 판본 %i를 거절한다', (version) => {
+    const file = JSON.parse(serializeSave(createGame(config)));
     file.scenarioId = 'MISSING';
-    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion })).toThrow(SaveError);
+    const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
+    expect(load).toThrow('알 수 없는 저장 시나리오입니다 (MISSING).');
+    file.formatVersion = version;
+    expect(load).toThrow(`이전 저장 형식(판본 ${version})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
   it('훈련 업무 없는 훈련비와 업무 종류가 다른 보상 키를 탐지한다', () => {
@@ -464,7 +430,7 @@ describe('재작업 1 회귀 방어', () => {
     expect(() => checkInvariants(wrongKind, cfg)).toThrow(/보상 종류가 다릅니다/);
   });
 
-  it.each(['지급액 누락', '경험치 불일치', '배열 누락', '직원 모양', '장부 모양', '단계 오류'])('판본 4 %s를 불러올 때 SaveError로 거절한다', (reason) => {
+  it.each(['지급액 누락', '경험치 불일치', '배열 누락', '직원 모양', '장부 모양', '단계 오류'])('판본 7 %s를 불러올 때 SaveError로 거절한다', (reason) => {
     const cfg = fixtureConfig();
     const file = JSON.parse(serializeSave(until(1, cfg, { 1: [training()] })));
     if (reason === '지급액 누락') delete file.state.xpAwardAmounts;
@@ -474,17 +440,20 @@ describe('재작업 1 회귀 방어', () => {
     if (reason === '장부 모양') file.state.ledger.entries[0].lines = null;
     if (reason === '단계 오류') file.state.phase = 'INVALID';
     expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
+    file.formatVersion = 4;
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: cfg })).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it.each([1, 2, 3, 4])('판본 %i 이관 결과에도 모양·불변 조건 검사를 한다', (version) => {
+  it.each([1, 2, 3, 4])('판본 7의 모양·불변 조건과 옛 판본 %i 거절을 검사한다', (version) => {
     const cfg = loadScenario('SCENARIO_M1_ONE_TRADE');
     for (const reason of ['shape', 'invariant']) {
-      const file = version === 4 ? JSON.parse(serializeSave(createGame(cfg))) : oldSave(cfg);
-      file.formatVersion = version;
-      delete file.state.culture;
+      const file = JSON.parse(serializeSave(createGame(cfg)));
       if (reason === 'shape') file.state.obligations = null;
       else file.state.ledger.entries[0].lines[0].amount++;
-      expect(() => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg })).toThrow(SaveError);
+      const load = () => deserializeSave(JSON.stringify(file), { dataVersion: cfg.dataVersion, config: cfg });
+      expect(load).toThrow(SaveError);
+      file.formatVersion = version;
+      expect(load).toThrow(`이전 저장 형식(판본 ${version})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
     }
   });
 });
@@ -496,16 +465,18 @@ describe('재작업 2 저장 검증·보상 방어', () => {
     ['state.recruitment.scoutedVenueIds', (s: any) => { s.recruitment.scoutedVenueIds = null; }],
     ['state.employees[0].availableFromDay', (s: any) => { s.employees[0].availableFromDay = '1'; }],
     ['state.ledger.entries[0].lines', (s: any) => { s.ledger.entries[0].lines = {}; }],
-  ] as const)('판본 4 모양 손상 %s를 정확한 경로의 SaveError로 거절한다', (path, corrupt) => {
+  ] as const)('판본 7 모양 손상 %s를 정확한 경로의 SaveError로 거절한다', (path, corrupt) => {
     const file = JSON.parse(serializeSave(createGame(config)));
     corrupt(file.state);
     const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config });
     expect(load).toThrow(SaveError);
     expect(load).toThrow(path);
+    file.formatVersion = 4;
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: config })).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
   it.each(['state.scenarioId', 'state.rulesVersion', 'state.dataVersion', 'config.rulesVersion', 'config.dataVersion'])
-  ('판본 4 메타 정보 불일치 %s를 거절한다', (field) => {
+  ('판본 7 메타 정보 불일치 %s를 거절한다', (field) => {
     const file = JSON.parse(serializeSave(createGame(config)));
     const cfg = structuredClone(config);
     if (field.startsWith('state.')) file.state.meta[field.split('.')[1]!] = 'MISMATCH';
@@ -514,9 +485,11 @@ describe('재작업 2 저장 검증·보상 방어', () => {
     const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: cfg });
     expect(load).toThrow(SaveError);
     expect(load).toThrow('저장 메타 정보와 설정이 다릅니다.');
+    file.formatVersion = 4;
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: cfg })).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
-  it('판본 4는 설정을 전달하지 않는 화면 경로에서도 정상 복원하고 손상을 거절한다', () => {
+  it('판본 7는 설정을 전달하지 않는 화면 경로에서도 정상 복원하고 손상을 거절한다', () => {
     const state = until(1, config, { 1: [training()] });
     const file = JSON.parse(serializeSave(state));
     const load = () => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion });
@@ -524,6 +497,8 @@ describe('재작업 2 저장 검증·보상 방어', () => {
     file.state.offers = [null];
     expect(load).toThrow(SaveError);
     expect(load).toThrow('state.offers[0]');
+    file.formatVersion = 4;
+    expect(() => deserializeSave(JSON.stringify(file), { dataVersion: config.dataVersion, config: config })).toThrow(`이전 저장 형식(판본 ${4})의 저장입니다. 이번 판(판본 7)에서는 열 수 없습니다. 새로 시작해 주세요.`);
   });
 
   it.each([
@@ -573,3 +548,5 @@ describe('재작업 2 저장 검증·보상 방어', () => {
     expect(s).toEqual(before);
   });
 });
+
+it('현재 저장 판본은 7이다', () => { expect(SAVE_FORMAT_VERSION).toBe(7); });

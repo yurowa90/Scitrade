@@ -122,8 +122,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 29254,
-      "sha256": "6a82c36614fecb4d9f03ea1644716bc103ed9d2168161d06d9721cd23465a882"
+      "size_bytes": 29794,
+      "sha256": "1cc27de744f2b0e1d688b30e9ad974a67d20448a270e21f79be5c8c8f8768f4a"
     },
     {
       "path": "data/securities.json",
@@ -207,8 +207,8 @@
     },
     {
       "path": "docs/STATUS.md",
-      "size_bytes": 128245,
-      "sha256": "bcd6c41e7cf9c750703acc1bf8ee67dd4a8521c7419534a18ad03a647b8a4984"
+      "size_bytes": 130105,
+      "sha256": "114153eec2066e07cf0d94d2aefa81d208aa8408686b333401f2cdfc4fb45981"
     },
     {
       "path": "docs/UI_SPEC.md",
@@ -1807,8 +1807,8 @@
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/HUB-DECISIONS-2026-10-16.md",
-      "size_bytes": 106535,
-      "sha256": "eb08f96b775f80f90ccecb4201858a44a9af987699bdef9223171688b0530a52"
+      "size_bytes": 109941,
+      "sha256": "16a3cc6ba6aed12a93c18948f31ed7757a8c968df16e1c0e0e6b77c662e1f92d"
     },
     {
       "path": "docs/ai/design/path3-price-risk-2026-10/NARROW-0066-HUB-2026-10-23.md",
@@ -3167,8 +3167,8 @@
     },
     {
       "path": "docs/ai/tasks/README.md",
-      "size_bytes": 28484,
-      "sha256": "204660de470cde2b76019957904eef40a25fb6e3eb1bfe1f3e0b6a53b9ac1f0e"
+      "size_bytes": 29372,
+      "sha256": "bb1888146690defdb689a9f405b401fe214cae3f7de8001e2ab3717dbc4727ac"
     },
     {
       "path": "docs/ai/tasks/TASK-0001-R1-recruitment-engine-fixes.md",
@@ -3641,9 +3641,19 @@
       "sha256": "1e8bcc36ea1b4f72fa565e177b0327a86a03cbdc76013881ed05808c37d1200d"
     },
     {
+      "path": "docs/ai/tasks/TASK-0074-R1-resume.md",
+      "size_bytes": 3003,
+      "sha256": "e86c227cf7bfae93e30b769e85cf1b7dfc20e7de0ae7420b6bb4a0ee8c50d282"
+    },
+    {
+      "path": "docs/ai/tasks/TASK-0074-R2-resume.md",
+      "size_bytes": 2815,
+      "sha256": "9103d2a83a7bc8462fb63364f405672434e099c249366d926153c59a697fbc16"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0074-rules4-scenario-save7.md",
-      "size_bytes": 26624,
-      "sha256": "f3f6871ecd36fcbece7affbb8a76c4e1f3de9c6001e3dea4e6bb514917865ac7"
+      "size_bytes": 26868,
+      "sha256": "5882827de44f4400c9961c52aac1b4c885b4e5d06ad80be4e1666c5032b41550"
     },
     {
       "path": "docs/ai/tasks/TASK-0075-path11-readers.md",
@@ -4116,6 +4126,11 @@
       "sha256": "80748427b0e9dc5588aa3fe13bbabf48a16cd3105ef6d3ab82420165b005695e"
     },
     {
+      "path": "docs/ai/tasks/results/TASK-0074.md",
+      "size_bytes": 42234,
+      "sha256": "0ac4f42a3615840c39acf3082545f00197593bf6e86eb16b1b07da169b5a42a8"
+    },
+    {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
       "size_bytes": 46699,
       "sha256": "e5bd4711aa45509d513612c0813c6afa364d5a9719f8d67819ddfb3ca5698d85"
@@ -4392,8 +4407,8 @@
     },
     {
       "path": "tests/acceptance_cases.json",
-      "size_bytes": 208445,
-      "sha256": "abde4968cabcbdc7695002fc5fd44892016ad546b8e47f89e7ef1c9467506c95"
+      "size_bytes": 208473,
+      "sha256": "e549c264237ef11d6ebcf3f474f873d8877ff83bac117772a4a9bc85c93ad2f6"
     },
     {
       "path": "tests/character_acceptance_cases.json",
@@ -4642,13 +4657,13 @@
     },
     {
       "path": "tools/test_validate_data.py",
-      "size_bytes": 96905,
-      "sha256": "5bbf29ac4e0286850b7d506bbe7e6e9d05133373fedad52ee9e06b913e79b1b8"
+      "size_bytes": 97657,
+      "sha256": "23d8192b345782ccfcc70dbaed33f5e854afbc60d7213fcffaa0499c18192342"
     },
     {
       "path": "tools/validate_data.py",
-      "size_bytes": 93390,
-      "sha256": "43ea7b2fe5aa9a92b09b0d2ab176dad5b64bb097e5c1867f21404dd3d3e8563a"
+      "size_bytes": 94400,
+      "sha256": "a2449e775d53dc14b6af88591bfe1e4e256a4030b7d86656e746a0f133c5328f"
     }
   ]
 }
