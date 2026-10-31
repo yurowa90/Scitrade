@@ -1741,6 +1741,76 @@
       "sha256": "8422908d223f73a0c68dfdf545d6776bf538f83d27fa8b627ae9b29b08c180b4"
     },
     {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/README.md",
+      "size_bytes": 8133,
+      "sha256": "d3f58f88f5c00444cfa4ea726f95bb2851b9ed1a874084ed55680e9ff3093e17"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/go.mjs",
+      "size_bytes": 476,
+      "sha256": "c0208ec67f3f7ef0de12eec95b873ad0aafe9b1f4065e7ce7d718a0d97f80726"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/m77.cjs",
+      "size_bytes": 7951,
+      "sha256": "2e89408849704973c88d31118f10c8ee57e2c7eb5cd372e61d15ebf58036165b"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/parts.cjs",
+      "size_bytes": 2318,
+      "sha256": "f2e230989021afe74c84a6d0a608718f7df749a293dbe9883f56188c0dd6d70e"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/saves.ts",
+      "size_bytes": 833,
+      "sha256": "0dba6aaeb1d1414bace11a3c0a9b9a3d5a451243a49204799e94f7878894c254"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/start.cjs",
+      "size_bytes": 1182,
+      "sha256": "2eab19ba16daba73862ae1419b5267d147be66b07e1c5dc6370fee3ed12e3095"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/harness/z400.cjs",
+      "size_bytes": 2071,
+      "sha256": "7b0ef6016da112a97c8a6e7c4ba1f5bc8f600e585076ca5f641acd210780370d"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/ipad-credit-closed.png",
+      "size_bytes": 42339,
+      "sha256": "ae2d5bf291fbf7fc1dcee8e3f4da8a9e4ca66feffb8875373c6963226f69c844"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/ipad-credit-open.png",
+      "size_bytes": 62060,
+      "sha256": "858df3dc8bec88f638268d71b987b852d1db73a6c3d44307dc4c41fc1c3196ae"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/ipad-dialog-d31.png",
+      "size_bytes": 36489,
+      "sha256": "22a82fd1eaad758a5b3f696719abd95759f5ebd4cc427156558585f5c1009126"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/ipad-report-d31.png",
+      "size_bytes": 109476,
+      "sha256": "f0bd5b93f39488fd6675dbfe46b0f20c20acf1e8c11641cd45b43291f8e567a6"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/raw/measure.jsonl",
+      "size_bytes": 4606,
+      "sha256": "6f78975ec9266068659f310fb5c0fedc2407541a395e7f433e3be9cef8cdb540"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/raw/start.json",
+      "size_bytes": 209,
+      "sha256": "19055046b1a62919c3701b609e7cbc2fc2db90fa3fa40ac70e80fe7e944b24e8"
+    },
+    {
+      "path": "docs/ai/design/path11-ui-2026-10/impl-d594d19/raw/z400.jsonl",
+      "size_bytes": 607,
+      "sha256": "af49c0476f10d3ec8da0c4f79c38e30a2dae948a145f99ddf53e74ece16ff04c"
+    },
+    {
       "path": "docs/ai/design/path11-ui-2026-10/ipad-credit.png",
       "size_bytes": 63721,
       "sha256": "1420f325f78c3eae108f5a5ce458edebce28bc08c0707a2d15c310d7a5b3e058"
