@@ -1,3 +1,4 @@
+import { unaffordableRecords } from './unaffordable';
 import { carryAccrued, defaultFor, divHalfAway, isRiskRules, claimFor, collectionPlan, receivedForInvoice, dutyFor, surchargeBp, surchargeWeek, tariffSchedule } from './risk';
 import { batchZero, generateBatch, offerDef, prepWorkUnitsFor } from './market';
 import { allocateHandling, applyOperationsCommand, storageShortfall, fixedCostsDue, processPaymentDefault, lateDeliveryReduction } from './operations';
@@ -19,7 +20,7 @@ import {
 } from './catalog';
 import { balance, contractAmount, emptyLedger, post, type LedgerLine } from './ledger';
 import { applyBasisPoints, formatMoney, type Currency } from './money';
-import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation } from './reservations';
+import { cashLessUnpaidMinor, trainingAvailableMinor, fundsPosition, runningTaskOf, spaceShortfall, type CashReservation, type FundsPosition } from './reservations';
 import { createRng } from './rng';
 import {
   ENGINE_VERSION,
@@ -99,7 +100,7 @@ export function createGame(config: ScenarioConfig): GameState {
       scoutedVenueIds: [],
     },
     culture: { reports: [], experiences: [], relationEvents: [] },
-    operations: config.operations ? { batches: [batchZero(config)], offers: [], expansions: [], handlingLog: [], spaceContracts: [], exchanges: [], defaultEvents: [], outcome: 'IN_PROGRESS', failure: null } : null,
+    operations: config.operations ? { ...(config.rules.rulesVersion === 'M2a-rules-4' ? { unaffordable: [] } : {}), batches: [batchZero(config)], offers: [], expansions: [], handlingLog: [], spaceContracts: [], exchanges: [], defaultEvents: [], outcome: 'IN_PROGRESS', failure: null } : null,
     invoices: [],
     obligations: [],
     notices: [],
@@ -156,6 +157,7 @@ export function openDay(state: GameState, config: ScenarioConfig): { state: Game
     log(s, `항만 공지: ${notice.titleKo} (영향 화물 ${affected.length}건)`);
   }
   for (const event of tariffSchedule(s, config)) if (event.noticeDay === s.day) log(s, event.labelKo);
+  if (s.meta.rulesVersion === 'M2a-rules-4') s.operations!.unaffordable!.push(...unaffordableRecords(s, config));
   s.phase = 'AWAITING_INPUT';
   return { state: s, announcements };
 }
@@ -277,7 +279,10 @@ function fundsShortfall(
   breakdownKo: string,
   exclude?: (r: CashReservation) => boolean,
 ): string | null {
-  const f = fundsPosition(s, config, currency, exclude);
+  return fundsShortfallText(currency, needMinor, breakdownKo, fundsPosition(s, config, currency, exclude));
+}
+
+function fundsShortfallText(currency: Currency, needMinor: number, breakdownKo: string, f: FundsPosition): string | null {
   if (f.available >= needMinor) return null;
   const parts = [`현금 ${formatMoney(currency, f.cash)}`];
   const contractsReserved = f.reserved - f.reservedCommitments;
@@ -344,6 +349,32 @@ export function creditTermCheck(s: GameState, config: ScenarioConfig, buyOfferId
   return result;
 }
 
+export interface TradeFundsCheck {
+  rule: 'IMMEDIATE_CASH' | 'SAME_CURRENCY' | 'SPLIT_CURRENCY';
+  needs: { currency: Currency; needMinor: number; availableMinor: number; position: FundsPosition | null;
+    parts: { purchaseMinor?: number; feeMinor?: number; dutyMinor?: number } }[];
+}
+
+/** 인수와 공개일 기록이 공유하는 순수 자금 계산. */
+export function tradeFundsCheck(s: GameState, config: ScenarioConfig, buy: OfferDef, sell: OfferDef, quantity: number): TradeFundsCheck {
+  const purchaseMinor = buy.unitPriceMinor * quantity;
+  if (config.rules.fundsCheck === 'IMMEDIATE_CASH') return { rule: 'IMMEDIATE_CASH', needs: [{
+    currency: buy.currency, needMinor: purchaseMinor, availableMinor: balance(s.ledger, buy.currency, 'CASH'),
+    position: null, parts: { purchaseMinor },
+  }] };
+  const route = routeBetween(config, buy.cityId, sell.cityId)!;
+  const feeMinor = route.bookingFeeMinor;
+  const dutyMinor = dutyFor(config, s.rng.seed, buy.goodId, sell.cityId,
+    listSailings(config, route.id, s.day + 1)[0]?.scheduledArrivalDay ?? s.day, s.day, purchaseMinor, buy.currency, s.day);
+  const need = (currency: Currency, parts: TradeFundsCheck['needs'][number]['parts']) => {
+    const position = fundsPosition(s, config, currency);
+    return { currency, needMinor: Object.values(parts).reduce((sum, v) => sum + v, 0), availableMinor: position.available, position, parts };
+  };
+  return buy.currency === sell.currency
+    ? { rule: 'SAME_CURRENCY', needs: [need(buy.currency, { purchaseMinor, feeMinor, dutyMinor })] }
+    : { rule: 'SPLIT_CURRENCY', needs: [need(buy.currency, { purchaseMinor }), need(sell.currency, { feeMinor, dutyMinor })] };
+}
+
 function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, sellOfferId: string, requestedQuantity?: number, creditTermId?: CreditTermId): string | null {
   const buy = offerDef(s, config, buyOfferId);
   const sell = offerDef(s, config, sellOfferId);
@@ -366,30 +397,21 @@ function acceptTrade(s: GameState, config: ScenarioConfig, buyOfferId: string, s
   if (!route) return '두 항구를 잇는 노선이 없습니다.';
 
   const purchase = buy.unitPriceMinor * quantity;
-  if (config.rules.fundsCheck === 'IMMEDIATE_CASH') {
-    const cash = balance(s.ledger, buy.currency, 'CASH');
-    if (cash < purchase) {
-      return `매입 자금이 부족합니다. 필요 ${formatMoney(buy.currency, purchase)}, 사용 가능 ${formatMoney(buy.currency, cash)}.`;
+  const funds = tradeFundsCheck(s, config, buy, sell, quantity);
+  const shortages = funds.needs.map((need) => {
+    const { currency, needMinor, availableMinor, position, parts } = need;
+    if (availableMinor >= needMinor) return null;
+    if (funds.rule === 'IMMEDIATE_CASH') {
+      return `매입 자금이 부족합니다. 필요 ${formatMoney(currency, needMinor)}, 사용 가능 ${formatMoney(currency, availableMinor)}.`;
     }
-  } else {
-    const duty = dutyFor(config, s.rng.seed, buy.goodId, sell.cityId,
-      listSailings(config, route.id, s.day + 1)[0]?.scheduledArrivalDay ?? s.day, s.day, purchase, buy.currency, s.day);
-    if (buy.currency !== sell.currency) {
-      const shortages = [fundsShortfall(s, config, buy.currency, purchase, `매입 ${formatMoney(buy.currency, purchase)}`),
-        fundsShortfall(s, config, sell.currency, route.bookingFeeMinor + duty,
-          `운임 ${formatMoney(sell.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(sell.currency, duty)}`)].filter(Boolean);
-      if (shortages.length) return shortages.join(' ');
-    } else {
-      const short = fundsShortfall(
-        s,
-        config,
-        buy.currency,
-        purchase + route.bookingFeeMinor + duty,
-        `매입 ${formatMoney(buy.currency, purchase)} + 운임 ${formatMoney(buy.currency, route.bookingFeeMinor)} + 관세 ${formatMoney(buy.currency, duty)}`,
-      );
-      if (short) return short;
-    }
-  }
+    const breakdown = [
+      parts.purchaseMinor === undefined ? null : `매입 ${formatMoney(currency, parts.purchaseMinor)}`,
+      parts.feeMinor === undefined ? null : `운임 ${formatMoney(currency, parts.feeMinor)}`,
+      parts.dutyMinor === undefined ? null : `관세 ${formatMoney(currency, parts.dutyMinor)}`,
+    ].filter((v) => v !== null).join(' + ');
+    return fundsShortfallText(currency, needMinor, breakdown, position!);
+  }).filter(Boolean);
+  if (shortages.length) return shortages.join(' ');
 
   const storage = storageShortfall(s, config, buy.goodId, quantity);
   if (storage) return storage;

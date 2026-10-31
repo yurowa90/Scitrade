@@ -826,6 +826,16 @@
         "OFFER_FWD_02"
       ],
       "scope_note": "M2a-5 실험: 화장품 + 조미김의 반복 견적·수량 고르기·창고·고정비·환전·지급 불이행. 측정용이며 학생 선택 목록에는 넣지 않는다."
+    },
+    {
+      "id": "SCENARIO_M2_OPS_CREDIT",
+      "base_scenario_id": "SCENARIO_M2_OPS_COS_LAVER",
+      "risk_setup": {
+        "level": "R4",
+        "profile_id": "RISK_PROFILE_V2"
+      },
+      "title_ko": "외상 거래: 화장품 + 조미김 — 평택 본사 90일 운영",
+      "scope_note": "경로 11 rules-4 놀이 시나리오. 화면 지시서 전까지 학생 선택 목록에 넣지 않는다."
     }
   ],
   "$schema": "../schemas/scenarios.schema.json",

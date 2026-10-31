@@ -605,7 +605,12 @@ export interface FailureRecord {
   usdCommitmentsSinceIncurred: { kind: 'CONTRACT' | 'SPACE_CONTRACT'; id: string; day: number; amountMinor: number }[];
 }
 export interface HandlingAllocation { taskId: string; contractId: string; wantPt: number; gotPt: number }
+export interface UnaffordableRecord {
+  day: number; buyOfferId: string; sellOfferId: string; quantity: number;
+  shortfalls: { currency: Currency; needMinor: number; availableMinor: number }[];
+}
 export interface OperationsState {
+  unaffordable?: UnaffordableRecord[];
   batches: MarketBatch[]; offers: OfferDef[];
   expansions: { id: string; orderedDay: number; effectiveDay: number }[];
   handlingLog: { day: number; capacityPt: number; usedPt: number; waits: HandlingAllocation[] }[];

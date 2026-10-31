@@ -122,8 +122,8 @@
     },
     {
       "path": "data/scenarios.json",
-      "size_bytes": 29254,
-      "sha256": "6a82c36614fecb4d9f03ea1644716bc103ed9d2168161d06d9721cd23465a882"
+      "size_bytes": 29673,
+      "sha256": "a91608fbd78d5d7861667ab9fe1159095c4dc71d9dfa6897d937e9f29190333a"
     },
     {
       "path": "data/securities.json",
@@ -4114,6 +4114,11 @@
       "path": "docs/ai/tasks/results/TASK-0073.md",
       "size_bytes": 18196,
       "sha256": "80748427b0e9dc5588aa3fe13bbabf48a16cd3105ef6d3ab82420165b005695e"
+    },
+    {
+      "path": "docs/ai/tasks/results/TASK-0074.md",
+      "size_bytes": 11716,
+      "sha256": "7808b76908f5ed287e5be74ab4d217cf5622376156f2b26454b4f88dd76ad5d5"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
