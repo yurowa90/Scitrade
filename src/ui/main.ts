@@ -1173,7 +1173,7 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
   for (const key of Object.keys(ui.offerQuantities)) {
     if (key.split('+').some((id) => view.offers.find((o) => o.id === id)?.status !== 'OPEN')) delete ui.offerQuantities[key];
   }
-  opsScreens?.path11Prepare(view, config, ui);
+  const path11 = opsScreens?.path11Render(false, app, state, view, config, ui) ?? '';
   const previousMarket = document.getElementById('market-scroll');
   const marketScrollLeft = previousMarket?.scrollLeft;
   const previousInvestment = document.getElementById('investment-details') as HTMLDetailsElement | null;
@@ -1198,8 +1198,8 @@ function render(skipFocus = false, anchor: QueueAnchor | null = null) {
       ${config.culture ? `<div class="maincol">${ui.cultureOpen ? culturePanel!.culturePanel(state, view, ui.pending.filter((p): p is import('../engine/types').Command => p.type !== 'EXCHANGE_CURRENCY' && p.type !== 'EXPAND_WAREHOUSE' && p.type !== 'SIGN_SPACE_CONTRACT'), config, ui, queuedStatus) : ''}${tradePanel()}</div>` : tradePanel()}
       ${(isOneColumn() ? [queuePanel, crewPanel, resourcePanel, reportPanel, worldMap, logPanel]
         : [crewPanel, resourcePanel, queuePanel, worldMap, reportPanel, logPanel]).map((panel) => panel()).join('\n      ')}
-    </main>${opsScreens?.path11DialogHtml(state, config, ui) ?? ''}`;
-  opsScreens?.path11Dialog(app, state, config, ui);
+    </main>${path11}`;
+  opsScreens?.path11Render(true, app, state, view, config, ui);
   const marketScroll = document.getElementById('market-scroll');
   if (marketScroll && marketScrollLeft !== undefined) marketScroll.scrollLeft = marketScrollLeft;
   const toastEl = app.querySelector<HTMLElement>('.flash-toast');
@@ -1341,15 +1341,8 @@ app.addEventListener('click', (ev) => {
   activation = { element: el, pointer: ev.detail > 0 };
   const d = el.dataset;
   try {
+    if (opsScreens?.path11Handle(d.action, app, ui, render, markOpened, revealOpener)) return;
     switch (d.action) {
-      case 'p11-dialog':
-        ui.path11DialogOpen = true; markOpened('path11'); render(true);
-        document.getElementById('p11-dialog-h')?.focus({ preventScroll: true });
-        return;
-      case 'p11-close':
-        ui.path11DialogOpen = false; render(true);
-        revealOpener(app.querySelector<HTMLElement>('[data-action="p11-dialog"]'));
-        return;
       case 'situation':
         enteringScenario = true;
         return situationScreen.ensure().then(() => {
@@ -1549,10 +1542,8 @@ app.addEventListener('keydown', (ev) => {
   }
 });
 
-app.addEventListener('toggle', (ev) => opsScreens?.path11Toggle(ev, ui), true);
-
 app.addEventListener('change', async (ev) => {
-  if (opsScreens?.path11Change(ev, view, config, ui, render, liveStatus)) return;
+  if (opsScreens?.path11Change(ev, view, config, ui, render, liveStatus, liveRegionText)) return;
   const el = ev.target as HTMLInputElement | HTMLSelectElement;
   if (el.dataset.action === 'scenario') {
     if (!confirm('시나리오를 바꾸면 현재 진행과 오늘 할 일이 사라집니다. 바꿀까요?')) {

@@ -8,10 +8,11 @@ import { cashLockSummary, creditLockPreview, receivablesByTerm, settlementKrw } 
 import type { Account } from '../engine/ledger';
 import type { CreditTermId, GameState, ScenarioConfig } from '../engine/types';
 import { esc } from './html';
-import { initialUiState, liveRegionText, type UiCommand } from './session';
+import type { UiCommand } from './session';
+import './path11.css';
 import { SETTLEMENT_LINE_KO } from './path11-labels';
 
-type Ui = ReturnType<typeof initialUiState>;
+type Ui = ReturnType<typeof import('./session').initialUiState>;
 type Statement = NonNullable<ReturnType<typeof settlementKrw>>;
 const active = (config: ScenarioConfig) => config.rules.rulesVersion === 'M2a-rules-4';
 const money = (minor: number) => esc(formatMoney('KRW', minor));
@@ -151,7 +152,7 @@ export function path11Toggle(ev: Event, ui: Ui) {
   ui.path11Open = ui.path11Open.filter((k) => k !== key);
   if (el.open) ui.path11Open.push(key);
 }
-export function path11Change(ev: Event, s: GameState, config: ScenarioConfig, ui: Ui, render: () => void, live: HTMLElement): boolean {
+export function path11Change(ev: Event, s: GameState, config: ScenarioConfig, ui: Ui, render: () => void, live: HTMLElement, liveRegionText: typeof import('./session').liveRegionText): boolean {
   if (!active(config)) return false;
   const el = ev.target as HTMLInputElement;
   if (el.dataset.action === 'credit-term') {
@@ -193,4 +194,28 @@ export function path11DialogHtml(s: GameState, config: ScenarioConfig, ui: Ui): 
   if (!active(config) || !ui.path11DialogOpen || s.day <= 1) return '';
   const day = ui.path11AsOfDay ?? s.day - 1;
   return `<section id="p11-dialog" class="panel p11-dialog" role="dialog" aria-modal="true" aria-labelledby="p11-dialog-h"><h2 id="p11-dialog-h" tabindex="-1">${day}일 마감 재무제표</h2><button data-action="p11-close">닫기</button>${path11Statement(s, config, day, ui)}${path11Missed(s, config, day, ui)}</section>`;
+}
+
+/** 경로 11의 클릭과 초점 이동은 지연 화면에서 처리한다. */
+export function path11Handle(action: string | undefined, app: HTMLElement, ui: Ui, render: (skipFocus?: boolean) => void, opened: (key: 'path11') => void, opener: (el: HTMLElement | null) => void): boolean {
+  if (action !== 'p11-dialog' && action !== 'p11-close') return false;
+  ui.path11DialogOpen = action === 'p11-dialog';
+  if (ui.path11DialogOpen) opened('path11');
+  render(true);
+  if (ui.path11DialogOpen) document.getElementById('p11-dialog-h')?.focus({ preventScroll: true });
+  else opener(app.querySelector<HTMLElement>('[data-action="p11-dialog"]'));
+  return true;
+}
+let toggleApp: HTMLElement | undefined;
+let toggleUi: Ui;
+/** 그리기 전 상태·열림을 준비하고 그린 뒤 대화상자 바깥을 막는다. */
+export function path11Render(after: boolean, app: HTMLElement, s: GameState, view: GameState, config: ScenarioConfig, ui: Ui): string {
+  if (after) { path11Dialog(app, s, config, ui); return ''; }
+  toggleUi = ui;
+  if (toggleApp !== app) {
+    toggleApp = app;
+    app.addEventListener('toggle', (ev) => path11Toggle(ev, toggleUi), true);
+  }
+  path11Prepare(view, config, ui);
+  return path11DialogHtml(s, config, ui);
 }

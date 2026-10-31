@@ -3691,6 +3691,11 @@
       "sha256": "552fdf0527a236c89d32ac21872474b95cce6b67e3fe0898d2b4fd9295c0b642"
     },
     {
+      "path": "docs/ai/tasks/TASK-0077-R1-resume.md",
+      "size_bytes": 4404,
+      "sha256": "f4088a27571e5f01c6896862e7958f7d52efbe3b50fdadf827fec3eef97d62ed"
+    },
+    {
       "path": "docs/ai/tasks/TASK-0077-path11-screens.md",
       "size_bytes": 46227,
       "sha256": "fc493132f3880b7319108dd1f6e20be8f550385554beb78921cc1b5e569db744"
@@ -4177,8 +4182,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0077.md",
-      "size_bytes": 32455,
-      "sha256": "ce805bab010529cb800a5cd35a3f5fef9005b5b2d431c3b85629368332c89969"
+      "size_bytes": 57415,
+      "sha256": "bec9e907b220055aa0d9aff518c4ddca0e9ff3d29baad78fc531b57b98152fda"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",

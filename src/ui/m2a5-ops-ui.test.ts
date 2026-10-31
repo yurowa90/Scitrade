@@ -221,7 +221,8 @@ describe('창고 막힘·빈 견적·정리', () => {
   it('규칙 2 첫 화면은 이번 표·창고 행·지급 기준 설명을 빼면 정리 전 전체 문자열과 같다', async () => {
     const ui = await startUi(cfg); await (await import('./main-testkit')).screensReady(); await ui.change({ action: 'scenario' }, cfg.id);
     // cf034bb와 비교할 때 지시서가 새로 넣거나 바꾼 부분만 제외한다. 환전·시세표 접근성 속성은 TASK-0058에서 추가한 부분만 제외한다.
-    const html = ui.app.innerHTML.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 BASE')
+    expect(ui.app.innerHTML.match(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g)).toHaveLength(1);
+    const html = ui.app.innerHTML.replace(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g, '').replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 BASE')
       .replace(/<section class="warehouse"[\s\S]*?(?=<h4>업무 부하)/, '')
       .replace('<li><b>창고</b> 없음</li>', '')
       .replace('<th>미지급(급여·임차료)</th>', '<th>미지급 급여</th>')

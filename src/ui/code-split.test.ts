@@ -147,7 +147,11 @@ const gates: Partial<Record<Kind, ReturnType<typeof deferred>>> = {};
 let situationCalls = 0;
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 // 새 진입 단추 조각만 정확히 빼고 기존 전체 HTML 보호값을 대조한다.
-const hash = async (html: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
+const hash = async (html: string) => {
+  expect(html.match(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g)).toHaveLength(1);
+  html = html.replace(/<option value="SCENARIO_M2_OPS_CREDIT"[^>]*>[^<]*<\/option>/g, '');
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(html.replace(SITUATION_BUTTON, '').replace(/빌드 [^<]+/, '빌드 dev'))))].map((n) => n.toString(16).padStart(2, '0')).join('');
+};
 const opsId = 'SCENARIO_M2_OPERATIONS';
 const legacyId = 'SCENARIO_M2_MULTI_TRADE';
 const warning = '화면 일부를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.';
@@ -498,4 +502,31 @@ describe('TASK-0074 화면의 옛 형식 거절', () => {
     expect(select(ui.app.innerHTML)).toBe(selected); expect(ui.doc.title).toBe(title);
     expect(readState(ui, items)).toBe(before);
   });
+});
+
+
+it('TASK-0077 첫 화면 정적 닫힘에 경로 11 화면이 없다', async () => {
+  const fs = await import('node:fs' as string) as { readFileSync(p: string, e: string): string; existsSync(p: string): boolean };
+  const path = await import('node:path' as string) as { resolve(...p: string[]): string; dirname(p: string): string };
+  const { parseSync } = await import('rolldown/utils');
+  const seen = new Set<string>();
+  function visit(file: string) {
+    if (seen.has(file)) return;
+    seen.add(file);
+    if (!file.endsWith('.ts')) return;
+    for (const node of parseSync(file, fs.readFileSync(file, 'utf8')).program.body) {
+      let specifier: string | undefined;
+      if (node.type === 'ImportDeclaration' && node.importKind !== 'type'
+        && (!node.specifiers.length || node.specifiers.some((s) => s.type !== 'ImportSpecifier' || s.importKind !== 'type'))) specifier = node.source.value;
+      if ((node.type === 'ExportAllDeclaration' || node.type === 'ExportNamedDeclaration') && node.exportKind !== 'type'
+        && (node.type === 'ExportAllDeclaration' || node.specifiers.some((s) => s.exportKind !== 'type'))) specifier = node.source?.value;
+      if (!specifier?.startsWith('.')) continue;
+      const stem = path.resolve(path.dirname(file), specifier);
+      const target = [stem, `${stem}.ts`, `${stem}/index.ts`].find((p) => fs.existsSync(p));
+      if (!target) throw new Error(`정적 의존 파일을 찾지 못했습니다: ${specifier}`);
+      visit(target);
+    }
+  }
+  visit(path.resolve('src/ui/main.ts'));
+  expect([...seen]).not.toContain(path.resolve('src/ui/path11-screens.ts'));
 });
