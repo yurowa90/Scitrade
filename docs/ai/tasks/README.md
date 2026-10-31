@@ -53,7 +53,7 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 | [TASK-0074-R2](TASK-0074-R2-resume.md) | 0074 이어 하기 2: 새 항목은 자식 시나리오 관례(필수 칸 다섯 원문), R1 검사기 상속 처리 되돌림, 개수 11·옛 자료 시험 준비 줄 | 반영(병합 6b9c304, 허브·세션 A 검수). 허브 보정 57a3ba8(상태 해시 시험 새 칸 제외) |
 | [TASK-0075](TASK-0075-path11-readers.md) | 경로 11 ②-b 읽기 함수 다섯(creditLockPreview·receivablesByTerm·cashLockSummary·balanceSheetAt·settlementKrw), 지연 청크만, 첫 화면 ≤ 300 B | 반영(병합 093b976, 허브·세션 A 검수, 한 번에 완료) |
 | [TASK-0076](TASK-0076-first-screen-split.md) | 첫 화면 여유 되찾기: 후보 A′·B·C·D 조사(1회차, 저장소 불변) → 허브 선택 → R1 구현. 관문은 여유 ≥ 8,000 B | 1회차 끝(조사, 저장소 불변). 허브 선택 D+C(H39), R1 멈춤(C8 범위·재등록 비교, 예산 통과) → R2 완료. 반영(병합 780ec75, 허브·세션 A 검수). 첫 화면 134,724 → 132,034 B |
-| [TASK-0077](TASK-0077-path11-screens.md) | 경로 11 화면(Sol): 외상 비교(기본 접힘), 묶이는 돈 상자, 중간 재무상태, 원화 결산, 놓친 견적 상자, select에 외상 시나리오. 지연 청크만, 첫 화면 ≤ 300 B | 1차 멈춤(ops-data-gate 해시, 허브 누락) → 허브 개정 3, Codex 재실행 |
+| [TASK-0077](TASK-0077-path11-screens.md) | 경로 11 화면(Sol): 외상 비교(기본 접힘), 묶이는 돈 상자, 중간 재무상태, 원화 결산, 놓친 견적 상자, select에 외상 시나리오. 지연 청크만, 첫 화면 ≤ 300 B | 1차 멈춤(해시, 허브 누락) → 2차 멈춤(화면 몫 +2,546 B, session 값 import로 공유 청크) → R1(H41) Codex 실행 |
 | [TASK-0070](TASK-0070-v2-final-profile.md) | 판정표 v2 최종 프로필(k = +1)을 개발 브랜치에, 자료의 k = 0 가정 시험을 의도별로 정리 | 반영(fb598cf, 허브 단독 재검사: 디스크 부족 시간 초과) |
 | [TASK-0069](TASK-0069-v2-sale-margin-k.md) | 판정표 v2 판매 마진 손잡이 k를 RISK_PROFILE_V2 칸으로(H31), k = 0 항등, 검증기 범위 | 반영(aa89066, 허브·세션 A 검수) |
 | [TASK-0068b-R1](TASK-0068b-R1-tests.md) | 실행기 v2 ② 보강: 진단 U 같은 줄 E13, H28-1 주석 중복 제거, 진단 M·J8/L4·6열 칸·L2 종합 시험 판별력 | 반영(3a2b8ac) |
