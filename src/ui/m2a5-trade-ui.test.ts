@@ -3,7 +3,8 @@ import { loadScenario, OPERATIONS_SCENARIO_IDS, SCENARIO_IDS } from '../content/
 import { commitDay, createGame, openDay, planState } from '../engine/engine';
 import { listSailings, routeBetween } from '../engine/catalog';
 import { dailyKrwDue, paymentDefaultStatus } from '../engine/operations';
-import { marketTable, offerDef, openTradePairs } from '../engine/market';
+import { offerDef, openTradePairs } from '../engine/market';
+import { marketTable } from '../engine/market-lazy';
 import { caseOf } from '../engine/m2a5-testkit';
 import { MINOR_PER_MAJOR, formatMoney } from '../engine/money';
 import { payrollRunwayDay } from '../engine/previews';

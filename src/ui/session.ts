@@ -1,4 +1,5 @@
 // 새 게임과 저장 읽기는 같은 화면 초기값을 사용한다. 게임 상태는 엔진만 소유한다.
+import { OPS_DATA_MISSING } from '../content/ops-data';
 import { loadScenario, LOADABLE_SCENARIO_IDS, type AnyScenarioId } from '../content/scenario';
 import { commitDay, openDay } from '../engine/engine';
 import { deserializeSave, SaveError } from '../engine/save';
@@ -35,6 +36,7 @@ export function loadSaveText(text: string): { config: ScenarioConfig; state: Gam
     const loaded = deserializeSave(text, { config, dataVersion: config.dataVersion, rulesVersion: config.rules.rulesVersion });
     return { config, state: openDay(loaded, config).state };
   } catch (error) {
+    if (error instanceof Error && error.message === OPS_DATA_MISSING) throw error;
     return { errorKo: error instanceof Error ? error.message : '불러오기에 실패했습니다.' };
   }
 }

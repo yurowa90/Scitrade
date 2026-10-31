@@ -1,3 +1,4 @@
+import '../src/content/ops-data-entry';
 export { loadScenario, SCENARIO_IDS, OPERATIONS_SCENARIO_IDS } from '../src/content/scenario';
 export { simulate, SIM_SEEDS } from '../src/engine/sim/sim';
 export { policyById, SIM_POLICIES } from '../src/engine/sim/policies';
@@ -7,10 +8,11 @@ export { serializeSave, deserializeSave } from '../src/engine/save';
 export { paymentDefaultStatus } from '../src/engine/operations';
 export { fundsPosition, cashReservations } from '../src/engine/reservations';
 export { upcomingPayments, campaignSummary, contractReport } from '../src/engine/reports';
-export { marketTable } from '../src/engine/market';
+export { marketTable } from '../src/engine/market-lazy';
 export { exchangePreview } from '../src/engine/readers';
 export { loadRiskProfile } from '../src/content/scenario';
 export { withRiskLevel, tariffSchedule, referenceRate } from '../src/engine/risk';
-export { contractRiskReport, receivableSchedule } from '../src/engine/reports';
+export { contractRiskReport } from '../src/engine/reports';
+export { receivableSchedule } from '../src/engine/reports-lazy';
 export { quotePreview } from '../src/engine/readers';
 export { openTradePairs, offerDef } from '../src/engine/market';

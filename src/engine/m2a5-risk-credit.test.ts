@@ -6,7 +6,8 @@ import { post, summarize, type LedgerEntry } from './ledger';
 import { batchZero, generateBatch, offerDef, openTradePairs } from './market';
 import { dailyKrwDue, paymentDefaultStatus, usdLotKrw } from './operations';
 import { quotePreview } from './readers';
-import { campaignSummary, contractReport, contractRiskReport, preview, receivableSchedule, upcomingPayments } from './reports';
+import { campaignSummary, contractReport, contractRiskReport, preview, upcomingPayments } from './reports';
+import { receivableSchedule } from './reports-lazy';
 import { cashReservations, fundsPosition, runningTaskOf } from './reservations';
 import { drawUniform } from './rng';
 import { claimFor, collectionPlan, referenceRate, withRiskLevel, type TariffEvent } from './risk';
@@ -458,7 +459,7 @@ describe('TASK-0064 추첨과 공개 정보', () => {
         }
       }
       if (/CLAIM:|COLLECT:/.test(src)) expect(file).toBe('./risk.ts');
-      if (file === './reports.ts' || file === './readers.ts') {
+      if (file === './reports.ts' || file === './readers.ts' || file === './readers-lazy.ts' || file === './reports-lazy.ts') {
         expect(src).not.toMatch(/import[^;]*(?:claimFor|collectionPlan|drawAt|drawUniform|['"]\.\/rng['"])/);
       }
     }

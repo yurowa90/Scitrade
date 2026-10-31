@@ -7,8 +7,9 @@ import { ACCOUNT_KIND, balance, emptyLedger, post, summarize, type Account } fro
 import { openTradePairs } from './market';
 import type { Currency } from './money';
 import { balanceSheetAt, cashLockSummary, creditLockPreview, receivablesByTerm, settlementKrw } from './path11-readers';
-import { creditTermOptions, quotePreview } from './readers';
-import { receivableSchedule } from './reports';
+import { quotePreview } from './readers';
+import { creditTermOptions } from './readers-lazy';
+import { receivableSchedule } from './reports-lazy';
 import { fundsPosition } from './reservations';
 import { claimFor, collectionPlan, defaultFor, referenceRate, usdToKrwMinor } from './risk';
 import { policyById } from './sim/policies';

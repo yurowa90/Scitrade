@@ -4172,8 +4172,8 @@
     },
     {
       "path": "docs/ai/tasks/results/TASK-0076.md",
-      "size_bytes": 89834,
-      "sha256": "5aba20c17979109d84b4504dd84397c15da4b10287d5ca35883ac0f0d0638d4b"
+      "size_bytes": 163231,
+      "sha256": "388a9b205d508b485efc87dda5dfdf79678553d4c5081982acfbdd45cf65e898"
     },
     {
       "path": "docs/ai/tasks/results/TEXT-0001-HUB-REVIEW-2026-10-24.md",
@@ -4677,8 +4677,8 @@
     },
     {
       "path": "tools/rules2_golden_entry.ts",
-      "size_bytes": 762,
-      "sha256": "a3607073f1a6d55fbcd84cd7218305f280e3dbf080fd52e524373d8ed3f12357"
+      "size_bytes": 807,
+      "sha256": "b53a565c191170fc35b4a3d32a9800aad471fd318a3668be7ddc9f457bb42d4c"
     },
     {
       "path": "tools/rules2_golden_lib.mjs",
@@ -4687,8 +4687,8 @@
     },
     {
       "path": "tools/rules3_golden_entry.ts",
-      "size_bytes": 1103,
-      "sha256": "a58330e539f172d934db2c7bcbdf463372f8307a3877090025e9cb5aafe7127b"
+      "size_bytes": 1193,
+      "sha256": "be1aad4cfbfd0c1c2575dfdc6c14e2a0df879f1c30dbe2a7ce229dfd4bd574db"
     },
     {
       "path": "tools/rules3_golden_lib.mjs",
