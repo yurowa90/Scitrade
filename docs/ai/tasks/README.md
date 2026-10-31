@@ -51,6 +51,7 @@ Claude가 쓰고 Codex가 구현하는 작업 단위다. 흐름과 역할은 [..
 | [TASK-0074](TASK-0074-rules4-scenario-save7.md) | 경로 11 ②-a: rules-4 시나리오 하나(LOADABLE 목록, select 제외), 저장 형식 7(1~6 명시 거절, 이관 함수 삭제), 놓친 견적 칸 `operations.unaffordable[]` | 1차 실행 예산 중단(엔진 +2,216 B, d74e1c4). R1로 이어 함(H36) |
 | [TASK-0074-R1](TASK-0074-R1-resume.md) | 0074 이어 하기: 엔진 몫 ≤ 2,400 B, 화면 몫 ≤ 16 B(목록 이름만), 검사기 상속 결함, 통화 순서 사전순 | 범위 충돌 중단(검사기 스키마·개수). R2로 이어 함(H37) |
 | [TASK-0074-R2](TASK-0074-R2-resume.md) | 0074 이어 하기 2: 새 항목은 자식 시나리오 관례(필수 칸 다섯 원문), R1 검사기 상속 처리 되돌림, 개수 11·옛 자료 시험 준비 줄 | 반영(병합 6b9c304, 허브·세션 A 검수). 허브 보정 57a3ba8(상태 해시 시험 새 칸 제외) |
+| [TASK-0075](TASK-0075-path11-readers.md) | 경로 11 ②-b 읽기 함수 다섯(creditLockPreview·receivablesByTerm·cashLockSummary·balanceSheetAt·settlementKrw), 지연 청크만, 첫 화면 ≤ 300 B | 승인(허브 개정 1, 사전 검수 20건 반영), Codex 실행 |
 | [TASK-0070](TASK-0070-v2-final-profile.md) | 판정표 v2 최종 프로필(k = +1)을 개발 브랜치에, 자료의 k = 0 가정 시험을 의도별로 정리 | 반영(fb598cf, 허브 단독 재검사: 디스크 부족 시간 초과) |
 | [TASK-0069](TASK-0069-v2-sale-margin-k.md) | 판정표 v2 판매 마진 손잡이 k를 RISK_PROFILE_V2 칸으로(H31), k = 0 항등, 검증기 범위 | 반영(aa89066, 허브·세션 A 검수) |
 | [TASK-0068b-R1](TASK-0068b-R1-tests.md) | 실행기 v2 ② 보강: 진단 U 같은 줄 E13, H28-1 주석 중복 제거, 진단 M·J8/L4·6열 칸·L2 종합 시험 판별력 | 반영(3a2b8ac) |
